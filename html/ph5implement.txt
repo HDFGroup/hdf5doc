@@ -1,27 +1,75 @@
-Release information for parallel HDF5
--------------------------------------
 
-+) Current release supports independent access to fixed dimension datasets
-   only.
 
-+) The comm and info arguments of H5Pset_mpi are not used.  All parallel
-   I/O are done via MPI_COMM_WORLD.  Access_mode for H5Pset_mpi can be
-   H5ACC_INDEPENDENT only.
+	    Release Notes for Parallel HDF5 v1.0.1
+	    --------------------------------------
+	    
 
-+) This release of parallel HDF5 has been tested on IBM SP2 and SGI
-   Origin 2000 systems.  It uses the ROMIO version of MPIO interface
-   for parallel I/O supports.
 
-+) Useful URL's.
+1. Overall Description of Parallel HDF5
+   ------------------------------------
+
+1.1. Supported features:
+     
+     HDF5 files are accessed according to the communicator and INFO
+     object defined in the property list set by H5Pset_mpi.
+
+     Independent read and write accesses to fixed and extendable dimension
+     datasets.
+
+     Collective read and write accesses to fixed dimension datasets.
+
+
+1.2. Supported platforms:
+
+     Intel Red
+     IBM SP2
+     SGI Origin 2000
+
+
+2. Changes since since last beta release 
+   -------------------------------------
+
+2.1. Support of Access to Extendable Dimension Datasets.
+     Extendable dimension datasets must use chunked storage methods.
+     A new function, H5Dextend, is created to extend the current
+     dimensions of a dataset.  The current release requires the
+     MPI application must make a collective call to extend the
+     dimensions of an extendable dataset before writing to the
+     newly extended area.  (The serial does not require the
+     call of H5Dextend.  The dimensions of an extendable
+     dataset is increased when data is written to beyond the
+     current dimensions but within the maximum dimensions.)
+     The required collective call of H5Dextend may be relaxed
+     in future release.
+
+     This release only support independent read and write accesses
+     to extendable datasets.  Collective accesses to extendable
+     datasets will be implemented in future releases.
+
+2.2  Collective access to fixed dimension datasets.
+     Collective access to a dataset can be specified in the transfer
+     property list argument in H5Dread and H5Dwrite.  The current
+     release supports collective access to fixed dimension datasets.
+     Collective access to extendable datasets will be implemented in
+     future releases.
+     
+2.3  HDF5 files are opened according to Communicator and INFO object.
+     H5Dopen now records the communicator and INFO setup by H5Pset_mmpi
+     and pass them to the corresponding MPIO open file calls for
+     processing.
+
+2.4  This release has been tested on IBM SP2, Intel Red and SGI Origin 2000
+     systems.  It uses the ROMIO version of MPIO interface for parallel
+     I/O supports.
+
+
+
+3. Useful Contacts
+   ---------------
    Parallel HDF webpage: "http://hdf.ncsa.uiuc.edu/Parallel_HDF/"
    ROMIO webpage: "http://www.mcs.anl.gov/home/thakur/romio/"
+   Send comments to: hdfparallel@ncsa.uiuc.edu
 
-+) Some to-do items for future releases
-      support for Intel Teraflop platform.
-      support for unlimited dimension datasets.
-      support for file access via a communicator besides MPI_COMM_WORLD.
-      support for collective access to datasets.
-      support for independent create/open of datasets.
 
 ----
-Last updated: Feb 16, 1998.
+Last updated: Dec 17, 1998.
