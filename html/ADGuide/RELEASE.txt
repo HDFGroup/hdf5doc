@@ -1,11 +1,11 @@
-HDF5 version 1.4.5 released on Sun Feb  2 20:10:01 CST 2003
+HDF5 version 1.4.5-post0 released on Sat Mar  1 11:40:01 CST 2003
 ==============================================================================
 
 
 INTRODUCTION
 
-This document describes the differences between HDF5-1.4.4 and
-HDF5-1.4.5, and contains information on the platforms tested and
+This document describes the differences between HDF5-1.4.5 and
+HDF5-1.4.5-*, and contains information on the platforms tested and
 known problems in HDF5-1.4.5. For additional information check the 
 HISTORY.txt file in the HDF5 source.
 
@@ -26,7 +26,7 @@ If you have any questions or comments, please send them to:
 CONTENTS
 
 - New Features
-- Bug Fixes since HDF5-1.4.4
+- Bug Fixes since HDF5-1.4.5
 - Performance Improvements
 - Documentation
 - Platforms Tested
@@ -38,108 +38,36 @@ New Features
 ============
   o Configuration
   ================
-    * Added "unofficial support" for building with a C++ compiler (or at least
-      not failing badly when building with a C++ compiler).  QAK - 2003/01/09
-    * Added "unofficial support" for AIX 64bits.  See INSTALL for configure
-      details. AKC - 2002/08/29
-    * Added "--with-dmalloc" flag, to easily enable support for the 'dmalloc'
-      debugging malloc implementation. QAK - 2002/07/15
+    - Fixed error in library when configured with --enable-debug=all.
+      QAK - 2003/02/17
 
   o Library
   =========
     o General
     --------- 
-      * Allow scalar dataspaces to be used for parallel I/O.  QAK - 2002/11/05
-      * Added environment variable "HDF5_DISABLE_VERSION_CHECK", which disables
-        the version checking between the header files and the library linked
-        into an application if set to '1'.  This should be used with caution,
-        mis-matched headers and library binaries can cause _serious_ problems.
-        QAK - 2002/10/15
-      * Partially fixed space allocation inefficiencies in the file by
-        improving our algorithms for re-using freed space.  QAK - 2002/08/27
-      * API tracing has been improved. Nested API calls don't screw up the
-        output format; function call and return event times can be logged;
-        total time spent in each function can be logged.  The following
-        HDF5_DEBUG environment variable words affect tracing:
-	    trace   -- turn on/off basic tracing
-	    ttimes  -- turn on tracing and report event times and
-                       time spent in each API function.
-        ttop    -- turn on tracing but display only top-level
-                       API calls.
 
     o APIs
     ------
-      * Several missing fortran APIs have been added to the library:
-
-        h5get_libversion_f        h5tget_member_index_f  h5dget_storage_size_f 
-        h5check_version_f         h5tvlen_create_f       h5dvlen_get_max_len_f
-        h5garbage_collect_f                              h5dwrite_vl_f
-        h5dont_atexit_f                                  h5dread_vl_f
-
-      Functions h5dvlen_get_max_len_f, h5dwrite_vl_f, and h5dread_vl_f support
-      VL Length C APIs functionality for integer, real and string datatypes.
-      See HDF5 Reference Manual and HDF5 FORTRAN90 User's Notes for more
-      information and for the functions description.
 
   o Parallel library
   ==================
-    * The MPI-posix virtual file driver makes gpfs_fcntl() hints to tell
-        the underlying GPFS file system to avoid prefetching byte range
-        tokens if USE_GPFS_HINTS is defined when this file is compiled.
-        This temporary solution is intended to be removed once the HDF5
-        API supports the necessary functionality that makes it possible
-        for this sort of thing do be done at a higher software layer.
-        RPM - 2002/12/03
-    * Added MPI-posix VFL driver.  This VFL driver uses MPI functions to
-        coordinate actions, but performs I/O directly with POSIX sec(2)
-        (i.e. open/close/read/write/etc.) calls.  This driver should _NOT_
-        be used to access files that are not on a parallel filesystem.
-        The following API functions were added:
-            herr_t H5Pset_fapl_mpiposix(hid_t fapl_id, MPI_Comm comm);
-            herr_t H5Pget_fapl_mpiposix(hid_t fapl_id, MPI_Comm *comm/*out*/);
-        QAK - 2002/07/15
-
 
 
   o Support for new platforms and languages
   =========================================
-    * C++ API now works on the Origin2000 (IRIX6.5.14.)  BMR - 2002/11/14
 
   
   o Misc.
   =========================================
-    HDF5 1.4.5 works with Portland Group Compilers (pgcc, pgf90 and pgCC 
-    version 4.0-2) on Linux 2.4 
 
 
-Bug Fixes since HDF5-1.4.4 Release
+Bug Fixes since HDF5-1.4.5 Release
 ==================================
-    * H5Fopen without the H5F_ACC_CREAT flag should not succeed in creating
-        a new file with the 'core' VFL driver.  QAK - 2003/01/24
-    * Corrected metadata caching bug in parallel I/O which could cause hangs
-        when chunked datasets were accessed with independent transfer mode.
-        QAK - 2003/01/23
-    * Allow opening objects with unknown object header messages.
-        QAK - 2003/01/21
-    * Added improved error assertion for nil VL strings.  It return error
-        stack instead of a simple assertion.  SLU - 2002/12/16
-    * Fixed h5dump bug(cannot dump data and datatype) for VL string. 
-        SLU - 2002/11/18 
-    * Fixed error condition where "none" selections were not being handled
-        correctly in serial & parallel.  QAK - 2002/10/29
-    * Fixed problem where optimized hyperslab routines were incorrectly
-        invoked for parallel I/O operations in collective mode.  QAK - 2002/07/22
-    * Fixed metadata corruption problem which could occur when many objects
-        are created in a file during parallel I/O.  QAK - 2002/07/19
-    * Fixed minor problem with configuration when users specified /usr/include
-        and /usr/lib for the --with-* options that some compilers can't
-        handle. BW - 2003/01/23
 
 
 
 Documentation
 =============
-    New PDF files are not available for this release.
 
 
 Platforms Tested

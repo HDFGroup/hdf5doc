@@ -2,7 +2,7 @@ HDF5 HISTORY
 ============
 
 CONTENTS
-
+       Release Information for hdf5-1.4.5
 I.     Release Information for hdf5-1.4.4
 II.    Release Information for hdf5-1.4.3
 III.   Release Information for hdf5-1.4.2
@@ -20,6 +20,361 @@ XII.   Changes from the First Alpha 1.0.0 Release to the
 [Search on the string '%%%%' for per-release section breaks.]
 
 -----------------------------------------------------------------------
+%%%%1.4.5%%%%   Release Information for hdf5-1.4.5 (02/February/03)
+
+
+Release information for HDF5 version 1.4.5
+==============================================================================
+
+
+INTRODUCTION
+
+This document describes the differences between HDF5-1.4.4 and
+HDF5-1.4.5, and contains information on the platforms tested and
+known problems in HDF5-1.4.5. For additional information check the 
+HISTORY.txt file in the HDF5 source.
+
+The HDF5 documentation can be found on the NCSA ftp server
+(ftp.ncsa.uiuc.edu) in the directory:
+
+    /HDF/HDF5/docs/
+
+For more information, see the HDF5 home page at:
+   
+    http://hdf.ncsa.uiuc.edu/HDF5/
+
+If you have any questions or comments, please send them to:
+
+    hdfhelp@ncsa.uiuc.edu
+
+
+CONTENTS
+
+- New Features
+- Bug Fixes since HDF5-1.4.4
+- Performance Improvements
+- Documentation
+- Platforms Tested
+- Supported Configuration Features
+- Known Problems
+
+
+New Features
+============
+  o Configuration
+  ================
+    * Added "unofficial support" for building with a C++ compiler (or at least
+      not failing badly when building with a C++ compiler).  QAK - 2003/01/09
+    * Added "unofficial support" for AIX 64bits.  See INSTALL for configure
+      details. AKC - 2002/08/29
+    * Added "--with-dmalloc" flag, to easily enable support for the 'dmalloc'
+      debugging malloc implementation. QAK - 2002/07/15
+
+  o Library
+  =========
+    o General
+    --------- 
+      * Allow scalar dataspaces to be used for parallel I/O.  QAK - 2002/11/05
+      * Added environment variable "HDF5_DISABLE_VERSION_CHECK", which disables
+        the version checking between the header files and the library linked
+        into an application if set to '1'.  This should be used with caution,
+        mis-matched headers and library binaries can cause _serious_ problems.
+        QAK - 2002/10/15
+      * Partially fixed space allocation inefficiencies in the file by
+        improving our algorithms for re-using freed space.  QAK - 2002/08/27
+      * API tracing has been improved. Nested API calls don't screw up the
+        output format; function call and return event times can be logged;
+        total time spent in each function can be logged.  The following
+        HDF5_DEBUG environment variable words affect tracing:
+	    trace   -- turn on/off basic tracing
+	    ttimes  -- turn on tracing and report event times and
+                       time spent in each API function.
+        ttop    -- turn on tracing but display only top-level
+                       API calls.
+
+    o APIs
+    ------
+      * Several missing fortran APIs have been added to the library:
+
+        h5get_libversion_f        h5tget_member_index_f  h5dget_storage_size_f 
+        h5check_version_f         h5tvlen_create_f       h5dvlen_get_max_len_f
+        h5garbage_collect_f                              h5dwrite_vl_f
+        h5dont_atexit_f                                  h5dread_vl_f
+
+      Functions h5dvlen_get_max_len_f, h5dwrite_vl_f, and h5dread_vl_f support
+      VL Length C APIs functionality for integer, real and string datatypes.
+      See HDF5 Reference Manual and HDF5 FORTRAN90 User's Notes for more
+      information and for the functions description.
+
+  o Parallel library
+  ==================
+    * The MPI-posix virtual file driver makes gpfs_fcntl() hints to tell
+        the underlying GPFS file system to avoid prefetching byte range
+        tokens if USE_GPFS_HINTS is defined when this file is compiled.
+        This temporary solution is intended to be removed once the HDF5
+        API supports the necessary functionality that makes it possible
+        for this sort of thing do be done at a higher software layer.
+        RPM - 2002/12/03
+    * Added MPI-posix VFL driver.  This VFL driver uses MPI functions to
+        coordinate actions, but performs I/O directly with POSIX sec(2)
+        (i.e. open/close/read/write/etc.) calls.  This driver should _NOT_
+        be used to access files that are not on a parallel filesystem.
+        The following API functions were added:
+            herr_t H5Pset_fapl_mpiposix(hid_t fapl_id, MPI_Comm comm);
+            herr_t H5Pget_fapl_mpiposix(hid_t fapl_id, MPI_Comm *comm/*out*/);
+        QAK - 2002/07/15
+
+
+
+  o Support for new platforms and languages
+  =========================================
+    * C++ API now works on the Origin2000 (IRIX6.5.14.)  BMR - 2002/11/14
+
+  
+  o Misc.
+  =========================================
+    HDF5 1.4.5 works with Portland Group Compilers (pgcc, pgf90 and pgCC 
+    version 4.0-2) on Linux 2.4 
+
+
+Bug Fixes since HDF5-1.4.4 Release
+==================================
+    * H5Fopen without the H5F_ACC_CREAT flag should not succeed in creating
+        a new file with the 'core' VFL driver.  QAK - 2003/01/24
+    * Corrected metadata caching bug in parallel I/O which could cause hangs
+        when chunked datasets were accessed with independent transfer mode.
+        QAK - 2003/01/23
+    * Allow opening objects with unknown object header messages.
+        QAK - 2003/01/21
+    * Added improved error assertion for nil VL strings.  It return error
+        stack instead of a simple assertion.  SLU - 2002/12/16
+    * Fixed h5dump bug(cannot dump data and datatype) for VL string. 
+        SLU - 2002/11/18 
+    * Fixed error condition where "none" selections were not being handled
+        correctly in serial & parallel.  QAK - 2002/10/29
+    * Fixed problem where optimized hyperslab routines were incorrectly
+        invoked for parallel I/O operations in collective mode.  QAK - 2002/07/22
+    * Fixed metadata corruption problem which could occur when many objects
+        are created in a file during parallel I/O.  QAK - 2002/07/19
+    * Fixed minor problem with configuration when users specified /usr/include
+        and /usr/lib for the --with-* options that some compilers can't
+        handle. BW - 2003/01/23
+
+
+
+Documentation
+=============
+    New PDF files are not available for this release.
+
+
+Platforms Tested
+================
+
+    AIX 5.1  (32 and 64-bit)      C for AIX Compiler, Version 6
+                                  xlf 8.1.0.2
+                                  poe 3.2.0.11
+    Cray T3E sn6606 2.0.6.08      Cray Standard C Version 6.6.0.1.3 
+                                  Cray Fortran Version 3.6.0.0.12 
+    Cray SV1 10.0.1. 0            Cray Standard C Version 6.6.0.1.3
+                                  Cray Fortran Version 3.6.0.0.12
+    Cray T90IEEE 10.0.1.01u       Cray Standard C Version 6.4.0.2.3
+                                  Cray Fortran Version 3.4.0.3
+    FreeBSD 4.7                   gcc 2.95.4
+                                  g++ 2.95.5
+    HP-UX B.11.00                 HP C  HP92453-01 A.11.01.20 
+                                  HP F90 v2.4
+    IRIX 6.5                      MIPSpro cc 7.30
+    IRIX64 6.5 (64 & n32)         MIPSpro cc 7.3.1.3m
+                                  F90 MIPSpro 7.3.1.3m (64 only)
+    Linux 2.4.18                  gcc 3.2.1
+                                  g++ 3.2.1
+                                  Intel(R) C++ Version 6.0
+                                  Intel(R) Fortran Compiler Version 6.0
+                                  PGI compilers (pgcc, pgf90, pgCC) version 4.0-2
+                                  pgf90  3.2-4
+    OSF1 V5.1                     Compaq C V6.4-014
+                                  Compaq Fortran X5.4A-1684
+                                  gcc version 3.0 for C++
+    SunOS 5.7                     WorkShop Compilers 5.0 98/12/15 C 5.0
+     (Solaris 2.7)                WorkShop Compilers 5.0 98/12/15 C++ 5.0 
+                                  WorkShop Compilers 5.0 98/10/25 
+                                  FORTRAN 90 2.0 Patch 107356-04 
+    SunOS 5.8/32                  Sun WorkShop 6 update 1 C 5.2 2000/09/11
+     (Solaris 2.8)                Sun WorkShop 6 update 1 Fortran 95 6.1 
+                                          Patch 109503-07 2001/08/11
+                                  Sun WorkShop 6 update 1 C++ 5.2 Patch
+                                        109508-04 2001/07/11
+    SunOS 5.8/64                  Sun WorkShop 6 update 1 C 5.2 2000/09/11
+     (Solaris 2.8)                Sun WorkShop 6 update 1 Fortran 95 6.1 
+                                          Patch 109503-07 2001/08/11
+                                  Sun WorkShop 6 update 1 C++ 5.2 Patch
+                                        109508-04 2001/07/11
+    TFLOPS r1.0.4 v4.3.3 i386     pgcc Rel 3.1-4i with mpich-1.2.4 with
+                                          local modifications
+    IA-32 Linux 2.4.9             gcc 2.96
+                                  Intel(R) C++ Version 7.0
+                                  Intel(R) Fortran Compiler Version 7.0
+                                  
+    IA-64 Linux 2.4.16 ia64       gcc version 2.96 20000731
+                                  Intel(R) C++ Version 7.0
+                                  Intel(R) Fortran Compiler Version 7.0
+    Windows 2000 (NT5.0)          MSVC++ 6.0
+                                  DEC Visual Fortran 6.0
+    Windows XP                    .NET
+    Windows NT4.0                 Code Warrior 6.0
+    MAC OS X                      Darwin 6.2
+                                  gcc and g++ Apple Computer, Inc. GCC 
+                                  version 1161, based on gcc version 3.1
+                                  
+
+
+Supported Configuration Features Summary
+========================================
+
+    In the tables below
+          y   = tested and supported
+          n   = not supported or not tested in this release
+          x   = not working in this release
+          dna = does not apply
+          ( ) = footnote appears below second table
+
+
+    Platform             C   C         F90  F90       C++  Shared         zlib
+                             parallel       parallel       libraries (5)
+    Solaris2.6           y   n         y    n         y    y              y
+    Solaris2.7 64-bit    y   y (1)     y    y (1)     y    y              y
+    Solaris2.7 32-bit    y   y (1)     y    y (1)     y    y              y
+    Solaris2.8 64-bit    y   n         y    y (1)     y    y              y
+    Solaris2.8 32-bit    y   n         y    y (1)     y    y              y
+    IRIX6.5              y   y (1)     n    n         n    y              y 
+    IRIX64_6.5 64-bit    y   y (2)     y    y         y    y              y
+    IRIX64_6.5 32-bit    y   y (2)     n    n         n    y              y
+    HPUX11.00            y   y (1)     y    n         n    y              y
+    OSF1 v5.1            y   n         y    n         y    y              y
+    T3E             (6)  y   n         y    n         n    n              y
+    SV1                  y   n         y    n         n    n              y
+    T90 IEEE             y   n         y    n         n    n              y
+    TFLOPS               n   y (1)     n    n         n    n              y
+    AIX-5.1 32-bit       y   y         y    y         y    n              y
+    AIX-5.1 64-bit       y   y         y    y         y    n              y
+    WinXP           (7)  y   n         n    n         y    y              y
+    WinNT/2000           y   n         y    n         y    y              y
+    WinNT CW             y   n         n    n         n    n              y
+    Mac OS X 10.2        y   n         n    n         y    y              y
+    FreeBSD              y   y (1)     n    n         y    y              y
+    Linux 2.2            y   y (1)     y    y (1)     y    y              y
+    Linux 2.4 gcc   (3)  y   y (1)     y    n         y    y              y
+    Linux 2.4 Intel (3)  y   n         y    n         n    n              y
+    Linux 2.4 PGI   (3)  y   n         y    n         y    n              y
+    Linux 2.4 IA32       y   n         y    n         n    n              y
+    Linux 2.4 IA64       y   n         y    n         n    n              y
+    
+
+    Platform             static-  Thread-  SRB  GASS  STREAM-
+                         exec     safe                VFD
+    Solaris2.6           x        y        n    n     y
+    Solaris2.7 64-bit    x        y        n    n     y
+    Solaris2.7 32-bit    x        y        n    n     y
+    Solaris2.8 64-bit    x        n        n    n     y
+    Solaris2.8 32-bit    x        y        n    n     y
+    IRIX6.5              x        n        n    n     y
+    IRIX64_6.5 64-bit    x        y        n    y     y
+    IRIX64_6.5 32-bit    x        y        n    y     y
+    HPUX11.00            x        n        n    n     y
+    OSF1 v5.1            y        n        n    n     y
+    T3E             (6)  y        n        n    n     y
+    SV1                  y        n        n    n     y
+    T90 IEEE             y        n        n    n     y
+    TFLOPS               y        n        n    n     n
+    AIX-5.1 32-bit       y        n        n    n     y
+    AIX-5.1 64-bit       y        n        n    n     y
+    WinXP           (7)  dna      n        n    n     n
+    WinNT/2000           dna      n        n    n     n
+    WinNT CW             dna      n        n    n     n
+    Mac OS X 10.2        y        n        n    n     y
+    FreeBSD              y        y        n    n     y
+    Linux 2.2            y        y        n    n     y
+    Linux 2.4 gcc   (3)  y        y        n    n     y
+    Linux 2.4 Intel (3)  y        n        n    n     y
+    Linux 2.4 PGI   (3)  y        n        n    n     y
+    Linux 2.4 IA32       y        n        n    n     y
+    Linux 2.4 IA64       y        n        n    n     y
+
+    Notes: (1) Using mpich 1.2.4.
+           (2) Using mpt and mpich 1.2.4.
+           (3) Linux 2.4 with GNU, Intel, and PGI compilers.
+           (4) No HDF4-related tools.
+           (5) Shared libraries are provided only for the C library, 
+               except on Windows where they are provided for all languages.
+           (6) Debug mode only.
+           (7) Binaries only; source code for this platform is not being 
+               released at this time.
+
+
+Known Problems
+==============
+
+    * On Linux 2.4 IA64, Fortran test fails for h5dwrite_vl_f 
+      for integer and real base datatypes.
+
+    * When fortran library is built with Intel compilers, compilation
+      for fflush1.f90, fflush2.f90 and fortanlib_test.f90 will fail 
+      complaining about EXEC function. Comment the call to EXEC subroutine
+      in each program, or get a patch for the HDF5 Fortran source code. 
+
+    * Fortran external dataset test fails on Linux 2.4 with pgf90 compiler.
+
+    * On Windows, h5dump may abort printing if a VL string is longer than 4096
+      bytes due to a compiler problem.  It'll be fixed in v1.6 release.
+
+    * Datasets or attributes which have a variable-length string datatype are
+      not printing correctly with h5dump and h5ls.
+
+    * When a dataset with the variable-length datatype is overwritten, 
+      the library can develop memory leaks that cause the file to become 
+      unnecessarily large.  This is planned to be fixed in the next release.
+
+    * On the SV1, the h5ls test fails due to a difference between the 
+      SV1 printf precision and the printf precision on other platforms.
+
+    * The h5dump tests may fail to match the expected output on some
+      platforms (e.g. SP2 parallel, Windows) where the error messages
+      directed to "stderr" do not appear in the "right order" with output
+      from stdout.  This is not an error.
+
+    * The --enable-static-exec configure flag fails to compile for HP-UX
+      11.00 platforms.
+
+    * The executables are always dynamic on IRIX64 6.5(64 and n32) and 
+      IRIX 6.5 even if they are configured with --enable-static-exec.
+
+    * IRIX 6.5 fails to compile if configured with --enable-static-exec.
+
+    * The executables are always dynamic on Solaris 2.7 ans 2.8(64 and n32)
+      even if they are configured with --enable-static-exec.
+    
+    * The HDF5_MPI_OPT_TYPES optimization code in the parallel HDF5 will cause
+      a hang in some cases when chunked storage is used.  This is now set to
+      be off by default.  One may turn it on by setting the environment 
+      variable HDF5_MPI_OPT_TYPES to a non-zero value such as 1.
+
+    * On OSF1 v5.1 and IA32 h5dumpgentst program that generates test files
+      for h5dump, gives segmentation fault.
+
+    * On Windows platforms, C and Fortran tests fail with the debug DLL version
+      of the Library if built from all_withf90.zip file.
+
+    * On Cray T3E (sn6606 2.0.6.08 unicosmk CRAY T3E) with Cray Standard C Version 6.6.0.1.3
+      compiler optimization causes errors in many HDF5 Library tests. Use -g -h zero flags
+      to build HDF5 Library. 
+
+    * On Cray SV1 10.0.1. 0 datatype convertion test fails. Please check HDF FTP site
+      if patch is available. We will try to provide one in the nearest future. 
+
+    * For configuration, building and testing with Intel and PGI compilers see
+      corresponding section in INSTALL file.
+
+
 %%%%1.4.4%%%%   Release Information for hdf5-1.4.4 (02/July/02)
 
 I. Release information for HDF5 version 1.4.4
