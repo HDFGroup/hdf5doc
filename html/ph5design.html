@@ -2,76 +2,136 @@
 <HEAD>
 <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=windows-1252">
 <META NAME="Generator" CONTENT="Microsoft Word 97">
-<TITLE>new</TITLE>
-<META NAME="Template" CONTENT="C:\PROGRAM FILES\MICROSOFT OFFICE\OFFICE\html.dot">
+<TITLE>Parallel HDF5 -- Design</TITLE>
 </HEAD>
-<BODY LINK="#0000ff" VLINK="#800080">
+<BODY bgcolor="#FFFFFF">
 
-<B><FONT SIZE=6><P ALIGN="CENTER">Parallel HDF5 Design</P>
-</B></FONT><P ALIGN="CENTER">&nbsp;</P>
-<H1>1. Design Overview</H1>
-<P>In this section, I first describe the function requirements of the Parallel HDF5 (PHDF5) software and the assumed system requirements. Section 2 describes the programming model of the PHDF5 interface. Section 3 shows an example PHDF5 program. </P>
-<H2>1.1. Function requirements</H2>
+
+<hr>
+<center>
+<table border=0 width=98%>
+<tr><td valign=top align=left>
+<a href="H5.intro.html">Introduction to HDF5</a>&nbsp;<br>
+<a href="H5.user.html">HDF5 User Guide</a>&nbsp;<br>
+<a href="RM_H5Front.html">HDF5 Reference Manual</a>&nbsp;<br>
+<a href="index.html">Other HDF5 documents and links</a>&nbsp;<br>
+<!--
+<a href="Glossary.html">Glossary</a><br>
+-->
+</td>
+<td valign=top align=right>
+Parallel HDF5 Documents:<br>
+<a href="ph5design.html">Parallel HDF5 Design</a><br>
+<a href="ph5implement.html">Implementation Release Notes</a></td>
+</tr>
+</table>
+</center>
+<hr>
+
+<!-- Insert body from ../src/ph5design.doc here. -->
+
+
+
+
+<center>
+<h1>Parallel HDF5 Design</h1>
+</center>
+
+<H2>1. Design Overview</H2>
+<P>This section describes the function requirements of the Parallel HDF5 (PHDF5) software and the assumed system requirements. Section 2 describes the programming model of the PHDF5 interface. Section 3 presents several sample PHDF5 programs. </P>
+
+<H3>1.1 Functional requirements</H3>
+
+<P>Parallel HDF5 is designed to meet the following functional requirements:</P>
 
 <UL>
-<LI>An API to support parallel file access for HDF5 files in a message passing environment. </LI>
-<LI>Fast parallel I/O to large datasets through standard parallel I/O interface.</LI>
-<LI>Processes are required to do collective API calls only when structural changes are needed for the HDF5 file. </LI>
-<LI>Each process may do independent I/O requests to different datasets in the same or different HDF5 files. </LI>
-<LI>Supports collective I/O requests for datasets (to be included in next version). </LI>
-<LI>Minimize diviation from HDF5 interface.</LI>
-</UL>
+<LI>Provide an API to support parallel file access for HDF5 files in a message-passing environment.   Other types of parallel computing environments, such as shared memory, may be added in future versions</LI>
+<LI>Provide a fast parallel I/O to large datasets through a standard parallel I/O interface.   The standard interface is important since the library needs to work in different platforms.</LI>
+<LI>No user process can be set aside for I/O purpose only such as an I/O requests daemon. The user application has full use of all processes all the time.  No threads facility can be used, since it is not standard in all platforms.</LI>
+<LI>Processes are required to do collective API calls only when structural changes (e.g., file open, dataset definition) occur to the file. (Collective in this case means all processes accessing the file must all make the same API when structural changes occur.)</LI>
+<LI>Each process may do independent I/O requests of different datasets in the same or different HDF5 files. </LI>
+<LI>Support collective I/O requests for datasets. (Collective in this context means the processes that have opened the file all make the same I/O request call though may each use different argument values.  This is often used when the processes are accessing the file in small fragmented requests.  The collective call may be able to combine fragmented requests from multiple processes into fewer but bigger I/O requests, thus providing better I/O performance.)  </LI>
+<LI>Minimize deviation from the serial HDF5 interface. </LI>
+<LI>HDF5 files created with the PHDF5 interface must be totally readable by the serial HDF5 interface and vice versa.  (It may require system utilities to convert HDF5 files when they transfer between the parallel and sequential file systems.)</LI>
+<LI>Initial supported platforms include the three ASCI platforms: IBM SP2, Intel TFLOPS, and SGI Origin 2000. </LI></UL>
 
-<H2>1.2. System requirements</H2>
-
-<UL>
-<LI>C language interface is the initial requirement. Fortran77 interface will be added later. </LI>
-<LI>Use Message Passing Interface (MPI) for interprocess communication. </LI>
-<LI>Use MPI-IO calls for parallel file accesses. </LI>
-<LI>Initial platforms—IBM SP2, Intel TFLOPS and SGI Origin 2000. </LI></UL>
-
-<H1>2. Programming Model</H1>
-<P>HDF5 uses optional access template object to control the file access
-mechanism.  The general model in accessing an HDF5 file in parallel
-contains the following steps: </P>
+<H3>1.2. Design Specification</H3>
 
 <UL>
-<LI>Setup access template</LI>
-<LI>File open </LI>
-<LI>Dataset open </LI>
-<LI>Dataset data access (zero or more) </LI>
+<LI>The Message Passing Interface (MPI) was selected for interprocess communication and the MPI-IO API as defined in MPI for parallel I/O accesses.  The MPI library is a commonly accepted standard among parallel computing environments.  The vendors for the ASCI platforms have committed to support the MPI library. MPI is supported on nearly all Unix platforms and on Microsoft Windows platforms either by the vendors or by public domain software.</LI>
+<LI>C language interface is the initial requirement. Other interfaces, such as Fortran 90, may be added later. </LI>
+<LI>To minimize the parallel API's deviation from the serial API, we chose not to define a different set of functions for parallel API purpose only.  Instead, all parallel access requests are specified via the property list arguments.  The property list design, besides providing a similar API for both current serial and parallel HDF5 interfaces, also permits future extension of HDF5 support for other types of parallel computing environments such as share memory systems.</LI></UL>
+
+<H2>2. Programming Model</H2>
+<P>PHDF5 supports parallel access to HDF5 files in the MPI environment. MPI is a standard interface for the distributed memory parallel computing environment in which inter-process communication is done by message passing. The MPI standard documents are available at <A HREF="http://www.mpi-forum.org/">http://www.mpi-forum.org</A>. Other related MPI information, such as tutorials and implementations, can be found at <A HREF="http://www.mcs.anl.gov/Projects/mpi/">http://www.mcs.anl.gov/Projects/mpi/</A>.</P>
+<P>The following discussion describes the programming model of HDF5 specific to the MPI environment.  For a general and more complete understanding of the HDF5 library, one may consult the documents and user guide at <A HREF="http://hdf.ncsa.uiuc.edu/HDF5">http://hdf.ncsa.uiuc.edu/HDF5</A>.</P>
+<P>HDF5 uses property lists to control the file access mechanism. The general model in accessing an HDF5 file in parallel contains the following steps: </P>
+
+<UL>
+<LI>Setup access property list for parallel access</LI>
+<LI>File create/open </LI>
+<LI>Dataset create/open </LI>
+<LI>Dataset extension (when needed) </LI>
+<LI>Dataset data access with appropriate data transfer property list </LI>
 <LI>Dataset close </LI>
 <LI>File close </LI></UL>
 
-<H2>2.1. Setup access template</H2>
-<P>Each processes of the MPI communicator creates an access template and sets
-it up with MPI parallel access information (communicator, info object,
-access-mode).  </P>
-<H2>2.1. File open</H2>
-<P>All processes of the MPI communicator open an HDF5 file by a collective call
-(H5FCreate or H5Fopen) with the access template. </P>
-<H2>2.2. Dataset open</H2>
-<P>All processes of the MPI communicator open a dataset by a collective call (H5Dcreate or H5Dopen).&nbsp; This version supports only collective dataset open.&nbsp; Future version may support datasets open by a subset of the processes that have opened the file. </P>
-<H2>2.3. Dataset access</H2>
-<H3>2.3.1. Independent dataset access</H3>
-<P>Each process may do independent and arbitrary number of data I/O access by independent calls (H5Dread or H5Dwrite) to the dataset with the transfer template set for independent access.&nbsp; (The default transfer mode is independent transfer).&nbsp; If the dataset is an unlimited dimension one and if the H5Dwrite is writing data beyond the current dimension size of the dataset, all processes that have opened the dataset must make a collective call (H5Dallocate) to allocate more space for the dataset BEFORE the independent H5Dwrite call. </P>
-<H3>2.3.2. Collective dataset access</H3>
-<P>All processes that have opened the dataset may do collective data I/O access by collective calls (H5Dread or H5Dwrite) to the dataset with the transfer template set for collective access.&nbsp; Pre-allocation (H5Dallocate) is not needed for unlimited dimension datasets since the H5Dallocate call, if needed, is done internally by the collective data access call. </P>
-<H3>2.3.3. Dataset attributes access</H3>
-<P>Changes to attributes can only occur at the <I>"main process" </I>(process 0).&nbsp; Read only access to attributes can occur independent in each process that has opened the dataset.&nbsp; (API to be defined later.) <BR>
-&nbsp; </P>
-<H2>2.4. Dataset close</H2>
-<P>All processes that have opened the dataset must close the dataset by a collective call (H5Dclose). </P>
-<H2>2.5. File close</H2>
-<P>All processes that have opened the file must close the file by a collective call (H5Fclose). <BR>
-&nbsp; </P>
-<H1>3. Parallel HDF5 Example</H1>
-<PRE>
-<CODE>
-</CODE><A HREF="ph5example.c">Example code</A>
-</PRE>
-<P><HR></P>
-<P>Send comments to <BR>
-<A HREF="mailto:hdfparallel@ncsa.uiuc.edu">hdfparallel@ncsa.uiuc.edu</A> </P>
-<H6>Last Modified: Feb 16, 1998</H6></BODY>
+<H3>2.1. Setup access property list</H3>
+<P>Each process of the MPI communicator creates an access property list via <CODE>H5Pset_mpi</CODE> and sets it up with MPI information (communicator, info object) as required by the <CODE>MPI_File_open</CODE> as defined in <CODE>MPI-2</CODE>. Note that <CODE>H5Pset_mpi</CODE> does not make duplicates of the communicator or the info object.  The PHDF5 library will make duplicates of them when an HDF5 file is opened. Therefore, any changes to the communicator or info object will affect the <CODE>H5Fcreate/H5Fopen</CODE> calls following the changes. Users are advised not to make changes to the communicator or the info object after the <CODE>H5Pset_mpi</CODE> call.</P>
+<P>(From this point on, <I>processes </I>are limited to those that are members of the communicator defined in the <CODE>H5Pset_mpi</CODE> call.)</P>
+<P>Example:</P>
+<CODE><P>/* setup file access property list with parallel IO access. */</P>
+<P>acc_pl = H5Pcreate (H5P_FILE_ACCESS);</P>
+<P>H5Pset_mpi(acc_pl, comm, info);</P>
+</CODE><H3>2.1. File create/open</H3>
+<P>All processes of the MPI communicator open an HDF5 file by a collective call (<CODE>H5FCreate</CODE> or <CODE>H5Fopen</CODE>) with the access property list. The call must be collective because the underlying <CODE>MPI_File_open()</CODE> is a collective call.</P>
+<P>Example:</P>
+<CODE><P>/* create the file collectively */</P>
+<P>fid=H5Fcreate("filexyz",H5F_ACC_TRUNC,H5P_DEFAULT,acc_pl);</P>
+</CODE><H3>2.2. Dataset create/open</H3>
+<P>All processes of the MPI communicator open a dataset by a collective call (<CODE>H5Dcreate</CODE> or <CODE>H5Dopen</CODE>).&nbsp; This version supports only collective dataset open.&nbsp; The call must be collective because all processes need to have a common knowledge of the dataset object being accessed.  This allows cooperative changes to the dataset object later.  A future version may support datasets opened by a subset of the processes that have opened the file. </P>
+<P>Example:</P>
+<CODE><P>/* create a 512x1024 dataset */</P>
+<P>hsize_t dims[2] = {512, 1024};</P>
+<P>sid = H5Screate_simple (2, dims, NULL);</P>
+<P>dataset = H5Dcreate(fid, "dataset1", H5T_NATIVE_INT, sid, H5P_DEFAULT);</P>
+</CODE><H3>2.3. Dataset access</H3>
+<H4>2.3.1. Independent dataset access</H4>
+<P>Each process may do independent and an arbitrary number of data I/O accesses by independent calls (<CODE>H5Dread</CODE> or <CODE>H5Dwrite</CODE>) to the dataset with the transfer property list set for independent access.&nbsp; (The default transfer mode is independent transfer.)</P>
+<P>If the dataset has an unlimited dimension and if the <CODE>H5Dwrite</CODE> is writing data beyond the current dimension size of the dataset, all processes that have opened the dataset must make a collective call (<CODE>H5Dallocate</CODE>) to allocate more space for the dataset <I>before</I> the independent <CODE>H5Dwrite</CODE> call. The reason is that when data is written beyond the current dimension size, that dimension size must be increased to hold the new data.  Changing the dimension size of a dataset is a structural change of the object and must be done by all processes.</P>
+<H4>2.3.2. Collective dataset access</H4>
+<P>All processes that have opened the dataset may do collective data I/O access by collective calls (<CODE>H5Dread</CODE> or <CODE>H5Dwrite</CODE>) to the dataset with the transfer property list set for collective access.&nbsp; Pre-allocation (<CODE>H5Dallocate</CODE>) is not needed for unlimited dimension datasets since the <CODE>H5Dallocate</CODE> call, if needed, is done internally by the collective data access call.  Though all collective accesses can be replaced with independent accesses by each process, collective accesses can provide a better performance if the equivalent independent accesses result in small fragments. A simple example is that of a two dimensional dataset stored in row major order.  When each process needs to access the data by columns, individual independent access by each process would result in multiple uncoordinated accesses to the dataset with each access segment the size of the column width.  But if all processes can access the dataset with one collective call, the library, with the extra information of the access pattern, can combine the small accesses into bigger I/O accesses and use gather/scatter to transfer data between all processes.</P>
+<H4>2.3.3. Dataset attributes access</H4>
+<P>Changes to attributes can only occur at the <I>main process </I>(process 0).&nbsp; Read only access to attributes can occur independently in each process that has opened the dataset.&nbsp;&nbsp; </P>
+<H3>2.4. Dataset close</H3>
+<P>All processes that have opened the dataset must close the dataset by a collective call (<CODE>H5Dclose</CODE>).   The call must be collective so that all processes have the same knowledge that the dataset is no longer being accessed.</P>
+<H3>2.5. File close</H3>
+<P>All processes that have opened the file must close the file by a collective call (<CODE>H5Fclose</CODE>). The call must be collective because the underlying <CODE>MPI_File_close()</CODE> is a collective call.</P>
+<H2>3. Parallel HDF5 Example</H2>
+<P>The following are examples of code using the parallel HDF5 API.  The <A HREF="ph5eg_main.c">main program</A> and the <A HREF="ph5eg_testphdf5.h">testphdf5.h</A> files can be viewed at these links.</P>
+<H3>3.1. Opening multiple HDF5 files with different communicators</H3>
+<P>This example shows how to open two HDF5 files with two different communicators containing two groups of processes.</P>
+<P><A HREF="ph5eg_comm.c">Example: Multi-open</A></P>
+<H3>3.2. Accessing a dataset via independent transfer mode</H3>
+<P>This example shows how to create a fixed dimension dataset.  Each process then writes and reads data to and from part of the dataset independent of other processes.</P>
+<P><A HREF="ph5eg_indep.c">Example: Independent access</A></P>
+<H3>3.3. Accessing a dataset via collective transfer mode</H3>
+<P>This example shows how to create a fixed dimension dataset. All processes then write and read data to and from the dataset in the collective mode.</P>
+<P><A HREF="ph5eg_coll.c">Example: Collective access</A></P>
+<H3>3.4. Accessing an extendible dimension dataset</H3>
+<P>This example shows how to create an extendible dimension dataset.  All processes then collectively extend the size of the dataset.  Then each process writes and reads data to and from part of the dataset independent of other processes.</P>
+<P><A HREF="ph5eg_extindep.c">Example: Independent access to extendible dataset</A></P>
+
+
+
+
+<!-- End body from ../src/ph5design.doc here. -->
+
+<P>
+<HR>
+Comments and questions:
+<A HREF="mailto:hdfparallel@ncsa.uiuc.edu">hdfparallel@ncsa.uiuc.edu</A>
+<br>
+Last modified: 29 Dec 1998
+</BODY>
 </HTML>
