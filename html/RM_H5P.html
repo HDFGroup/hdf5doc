@@ -2846,19 +2846,23 @@ facilitate moving easily between them.</i>
         <p>
         <code>comm</code> is the MPI communicator to be used for 
         file open as defined in <code>MPI_FILE_OPEN</code> of MPI-2. 
-        This function does not create a duplicated communicator. 
-        Modifications to <code>comm</code> after this function call 
-        returns may have an undetermined effect on the access property list. 
-        Users should not modify the communicator while it is defined 
-        in a property list.
+	This function makes a duplicate of <code>comm</code>. Any
+	modification to <code>comm</code> after this function call
+	returns has no effect on the access property list.
+
         <p>
         <code>info</code> is the MPI info object to be used for 
         file open as defined in <code>MPI_FILE_OPEN</code> of MPI-2. 
-        This function does not create a duplicated info object. 
-        Any modification to the info object after this function call 
-        returns may have an undetermined effect on the access property list. 
-        Users should not modify the info while it is defined 
-        in a property list.
+	This function makes a duplicate of <code>info</code>. Any
+	modification to <code>info</code> after this function call
+	returns has no effect on the access property list.
+	
+	<p>
+	If fapl_id has previously set <code>comm</code> and
+	<code>info</code> values, they will be replaced and the old
+	communicator and Info object are freed.
+
+
   <dt><strong>Parameters:</strong>
     <dl>
         <dt><em>hid_t</em> <code>fapl_id</code>
@@ -2894,13 +2898,12 @@ facilitate moving easily between them.</i>
     <dd> Returns MPI communicator information.
   <dt><strong>Description:</strong>
     <dd>If the file access property list is set to the <code>H5FD_MPIO</code> 
-        driver, <code>H5Pget_fapl_mpio</code> returns the MPI communicator and 
-        information through the <code>comm</code> and <code>info</code>
-        pointers, if those values are non-null.
+        driver, <code>H5Pget_fapl_mpio</code> returns duplicates of the MPI
+	communicator and Info object stored through the <code>comm</code>
+	and <code>info</code> pointers, if those values are non-null.
         <p>
-        Neither <code>comm</code> nor <code>info</code> is copied, 
-        so they are valid only until the file access property list 
-        is either modified or closed.
+        It is the responsibility of the application to free the returned
+	communicator and Info object when they are not needed.
   <dt><strong>Parameters:</strong>
     <dl>
         <dt><em>hid_t</em> <code>fapl_id</code>
