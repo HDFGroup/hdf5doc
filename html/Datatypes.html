@@ -1,7 +1,7 @@
 <!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
 <html>
   <head>
-    <title>The Data Type Interface (H5T)</title>
+    <title>Data Type Interface (H5T)</title>
   </head>
 
   <body bgcolor="#FFFFFF">
@@ -20,47 +20,29 @@
 </td>
 <td valign=top align=right>
    And in this document, the 
-   <a href="H5.user.html">HDF5 User's Guide</a>:&nbsp;&nbsp;&nbsp;&nbsp;
-      <a href="Files.html">Files</a>&nbsp;&nbsp;
+   <a href="H5.user.html"><strong>HDF5 User's Guide:</strong></a>&nbsp;&nbsp;&nbsp;&nbsp;
       <br>
+      <a href="Files.html">Files</a>&nbsp;&nbsp;
       <a href="Datasets.html">Datasets</a>&nbsp;&nbsp;
       Data Types&nbsp;&nbsp;
       <a href="Dataspaces.html">Dataspaces</a>&nbsp;&nbsp;
       <a href="Groups.html">Groups</a>&nbsp;&nbsp;
-      <a href="References.html">References</a>&nbsp;&nbsp;
       <br>
+      <a href="References.html">References</a>&nbsp;&nbsp;
       <a href="Attributes.html">Attributes</a>&nbsp;&nbsp;
       <a href="Properties.html">Property Lists</a>&nbsp;&nbsp;
       <a href="Errors.html">Error Handling</a>&nbsp;&nbsp;
-      <a href="Filters.html">Filters</a>&nbsp;&nbsp;
-      <a href="Caching.html">Caching</a>&nbsp;&nbsp;
       <br>
+      <a href="Filters.html">Filters</a>&nbsp;&nbsp;
+      <a href="Palettes.html">Palettes</a>&nbsp;&nbsp;
+      <a href="Caching.html">Caching</a>&nbsp;&nbsp;
       <a href="Chunking.html">Chunking</a>&nbsp;&nbsp;
+      <a href="MountingFiles.html">Mounting Files</a>&nbsp;&nbsp;
+      <br>
       <a href="Debugging.html">Debugging</a>&nbsp;&nbsp;
       <a href="Environment.html">Environment</a>&nbsp;&nbsp;
       <a href="ddl.html">DDL</a>&nbsp;&nbsp;
       <a href="Ragged.html">Ragged Arrays</a>&nbsp;&nbsp;
-<!--
-<hr>
-And in this document, the 
-<a href="H5.user.html">HDF5 User's Guide</a>:&nbsp;&nbsp;&nbsp;&nbsp;
-      <a href="Attributes.html">H5A</a>&nbsp;&nbsp;
-      <a href="Datasets.html">H5D</a>&nbsp;&nbsp;
-      <a href="Errors.html">H5E</a>&nbsp;&nbsp;
-      <a href="Files.html">H5F</a>&nbsp;&nbsp;
-      <a href="Groups.html">H5G</a>&nbsp;&nbsp;
-      <a href="Properties.html">H5P</a>&nbsp;&nbsp;
-      <a href="References.html">H5R & H5I</a>&nbsp;&nbsp;
-      <a href="Ragged.html">H5RA</a>&nbsp;&nbsp;
-      <a href="Dataspaces.html">H5S</a>&nbsp;&nbsp;
-      <a href="Datatypes.html">H5T</a>&nbsp;&nbsp;
-      <a href="Filters.html">H5Z</a>&nbsp;&nbsp;
-      <a href="Caching.html">Caching</a>&nbsp;&nbsp;
-      <a href="Chunking.html">Chunking</a>&nbsp;&nbsp;
-      <a href="Debugging.html">Debugging</a>&nbsp;&nbsp;
-      <a href="Environment.html">Environment</a>&nbsp;&nbsp;
-      <a href="ddl.html">DDL</a>&nbsp;&nbsp;
--->
 </td></tr>
 </table>
 </center>
@@ -125,12 +107,12 @@ And in this document, the
       <dt><code>hid_t H5Topen (hid_t <em>location</em>, const char
 	  *<em>name</em>)</code>
       <dd>A named data type can be opened by calling this function,
-	which returns a handle to the data type.  The handle should
-	eventually be closed by calling <code>H5Tclose()</code> to
+	which returns a data type identifier.  The identifier should
+	eventually be released by calling <code>H5Tclose()</code> to
 	release resources. The named data type returned by this
 	function is read-only or a negative value is returned for
 	failure.  The <em>location</em> is either a file or group
-	handle.
+	identifier.
 
 	<br><br>
       <dt><code>herr_t H5Tcommit (hid_t <em>location</em>, const char
@@ -138,11 +120,11 @@ And in this document, the
       <dd>A transient data type (not immutable) can be committed to a
 	file and turned into a named data type by calling this
 	function.  The <em>location</em> is either a file or group
-	handle and when combined with <em>name</em> refers to a new
+	identifier and when combined with <em>name</em> refers to a new
 	named data type.
 
 	<br><br>
-      <dt><code>hbool_t H5Tcommitted (hid_t <em>type</em>)</code>
+      <dt><code>htri_t H5Tcommitted (hid_t <em>type</em>)</code>
       <dd>A type can be queried to determine if it is a named type or
 	a transient type.  If this function returns a positive value
 	then the type is named (that is, it has been committed perhaps 
@@ -154,7 +136,7 @@ And in this document, the
       <dt><code>hid_t H5Tcopy (hid_t <em>type</em>)</code>
       <dd>This function returns a modifiable transient data type
 	which is a copy of <em>type</em> or a negative value for
-	failure.  If <em>type</em> is a dataset handle then the type
+	failure.  If <em>type</em> is a dataset identifier then the type
 	returned is a modifiable transient copy of the data type of
 	the specified dataset.
 
@@ -166,7 +148,7 @@ And in this document, the
 	immutable transient data type.
 
 	<br><br>
-      <dt><code>hbool_t H5Tequal (hid_t <em>type1</em>, hid_t
+      <dt><code>htri_t H5Tequal (hid_t <em>type1</em>, hid_t
 	  <em>type2</em>)</code>
       <dd>Determines if two types are equal.  If <em>type1</em> and
 	<em>type2</em> are the same then this function returns
@@ -1162,7 +1144,25 @@ H5Tinsert (surf_id, "y", HOFFSET(surf_t,y), complex_id);
       are discussed on a separate 
       <a href="DatatypesEnum.html">Enumeration Data Types</a> page.
 
-    <h2>9. Sharing Data Types among Datasets</h2>
+    <h2>9. Variable-length Data Types</h2>
+
+      Variable-length (VL) data types have been implemented for HDF5 
+      Release 1.2.  The documents are not yet ready (at the time of 
+      the Beta release), but a 
+      <a href="VLdatatypes.html" target="ExtDoc">temporary VL data types 
+      document</a> is provided.  VL datatypes are manipulated by means 
+      of the following functions:
+      <ul>
+        <li>H5Tvlen_create
+        <li>H5Dget_vlen_buf_size        &nbsp;&nbsp;&nbsp; (Not yet implemented.)
+        <li>H5Dvlen_reclaim
+        <li>H5Pset_vlen_mem_manage_type
+        <li>H5Pset_vlen_mem_manager
+      </ul>
+      The first three functions above are currently described in the 
+      <i><a href="RM_H5Front.html">HDF5 Reference Manual</a></i>.
+
+    <h2>10. Sharing Data Types among Datasets</h2>
 
     <p>If a file has lots of datasets which have a common data type
       then the file could be made smaller by having all the datasets
@@ -1208,7 +1208,7 @@ hid_t dset4 = H5Dcreate (file, "dset4", t2, space, H5P_DEFAULT);
       </center>
 
     <a name="Datatypes-DataConversion">
-    <h2>10. Data Conversion</h2>
+    <h2>11. Data Conversion</h2>
     </a>
 
     <p>The library is capable of converting data from one type to
@@ -1580,47 +1580,29 @@ H5Tregister(H5T_PERS_SOFT, "cus2be",
 </td>
 <td valign=top align=right>
    And in this document, the 
-   <a href="H5.user.html">HDF5 User's Guide</a>:&nbsp;&nbsp;&nbsp;&nbsp;
-      <a href="Files.html">Files</a>&nbsp;&nbsp;
+   <a href="H5.user.html"><strong>HDF5 User's Guide:</strong></a>&nbsp;&nbsp;&nbsp;&nbsp;
       <br>
+      <a href="Files.html">Files</a>&nbsp;&nbsp;
       <a href="Datasets.html">Datasets</a>&nbsp;&nbsp;
       Data Types&nbsp;&nbsp;
       <a href="Dataspaces.html">Dataspaces</a>&nbsp;&nbsp;
       <a href="Groups.html">Groups</a>&nbsp;&nbsp;
-      <a href="References.html">References</a>&nbsp;&nbsp;
       <br>
+      <a href="References.html">References</a>&nbsp;&nbsp;
       <a href="Attributes.html">Attributes</a>&nbsp;&nbsp;
       <a href="Properties.html">Property Lists</a>&nbsp;&nbsp;
       <a href="Errors.html">Error Handling</a>&nbsp;&nbsp;
-      <a href="Filters.html">Filters</a>&nbsp;&nbsp;
-      <a href="Caching.html">Caching</a>&nbsp;&nbsp;
       <br>
+      <a href="Filters.html">Filters</a>&nbsp;&nbsp;
+      <a href="Palettes.html">Palettes</a>&nbsp;&nbsp;
+      <a href="Caching.html">Caching</a>&nbsp;&nbsp;
       <a href="Chunking.html">Chunking</a>&nbsp;&nbsp;
+      <a href="MountingFiles.html">Mounting Files</a>&nbsp;&nbsp;
+      <br>
       <a href="Debugging.html">Debugging</a>&nbsp;&nbsp;
       <a href="Environment.html">Environment</a>&nbsp;&nbsp;
       <a href="ddl.html">DDL</a>&nbsp;&nbsp;
       <a href="Ragged.html">Ragged Arrays</a>&nbsp;&nbsp;
-<!--
-<hr>
-And in this document, the 
-<a href="H5.user.html">HDF5 User's Guide</a>:&nbsp;&nbsp;&nbsp;&nbsp;
-      <a href="Attributes.html">H5A</a>&nbsp;&nbsp;
-      <a href="Datasets.html">H5D</a>&nbsp;&nbsp;
-      <a href="Errors.html">H5E</a>&nbsp;&nbsp;
-      <a href="Files.html">H5F</a>&nbsp;&nbsp;
-      <a href="Groups.html">H5G</a>&nbsp;&nbsp;
-      <a href="Properties.html">H5P</a>&nbsp;&nbsp;
-      <a href="References.html">H5R & H5I</a>&nbsp;&nbsp;
-      <a href="Ragged.html">H5RA</a>&nbsp;&nbsp;
-      <a href="Dataspaces.html">H5S</a>&nbsp;&nbsp;
-      <a href="Datatypes.html">H5T</a>&nbsp;&nbsp;
-      <a href="Filters.html">H5Z</a>&nbsp;&nbsp;
-      <a href="Caching.html">Caching</a>&nbsp;&nbsp;
-      <a href="Chunking.html">Chunking</a>&nbsp;&nbsp;
-      <a href="Debugging.html">Debugging</a>&nbsp;&nbsp;
-      <a href="Environment.html">Environment</a>&nbsp;&nbsp;
-      <a href="ddl.html">DDL</a>&nbsp;&nbsp;
--->
 </td></tr>
 </table>
 </center>
@@ -1630,9 +1612,10 @@ And in this document, the
 <address>
 <a href="mailto:hdfhelp@ncsa.uiuc.edu">HDF Help Desk</a>
 </address>
+
 <!-- Created: Thu Dec  4 14:57:32 EST 1997 -->
 <!-- hhmts start -->
-Last modified: Fri Jun  4 16:14:04 EDT 1999
+Last modified: 23 July 1999
 <!-- hhmts end -->
 
 

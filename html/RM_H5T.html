@@ -65,8 +65,12 @@ of a dataset.
     <li><a href="#Datatype-GetSize">H5Tget_size</a>
     <li><a href="#Datatype-Close">H5Tclose</a>
 <p>
+<i>Variable-length Datatypes</i>
+    <li><a href="#Datatype-VLCreate">H5Tvlen_create</a>
+<p>
 </td><td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td><td valign=top>
-<i>Atomic Datatype</i>
+<i>Atomic Datatype Properties</i>
+  <table><tr><td valign=top>
     <li><a href="#Datatype-SetSize">H5Tset_size</a>
     <li><a href="#Datatype-GetOrder">H5Tget_order</a>
     <li><a href="#Datatype-SetOrder">H5Tset_order</a>
@@ -78,12 +82,11 @@ of a dataset.
     <li><a href="#Datatype-SetPad">H5Tset_pad</a>
     <li><a href="#Datatype-GetSign">H5Tget_sign</a>
     <li><a href="#Datatype-SetSign">H5Tset_sign</a>
-</td><td valign=top>
-<i>Properties</i>
     <li><a href="#Datatype-GetFields">H5Tget_fields</a>
     <li><a href="#Datatype-SetFields">H5Tset_fields</a>
     <li><a href="#Datatype-GetEbias">H5Tget_ebias</a>
     <li><a href="#Datatype-SetEbias">H5Tset_ebias</a>
+  </td><td valign=top>
     <li><a href="#Datatype-GetNorm">H5Tget_norm</a>
     <li><a href="#Datatype-SetNorm">H5Tset_norm</a>
     <li><a href="#Datatype-GetInpad">H5Tget_inpad</a>
@@ -92,7 +95,8 @@ of a dataset.
     <li><a href="#Datatype-SetCset">H5Tset_cset</a>
     <li><a href="#Datatype-GetStrpad">H5Tget_strpad</a>
     <li><a href="#Datatype-SetStrpad">H5Tset_strpad</a>
-<p>
+  <p>
+  </td></tr></table>
 </td><td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td><td valign=top>
 <i>Properties of Compound Types</i>
     <li><a href="#Datatype-GetNmembers">H5Tget_nmembers</a>
@@ -162,9 +166,9 @@ in the <cite>HDF5 User's Guide</cite> for further information, including a compl
 <dt><strong>Parameters:</strong>
     <dl>
         <dt><em>hid_t</em> <code>loc_id</code>
-            <dd>A file, group, or datatype identifier.
+            <dd>A file or group identifier.
         <dt><em>const char *</em> <code>name</code>
-            <dd>A datatype name.
+            <dd>A datatype name, defined within the file or group identified by <code>loc_id</code>.
     </dl>
 <dt><strong>Returns:</strong>
     <dd>Returns a named datatype identifier if successful;
@@ -207,7 +211,7 @@ in the <cite>HDF5 User's Guide</cite> for further information, including a compl
 <dl>
 <dt><strong>Name:</strong> <a name="Datatype-Committed">H5Tcommitted</a>
 <dt><strong>Signature:</strong>
-    <dd><em>hbool_t</em><code>H5Tcommitted</code>(<em>hid_t</em> <code>type</code>)
+    <dd><em>htri_t</em><code>H5Tcommitted</code>(<em>hid_t</em> <code>type</code>)
 <dt><strong>Purpose:</strong>
     <dd>Determines whether a datatype is a named type or a transient type.  
 <dt><strong>Description:</strong>
@@ -427,9 +431,16 @@ H5Tget_overflow ()
 <dt><strong>Description:</strong>
     <dd><code>H5Tcreate</code> creates a new dataype of the specified 
         class with the specified number of bytes.  
-        Currently, only the <code>H5T_COMPOUND</code> datatype class is 
-        supported with this function.  Use <code>H5Tcopy</code>
-        to create integer or floating-point datatypes.  
+        <p>
+        The following datatype classes are supported with this function:
+        <ul>
+            <li><code>H5T_COMPOUND</code> 
+            <li><code>H5T_OPAQUE</code> 
+            <li><code>H5T_ENUM</code> 
+        </ul>
+        <p>
+        Use <code>H5Tcopy</code> to create integer or floating-point datatypes. 
+        <p>
         The datatype identifier returned from this function should be 
         released with <code>H5Tclose</code> or resource leaks will result.
 <dt><strong>Parameters:</strong>
@@ -438,6 +449,38 @@ H5Tget_overflow ()
             <dd>Class of datatype to create.
         <dt><em>size_t</em> <code>size</code>
             <dd>The number of bytes in the datatype to create.
+    </dl>
+<dt><strong>Returns:</strong>
+    <dd>Returns datatype identifier if successful;
+        otherwise returns a negative value.
+</dl>
+
+
+<hr>
+<dl>
+<dt><strong>Name:</strong> <a name="Datatype-VLCreate">H5Tvlen_create</a>
+<dt><strong>Signature:</strong>
+    <dd><em>hid_t </em><code>H5Tvlen_create</code>(<em>hid_t </em><code>base_type_id</code>
+    )
+<dt><strong>Purpose:</strong>
+    <dd>Creates a new variable-length dataype.
+<dt><strong>Description:</strong>
+    <dd><code>H5Tvlen_create</code> creates a new variable-length (VL) dataype.
+        <p>
+        The base datatype will be the datatype that the sequence is composed of,
+        characters for character strings, vertex coordinates for polygon lists, etc.
+        The base type specified for the VL datatype can be of any HDF5 datatype,
+        including another VL datatype, a compound datatype or an atomic datatype.
+        <p>
+        When necessary, use <code>H5Tget_super</code> to determine the base type 
+        of the VL datatype.
+        <p>
+        The datatype identifier returned from this function should be 
+        released with <code>H5Tclose</code> or resource leaks will result.
+<dt><strong>Parameters:</strong>
+    <dl>
+        <dt><em>hid_t</em> <code>base_type_id</code>
+            <dd>Base type of datatype to create.
     </dl>
 <dt><strong>Returns:</strong>
     <dd>Returns datatype identifier if successful;
@@ -536,7 +579,7 @@ H5Tget_overflow ()
 <dl>
 <dt><strong>Name:</strong> <a name="Datatype-Equal">H5Tequal</a>
 <dt><strong>Signature:</strong>
-    <dd><em>hbool_t </em><code>H5Tequal</code>(<em>hid_t </em><code>type_id1</code>,
+    <dd><em>htri_t </em><code>H5Tequal</code>(<em>hid_t </em><code>type_id1</code>,
         <em>hid_t</em><code>type_id2</code>
     )
 <dt><strong>Purpose:</strong>
@@ -603,6 +646,8 @@ H5Tget_overflow ()
             <li><code>H5T_BITFIELD</code> (<code>4</code>)
             <li><code>H5T_OPAQUE</code> (<code>5</code>)
             <li><code>H5T_COMPOUND</code> (<code>6</code>)
+            <li><code>H5T_ENUM</code> (<code>7</code>)
+            <li><code>H5T_REFERENCE</code> (<code>8</code>)
         </ul>
 <dt><strong>Parameters:</strong>
     <dl>
@@ -1556,7 +1601,7 @@ zero.
 <dt><strong>Signature:</strong>
     <dd><em>herr_t</em> <code>H5Tinsert</code>(<em>hid_t </em><code>type_id</code>,
         <em>const char *</em> <code>name</code>,
-        <em>off_t</em> <code>offset</code>,
+        <em>size_t</em> <code>offset</code>,
         <em>hid_t</em> <code>field_id</code>
     )
 <dt><strong>Purpose:</strong>
@@ -1578,7 +1623,7 @@ zero.
             <dd>Identifier of compound datatype to modify.
         <dt><em>const char *</em> <code>name</code>
             <dd>Name of the field to insert.
-        <dt><em>off_t</em> <code>offset</code>
+        <dt><em>size_t</em> <code>offset</code>
             <dd>Offset in memory structure of the field to insert.
         <dt><em>hid_t</em> <code>field_id</code>
             <dd>Datatype identifier of the field to insert.
