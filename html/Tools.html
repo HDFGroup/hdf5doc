@@ -48,7 +48,9 @@ Tools&nbsp;&nbsp;
 
 <h2>HDF5 Tool Interfaces</h2>
 <p>
-These tools enable the user to examine HDF5 files interactively.
+These tools enable the user to examine HDF5 file contents, 
+to modify HDF5 file contents in a carefully prescribed manner, and
+to convert files from HDF4 format to HDF5 format and vice versa.
 
 
 <table border=0>
@@ -60,10 +62,24 @@ These tools enable the user to examine HDF5 files interactively.
         A tool for listing specified features of HDF5 file contents
     <li><a href="#Tools-Repart">h5repart</a> -- 
         A tool for repartitioning a file, creating a family of files
+    <li><a href="#Tools-GIF2H5">gif2h5</a> -- 
+        A tool for converting a GIF file to an HDF5 file
+    <li><a href="#Tools-H52GIF">h52gif</a> -- 
+        A tool for converting images in an HDF5 file to a GIF file
     <li><a href="#Tools-H5toh4">h5toh4</a> -- 
         A tool for converting an HDF5 file to an HDF4 file
     <li><a href="#Tools-H4toh5">h4toh5</a> -- 
         A tool for converting an HDF4 file to an HDF5 file
+    <li><a href="#Tools-H5CC">h5cc</a> --
+        A tool for compiling HDF5 programs
+    <li><a href="http://hdf.ncsa.uiuc.edu/java-hdf5-html/">Java-based tools for HDF5</a> -- 
+        <em>(at <code>http://hdf.ncsa.uiuc.edu/java-hdf5-html/</code>)</em>
+        <br>
+        Java-based tools for viewing, manipulating, and generating HDF5
+        files (distributed separately)
+        <br>
+        Includes <code>H5view</code>, <code>H5gen</code>, Java HDF5
+        Interface (JHI5), and HDF5 VisAD Data Adapter
 </ul>
 </td></tr>
 </table>
@@ -80,14 +96,14 @@ These tools enable the user to examine HDF5 files interactively.
 <dt><strong>Purpose:</strong>
     <dd>Displays HDF5 file contents.
 <dt><strong>Description:</strong>
-    <dd><code>h5dump</code> enables the user to interactively examine 
+    <dd><code>h5dump</code> enables the user to examine 
         the contents of an HDF5 file and dump those contents, in human
         readable form, to an ASCII file.
         <p>
-        <code>h5dump</code> displays HDF5 file content on standard
-        output. It may display the content of the whole HDF5 file or
-        selected objects, which can be groups, datasets, links,
-        attributes, or data types. 
+        <code>h5dump</code> dumps HDF5 file content to standard output.
+        It can display the contents of the entire HDF5 file or
+        selected objects, which can be groups, datasets, a subset of a 
+        dataset, links, attributes, or datatypes. 
         </p>
         <p>
         The <code>--header</code> option displays object header
@@ -106,7 +122,7 @@ These tools enable the user to examine HDF5 files interactively.
         occurrences.
         </p>
         <p>
-        <code>h5dump</code> assigns a name for any unnamed data type in
+        <code>h5dump</code> assigns a name for any unnamed datatype in
         the form of
         <code>#</code><em>oid1</em><code>:</code><em>oid2</em>, where
         <em>oid1</em> and <em>oid2</em> are the object identifiers
@@ -114,32 +130,63 @@ These tools enable the user to examine HDF5 files interactively.
         the root group.
         </p>
         <p>
-        Data types are displayed with standard type names. For example,
-        if a data set is created with <code>H5T_NATIVE_INT</code> type
+        Datatypes are displayed with standard type names. For example,
+        if a dataset is created with <code>H5T_NATIVE_INT</code> type
         and the standard type name for integer on that machine is
         <code>H5T_STD_I32BE</code>, <code>h5dump</code> displays
-        <code>H5T_STD_I32BE</code> as the type of the data set.
+        <code>H5T_STD_I32BE</code> as the type of the dataset.
         </p>
         <p>
-        The <code>h5dump</code> output is described in detail in the <a
-        href="ddl.html"><cite>DDL for HDF5</cite></a>, the <cite>Data
-        Description Language</cite> document. 
+        <code>h5dump</code> can also dump a subset of a dataset.
+        This feature operates in much the same way as hyperslabs in HDF5;
+        the parameters specified on the commnd line are passed to the 
+        function <a href="RM_H5S.html#Dataspace-SelectHyperslab">
+        <code>H5Sselect_hyperslab</code></a> and the resulting selection 
+        is displayed.
         </p>
         <p>
-        <em>Note</em>: It is no longer permissable to specify multiple
-        attributes, datasets, data types, groups, or soft links with one
-        flag. For example, before one could issue the command:
+        The <code>h5dump</code> output is described in detail in the 
+        <a href="ddl.html"><cite>DDL for HDF5</cite></a>, the 
+        <cite>Data Description Language</cite> document. 
         </p>
-          <blockquote>
+        <p>
+        <em>Note</em>: It is not permissable to specify multiple
+        attributes, datasets, datatypes, groups, or soft links with one
+        flag. For example, one may not issue the command
+          <br>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            <font size=-1>WRONG:</font> &nbsp;
             <code>h5dump -a /attr1 /attr2 foo.h5</code>
-          </blockquote>
-        <p>
-        and both <code>/attr1</code> and <code>/attr2</code> would be
-        dumped. In order to do this now, one must issue the command:
-        </p>
-          <blockquote>
+          </br>
+        to display both <code>/attr1</code> and <code>/attr2</code>.
+        One must issue the following command:
+          <br>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            <font size=-1>CORRECT:</font> &nbsp;
             <code>h5dump -a /attr1 -a /attr2 foo.h5</code>
-          </blockquote>
+          </br>
+          </p>
+          <p>
+          It's possible to select the file driver with which to open the
+          HDF5 file by using the --filedriver (-f) command-line option.
+          Acceptable values for the --filedriver option are: "sec2",
+          "family", "split", "multi", and "stream". If the file driver flag
+          isn't specified, then the file will be opened with each driver in
+          turn and in the order specified above until one driver succeeds
+          in opening the file.
+          </p>
+
+<dt><strong>XML Output:</strong>
+    <dd>With the <code>--xml</code> option, <code>h5dump</code> generates
+        XML output.  This output contains a complete description of the file, 
+        marked up in XML.  The XML conforms to the HDF5 Document Type 
+        Definition (DTD) available at
+        <a href="http://hdf.ncsa.uiuc.edu/DTDs/HDF5-File.dtd">
+        <code>http://hdf.ncsa.uiuc.edu/DTDs/HDF5-File.dtd</code></a>.
+        <p>
+        The XML output is suitable for use with other tools, including the 
+        <a href="http://hdf.ncsa.uiuc.edu/java-hdf5-html">HDF5 Java Tools</a>.
+
 <dt><strong>Options and Parameters:</strong>
     <dl>
         <dt><code>-h</code> &nbsp;&nbsp;or&nbsp;&nbsp; 
@@ -164,6 +211,9 @@ These tools enable the user to examine HDF5 files interactively.
         <dt><code>-d <em>P</em></code> &nbsp;&nbsp;or&nbsp;&nbsp; 
               <code>--dataset=<em>P</em></code></dt>
             <dd>Print the specified dataset.</dd>
+        <dt><code>-f <em>D</em></code> &nbsp;&nbsp;or&nbsp;&nbsp; 
+              <code>--filedriver=<em>D</em></code></dt>
+            <dd>Specify which driver to open the file with.</dd>
         <dt><code>-g <em>P</em></code> &nbsp;&nbsp;or&nbsp;&nbsp; 
               <code>--group=<em>P</em></code></dt>
             <dd>Print the specified group and all members.</dd>
@@ -175,20 +225,72 @@ These tools enable the user to examine HDF5 files interactively.
             <dd>Output raw data into file F.</dd>
         <dt><code>-t <em>T</em></code> &nbsp;&nbsp;or&nbsp;&nbsp; 
               <code>--datatype=<em>T</em></code></dt>
-            <dd>Print the specified named data type.</dd>
-        <dt><code>-w <em>#</em></code> &nbsp;&nbsp;or&nbsp;&nbsp; 
-              <code>--width=<em>#</em></code></dt>
+            <dd>Print the specified named datatype.</dd>
+        <dt><code>-w <em>N</em></code> &nbsp;&nbsp;or&nbsp;&nbsp; 
+              <code>--width=<em>N</em></code></dt>
             <dd>Set the number of columns of output.</dd>
+        <dt><code>-x <em>U</em></code> &nbsp;&nbsp;or&nbsp;&nbsp; 
+              <code>--xml</code></dt>
+            <dd>Output XML instead of DDL.</dd>
+        <dt><code>-D <em>U</em></code> &nbsp;&nbsp;or&nbsp;&nbsp; 
+              <code>--xml-dtd=<em>U</em></code></dt>
+            <dd>In XML output, refer to the DTD at <em>U</em> 
+                instead of the default DTD.</dd>
+        <dt><code>-s <em>L</em></code> &nbsp;&nbsp;or&nbsp;&nbsp; 
+              <code>--start=<em>L</em></code></dt>
+            <dd>Offset of start of subsetting selection.  
+                <br>
+                Default: the beginning of the dataset.</dd>
+        <dt><code>-S <em>L</em></code> &nbsp;&nbsp;or&nbsp;&nbsp; 
+              <code>--stride=<em>L</em></code></dt>
+            <dd>Hyperslab stride.
+                <br>
+                Default: 1 in all dimensions.</dd>
+        <dt><code>-c <em>L</em></code> &nbsp;&nbsp;or&nbsp;&nbsp; 
+              <code>--count=<em>L</em></code></dt>
+            <dd>Number of blocks to include in the selection.</dd>
+        <dt><code>-k <em>L</em></code> &nbsp;&nbsp;or&nbsp;&nbsp; 
+              <code>--block=<em>L</em></code></dt>
+            <dd>Size of block in hyperslab.
+                <br>
+                Default: 1 in all dimensions.</dd>
         <dt><em>file</em></dt>
             <dd>The file to be examined.</dd>
+    <br><br>
+        <dt>The option parameters listed above are defined as follows:
+            <dd><em>D</em> -- which file driver to use in opening the
+                file. Acceptable values are "sec2", "family", "split",
+                "multi", and "stream". Without the file driver flag the
+                file will be opened with each driver in turn and in the
+                order specified above until one driver succeeds in
+                opening the file.</dd>
+            <dd><em>P</em> -- The full path from the root group to 
+                the object</dd>
+            <dd><em>T</em> -- The name of the datatype</dd>
+            <dd><em>F</em> -- A filename</dd>
+            <dd><em>N</em> -- An integer greater than 1</dd>
+            <dd><em>L</em> -- A list of integers, the number of which is 
+                equal to the number of dimensions in the dataspace being 
+                queried</dd>
+            <dd><em>U</em> -- A URI (as defined in 
+                [<a href="http://www.ietf.org/rfc/rfc2396.txt">IETF RFC 2396</a>], 
+                updated by 
+                [<a href="http://www.ietf.org/rfc/rfc2732.txt">IETF RFC 2732</a>]) 
+                that refers to the DTD to be used to validate the XML</dd>
+    <br><br>
+        <dt>Subsetting paramaters can also be expressed in a convenient
+            compact form, as follows:
+              <br>
+              &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+              <code>--dataset="/foo/mydataset[START;STRIDE;COUNT;BLOCK]"</code>
+              <br>
+            All of the semicolons (<code>;</code>) are required, even when 
+            a parameter value is not specified.  
+            When not specified, default parameter values are used.
     </dl>
-    <ul>
-      <li><em>P</em> - is the full path from the root group to the
-          object.</li>
-      <li><em>T</em> - is the name of the data type.</li>
-      <li><em>F</em> - is a filename.</li>
-      <li><em>#</em> - is an integer greater than 1.</li>
-    </ul>
+    <p>
+
+
 <dt><strong>Examples:</strong>
     <ol>
        <li>Dumping the group <code>/GroupFoo/GroupBar</code> in the file
@@ -212,6 +314,22 @@ These tools enable the user to examine HDF5 files interactively.
           <blockquote>
               <code>h5dump -a /metadata quux.h5</code>
           </blockquote>
+       <li>Producing an XML listing of the file <code>bobo.h5</code>:
+          <blockquote>
+              <code>h5dump --xml bobo.h5 > bobo.h5.xml</code>
+          </blockquote>
+       <li>Dumping a subset of the dataset <code>/GroupFoo/databar/</code> 
+           in the file <code>quux.h5</code>
+          <blockquote>
+              <code>h5dump -d /GroupFoo/databar --start="1,1" --stride="2,3" 
+                           <br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                           --count="3,19" --block="1,1" quux.h5</code>
+          </blockquote>
+       <li>The same example using the short form to specify the 
+           subsetting parameters:
+          <blockquote>
+              <code>h5dump -d "/GroupFoo/databar[1,1;2,3;3,19;1,1]" quux.h5</code>
+          </blockquote>
     </ol>
 <dt><strong>Current Status:</strong>
     <dd>The current version of <code>h5dump</code> displays the
@@ -225,37 +343,45 @@ These tools enable the user to examine HDF5 files interactively.
           <li>Dataset
             <ul>
                <li>dataset attribute (see Attribute)
-               <li>dataset type (see Data type)
-               <li>dataset space (see Data space)
+               <li>dataset type (see Datatype)
+               <li>dataset space (see Dataspace)
                <li>dataset data
             </ul>
           <li>Attribute
             <ul>
-               <li>attribute type (see Data type)
-               <li>attribute space (see Data space)
+               <li>attribute type (see Datatype)
+               <li>attribute space (see Dataspace)
                <li>attribute data
             </ul>
-          <li>Data type
+          <li>Datatype
             <ul>
                <li>integer type
-                   <dt>- H5T_STD_I8BE, H5T_STD_I8LE, H5T_STD_I16BE, ...
+                   <br>
+                   - H5T_STD_I8BE, H5T_STD_I8LE, H5T_STD_I16BE, ...
                <li>floating point type
-                   <dt>- H5T_IEEE_F32BE, H5T_IEEE_F32LE, H5T_IEEE_F64BE, ...
+                   <br>
+                   - H5T_IEEE_F32BE, H5T_IEEE_F32LE, H5T_IEEE_F64BE, ...
                <li>string type
                <li>compound type 
-                   <dt>- named, unnamed and transient compound type
-                   <dt>- integer, floating or string type member
+                   <br>
+                   - named, unnamed and transient compound type
+                   <br>
+                   - integer, floating or string type member
                <li>opaque types
                <li>reference type
-                   <dt>- object references 
-                   <dt>- data regions
+                   <br>
+                   - object references 
+                   <br>
+                   - data regions
                <li>enum type
                <li>variable-length datatypes
-                   <dt>- atomic types only
-                   <dt>- scalar or single dimensional array of variable-length
+                   <br>
+                   - atomic types only
+                   <br>
+                   - scalar or single dimensional array of variable-length
                          types supported
             </ul>
-          <li>Data space 
+          <li>Dataspace 
             <ul>
                <li>scalar and simple space
             </ul>
@@ -265,8 +391,17 @@ These tools enable the user to examine HDF5 files interactively.
         </ul>
      
 <dt><strong>See Also:</strong>
-    <dd>HDF5 Data Description Language syntax 
-        (<a href="ddl.html"><cite>DDL for HDF5</cite></a>)
+    <ul>
+    <li>HDF5 Data Description Language syntax at
+        <a href="ddl.html"><cite>DDL for HDF5</cite></a>
+
+    <li>HDF5 XML DTD at
+        <a href="http://hdf.ncsa.uiuc.edu/DTDs/HDF5-File.dtd">http://hdf.ncsa.uiuc.edu/DTDs/HDF5-File.dtd</a>
+
+    <li>HDF5 XML information at
+        <a href="http://hdf.ncsa.uiuc.edu/HDF5/XML">http://hdf.ncsa.uiuc.edu/HDF5/XML/</a>
+    </ul>
+
 </dl>
 
 <hr>
@@ -385,6 +520,82 @@ These tools enable the user to examine HDF5 files interactively.
             <dd>The name of the source file
         <dt><em>dest_file</em>
             <dd>The name of the destination files
+    </dl>
+<!--
+<dt><strong>Current Status:</strong>
+    <dd>
+<dt><strong>See Also:</strong>
+    <dd>
+-->
+</dl>
+
+
+<hr>
+<dl>
+<dt><strong>Tool Name:</strong> <a name="Tools-GIF2H5">gif2h5</a>
+<dt><strong>Syntax:</strong>
+    <dd><code>gif2h5</code>
+        <em>gif_file</em> <em>h5_file</em>
+<dt><strong>Purpose:</strong>
+    <dd>Converts a GIF file to an HDF5 file.
+<dt><strong>Description:</strong>
+    <dd><code>gif2h5</code> accepts as input the GIF file <em>gif_file</em>
+        and produces the HDF5 file <em>h5_file</em> as output.
+        
+<dt><strong>Options and Parameters:</strong>
+    <dl>
+        <dt><em>gif_file</em>
+            <dd>The name of the input GIF file
+        <dt><em>h5_file</em>
+            <dd>The name of the output HDF5 file
+    </dl>
+<!--
+<dt><strong>Current Status:</strong>
+    <dd>
+<dt><strong>See Also:</strong>
+    <dd>
+-->
+</dl>
+
+
+<hr>
+<dl>
+<dt><strong>Tool Name:</strong> <a name="Tools-H52GIF">h52gif</a>
+<dt><strong>Syntax:</strong>
+    <dd><code>h52gif</code>
+        <em>h5_file</em> <em>gif_file</em>
+        <code>-i</code> <em>h5_image</em>
+        <code>[-p</code> <em>h5_palette</em><code>]</code>
+<dt><strong>Purpose:</strong>
+    <dd>Converts an HDF5 file to a GIF file.
+<dt><strong>Description:</strong>
+    <dd><code>h52gif</code> accepts as input the HDF5 file <em>h5_file</em>
+        and the names of images and associated palettes within that file 
+        as input and produces the GIF file <em>gif_file</em>, 
+        containing those images, as output.
+        <p>
+        <code>h52gif</code> expects <em>at least</em> 
+        one <em>h5_image</em>. 
+        You may repeat 
+        <br>
+                &nbsp;&nbsp;&nbsp;&nbsp;
+                <code>-i</code> <em>h5_image</em>
+                <code>[-p</code> <em>h5_palette</em><code>]</code>
+        <br>
+        up to 50 times, for a maximum of 50 images.
+        
+<dt><strong>Options and Parameters:</strong>
+    <dl>
+        <dt><em>h5_file</em>
+            <dd>The name of the input HDF5 file
+        <dt><em>gif_file</em>
+            <dd>The name of the output GIF file
+        <dt><code>-i</code> <em>h5_image</em>
+            <dd>Image option, specifying the name of an HDF5 image or 
+                dataset containing an image to be converted
+        <dt><code>-p</code> <em>h5_palette</em>
+            <dd>Palette option, specifying the name of an HDF5 dataset 
+                containing a palette to be used in an image conversion
     </dl>
 <!--
 <dt><strong>Current Status:</strong>
@@ -618,6 +829,94 @@ These tools enable the user to examine HDF5 files interactively.
 -->
 </dl>
 
+<hr>
+<dl>
+<dt><strong>Tool Name:</strong> <a name="Tools-H5CC">h5cc</a>
+<dt><strong>Syntax:</strong>
+    <dd><code>h5cc
+        [</code><em>OPTIONS</em><code>]</code> <em>&lt;compile line&gt;</em>
+<dt><strong>Purpose:</strong>
+    <dd>Helper script to compile HDF5 applications.
+<dt><strong>Description:</strong>
+    <dd><p>
+        <code>h5cc</code> can be used in much the same way MPIch is used
+        to compile HDF5 program. It takes care of specifying where the
+        HDF5 header files and libraries are on the commandline.
+        </p>
+
+        <p>
+        <code>h5cc</code> supercedes all other compiler scripts in that
+        if you've used them to compile the HDF5 library, then
+        <code>h5cc</code> also uses those scripts. For examples, when
+        compiling an MPIch program, you use the <code>mpicc</code>
+        script. If you've built HDF5 using MPIch, then <code>h5cc</code>
+        uses the MPIch program for compilation.
+        </p>
+
+        <p>
+        Some programs use HDF5 in only a few modules. It isn't necessary
+        to use <code>h5cc</code> to compile those modules which don't use
+        HDF5. In fact, since <code>h5cc</code> is only a convenience
+        script, you are still able to compile HDF5 modules in the normal
+        way. In that case, you will have to specify the HDF5 libraries
+        and include paths yourself.
+        </p>
+
+        <p>
+        An example of how to use HDF5 to compile the program
+        <code>hdf_prog</code> which consists of modules
+        <code>prog1.c</code> and <code>prog2.c</code> and uses the HDF5
+        shared library:
+
+        <pre>
+        # h5cc -c prog1.c
+        # h5cc -c prog2.c
+        # h5cc -shlib -o hdf_prog prog1.o prog2.o
+        </pre>
+    <p>
+<dt><strong>Options and Parameters:</strong>
+    <dl>
+        <dt><code>-help</code>
+            <dd>Prints a help message.
+        <dt><code>-echo</code>
+            <dd>Show all the shell commands executed.
+        <dt><code>-prefix=DIR</code>
+            <dd>Use the directory DIR to find HDF5 lib/ and include/
+                subdirectories [default: prefix specified when
+                configuring HDF5].
+        <dt><code>-show</code>
+            <dd>Show the commands without executing them.
+        <dt><code>-shlib</code>
+            <dd>Compile using shared HDF5 libraries.
+        <dt><code>-noshlib</code>
+            <dd>Compile using static HDF5 libraries [default].
+        <dt><em>&lt;compile line&gt;</em>
+            <dd>The normal compile line options for your compiler. h5cc
+                uses the same compiler you used to compile HDF5. Check
+                with your compiler's manual for more information on which
+                options are needed.
+    </dl>
+    <p>
+<dt><strong>Environment Variables:</strong>
+<br>
+    When set, these environment variables override some of the built-in
+    defaults of <code>h5cc</code>.
+
+    <dl>
+        <dt><code>HDF5_CC</code>
+            <dd>Use a different C compiler.
+        <dt><code>HDF5_CLINKER</code>
+            <dd>Use a different linker.
+        <dt><code>HDF5_USE_SHLIB=[yes|no]</code>
+            <dd>Use shared version of the HDF5 library [default: no].
+    </dl>
+<!--
+<dt><strong>Current Status:</strong>
+    <dd>
+<dt><strong>See Also:</strong>
+    <dd>
+ -->
+</dl>
 
 <!--                     Template, next 40 lines            -->
 <!--                     Template, next 40 lines            -->
@@ -705,10 +1004,12 @@ Tools&nbsp;&nbsp;
 <a href="mailto:hdfhelp@ncsa.uiuc.edu">HDF Help Desk</a>
 
 <br>
-Last modified:  15 December 2000
+Last modified:  13. September 2001
+
+
 
 <br>
-Describes HDF5 Release 1.4, February 2001
+Describes HDF5 Release 1.4.3, February 2002
 
 
 </body>
