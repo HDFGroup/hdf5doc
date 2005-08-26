@@ -1,0 +1,1888 @@
+<!doctype HTML public "-//W3C//DTD HTML 4.0 Frameset//EN">
+<html>
+
+<title>HDF5 User's Guide: Library and Programming Model</title>
+
+<!--(Meta)==========================================================-->
+
+<!--(Links)=========================================================-->
+
+<!--( Begin styles definition )=====================================-->
+<link href="ed_styles/NewUGelect.css" rel="stylesheet" type="text/css">
+<!--( End styles definition )=======================================-->
+
+</head> 
+
+<body>
+
+<!--( TOC )=========================================================-->
+<SCRIPT language="JavaScript">
+<!--
+document.writeln (' \
+<table x-use-null-cells\
+                align=right\
+		width=240\
+		cellspacing=0\
+		class="tocTable">\
+  <tr valign=top> \
+    <td class="tocTableHeaderCell" colspan="2"> \
+        <span class=TableHead>Chapter Contents</span></td>\
+  </tr>\
+<!-- Table Version 3 -->\
+  <tr valign=top> \
+    <td class="tocTableContentCell2"> \
+      <a href="#Intro">1.</a></td>\
+    <td class="tocTableContentCell3">\
+	  <a href="#Intro">Introduction</a></td> \
+  </tr>\
+  <tr valign=top> \
+    <td class="tocTableContentCell2"> \
+      <a href="#ProgModel">2.</a></td>\
+    <td class="tocTableContentCell3">\
+	  <a href="#ProgModel">Programming Model</a><br>\
+    <font size="-1">\
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;\
+    <a href="#CreateFile">Create file</a>\
+    <br> \
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;\
+    <a href="#CreateDataset">Create dataset</a>\
+    <br> \
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;\
+    <a href="#CloseObject">Close objects</a>\
+    <br> \
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;\
+    <a href="#WriteRead">Write and read</a>\
+    <br> \
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;\
+    <a href="#PartialWR">Partial write/read</a>\
+    <br> \
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;\
+    <a href="#GetInfo">Get information</a>\
+    <br> \
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;\
+    <a href="#CreateCDType">Create compound</a>\
+    <br> \
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;\
+    <a href="#CreateCDType">datatype</a>\
+    <br> \
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;\
+    <a href="#ExtendChunked">Create extendible or</a>\
+    <br> \
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;\
+    <a href="#ExtendChunked">chunked dataset</a>\
+	  </td>\
+  </tr>\
+\
+  <tr valign=top> \
+    <td class="tocTableContentCell"> \
+<!-- editingComment -- "tocTableContentCell" and "tocTableContentCell4" \
+-->\
+<!-- are the table-closing cell class.\
+    <td class="tocTableContentCell2"> \
+-->\
+      <a href="#IOPipeline">3.</a></td>\
+    <td class="tocTableContentCell4">\
+	  <a href="#IOPipeline">Data Transfer Pipeline</a>\
+<!-- editingComment -- This section not currently complete or validated.\
+  </tr><tr valign=top> \
+    <td class="tocTableContentCell"> \
+    <a href="#Appendix">10</a></td>\
+    <td class="tocTableContentCell4"><a href="#Appendix">Appendix</a></td>\
+-->\
+  </td></tr>\
+</table>\
+')
+-->
+</SCRIPT>
+<!--(End TOC 1)=====================================================-->
+
+<!--( TOC 2 )=======================================================-->
+<!--
+<table x-use-null-cells
+                align=right
+		width=240
+		cellspacing=0
+		class="tocTable">
+  <tr valign=top> 
+    <td class="tocTableHeaderCell"> 
+    <span class=TableHead>Chapter Contents</span></td>
+  </tr>
+  <tr valign=top> 
+    <td class="tocTableContentCell"> 
+    <a href="#Intro">1. Introduction</a>
+    <br> 
+    <a href="#AbstractDMod">2. Abstract Data Model</a>
+    <br> 
+    <a href="#SModel">3. HDF5 Storage Model</a> 
+    <br> 
+    <a href="#LibPModel">4. Library and</a>
+    <br> 
+    &nbsp;&nbsp;&nbsp;&nbsp;<a href="#LibPModel">Programming Model</a>
+    <br> 
+    <a href="#IOPipeline">3. Data Transfer Pipeline</a> 
+    <br> 
+    &nbsp;&nbsp;&nbsp;&nbsp;<a href="#Structure">HDF5 File</a>
+    </td>
+  </tr>
+</table>
+-->
+<!--(End TOC 2)=====================================================-->
+
+<div align="center">
+<a name="TOP">
+<h2>Chapter 2<br><font size="6">The HDF5 Library and Programming Model</font></h2>
+</a>
+</div>
+
+
+<!-- editingComment
+  <span class="editingComment">[ [ [
+  ] ] ]</span>
+-->
+
+<!-- HEADER LEFT " " -->
+<!-- HEADER RIGHT " " -->
+
+<!-- HEADER LEFT "HDF5 User's Guide" -->
+<!-- HEADER RIGHT "HDF5 Library and Programming Model" -->
+
+
+<a name="Intro">
+<h3>1. Introduction</h3>
+</a>
+
+
+
+
+
+
+
+
+<SCRIPT language="JavaScript">
+<!--
+document.writeln ("
+<a name="LibPModel">
+<div align=right>
+<a href="#TOP"><font size=-1>(Top)</font></a>
+</div>
+</a>
+");
+-->
+</SCRIPT>
+  
+
+  <p>The HDF5 Library implements the HDF5 abstract data model and storage model 
+  as described in the preceding chapter, 
+  &ldquo;<a href="03_DataModel.html">The HDF5 Data Model</a>&rdquo;. 
+  The library exports a set of application programming interfaces, APIs, 
+  as its external interface.  
+  These APIs perform several categories of operations, as listed in
+  Table 1, "The HDF APIs."
+  
+  <p>Two major objectives of the HDF5 products are to provide tools 
+  that can be used on as many computational platforms as possible, 
+  i.e., portability, and to provide a reasonably object oriented data model
+  and programming interface.  
+  These objectives are somewhat in conflict as cross-platform portability 
+  is still a weak point with true object oriented programming languages.
+
+<!-- editingComment
+-->
+  <span class="editingComment">[ [ [
+  Explain?  E.g., Java is portable, 
+  but there are many platforms on which it does not run. 
+  ] ] ]</span>
+  
+  <p>To be as portable as possible, the HDF5 Library is implemented in 
+  portable C.  C is not an object-oriented language, but the library uses 
+  several mechanisms and conventions to implement an object model.
+  
+  <p>
+<!-- FOR USE WITH ELECTRONIC VERSION -- Print version 2 paragraphs below ----->
+<table x-use-null-cells
+		class="ColumnTable"
+		cellspacing=0
+		align="right">
+  <tr valign="top">
+    <td colspan="2" align="center"><b>Table 1.  The HDF5 API<br>naming scheme</b></td>
+  </tr>
+  <tr valign=top> 
+    <td class="ColumnLeftHdr"> 
+        <p><span class=TableHead>Prefix&nbsp;</span></td>
+    <td class="ColumnRightHdr"> 
+        <p><span class=TableHead>Operates on&nbsp;&nbsp;</span></td>
+  </tr>
+  <tr valign=top> 
+    <td class="ColumnLeftCell"> <p>H5A</td>
+    <td class="ColumnRightCell"> <p>Attributes </td>
+  </tr>
+  <tr valign=top> 
+    <td class="ColumnLeftCell"> <p>H5D</td>
+    <td class="ColumnRightCell"> <p>Datasets </td>
+  </tr>
+  <tr valign=top> 
+    <td class="ColumnLeftCell"> <p>H5E</td>
+    <td class="ColumnRightCell"> <p>Error reports</td>
+  </tr>
+  <tr valign=top> 
+    <td class="ColumnLeftCell"> <p>H5F</td>
+    <td class="ColumnRightCell"> <p>Files</td>
+  </tr>
+  <tr valign=top> 
+    <td class="ColumnLeftCell"> <p>H5G</td>
+    <td class="ColumnRightCell"> <p>Groups</td>
+  </tr>
+  <tr valign=top> 
+    <td class="ColumnLeftCell"> <p>H5I</td>
+    <td class="ColumnRightCell"> <p>Identifiers</td>
+  </tr>
+  <tr valign=top> 
+    <td class="ColumnLeftCell"> <p>H5P</td>
+    <td class="ColumnRightCell"> <p>Property lists</td>
+  </tr>
+  <tr valign=top> 
+    <td class="ColumnLeftCell"> <p>H5R</td>
+    <td class="ColumnRightCell"> <p>References</td>
+  </tr>
+  <tr valign=top> 
+    <td class="ColumnLeftCell"> <p>H5S</td>
+    <td class="ColumnRightCell"> <p>Dataspaces</td>
+  </tr>
+  <tr valign=top> 
+    <td class="ColumnLeftCell"> <p>H5T</td>
+    <td class="ColumnRightCell"> <p>Datatypes</td>
+  </tr>
+  <tr valign=top> 
+    <td class="ColumnLeftBottom"> <p>H5Z</td>
+    <td class="ColumnRightBottom"> <p>Filters</td>
+  </tr>
+</table>
+<!-- FOR USE WITH ELECTRONIC VERSION --------------------------------->
+ 
+  First, the HDF5 library implements the objects as data structures. 
+  To refer to an object, the HDF5 library implements its own pointers,  
+  called <em>identifiers</em>. The identifier is then used to invoke operations 
+  on a specific instance of an object. For example, when a group is opened,   
+  the API returns a group identifier.  This identifier is a reference to that 
+  specific group and will be used to invoke future operations on that group. 
+  The identifier is valid only within the context it is created 
+  and remains valid until it is closed or the file is closed.
+  This mechanism is essentially the same that C++ or other object-oriented 
+  languages use to refer to objects, except the syntax is C. 
+
+  <p>Similarly, object-oriented languages collect all the methods for 
+  an object in a single name space, e.g., the methods of a C++ Class. 
+  The C language does not have any such mechanism, 
+  but the HDF5 Library API simulates this through its scheme of API names 
+  by giving names that begin with a common prefix
+  to operations on a particular class of objects. 
+  Table 1 lists the HDF5 objects and the standard prefixes 
+  used by the corresponding HDF5 APIs. 
+  For example, functions that operate on datatype objects all have names 
+  beginning with H5T.
+
+<!-- FOR USE WITH PRINT VERSION -- Electronic version 2 paragraphs above ------------
+<table x-use-null-cells
+		class="ColumnTable"
+		cellspacing=0
+		align="center">
+  <tr valign="top">
+    <td colspan="2" align="center"><b>Table 1.  The HDF5 API naming scheme</b></td>
+  </tr>
+  <tr valign=top> 
+    <td class="ColumnLeftHdr"> 
+        <p><span class=TableHead>Prefix</span></td>
+    <td class="ColumnRightHdr"> 
+        <p><span class=TableHead>Operates on</span></td>
+  <tr valign=top> 
+    <td class="ColumnLeftCell"> <p>H5A</td>
+    <td class="ColumnRightCell"> <p>Attributes</td>
+  </tr>
+  <tr valign=top> 
+    <td class="ColumnLeftCell"> <p>H5D</td>
+    <td class="ColumnRightCell"> <p>Datasets</td>
+  </tr>
+  <tr valign=top> 
+    <td class="ColumnLeftCell"> <p>H5E</td>
+    <td class="ColumnRightCell"> <p>Error reports</td>
+  </tr>
+  <tr valign=top> 
+    <td class="ColumnLeftCell"> <p>H5F</td>
+    <td class="ColumnRightCell"> <p>Files</td>
+  </tr>
+  <tr valign=top> 
+    <td class="ColumnLeftCell"> <p>H5G</td>
+    <td class="ColumnRightCell"> <p>Groups</td>
+  </tr>
+  <tr valign=top> 
+    <td class="ColumnLeftCell"> <p>H5I</td>
+    <td class="ColumnRightCell"> <p>Identifiers</td>
+  </tr>
+  <tr valign=top> 
+    <td class="ColumnLeftCell"> <p>H5P</td>
+    <td class="ColumnRightCell"> <p>Property lists</td>
+  </tr>
+  <tr valign=top> 
+    <td class="ColumnLeftCell"> <p>H5R</td>
+    <td class="ColumnRightCell"> <p>References</td>
+  </tr>
+  <tr valign=top> 
+    <td class="ColumnLeftCell"> <p>H5S</td>
+    <td class="ColumnRightCell"> <p>Dataspaces</td>
+  </tr>
+  <tr valign=top> 
+    <td class="ColumnLeftCell"> <p>H5T</td>
+    <td class="ColumnRightCell"> <p>Datatypes</td>
+  </tr>
+  <tr valign=top> 
+    <td class="ColumnLeftBottom"> <p>H5Z</td>
+    <td class="ColumnRightBottom"> <p>Filters</td>
+  </tr>
+</table>
+<!-- FOR USE WITH PRINT VERSION -------------------------------------->
+ 
+<!-- NEW PAGE -->
+
+
+<a name="ProgModel">
+<h3>2. The HDF5 Programming Model</h3>
+</a>
+
+  In this section we introduce the HDF5 
+  <span class="termDefinition">programming model</span> by means of 
+  a series of short code samples illustrating a broad selection of
+  common HDF5 tasks.  These are merely illustrative examples;
+  full details are provided in the following chapters and in
+  the <a href="../RM_H5Front.html" TARGET="H5DocWin">
+  <cite>HDF5 Reference Manual</cite></a>
+
+<!-- editingComment
+-->
+  <span class="editingComment"><p>[ [ [
+  The following is based on text from the old "Intro to HDF5"  
+  and presumably needs some technical verification.
+  ] ] ]</span>
+
+<a name="CreateFile">
+<h4>2.1 Creating an HDF5 file</h4>
+</a>
+
+  <p>Before an HDF5 file can be used or referred to in any matter, 
+  must be explicitly created or opened.  
+  When using the default property lists, as we will for now,
+  this is a simple matter.  
+  When the need for access to a file ends, the file must be closed.
+  Figure 1 provides a C code fragment illustrating these steps. 
+  
+  <p>If there is a possibility that a file of the declared name
+  already exists and you wish to open a new file regardless of that
+  possibility, the flag <code>H5ACC_TRUNC</code> will cause the
+  operation to overwrite the previous file. If the operation should
+  fail in such a circumstance, use the flag <code>H5ACC_EXCL</code>
+  instead.</p>
+  
+<table x-use-null-cells
+		width=600
+		cellspacing=0
+                class="fullImgTable"
+		align="center">
+  <tr valign=top> 
+    <td class="fullImgTableImgCell">
+    <pre><code>
+    Hid_t       file;                 /* declare file identifier */
+    /*
+    * Create a new file using H5ACC_TRUNC 
+    * to truncate and overwrite any file of the same name,
+    * default file creation properties, and 
+    * default file access properties.
+    * Then close the file.
+    */
+    file = H5Fcreate(FILE, H5ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT);
+    status = H5Fclose(file); 
+    </code></pre></td>
+  </tr>
+  <tr> 
+    <td align=center class="fullImgTableCapCell"> 
+    <span class=figurenumber>Figure 1.</span> 
+    Creating and closing an HDF5 file.</td>
+  </tr>
+</table>
+
+
+<a name="CreateDataset">
+<h4>2.2 Creating and initializing the essential components of a dataset</h4>
+</a>
+  
+  <p>The datatype and dataspace, 
+  i.e., the dimensionality of the array containing raw data of the dataset, 
+  are independent objects and are created separately from any dataset 
+  it which they may be attached. 
+  Hence, creating a dataset requires, at a minimum, the following steps:
+  
+  <ol> 
+      <li>Create and initialize a dataspace defining the dimensions of the dataset array. 
+      <li>Define the dataset datatype. 
+      <li>Create and initialize the dataset itself.
+  </ol>
+  
+<!-- NEW PAGE -->
+  <p>The code in Figure 2 illustrates the execution of these steps.</p>
+  
+<table x-use-null-cells
+		width=600
+		cellspacing=0
+                class="fullImgTable"
+		align="center">
+  <tr valign=top> 
+    <td class="fullImgTableImgCell">
+    <pre><code>
+    hid_t    dataset, datatype, dataspace;  /* declare identifiers */
+    
+    /* 
+     * Create a dataspace: Describe the size of the array and 
+     * create the dataspace for a fixed-size dataset. 
+     */
+    dimsf[0] = NX;
+    dimsf[1] = NY;
+    dataspace = H5Screate_simple(RANK, dimsf, NULL); 
+    /*
+     * Define a datatype for the data in the dataset.
+     * We will store little endian integers.
+     */
+    datatype = H5Tcopy(H5T_NATIVE_INT);
+    status = H5Tset_order(datatype, H5T_ORDER_LE);
+    /*
+     * Create a new dataset within the file using the defined 
+     * dataspace and datatype and default dataset creation
+     * properties.
+     * NOTE: H5T_NATIVE_INT can be used as the datatype if 
+     * conversion to little endian is not needed.
+     */
+    dataset = H5Dcreate(file, DATASETNAME, datatype, dataspace,
+    H5P_DEFAULT); 
+    </code></pre></td>
+  </tr>
+  <tr> 
+    <td align=center class="fullImgTableCapCell"> 
+    <span class=figurenumber>Figure 2.</span>
+    The most basic steps in creating an HDF5 dataset.</td>
+  </tr>
+</table>
+
+
+<a name="CloseObject">
+<h4>2.3 Closing an object once it is no longer needed</h4>
+</a>
+  
+  <p>An application should close a datatype, dataspace, 
+  or dataset object once it is no longer needed.
+  Since each is an independent object, the must be released 
+  (or closed) separately. 
+  This action is frequently referred to as 
+  <span class="termDefinition">releasing the object's identifier</span>.
+  The code in Figure 3 closes the datatype, dataspace, 
+  and dataset that were created in the preceding section.</p>
+  
+<table x-use-null-cells
+		width=600
+		cellspacing=0
+                class="fullImgTable"
+		align="center">
+  <tr valign=top> 
+    <td class="fullImgTableImgCell">
+    <pre><code>
+    H5Tclose(datatype); 
+    H5Dclose(dataset); 
+    H5Sclose(dataspace);
+    </code></pre></td>
+  </tr>
+  <tr> 
+    <td align=center class="fullImgTableCapCell"> 
+    <span class=figurenumber>Figure 3.</span>
+    Closing objects in an HDF5 file, or releasing their identifiers.</td>
+  </tr>
+</table>
+
+
+<a name="WriteRead">
+<h4>2.4 Writing or reading a dataset from/to a file</h4>
+</a>
+
+  <p>Having created the dataset, the actual data can be written 
+  with a call to <code>H5Dwrite</code>, as illustrated in Figure&nbsp;4.</p>
+
+<table x-use-null-cells
+		width=600
+		cellspacing=0
+                class="fullImgTable"
+		align="center">
+  <tr valign=top> 
+    <td class="fullImgTableImgCell">
+    <pre><code>
+    /*
+    * Write the data to the dataset using default transfer
+    * properties.
+    */
+    status = H5Dwrite(dataset, H5T_NATIVE_INT, H5S_ALL, H5S_ALL,
+              H5P_DEFAULT, data);
+    </code></pre></td>
+  </tr>
+  <tr> 
+    <td align=center class="fullImgTableCapCell"> 
+    <span class=figurenumber>Figure 4.</span>
+    Writing the dataset.</td>
+  </tr>
+</table>
+
+<!-- NEW PAGE -->
+  <p>Note that the third and fourth <code>H5Dwrite</code> parameters in 
+  the above example describe the dataspaces in memory and in the file, 
+  respectively.  For now, these are both set to <code>H5S_ALL</code>, 
+  indicating that the entire dataset is to be written. 
+  The selection of partial datasets and the use of differing dataspaces
+  in memory and in storage will be discussed later in this chapter and 
+  in more detail elsewhere in this guide.
+  
+  <p>Reading the dataset from storage is analogous to writing. 
+  If we wished to read an entire dataset,
+  we could simply substitute <code>H5Dread</code> for 
+  <code>H5Dwrite</code> in the above example.
+
+
+<!-- NEW PAGE -->
+<a name="PartialWR">
+<h4>2.5 Reading and writing a portion of a dataset</h4>
+</a>
+
+  <p>In the previous discussion, we described writing or reading an entire 
+  dataset.  HDF5 also supports access to selected portions of a dataset, 
+  known as <span class="termDefinition">selections</span>, without having 
+  to read or write the entire dataset. 
+
+  <p>The simplest type of selection is a 
+  <span class="termDefinition">simple hyperslab</span>, 
+  an <span class="codeVar">n</span>-dimensional rectangular subset of 
+  a dataset where <span class="codeVar">n</span> is equal to the 
+  dataset&rsquo;s rank.  Other available selections include 
+  a more complex hyperslab with user-defined stride and block size,
+  a list of independent points,
+  and the union of any of these.
+
+  <p>Figure 5 illustrates several sample instances of selections.</p>
+  
+<!-- editingComment
+  <span class="editingComment">
+  See Chapter ?? for more information about selections.</p>
+  </span>
+-->
+  
+<table x-use-null-cells
+		width=300
+		cellspacing=0
+                class="fullImgTable"
+		align="center">
+  <tr valign=top>
+	<td class="fullImgTableImgCell" align="center">   
+    <img src="Images/Pmodel_fig5_a.JPG"><br>
+    <img src="Images/Pmodel_fig5_b.JPG"><br>
+    <img src="Images/Pmodel_fig5_c.JPG"><br>
+    <img src="Images/Pmodel_fig5_d.JPG"><br>
+    <img src="Images/Pmodel_fig5_e.JPG"><br>
+    </td>
+  </tr>
+  <tr> 
+    <td align="left" class="fullImgTableCapCell"> 
+      <span class=figurenumber>Figure 5.</span> 
+      HDF5 dataspace selections can take the form of a simple hyperslab,
+      a hyperslab with user-defined stride and block,
+      a selection of points, or a union of any of the above.
+      <span class="editingComment"><br>[ [ [ 
+      Edit figures to retain... 
+        upper left, 
+        maybe a second simple hyperslab, 
+        2nd left, 
+        box on right (3-D point),
+        and an interesting-looking union.
+      None of the text in the JPEGs need be retained.
+      Use new figure filenames as we are holding the current figure for possible reuse elsewhere.
+      <br>
+      If it's not already been done, remember that the original figure is to be used, in toto, 
+      in the "Memory<-->Disk Data Transfer" discussion, with "Key" to add characters '(hyperslab)'
+      immediately to the right of the hyperslab icon.
+      ] ] ]</span>
+	</td>
+  </tr>
+</table>
+
+
+<!-- NEW PAGE -->
+  <p>Selections and hyperslabs are portions of a dataset. 
+
+  As described above, a <span class="termDefinition">simple hyperslab</span> 
+  is a rectangular array of data elements with the same rank as the 
+  dataset&rsquo;s dataspace.  Thus, a simple hyperslab is a 
+  logically contiguous collection of points within the datset.  
+
+  <p>The more general case of a <span class="termDefinition">hyperslab</span>,
+  can also be a regular pattern of points or blocks within the dataspace.  
+  Four parameters are required to describe a general hyperslab:  
+    the starting coordinates, 
+    the block size,
+    the stride or space between blocks,
+    and the number of blocks.
+  These parameters are each expressed as a one-dimensional array whose length 
+  is equal to the rank of the dataspace.
+  These parameters are described in Table 2.</p>
+  
+<table x-use-null-cells
+		class="ColumnTable"
+		width=600
+		cellspacing=0
+		align="center">
+  <tr valign="bottom">
+    <td colspan="2" align="center" valign="bottom">
+    <span class="tableHead">Table 2.</span>
+    The parameters required to fully define a general hyperslab.</td>
+  </tr>
+  <tr valign=top> 
+    <td class="ColumnLeftHdr"> 
+        <span class=TableHead>Parameter</span></td>
+    <td class="ColumnRightHdr"> 
+        <span class=TableHead>Definition</span></td>
+  <tr valign=top> 
+    <td class="ColumnLeftCell"><span class="codeVar">start</span></td>
+    <td class="ColumnRightCell"> 
+        The coordinates of the starting location of the hyperslab 
+	in the dataset&rsquo;s dataspace.</td>
+  </tr>
+  <tr valign=top> 
+    <td class="ColumnLeftCell"><span class="codeVar">block</span></td>
+    <td class="ColumnRightCell"> 
+        The size of each block to be selected from the dataspace. 
+	If the <span class="codeVar">block</span> parameter is set to NULL, 
+	the block size defaults to a single element in each dimension, 
+	as if the block array was set to all <code>1</code>s (all ones).
+	This will result in the selection of 
+	a uniformly spaced set of <span class="codeVar">count</span> points 
+	starting at <span class="codeVar">start</span> and 
+	on the interval defined by <span class="codeVar">stride</span>.</td>
+  </tr>
+  <tr valign=top> 
+    <td class="ColumnLeftCell"><span class="codeVar">stride</span></td>
+    <td class="ColumnRightCell"> 
+        The number of elements separating the starting point of each element 
+	or block to be selected. 
+	If the <span class="codeVar">stride</span> parameter is set to NULL, 
+	the stride size defaults to 1 (one) in each dimension 
+	and no elements are skipped.</td>
+  </tr>
+  <tr valign=top> 
+    <td class="ColumnLeftBottom"><span class="codeVar">count</span></td>
+    <td class="ColumnRightBottom"> 
+        The number of elements or blocks to select along each dimension.</td>
+  </tr>
+</table>
+
+
+  
+  <p><span class="runningHead">Hyperslab example without strides or blocks.</span>
+  For maximum flexibility in user applications, 
+  a selection in storage can be mapped into a differently-shaped selection in 
+  memory; all that is required is that the two selections contain the same 
+  number of data elements.  
+  In this example, we will first define the selection to be read from the dataset 
+  in storage; we will then define the selection as it will appear in application 
+  memory.
+
+  <p>Suppose we want to read a 3x4 hyperslab from a two-dimensional dataset 
+  in a file, beginning at the dataset element &lt;1,2&gt;.  
+  As illustrated in Figure 6, we must create the dataspace that describes the 
+  overall rank and dimensions of the dataset in the file, as well as the position 
+  and size of the in-file hyperslab that we are extracting from that dataset.</p>
+    
+<table x-use-null-cells
+		width=600
+		cellspacing=0
+                class="fullImgTable"
+		align="center">
+  <tr valign=top> 
+    <td class="fullImgTableImgCell">
+    <pre><code>
+    /* 
+    * Define dataset dataspace in file.
+    */
+    dataspace = H5Dget_space(dataset);    /* dataspace identifier */
+    rank      = H5Sget_simple_extent_ndims(dataspace);
+    status_n  = H5Sget_simple_extent_dims(dataspace, dims_out, NULL);
+
+    /* 
+    * Define hyperslab in the dataset. 
+    */
+    offset[0] = 1;
+    offset[1] = 2;
+    count[0]  = 3;
+    count[1]  = 4;
+    status = H5Sselect_hyperslab(dataspace, H5S_SELECT_SET, offset, NULL, 
+             count, NULL);
+    </code></pre></td>
+  </tr>
+  <tr> 
+    <td align=center class="fullImgTableCapCell"> 
+    <span class=figurenumber>Figure 6.</span>
+    Define the selection to be read from storage.</td>
+  </tr>
+</table>
+
+  <p>The next task is to define an analogous dataspace in memory. 
+  Suppose, for instance, that we have in memory a three-dimensional 7x7x3 array 
+  into which we wish to read the two-dimensional 3x4 hyperslab described above 
+  and that we want the memory to selection to begin at the element &lt;3,0,0&gt;
+  and reside in the plane of the first two dimensions of the array. 
+  Since the in-memory dataspace is three-dimensional, we have to describe  
+  the in-memory selection as three-dimensional.  Since we are keeping the
+  selection in the plane of the first two dimensions of the in-memory dataset, 
+  the in-memory selection will be a 3x4x1 array, defined as &lt;3,4,1&gt;. 
+  
+<!-- NEW PAGE -->
+<!-- NOT EDITED TO..... ----->
+  <p>Notice that we must describe two things: the dimensions of the in-memory 
+  array, and the size and position of the hyperslab that we wish to read in. 
+  Figure 7 illustrates how this would be done.</p>
+  
+<table x-use-null-cells
+		cellspacing=0
+                class="fullImgTable"
+		width=600
+		align="center">
+  <tr valign=top> 
+    <td class="fullImgTableImgCell">
+    <pre><code>
+    /*
+    * Define memory dataspace.
+    */
+    dimsm[0] = 7;
+    dimsm[1] = 7;
+    dimsm[2] = 3;
+    memspace = H5Screate_simple(RANK_OUT,dimsm,NULL);   
+
+    /* 
+    * Define memory hyperslab. 
+    */
+    offset_out[0] = 3;
+    offset_out[1] = 0;
+    offset_out[2] = 0;
+    count_out[0]  = 3;
+    count_out[1]  = 4;
+    count_out[2]  = 1;
+    status = H5Sselect_hyperslab(memspace, H5S_SELECT_SET, offset_out, NULL, 
+             count_out, NULL);
+    </code></pre></td>
+  </tr>
+  <tr> 
+    <td align=center class="fullImgTableCapCell"> 
+    <span class=figurenumber>Figure 7.</span></td>
+  </tr>
+</table>
+
+  <p>The hyperslab in Figure 20 has the following parameters: start=(0,1), 
+  stride=(4,3), count=(2,4), block=(3,2). 
+<!-- .....TO HERE ----->  
+
+  <p>For a second example, consider an example going in the other direction, 
+  writing a selection from memory to a selection in a dataset in a file.
+  Suppose that the source dataspace in memory is a 50-element, 
+  one-dimensional array called <code>vector</code>, as illustrated in 
+  Figure 8 and that the source selection is a 48-element simple hyperslab 
+  selection that starts at the second element of <code>vector</code>.
+  
+<table x-use-null-cells
+       cellspacing="0"
+       class="fullImgTable"
+       width="600"
+       align="center">
+  <tr valign="top">
+    <td class="fullImgTableImgCell" align="center">
+	
+<table x-use-null-cells
+       width="75%"
+       cellspacing="0"
+       class="fullImgTable"
+       align="center">
+  <tr>
+    <td align="center"><br>	  
+	  <table align="center" border="1">
+	    <tr valign="top" align="center">
+              <td>&nbsp;&nbsp;<code>-1</code>&nbsp;&nbsp;</td>
+              <td>&nbsp;&nbsp;<code>1</code>&nbsp;&nbsp;</td>
+              <td>&nbsp;&nbsp;<code>2</code>&nbsp;&nbsp;</td>
+              <td>&nbsp;&nbsp;<code>3</code>&nbsp;&nbsp;</td>
+              <td>&nbsp;&nbsp;<code>...</code>&nbsp;&nbsp;</td>
+              <td>&nbsp;&nbsp;<code>49</code>&nbsp;&nbsp;</td>
+              <td>&nbsp;&nbsp;<code>50</code>&nbsp;&nbsp;</td>
+              <td>&nbsp;&nbsp;<code>-1</code>&nbsp;&nbsp;</td>
+            </tr>
+	  </table>&nbsp;
+	</td></tr></table>
+  </td></tr>
+  <tr> 
+    <td align=center class="fullImgTableCapCell"> 
+        <span class=figurenumber>Figure 8</span></td>
+  </tr>
+</table>
+
+
+<!-- NEW PAGE -->
+  <p>Further suppose that we wish to 
+  write this data to the file as a series of 3x2-element blocks 
+  in a 2-dimensional dataset, 
+  skipping one row and one column between blocks.
+  Since the source selection contains 48 data elements and   
+  each block in the destination selection contains 6 data elements, 
+  we must define the destination selection with 8 blocks; 
+  we'll write 2 blocks in the first dimension and 4 in the second.
+  Figure 9 provides sample code to achieve this objective.</p>
+
+<table x-use-null-cells
+		width=600
+		cellspacing=0
+                class="fullImgTable"
+		align="center">
+  <tr valign=top> 
+    <td class="fullImgTableImgCell">
+    <pre><code>
+    /* Select the hyperslab for the dataset in the file, using 3x2 blocks, 
+     * a (4,3) stride, a (2,4) count, and starting at the position (0,1).
+     */
+    start[0]  = 0; start[1]  = 1;
+    stride[0] = 4; stride[1] = 3;
+    count[0]  = 2; count[1]  = 4;    
+    block[0]  = 3; block[1]  = 2;
+    ret = H5Sselect_hyperslab(fid, H5S_SELECT_SET, start, stride, count, block);
+
+    /*
+     * Create dataspace for the first dataset.
+     */
+    mid1 = H5Screate_simple(MSPACE1_RANK, dim1, NULL);
+
+    /*
+    /*
+     * Select hyperslab. 
+     * We will use 48 elements of the vector buffer starting at the second element.
+     * Selected elements are 1 2 3 . . . 48
+     */
+    start[0]  = 1;
+    stride[0] = 1;
+    count[0]  = 48;
+    block[0]  = 1;
+    ret = H5Sselect_hyperslab(mid1, H5S_SELECT_SET, start, stride, count, block);
+ 
+    /*
+     * Write selection from the vector buffer to the dataset in the file.
+     *
+    ret = H5Dwrite(dataset, H5T_NATIVE_INT, mid1, fid, H5P_DEFAULT, vector)
+    </code></pre></td>
+  </tr>
+  <tr> 
+    <td align=center class="fullImgTableCapCell"> 
+    <span class=figurenumber>Figure 9</span></td>
+  </tr>
+</table>
+
+
+<a name="GetInfo">
+<h4>2.6 Getting information about a dataset</h4>
+</a>
+  
+  <p>Although reading is analogous to writing, it is often first necessary 
+  to query a file to obtain information about the dataset to be read. 
+  For instance, we often need to determine the datatype associated with a 
+  dataset, or its dataspace (i.e., rank and dimensions).  
+  As illustrated in Figure 10, there are several 
+  <span class="termDefinition">get</span> routines for obtaining 
+  this information.</p>
+  
+<table x-use-null-cells
+		width=600
+		cellspacing=0
+                class="fullImgTable"
+		align="center">
+  <tr valign=top> 
+    <td class="fullImgTableImgCell">
+    <pre><code>
+    /*
+    * Get datatype and dataspace identifiers,  
+    * then query datatype class, order and size, and 
+    * dataspace rank and dimensions.
+    */
+
+    datatype  = H5Dget_type(dataset);     /* datatype identifier */ 
+    class     = H5Tget_class(datatype);
+    if (class == H5T_INTEGER) printf("Dataset has INTEGER type \n");
+    order     = H5Tget_order(datatype);
+    if (order == H5T_ORDER_LE) printf("Little endian order \n");
+
+    size  = H5Tget_size(datatype);
+    printf(" Data size is %d \n", size);
+
+    dataspace = H5Dget_space(dataset);    /* dataspace identifier */
+    rank      = H5Sget_simple_extent_ndims(dataspace);
+    status_n  = H5Sget_simple_extent_dims(dataspace, dims_out);
+    printf("rank %d, dimensions %d x %d \n", rank, dims_out[0], dims_out[1]);
+    </code></pre></td>
+  </tr>
+  <tr> 
+    <td align=center class="fullImgTableCapCell"> 
+    <span class=figurenumber>Figure 10</span></td>
+  </tr>
+</table>
+
+
+<a name="CreateCDType">
+<h4>2.7 Creating and defining compound datatypes</h4>
+</a>
+  
+  <p><a name="SupScript2">
+  An HDF5 <span class="termDefinition">compound datatype</span> 
+  is similar to a C struct or a Fortran common block. 
+  Though not originally designed with databases in mind, HDF5 compound 
+  datatypes are sometimes used in a manner analogous to a database record.
+  
+  <p>HDF5 defines a compound datatype as a collection of one or more 
+  data elements.  Each elements is an atomic type, a small array, or 
+  another compound datatype.  The provision for nested compound datatypes 
+  allows these structures become quite complex. 
+  Compound datatypes thus become either a powerful tool 
+  or a complex and difficult to debug construct; 
+  reasonable caution is advised.
+
+  <p>To create and use a compound datatype, 
+  you need to create a datatype with class 
+  <span class="termDefinition">compound</span> (<code>H5T_COMPOUND</code>) 
+  and specify the total size of the data element in bytes. 
+  A compound datatype consists of zero or more uniquely named members. 
+  Members can be defined in any order but must occupy non-overlapping regions 
+  within the datum.  
+  Table 3 lists the properties of compound datatype members.</p></a>
+  
+<table x-use-null-cells
+		class="ColumnTable"
+		width=600
+		cellspacing=0
+		align="center">
+  <tr valign="bottom">
+    <td colspan="2" align="center" valign="bottom">
+	  <h4>Table 3</h4></td>
+  </tr>
+  <tr valign=top> 
+    <td class="ColumnLeftHdr" width="50%"> 
+        <p><span class=TableHead>Parameter</span></td>
+    <td class="ColumnRightHdr" width="50%"> 
+        <p><span class=TableHead>Definition</span></td>
+  <tr valign=top> 
+    <td class="ColumnLeftCell"> <p>Index</td>
+    <td class="ColumnRightCell"> <p>An index number between 
+	  zero and N-1, where N is the number of members in the 
+	  compound. The elements are indexed in the order of 
+	  their location in the array of bytes.</td>
+  </tr>
+  <tr valign=top> 
+    <td class="ColumnLeftCell"> <p>Name</td>
+    <td class="ColumnRightCell"> 
+      <p>A string that must be unique within the members 
+	  of the same datatype.</td>
+  </tr>
+  <tr valign=top> 
+    <td class="ColumnLeftCell"> <p>Datatype</td>
+    <td class="ColumnRightCell"> <p>An HDF5 datatype.</td>
+  </tr>
+  <tr valign=top> 
+    <td class="ColumnLeftBottom"> <p>Offset</td>
+    <td class="ColumnRightBottom"> <p>A fixed byte offset, 
+      which defines the location of the first byte of that 
+	  member in the compound datatype.</td>
+  </tr>
+</table>
+
+<!-- NEW PAGE -->
+  <p>Properties of the members of a compound datatype are 
+  defined when the member is added to the compound type and 
+  cannot be subsequently modified. 
+
+<h4>Defining compound datatypes.</h4> 
+  
+  <p>Compound datatypes must be built out of other datatypes. 
+  First, one creates an empty compound datatype and specifies 
+  its total size. Members are then added to the compound datatype 
+  in any order. 
+  
+  <p>Each member must have a descriptive name, which is the 
+  key used to uniquely identify the member within the 
+  compound datatype. A member name in an HDF5 datatype does 
+  not necessarily have to be the same as the name of the 
+  corresponding member in the C struct in memory, although 
+  this is often the case. Nor does one need to define all 
+  members of the C struct in the HDF5 compound datatype 
+  (or vice versa). 
+  
+  <p>Usually a C struct will be defined to hold a data 
+  point in memory, and the offsets of the members in memory 
+  will be the offsets of the struct members from the beginning 
+  of an instance of the struct. The library defines the macro 
+  that computes the offset of member <code>m</code> within a 
+  struct variable <code>s</code>.: 
+  
+  <dir><p><code>HOFFSET(s,m)</code></dir>
+  
+  <p>Figure 11 shows an example in which a compound datatype 
+  is created to describe complex numbers whose type is defined 
+  by the complex_t struct.</p>
+  
+<table x-use-null-cells
+		width=600
+		cellspacing=0
+                class="fullImgTable"
+		align="center">
+  <tr valign=top> 
+    <td class="fullImgTableImgCell">
+    <pre><code>
+    Typedef struct {
+       double re;   /*real part */
+       double im;   /*imaginary part */
+    } complex_t;
+
+    complex_t tmp;  /*used only to compute offsets */
+    hid_t complex_id = H5Tcreate (H5T_COMPOUND, sizeof tmp);
+    H5Tinsert (complex_id, "real", HOFFSET(tmp,re),
+               H5T_NATIVE_DOUBLE);
+    H5Tinsert (complex_id, "imaginary", HOFFSET(tmp,im),
+               H5T_NATIVE_DOUBLE);
+    </code></pre></td>
+  </tr>
+  <tr> 
+    <td align=center class="fullImgTableCapCell"> 
+    <span class=figurenumber>Figure 11</span></td>
+  </tr>
+</table>
+
+<!-- editingComment
+  <span class="editingComment">
+  <p>For more information about Datatypes, see Chapter ???.
+  </span>
+-->
+
+
+<a name="ExtendChunked">
+<h4>2.8 Creating and writing extendible and chunked datasets</h4>
+</a>
+  
+  <p>An extendible dataset is one whose dimensions can grow. 
+  One can define an HDF5 dataset to have certain initial 
+  dimensions, with the capacity to later increase the size 
+  of any of the initial dimensions. 
+  
+  <p>For example, Figure 12 shows a  3x3 dataset (a), 
+  which  is later extended to be a 10x3 dataset by adding 7 
+  rows (b), and further extended to be a 10x5 dataset by 
+  adding two columns (c).</p>
+
+<table x-use-null-cells
+       width="600"
+       cellspacing="0"
+       class="fullImgTable"
+       align="center">
+  <tr valign="top">
+    <td class="fullImgTableImgCell" align="center">
+
+<table x-use-null-cells
+       width="80%"
+       cellspacing="0"
+       class="fullImgTable"
+       align="center">
+  <tr>
+    <td align="center"><br>
+    
+    <table align="center">
+      <tr>
+        <td valign="middle" align="center" width="45%">
+          
+          <table align="center" border="1">
+            <tr>
+              <td>&nbsp;&nbsp;<code>1</code>&nbsp;&nbsp;</td>
+              <td>&nbsp;&nbsp;<code>1</code>&nbsp;&nbsp;</td>
+              <td>&nbsp;&nbsp;<code>1</code>&nbsp;&nbsp;</td>
+            </tr>
+            <tr>
+              <td>&nbsp;&nbsp;<code>1</code>&nbsp;&nbsp;</td>
+              <td>&nbsp;&nbsp;<code>1</code>&nbsp;&nbsp;</td>
+              <td>&nbsp;&nbsp;<code>1</code>&nbsp;&nbsp;</td>
+            </tr>
+            <tr>
+              <td>&nbsp;&nbsp;<code>1</code>&nbsp;&nbsp;</td>
+              <td>&nbsp;&nbsp;<code>1</code>&nbsp;&nbsp;</td>
+              <td>&nbsp;&nbsp;<code>1</code>&nbsp;&nbsp;</td>
+            </tr>
+          </table>
+          a)&nbsp;Initially,&nbsp;3&nbsp;x&nbsp;3
+          <br>&nbsp;<br>
+          <table align="center" border="1">
+            <tr>
+              <td>&nbsp;&nbsp;<code>1</code>&nbsp;&nbsp;</td>
+              <td>&nbsp;&nbsp;<code>1</code>&nbsp;&nbsp;</td>
+              <td>&nbsp;&nbsp;<code>1</code>&nbsp;&nbsp;</td>
+            </tr>
+            <tr>
+              <td>&nbsp;&nbsp;<code>1</code>&nbsp;&nbsp;</td>
+              <td>&nbsp;&nbsp;<code>1</code>&nbsp;&nbsp;</td>
+              <td>&nbsp;&nbsp;<code>1</code>&nbsp;&nbsp;</td>
+            </tr>
+            <tr>
+              <td>&nbsp;&nbsp;<code>1</code>&nbsp;&nbsp;</td>
+              <td>&nbsp;&nbsp;<code>1</code>&nbsp;&nbsp;</td>
+              <td>&nbsp;&nbsp;<code>1</code>&nbsp;&nbsp;</td>
+            </tr>
+            <tr>
+              <td>&nbsp;&nbsp;<code>2</code>&nbsp;&nbsp;</td>
+              <td>&nbsp;&nbsp;<code>2</code>&nbsp;&nbsp;</td>
+              <td>&nbsp;&nbsp;<code>2</code>&nbsp;&nbsp;</td>
+            </tr>
+            <tr>
+              <td>&nbsp;&nbsp;<code>2</code>&nbsp;&nbsp;</td>
+              <td>&nbsp;&nbsp;<code>2</code>&nbsp;&nbsp;</td>
+              <td>&nbsp;&nbsp;<code>2</code>&nbsp;&nbsp;</td>
+            </tr>
+            <tr>
+              <td>&nbsp;&nbsp;<code>2</code>&nbsp;&nbsp;</td>
+              <td>&nbsp;&nbsp;<code>2</code>&nbsp;&nbsp;</td>
+              <td>&nbsp;&nbsp;<code>2</code>&nbsp;&nbsp;</td>
+            </tr>
+            <tr>
+              <td>&nbsp;&nbsp;<code>2</code>&nbsp;&nbsp;</td>
+              <td>&nbsp;&nbsp;<code>2</code>&nbsp;&nbsp;</td>
+              <td>&nbsp;&nbsp;<code>2</code>&nbsp;&nbsp;</td>
+            </tr>
+            <tr>
+              <td>&nbsp;&nbsp;<code>2</code>&nbsp;&nbsp;</td>
+              <td>&nbsp;&nbsp;<code>2</code>&nbsp;&nbsp;</td>
+              <td>&nbsp;&nbsp;<code>2</code>&nbsp;&nbsp;</td>
+            </tr>
+            <tr>
+              <td>&nbsp;&nbsp;<code>2</code>&nbsp;&nbsp;</td>
+              <td>&nbsp;&nbsp;<code>2</code>&nbsp;&nbsp;</td>
+              <td>&nbsp;&nbsp;<code>2</code>&nbsp;&nbsp;</td>
+            </tr>
+            <tr>
+              <td>&nbsp;&nbsp;<code>2</code>&nbsp;&nbsp;</td>
+              <td>&nbsp;&nbsp;<code>2</code>&nbsp;&nbsp;</td>
+              <td>&nbsp;&nbsp;<code>2</code>&nbsp;&nbsp;</td>
+            </tr>
+          </table>
+          b)&nbsp;Extend&nbsp;to&nbsp;10&nbsp;x&nbsp;3
+
+        </td>
+        <td valign="middle" align="center" width="55%">
+        <code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code>
+        </td>
+        <td valign="middle" align="center" width="55%">
+        
+          <table align="center" border="1">
+            <tr>
+              <td>&nbsp;&nbsp;<code>1</code>&nbsp;&nbsp;</td>
+              <td>&nbsp;&nbsp;<code>1</code>&nbsp;&nbsp;</td>
+              <td>&nbsp;&nbsp;<code>1</code>&nbsp;&nbsp;</td>
+              <td>&nbsp;&nbsp;<code>3</code>&nbsp;&nbsp;</td>
+              <td>&nbsp;&nbsp;<code>3</code>&nbsp;&nbsp;</td>
+            </tr>
+            <tr>
+              <td>&nbsp;&nbsp;<code>1</code>&nbsp;&nbsp;</td>
+              <td>&nbsp;&nbsp;<code>1</code>&nbsp;&nbsp;</td>
+              <td>&nbsp;&nbsp;<code>1</code>&nbsp;&nbsp;</td>
+              <td>&nbsp;&nbsp;<code>3</code>&nbsp;&nbsp;</td>
+              <td>&nbsp;&nbsp;<code>3</code>&nbsp;&nbsp;</td>
+            </tr>
+            <tr>
+              <td>&nbsp;&nbsp;<code>1</code>&nbsp;&nbsp;</td>
+              <td>&nbsp;&nbsp;<code>1</code>&nbsp;&nbsp;</td>
+              <td>&nbsp;&nbsp;<code>1</code>&nbsp;&nbsp;</td>
+              <td>&nbsp;&nbsp;<code>3</code>&nbsp;&nbsp;</td>
+              <td>&nbsp;&nbsp;<code>3</code>&nbsp;&nbsp;</td>
+            </tr>
+            <tr>
+              <td>&nbsp;&nbsp;<code>2</code>&nbsp;&nbsp;</td>
+              <td>&nbsp;&nbsp;<code>2</code>&nbsp;&nbsp;</td>
+              <td>&nbsp;&nbsp;<code>2</code>&nbsp;&nbsp;</td>
+              <td>&nbsp;&nbsp;<code>3</code>&nbsp;&nbsp;</td>
+              <td>&nbsp;&nbsp;<code>3</code>&nbsp;&nbsp;</td>
+            </tr>
+            <tr>
+              <td>&nbsp;&nbsp;<code>2</code>&nbsp;&nbsp;</td>
+              <td>&nbsp;&nbsp;<code>2</code>&nbsp;&nbsp;</td>
+              <td>&nbsp;&nbsp;<code>2</code>&nbsp;&nbsp;</td>
+              <td>&nbsp;&nbsp;<code>3</code>&nbsp;&nbsp;</td>
+              <td>&nbsp;&nbsp;<code>3</code>&nbsp;&nbsp;</td>
+            </tr>
+            <tr>
+              <td>&nbsp;&nbsp;<code>2</code>&nbsp;&nbsp;</td>
+              <td>&nbsp;&nbsp;<code>2</code>&nbsp;&nbsp;</td>
+              <td>&nbsp;&nbsp;<code>2</code>&nbsp;&nbsp;</td>
+              <td>&nbsp;&nbsp;<code>3</code>&nbsp;&nbsp;</td>
+              <td>&nbsp;&nbsp;<code>3</code>&nbsp;&nbsp;</td>
+            </tr>
+            <tr>
+              <td>&nbsp;&nbsp;<code>2</code>&nbsp;&nbsp;</td>
+              <td>&nbsp;&nbsp;<code>2</code>&nbsp;&nbsp;</td>
+              <td>&nbsp;&nbsp;<code>2</code>&nbsp;&nbsp;</td>
+              <td>&nbsp;&nbsp;<code>3</code>&nbsp;&nbsp;</td>
+              <td>&nbsp;&nbsp;<code>3</code>&nbsp;&nbsp;</td>
+            </tr>
+            <tr>
+              <td>&nbsp;&nbsp;<code>2</code>&nbsp;&nbsp;</td>
+              <td>&nbsp;&nbsp;<code>2</code>&nbsp;&nbsp;</td>
+              <td>&nbsp;&nbsp;<code>2</code>&nbsp;&nbsp;</td>
+              <td>&nbsp;&nbsp;<code>3</code>&nbsp;&nbsp;</td>
+              <td>&nbsp;&nbsp;<code>3</code>&nbsp;&nbsp;</td>
+            </tr>
+            <tr>
+              <td>&nbsp;&nbsp;<code>2</code>&nbsp;&nbsp;</td>
+              <td>&nbsp;&nbsp;<code>2</code>&nbsp;&nbsp;</td>
+              <td>&nbsp;&nbsp;<code>2</code>&nbsp;&nbsp;</td>
+              <td>&nbsp;&nbsp;<code>3</code>&nbsp;&nbsp;</td>
+              <td>&nbsp;&nbsp;<code>3</code>&nbsp;&nbsp;</td>
+            </tr>
+            <tr>
+              <td>&nbsp;&nbsp;<code>2</code>&nbsp;&nbsp;</td>
+              <td>&nbsp;&nbsp;<code>2</code>&nbsp;&nbsp;</td>
+              <td>&nbsp;&nbsp;<code>2</code>&nbsp;&nbsp;</td>
+              <td>&nbsp;&nbsp;<code>3</code>&nbsp;&nbsp;</td>
+              <td>&nbsp;&nbsp;<code>3</code>&nbsp;&nbsp;</td>
+            </tr>
+          </table>
+          c)&nbsp;Extend&nbsp;to&nbsp;10&nbsp;x&nbsp;5
+      </tr>
+    </table>&nbsp;
+  </td></tr></table>
+  </td></tr>
+  <tr> 
+    <td align=center class="fullImgTableCapCell"> 
+        <span class=figurenumber>Figure 12</span></td>
+  </tr>
+</table>
+
+  <p>HDF5 requires the use of chunking when defining 
+  extendible datasets. Chunking makes it possible to extend 
+  datasets efficiently, without having to reorganize contiguous 
+  storage excessively. 
+  
+  <br>To summarize, an extendible dataset requires two conditions:
+  
+  <ol> 
+      <li>The dataspace of the dataset to be defined as unlimited in 
+          all dimensions that might eventually be extended. 
+      <li>The dataset creation properties must enable chunking. 
+  </ol>
+  
+  <p>For example, suppose we wish to create a dataset similar 
+  to the one shown in Figure 12. We want to start with a 3x3 
+  dataset, then later extend it. 
+  
+  <p>Declare the dataspace to have unlimited dimensions with 
+  the following code. Note the use of the predefined constant 
+  <code>H5S_UNLIMITED</code> to specify that a dimension is 
+  unlimited.</p>
+  
+<table x-use-null-cells
+		width=600
+		cellspacing=0
+                class="fullImgTable"
+		align="center">
+  <tr valign=top> 
+    <td class="fullImgTableImgCell">
+    <pre><code>
+    Hsize_t dims[2] = {3, 3}; /* dataset dimensions
+    at the creation time */ 
+    hsize_t maxdims[2] = {H5S_UNLIMITED, H5S_UNLIMITED};
+    /*
+     * Create the data space with unlimited dimensions. 
+     */
+    dataspace = H5Screate_simple(RANK, dims, maxdims); 
+    </code></pre></td>
+  </tr>
+  <tr> 
+    <td align=center class="fullImgTableCapCell"> 
+    <span class=figurenumber>Figure 13</span></td>
+  </tr>
+</table>
+
+<!-- NEW PAGE -->
+  <p>Next set the dataset creation property list to 
+  enable chunking:</p> 
+
+<table x-use-null-cells
+		width=600
+		cellspacing=0
+                class="fullImgTable"
+		align="center">
+  <tr valign=top> 
+    <td class="fullImgTableImgCell">
+    <pre><code>
+    Hid_t cparms; 
+    hsize_t chunk_dims[2] ={2, 5};
+    /* 
+     * Modify dataset creation properties to enable chunking.
+     */
+    cparms = H5Pcreate (H5P_DATASET_CREATE);
+    status = H5Pset_chunk( cparms, RANK, chunk_dims);
+    </code></pre></td>
+  </tr>
+  <tr> 
+    <td align=center class="fullImgTableCapCell"> 
+    <span class=figurenumber>Figure 14</span></td>
+  </tr>
+</table>
+
+  <p>Then create the dataset:</p> 
+
+<table x-use-null-cells
+		width=600
+		cellspacing=0
+                class="fullImgTable"
+		align="center">
+  <tr valign=top> 
+    <td class="fullImgTableImgCell">
+    <pre><code>
+    /*
+     * Create a new dataset within the file using cparms
+     * creation properties.
+     */
+    dataset = H5Dcreate(file, DATASETNAME, H5T_NATIVE_INT, dataspace,
+                     cparms);
+    </code></pre></td>
+  </tr>
+  <tr> 
+    <td align=center class="fullImgTableCapCell"> 
+    <span class=figurenumber>Figure 15</span></td>
+  </tr>
+</table>
+
+  <p>Finally, when the time comes to extend the size of 
+  the dataset, invoke <code>H5Dextend</code>. Extending 
+  the dataset along the first dimension, by seven rows, 
+  leaves the dataset with new dimensions of &lt;10,3&gt;:</p> 
+
+<table x-use-null-cells
+		width=600
+		cellspacing=0
+                class="fullImgTable"
+		align="center">
+  <tr valign=top> 
+    <td class="fullImgTableImgCell">
+    <pre><code>
+    /*
+     * Extend the dataset. Dataset becomes 10 x 3.
+     */
+    dims[0] = dims[0] + 7;
+    size[0] = dims[0]; 
+    size[1] = dims[1]; 
+    status = H5Dextend (dataset, size);
+    </code></pre></td>
+  </tr>
+  <tr> 
+    <td align=center class="fullImgTableCapCell"> 
+    <span class=figurenumber>Figure 16</span></td>
+  </tr>
+</table>
+
+
+<a name="Groups">
+<h4>2.9 Creating and working with groups in a file</h4>
+</a>
+  
+  <p>Groups provide a mechanism for organizing meaningful 
+  and extendible sets of datasets within an HDF5 file. The H5G 
+  API provides several routines for working with groups. 
+
+<h4>Creating a group.</h4>
+  
+  <p>With no datatype, dataspace or storage layout to define, 
+  creating a group is considerably simpler than creating a 
+  dataset. For example, the following code creates a group 
+  called <code>Data</code> in the root group of 
+  <code>file</code>.</p>
+  
+<table x-use-null-cells
+		width=600
+		cellspacing=0
+                class="fullImgTable"
+		align="center">
+  <tr valign=top> 
+    <td class="fullImgTableImgCell">
+    <pre><code>
+    /*
+      *  Create a group in the file.
+      */
+     grp = H5Gcreate(file, "/Data", 0);
+    </code></pre></td>
+  </tr>
+  <tr> 
+    <td align=center class="fullImgTableCapCell"> 
+    <span class=figurenumber>Figure 17</span></td>
+  </tr>
+</table>
+
+<!-- NEW PAGE -->
+  <p>A group may be created in another group by providing 
+  the absolute name of the group to the H5Gcreate function 
+  or by specifying its location. For example, to create the 
+  group Data_new in the group <code>Data</code>, one can use 
+  the following sequence of calls:</p>
+  
+<table x-use-null-cells
+		width=600
+		cellspacing=0
+                class="fullImgTable"
+		align="center">
+  <tr valign=top> 
+    <td class="fullImgTableImgCell">
+    <pre><code>
+    /*
+      * Create group "Data_new" in the group "Data" by specifying
+      * absolute name of the group.
+      */
+     grp_new = H5Gcreate(file, "/Data/Data_new", 0);
+
+    or 
+
+     /*
+      * Create group "Data_new" in the "Data" group.
+      */
+     grp_new = H5Gcreate(grp, "Data_new", 0);
+    </code></pre></td>
+  </tr>
+  <tr> 
+    <td align=center class="fullImgTableCapCell"> 
+    <span class=figurenumber>Figure 18</span></td>
+  </tr>
+</table>
+
+  <p>This first parameter is a location identifier. 
+  <code>file</code> in the first example specifies only 
+  the file. <code>grp</code> in the second example specifies 
+  a particular group in a particular file. Note that in 
+  this instance, the group identifier <code>grp</code> is 
+  used as the first parameter in the <code>H5Gcreate</code> 
+  call so that the relative name of <code>Data_new</code> 
+  can be used.
+  
+  <p>The third parameter of <code>H5Gcreate</code> optionally specifies how much file space to 
+  reserve to store the names of objects that will be created 
+  in this group. If a non-positive value is supplied, the 
+  library provides a default size.</p> 
+  
+  <p><code>H5Gclose</code> closes the group and releases 
+  the group identifier. 
+  
+  <p><strong>Creating a dataset in a particular group.</strong> 
+  As with groups, a dataset can be created in a particular group 
+  by specifying either its absolute name in the file or its relative 
+  name with respect to that group. The next code excerpt 
+  uses the absolute name:</p> 
+
+<table x-use-null-cells
+		width=600
+		cellspacing=0
+                class="fullImgTable"
+		align="center">
+  <tr valign=top> 
+    <td class="fullImgTableImgCell">
+    <pre><code>
+  /*
+    * Create the dataset "Compressed_Data" in the group Data using the 
+    * absolute name. The dataset creation property list is modified 
+    * to use GZIP compression with the compression effort set to 6.
+    * Note that compression can be used only when the dataset is 
+    * chunked.
+    */
+   dims[0] = 1000;
+   dims[1] = 20;
+   cdims[0] = 20;
+   cdims[1] = 20;
+   dataspace = H5Screate_simple(RANK, dims, NULL);
+   plist     = H5Pcreate(H5P_DATASET_CREATE);
+               H5Pset_chunk(plist, 2, cdims);
+               H5Pset_deflate( plist, 6);
+   dataset = H5Dcreate(file, "/Data/Compressed_Data", 
+                 H5T_NATIVE_INT, dataspace, plist);
+    </code></pre></td>
+  </tr>
+  <tr> 
+    <td align=center class="fullImgTableCapCell"> 
+	<span class=figurenumber>Figure 19</span></td>
+  </tr>
+</table>
+
+<!-- NEW PAGE -->
+  <p>Alternatively, one can first obtain an identifier for 
+  the group in which the dataset is to be created, then 
+  create the dataset with a relative name:</p> 
+
+<table x-use-null-cells
+		width=600
+		cellspacing=0
+                class="fullImgTable"
+		align="center">
+  <tr valign=top> 
+    <td class="fullImgTableImgCell">
+    <pre><code>
+  /* 
+    * Open the group.
+    */
+   grp = H5Gopen(file, "Data");
+
+   /*
+    * Create the dataset "Compressed_Data" in the "Data" group
+    * by providing a group identifier and a relative dataset 
+    * name as parameters to the H5Dcreate function.
+    */
+   dataset = H5Dcreate(grp, "Compressed_Data", H5T_NATIVE_INT,
+                       dataspace, plist);
+    </code></pre></td>
+  </tr>
+  <tr> 
+    <td align=center class="fullImgTableCapCell"> 
+	<span class=figurenumber>Figure 20 </span></td>
+  </tr>
+</table>
+
+  <p>Accessing an object in a group. Any object in a group 
+  can be accessed by its absolute or relative name. The 
+  first code snippet below illustrates the use of the absolute 
+  name to access the dataset <code>Compressed_Data</code> in 
+  the group <code>Data</code> created in the examples above. 
+  The second code snippet illustrates the use of the 
+  relative name.</p>
+
+<table x-use-null-cells
+		width=600
+		cellspacing=0
+                class="fullImgTable"
+		align="center">
+  <tr valign=top> 
+    <td class="fullImgTableImgCell">
+    <pre><code>
+    /*
+     * Open the dataset "Compressed_Data" in the "Data" group. 
+     */
+    dataset = H5Dopen(file, "/Data/Compressed_Data");
+    </code></pre></td>
+  </tr>
+  <tr> 
+    <td align=center class="fullImgTableCapCell"> 
+	<span class=figurenumber>Figure 21 </span></td>
+  </tr>
+</table>
+<br>
+
+<table x-use-null-cells
+		width=600
+		cellspacing=0
+                class="fullImgTable"
+		align="center">
+  <tr valign=top> 
+    <td class="fullImgTableImgCell">
+    <pre><code>
+    /*
+     * Open the group "data" in the file.
+     */
+    grp  = H5Gopen(file, "Data");
+ 
+    /*
+     * Access the "Compressed_Data" dataset in the group.
+     */
+    dataset = H5Dopen(grp, "Compressed_Data");
+    </code></pre></td>
+  </tr>
+  <tr> 
+    <td align=center class="fullImgTableCapCell"> 
+	<span class=figurenumber>Figure 22</span></td>
+  </tr>
+</table>
+
+
+<!-- NEW PAGE -->
+<a name="Attrs">
+<h4>2.10 Working with attributes</h4>
+</a>
+  
+  <p>An attribute is a small datasets that is attached to 
+  a normal dataset or group. Attributes share many of the 
+  characteristics of datasets, so the programming model for 
+  working with attributes is analogous in many ways to the 
+  model for working with datasets. The primary differences 
+  are that an attribute must be attached to a dataset or a 
+  group and subsetting operations cannot be performed on 
+  attributes. 
+  
+  <p>To create an attribute belonging to a particular 
+  dataset or group, first create a dataspace for the attribute 
+  with the call to <code>H5Screate</code>, then create the 
+  attribute using <code>H5Acreate</code>. For example, the 
+  following code creates an attribute called 
+  <code>Integer_attribute</code> that is a member of a dataset 
+  whose identifier is dataset. The attribute identifier is 
+  <code>attr2</code>. <code>H5Awrite</code> then sets the value of 
+  the attribute of that of the integer variable point. 
+  <code>H5Aclose</code> then releases the attribute 
+  identifier.</p>
+
+
+<table x-use-null-cells
+		width=600
+		cellspacing=0
+                class="fullImgTable"
+		align="center">
+  <tr valign=top> 
+    <td class="fullImgTableImgCell">
+    <pre><code>
+    Int point = 1;                         /* Value of the scalar attribute */ 
+
+    /*
+     * Create scalar attribute.
+     */
+    aid2  = H5Screate(H5S_SCALAR);
+    attr2 = H5Acreate(dataset, "Integer attribute", H5T_NATIVE_INT, aid2,
+                      H5P_DEFAULT);
+
+    /*
+     * Write scalar attribute.
+     */
+     ret = H5Awrite(attr2, H5T_NATIVE_INT, &point); 
+
+    /*
+     * Close attribute dataspace.
+     */
+    ret = H5Sclose(aid2); 
+
+    /*
+     * Close attribute.
+     */
+    ret = H5Aclose(attr2); 
+    </code></pre></td>
+  </tr>
+  <tr> 
+    <td align=center class="fullImgTableCapCell"> 
+	<span class=figurenumber>Figure 23 </span></td>
+  </tr>
+</table>
+
+  <p>To read a scalar attribute whose name and datatype 
+  are known, first open the attribute using 
+  <code>H5Aopen_name</code>, then use <code>H5Aread</code> 
+  to get its value. For example the following reads a scalar 
+  attribute called <code>Integer_attribute</code> whose 
+  datatype is a native integer, and whose parent dataset 
+  has the identifier dataset.</p> 
+
+<table x-use-null-cells
+		width=600
+		cellspacing=0
+                class="fullImgTable"
+		align="center">
+  <tr valign=top> 
+    <td class="fullImgTableImgCell">
+    <pre><code>
+    /*
+     * Attach to the scalar attribute using attribute name, then read and 
+     * display its value.
+     */
+    attr = H5Aopen_name(dataset,"Integer attribute");
+    ret  = H5Aread(attr, H5T_NATIVE_INT, &point_out);
+    printf("The value of the attribute \"Integer attribute\" is %d \n", point_out); 
+    ret =  H5Aclose(attr);
+    </code></pre></td>
+  </tr>
+  <tr> 
+    <td align=center class="fullImgTableCapCell"> 
+	<span class=figurenumber>Figure 24 </span></td>
+  </tr>
+</table>
+
+<!-- NEW PAGE --> 
+  <p><strong>Reading an attribute whose characteristics are 
+  not known</strong>. It may be necessary to query a file to 
+  obtain information about an attribute, namely its name, 
+  datatype, rank and dimensions. The following code opens an 
+  attribute by its index value using <code>H5Aopen_index</code>, 
+  then reads in information about its datatype.</p> 
+
+<table x-use-null-cells
+		width=600
+		cellspacing=0
+                class="fullImgTable"
+		align="center">
+  <tr valign=top> 
+    <td class="fullImgTableImgCell"> <pre><code>
+    /*
+     * Attach to the string attribute using its index, then read and display the value.
+     */
+    attr =  H5Aopen_idx(dataset, 2);
+    atype = H5Tcopy(H5T_C_S1);
+            H5Tset_size(atype, 4);
+    ret   = H5Aread(attr, atype, string_out);
+    printf("The value of the attribute with the index 2 is %s \n", string_out);
+    </code></pre>
+    </td>
+  </tr>
+  <tr> 
+    <td align=center class="fullImgTableCapCell"> 
+	<span class=figurenumber>Figure 25</span></td>
+  </tr>
+</table>
+
+  <p>In practice, if the characteristics of attributes 
+  are not known, the code involved in accessing and processing 
+  the attribute can be quite complex. For this reason, HDF5 
+  includes a function called H5Aiterate, which applies a 
+  user-supplied function to each of a set of attributes. 
+  The user-supplied function can contain the code that 
+  interprets, accesses and processes each attribute.</p> 
+
+<a name="IOPipeline">
+<h3>3. The Data Transfer Pipeline</h3>
+</a>
+  
+<!-- editingComment
+  <span class="editingComment">[ [ [
+  This section needs to be reviewed in detail by QAK and others.
+  ] ] ]<
+  br><br>
+  [ [ [
+  There probably should be a whole chapter on data transfer, 
+  selection, transformation, etc.}</em>
+  ] ] ]</span>
+-->
+
+  <p>The HDF5 Library implements data transfers between 
+  different storage locations. At the lowest levels, the 
+  HDF5 Library reads and writes blocks of bytes to and from 
+  storage using calls to the VFL drivers. In addition to this, 
+  the HDF5 Library manages caches of metadata and a data I/O 
+  pipeline that applies compression to data blocks, transforms 
+  data elements, and implements selections.   
+  
+  <p>As a data management library, a substantial portion of 
+  the HDF5 Library's work is in transferring data from one 
+  environment or media to another. This most often involves 
+  a transfer between system memory and a storage medium.
+  With the use of compression and encryption, machine-dependent 
+  differences in numerical representation, etc., the bit-by-bit 
+  representation of a given dataset is often substantially 
+  different in the two environments.
+  
+  <p>Consider the representation on disk of a compressed and 
+  encrypted little-endian array as compared to the same array 
+  after it has read from disk, decrypted, decompressed and loaded 
+  into memory on a big-endian system. HDF5 performs all of the 
+  operations necessary to make that transition during the I/O 
+  process, with many of the operations being handled by the virtual 
+  file layer (VFL) and the data transfer pipeline.
+  
+  <p>Figure 26 provides a simplified view of 
+  a sample data transfer with four stages. Note that the 
+  modules are used only when needed, e.g., if the data is 
+  not compressed, the compression stage is omitted.
+
+<table x-use-null-cells
+		width=300
+		cellspacing=0
+                class="fullImgTable"
+		align="center">
+  <tr valign=top> 
+    <td class="fullImgTableImgCell" align="center">
+    <img src="Images/Pmodel_fig26.JPG">
+    </td>
+  </tr>
+  <tr> 
+    <td align=center class="fullImgTableCapCell"> 
+        <span class=figurenumber>Figure 26</span></td>
+  </tr>
+</table>
+  
+  <p>For a given I/O requests, different combinations of 
+  actions may be performed by the pipeline. The library 
+  automatically sets up the pipeline and passes data through 
+  the processing steps. For example, for a <em>read</em> request 
+  (from disk to memory), the library must determine which 
+  logical blocks contain the requested data elements and fetch 
+  each block into the library's cache. If the data needs to be 
+  decompressed, then the compression algorithm is applied to 
+  the block after it is read from disk. If the data is a selection, 
+  the selected elements are extracted from the data block after it 
+  is decompressed. If the data needs to be transformed (e.g., byte 
+  swapped), then the data elements are transformed after 
+  decompression and selection.
+  
+<!-- NEW PAGE -->
+  <p>While an application must sometimes set up some elements 
+  of the pipeline, e.g., the use of a custom error-checking 
+  algorithm, use of the pipeline is normally transparent to 
+  the user program; the library determines what must be done 
+  based on the metadata for the file, the object, and the 
+  specific request.  
+<!-- editingComment
+  <span class="editingComment">
+  For more details of the pipeline, see [citeit].</p>
+  </span>
+-->
+  
+  <p>In some cases it is necessary to pass parameters to 
+  and from modules in the pipeline, or among other parts 
+  of the library that are not directly called through the 
+  programming API. This is accomplished through the use of 
+  dataset transfer and data access property lists. 
+  
+  <p>The VFL, or virtual file layer, provides an interface 
+  whereby user applications can add custom modules to the data 
+  transfer pipeline. For example, a custom compression algorithm 
+  can be used with the HDF5 Library by linking an appropriate module 
+  into the pipeline through the VFL.  This requires creating an 
+  appropriate wrapper for the compression module  
+<!-- editingComment
+  <span class="editingComment">[ [ [
+  [cite filter doc and ref manual] 
+  ] ] ]</span>
+-->
+  and registering it with the library with <code>H5Zregister</code>.
+  It can then be applied to a dataset with an <code>H5Pset_filter</code> 
+  call, which will add it to the selected dataset's transfer 
+  property list.</p>
+  
+
+<SCRIPT language="JavaScript">
+<!--
+document.writeln ("
+<div align=right>
+<a href="#TOP"><font size=-1>(Top)</font></a>
+</div>
+</a>
+");
+-->
+</SCRIPT>
+
+<br><br><br>
+<br><br><br>
+
+<a name="FootNote"><hr width="200px" align="left"></a>
+
+  <p><font size="-1"><sup><a href="#SupScript1">1</a></sup>HDF5 requires random 
+  access to the linear address space. For this reason it is not well suited for 
+  some data media, such as streams.</font></p>
+  
+  <p><font size="-1"><sup><a href="#SupScript3">3</a></sup>It could be said that 
+  HDF5 extends the organizing concepts of a file system to the internal structure 
+  of a single file.</font></p>
+  
+  <p><font size="-1"><sup><a href="#SupScript4">4</a></sup>As of HDF5-1.4, the 
+  storage used for an object is reclaimed, even if all links 
+  are deleted.</font></p>
+  
+</body>
+</html>

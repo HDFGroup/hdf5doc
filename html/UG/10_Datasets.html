@@ -21,30 +21,61 @@
 <!--( TOC )=========================================================-->
 <SCRIPT language="JavaScript">
 <!--
-document.writeln ("
-<table x-use-null-cells
-                align=right
-		width=240
-		cellspacing=0
-		class="tocTable">
-  <tr valign=top> 
-    <td class="tocTableHeaderCell"> <span class=TableHead>Chapter Contents</span></td>
-  </tr>
-  <tr valign=top> 
-    <td class="tocTableContentCell"> 
-    <a href="#Intro">1. Introduction</a> 
-    <br>
-    <a href="#FileFunctSums">2. File Function Summaries</a> 
-    <br>
-    <a href="#PModel">3. Programming Model</a> 
-    <br>
-    <a href="#DTransfer">4. Data Transfer</a> 
-    <br> 
-    <a href="#Allocation">5. Allocation of Space</a>
-    </td>
-  </tr>
-</table>
-")
+document.writeln ('\
+<table x-use-null-cells\
+                align=right\
+		width=240\
+		cellspacing=0\
+		class="tocTable">\
+  <tr valign=top> \
+    <td class="tocTableHeaderCell" colspan="2"> \
+        <span class=TableHead>Chapter Contents</span></td>\
+  </tr>\
+<!-- Table Version 3 -->\
+  <tr valign=top> \
+    <td class="tocTableContentCell2"> \
+      <a href="#Intro">1.</a></td>\
+    <td class="tocTableContentCell3">\
+	  <a href="#Intro">Introduction</a></td> \
+  </tr>\
+  <tr valign=top> \
+    <td class="tocTableContentCell2"> \
+      <a href="#FileFunctSums">2.</a></td>\
+    <td class="tocTableContentCell3">\
+	  <a href="#FileFunctSums">Dataset (H5D) Function Summaries</a></td>\
+  </tr>\
+  <tr valign=top> \
+    <td class="tocTableContentCell2"> \
+      <a href="#PModel">3.</a></td>\
+    <td class="tocTableContentCell3">\
+	  <a href="#PModel">Programming Model</a></td> \
+  </tr>\
+  <tr valign=top> \
+    <td class="tocTableContentCell2"> \
+      <a href="#DTransfer">4.</a></td>\
+    <td class="tocTableContentCell3">\
+	  <a href="#DTransfer">Data Transfer</a></td>\
+  </tr>\
+\
+  <tr valign=top> \
+    <td class="tocTableContentCell"> \
+<!-- editingComment -- "tocTableContentCell" and "tocTableContentCell4" \
+-->\
+<!-- are the table-closing cell class.\
+    <td class="tocTableContentCell2"> \
+-->\
+      <a href="#Allocation">5.</a></td>\
+    <td class="tocTableContentCell4">\
+	  <a href="#Allocation">Allocation of Space</a>\
+<!-- editingComment -- This section not currently complete or validated.\
+  </tr><tr valign=top> \
+    <td class="tocTableContentCell"> \
+    <a href="#Appendix">10</a></td>\
+    <td class="tocTableContentCell4"><a href="#Appendix">Appendix</a></td>\
+-->\
+  </td></tr>\
+</table>\
+')
 -->
 </SCRIPT>
 <!--(End TOC)=======================================================-->
@@ -59,7 +90,7 @@ document.writeln ("
 
 <div align="center">
 <a name="TOP">
-<h2>Chapter 4<br><font size="7">HDF5 Datasets</font></h2>
+<h2>Chapter 5<br><font size="7">HDF5 Datasets</font></h2>
 </a>
 </div>
 
@@ -80,7 +111,7 @@ document.writeln ("
   the stored data. From the viewpoint of the application the raw data is stored 
   as a one-dimensional or multi-dimensional array of elements (the <em>raw data</em>), 
   those elements can be any of several numerical or character types, small arrays, 
-  or even compound types similar to C structs. The Dataset object may have Attribute 
+  or even compound types similar to C structs. The dataset object may have attribute 
   objects.</p>
   
 <table x-use-null-cells
@@ -107,7 +138,7 @@ document.writeln ("
   </span>
 -->
 
-  <p>A Dataset objects is stored in a file in two parts: a header and a data array. 
+  <p>A dataset objects is stored in a file in two parts: a header and a data array. 
   The header contains information that is needed to interpret the array portion of 
   the dataset, as well as metadata (or pointers to metadata) that describes or 
   annotates the dataset. Header information includes the name of the object, its 
@@ -119,39 +150,39 @@ document.writeln ("
   for managing HDF5 datasets, including the transfer of data between memory and 
   disk and the description of dataset properties. 
 
-  <p>A Dataset is used by other HDF5 APIs, either by name or by a handle (e.g., 
+  <p>A dataset is used by other HDF5 APIs, either by name or by a handle (e.g., 
   returned by H5Dopen).
 
 <!-- NEW PAGE -->
 <h4><em>Link/Unlink</em></h4>
 
-  <p>A Dataset can be added to a Group with the H5Glink call, and deleted from a 
+  <p>A dataset can be added to a group with the H5Glink call, and deleted from a 
   group with H5Gunlink. The link and unlink operations use the name of an object, 
   which may be a dataset. The dataset does not have to open to be linked or unlinked.
 
 <h4><em>Object reference</em></h4>
 
-  <p>A Dataset may be the target of an object reference.  The object reference is 
+  <p>A dataset may be the target of an object reference.  The object reference is 
   create by H5Rcreate, with the name of an object which may be a dataset and the 
-  reference type H5R_OBJECT. The Dataset does not have to be open to create a 
+  reference type H5R_OBJECT. The dataset does not have to be open to create a 
   reference to it.
 
-  <p>An object reference may also refer to a region (selection) of a Dataset. 
+  <p>An object reference may also refer to a region (selection) of a dataset. 
   The reference is created with H5Rcreate and a reference type of 
   H5R_DATASET_REGION.
 
   <p>An object reference can be accessed by a call to H5Rdereference. When the 
-  reference is to a Dataset or Dataset region, the H5Rdeference call returns a 
-  handle to the Dataset, just as if H5open has been called.
+  reference is to a dataset or dataset region, the H5Rdeference call returns a 
+  handle to the dataset, just as if H5open has been called.
 
 <h4><em>Adding attributes</em></h4>
 
-  <p>A Dataset may have user defined Attributes, which are created with H5Acreate, 
-  and accessed through the H5A API. To create an attribute for a Dataset, the 
-  Dataset must be open, and the handle is passed to H5Acreate. The attributes of 
-  a Dataset are discovered, and opened using H5Aopen_name, H5Aopen_idx, or H5Aiterate; 
-  which use the handle of the Dataset. An Attribute can be deleted with H5Adelete, 
-  which uses the handle of the Dataset.
+  <p>A dataset may have user defined attributes, which are created with H5Acreate, 
+  and accessed through the H5A API. To create an attribute for a dataset, the 
+  dataset must be open, and the handle is passed to H5Acreate. The attributes of 
+  a dataset are discovered, and opened using H5Aopen_name, H5Aopen_idx, or H5Aiterate; 
+  which use the handle of the dataset. An attribute can be deleted with H5Adelete, 
+  which uses the handle of the dataset.
 
 <!-- editingComment
   <span class="editingComment">
@@ -174,7 +205,9 @@ document.writeln ("
 </SCRIPT>
 
 <!-- NEW PAGE -->
-<h3 class=pagebefore>2. File Function Summaries</h3>
+<a name="FileFunctSums">
+<h3 class=pagebefore>2. Dataset (H5D) Function Summaries</h3>
+</a>
 
 <br>
 
@@ -338,22 +371,23 @@ document.writeln ("
 </SCRIPT>
 
 <!-- NEW PAGE -->
+<a name="PModel">
 <h3 class=pagebefore>3. Programming Model</h3>
+</a>
 
-
-  <p>This section explains the programming model for a Datasets.
+  <p>This section explains the programming model for a datasets.
 
 <h4>3.1 General Model</h4>
 
-  <p>The programming model for using a Dataset has three main phases:
+  <p>The programming model for using a dataset has three main phases:
   
-  <p>obtain access to the dataset operate on the dataset using the Dataset handle 
-  returned above release the dataset. A Dataset may be opened several times, and 
-  operations performed with several different handles to the same Dataset. All the 
+  <p>obtain access to the dataset operate on the dataset using the dataset handle 
+  returned above release the dataset. A dataset may be opened several times, and 
+  operations performed with several different handles to the same dataset. All the 
   operations affect the dataset, although the calling program must synchronize if 
   necessary to serialize accesses.
 
-  <p>Note that the Dataset remains open until the last handle is closed. 
+  <p>Note that the dataset remains open until the last handle is closed. 
   Figure 2 shows the basic sequence of operations.</p>
 
 <table x-use-null-cells
@@ -387,12 +421,12 @@ document.writeln ("
 <h4><em>Step 1. Obtain Access</em></h4>
 
   <p>A new dataset is created by a call to H5Dcreate. If successful, the call 
-  returns a handle for the newly created Dataset.
+  returns a handle for the newly created dataset.
 
-  <p>Access to an existing Dataset is obtained by a call to H5Dopen. This call 
-  returns a handle for the existing Dataset.
+  <p>Access to an existing dataset is obtained by a call to H5Dopen. This call 
+  returns a handle for the existing dataset.
 
-  <p>An Object Reference 
+  <p>An object reference 
 <!-- editingComment
   <span class="editingComment">[ [ [
   (Chapter ???) 
@@ -406,16 +440,16 @@ document.writeln ("
 
 <h4><em>Step 2. Operate on the Dataset</em></h4>
 
-  <p>The Dataset handle can be used to write and read data to the Dataset, to query 
+  <p>The dataset handle can be used to write and read data to the dataset, to query 
   and set properties, and to perform other operations such as adding attributes, 
   linking in groups, creating references, and so on.
 
-  <p>The Dataset handle can be used for any number of 
+  <p>The dataset handle can be used for any number of 
   operations until it is closed.
 
 <h4><em>Step 3. Close the Dataset</em></h4>
 
-  <p>When all operations are completed, the Dataset handle should be closed. 
+  <p>When all operations are completed, the dataset handle should be closed. 
   This releases the dataset. 
 <!-- editingComment
   <span class="editingComment">[ [ [
@@ -427,8 +461,8 @@ document.writeln ("
 
 <h4>3.2 Create Dataset</h4>
 
-  <p>A Dataset is created and initialized with a call to H5Dcreate. The Dataset 
-  create operation sets permanent properties of the Dataset:</p>
+  <p>A dataset is created and initialized with a call to H5Dcreate. The dataset 
+  create operation sets permanent properties of the dataset:</p>
 
   <ul>
       <li>name
@@ -437,12 +471,12 @@ document.writeln ("
       <li>storage properties
   </ul>
 
-  <p>These properties cannot be changed for the life of the Dataset, although the 
+  <p>These properties cannot be changed for the life of the dataset, although the 
   dataspace may be expanded up to its maximum dimensions.
 
 <h4><em>Name</em></h4>
 
-  <p>A Dataset name is a sequence of alphanumeric ASCII characters. The full name 
+  <p>A dataset name is a sequence of alphanumeric ASCII characters. The full name 
   would include a tracing of the group hierarchy from the root group of the file, 
   e.g., /rootGroup/groupA/subgroup23/dataset1. The local name or relative name 
   within the lowest-level group containing the dataset would include none of the 
@@ -456,39 +490,39 @@ document.writeln ("
 <!-- NEW PAGE -->
 <h4><em>Dataspace</em></h4>
 
-  <p>The Dataspace of a dataset defines the number of dimensions and the size of 
+  <p>The dataspace of a dataset defines the number of dimensions and the size of 
   each dimension. 
 <!-- editingComment
   <span class="editingComment">[ [ [
   [[Dataspace]]. 
   ] ] ]</span>
 -->
-  The Dataspace defines the number of dimensions, 
+  The dataspace defines the number of dimensions, 
   and the maximum dimension sizes and current size of each dimension. The maximum 
   dimension size can be a fixed value or the constant H5D_UNLIMITED, in which case 
   the actual dimension size can be incremented with calls to H5Dextend, up to the 
-  maximum. The maximum dimension size is set when the Dataset is created and cannot 
+  maximum. The maximum dimension size is set when the dataset is created and cannot 
   be changed.
 
 <h4><em>Datatype</em></h4>
 
-  <p>Raw data has a Datatype, which describes the layout of the raw data stored in 
+  <p>Raw data has a datatype, which describes the layout of the raw data stored in 
   the file. 
 <!-- editingComment
   <span class="editingComment">[ [ [
   (See [[Datatype]]. 
   ] ] ]</span>
 -->
-  The file Datatype is set when the Dataset is created 
-  and can never be changed. When data is transferred to and from the Dataset, 
-  the HDF5 library will assure that the data is transformed to and 
+  The file datatype is set when the dataset is created 
+  and can never be changed. When data is transferred to and from the dataset, 
+  the HDF5 Library will assure that the data is transformed to and 
   from the stored format.
 
 <h4><em>Storage Properties</em></h4>
 
-  <p>Storage properties of the Dataset are set when it is created. Table 1 shows the 
+  <p>Storage properties of the dataset are set when it is created. Table 1 shows the 
   categories of storage properties. The storage properties cannot be changed after 
-  the Dataset is created. The storage properties are described 
+  the dataset is created. The storage properties are described 
   below. 
 <!-- editingComment
   <span class="editingComment">[ [ [
@@ -498,7 +532,7 @@ document.writeln ("
 
 <h4><em>Filters</em></h4>
 
-  <p>When a Dataset is created, optional filters are specified. The filters are 
+  <p>When a dataset is created, optional filters are specified. The filters are 
   added to the data transfer pipeline when data is read or written. The standard 
   library includes filters to implement compression, data shuffling, and error 
   detection code.  Additional user defined filters may also be used. 
@@ -508,13 +542,13 @@ document.writeln ("
   ] ] ]</span>
 -->
 
-  <p>The required filters are stored as part of the Dataset, and the list may 
-  not be changed after the Dataset is created. The HDF5 library automatically 
+  <p>The required filters are stored as part of the dataset, and the list may 
+  not be changed after the dataset is created. The HDF5 Library automatically 
   applies the filters whenever data is transferred.
 
 <h4><em>Summary</em></h4>
 
-  <p>A newly created Dataset has no attributes and no data values. The dimensions, 
+  <p>A newly created dataset has no attributes and no data values. The dimensions, 
   data type (in the file), storage properties, and selected filters are set. 
   Table 1 lists the required inputs, Table 2 lists the optional inputs.</p>
   
@@ -602,8 +636,8 @@ document.writeln ("
   Close the dataset.
 </dir>
 
-  <p>Figure 3 shows example code to create an empty dataset. The Dataspace is 7 X 8, 
-  the Datatype is a Big Endian integer. The dataset is created with the name "dset1", 
+  <p>Figure 3 shows example code to create an empty dataset. The dataspace is 7 X 8, 
+  the datatype is a big endian integer. The dataset is created with the name "dset1", 
   it is a member of the root group, "/".</p>
 
 <table x-use-null-cells
@@ -647,7 +681,7 @@ document.writeln ("
 </table>
 
 <!-- NEW PAGE -->
-  <p>Figure 4 shows example code to create a similar Dataset with a fill value of '-1'. 
+  <p>Figure 4 shows example code to create a similar dataset with a fill value of '-1'. 
   This code has the same steps as in Figure 3, but uses a non-default property list. 
   A file creation property list is created, and then the fill value is set to the 
   desired value. Then the property list is passed to the H5Dcreate call.</p>
@@ -703,7 +737,7 @@ document.writeln ("
 
 <h4>3.3 Data Transfer Operations on a Dataset</h4>
 
-  <p>Data is transferred between from memory and the raw data array of the Dataset 
+  <p>Data is transferred between from memory and the raw data array of the dataset 
   through H5Dwrite and H5Dread operations. A data transfer has the 
   following basic steps:</p>
   
@@ -712,14 +746,14 @@ document.writeln ("
       <li>define the datatype of the memory elements
       <li>define the elements to be transferred (a selection, or all the elements)
       <li>set data transfer properties (including parameters for filters or 
-          File Drivers) as needed
+          file drivers) as needed
       <li>call the H5D API
   </ol>
 
-  <p>Note that the location of the data in the file, the Datatype of the data in 
+  <p>Note that the location of the data in the file, the datatype of the data in 
   the file, the storage properties, and the filters do not need to be specified, 
-  because these are stored as a permanent part of the Dataset. A selection of 
-  elements from the Dataspace is specified, which may be the whole dataspace.
+  because these are stored as a permanent part of the dataset. A selection of 
+  elements from the dataspace is specified, which may be the whole dataspace.
 
 <!-- NEW PAGE -->
   <p>Figure 5 shows a diagram of a write operation, which transfers a data array from 
@@ -733,7 +767,7 @@ document.writeln ("
 		align="center">
   <tr valign=top> 
     <td class="fullImgTableImgCell" align="center">
-    <img src="Images/Dsets_fig5.JPG" width="700">
+    <img src="Images/Dsets_fig5.JPG" width="670">
     </td>
   </tr>
   <tr> 
@@ -748,45 +782,45 @@ document.writeln ("
   to be transferred. For a write (from memory to the file), the memory must be 
   initialized with the data to be written to the file.  For a read, the memory must 
   be large enough to store the elements that will be read. The amount of storage 
-  needed can be computed from the memory Datatype (which defines the size of each 
-  Data element) and the number of elements in the selection.
+  needed can be computed from the memory datatype (which defines the size of each 
+  data element) and the number of elements in the selection.
 
 <!-- NEW PAGE -->
 <h4><em>Memory Datatype</em></h4>
 
-  <p>The memory layout of a single data element is specified by the Memory Datatype. 
+  <p>The memory layout of a single data element is specified by the memory datatype. 
   This specifies the size, alignment, and byte order of the element, as well as the 
-  Datatype Class. Note that the memory data type must be the same Datatype Class 
+  datatype class. Note that the memory data type must be the same datatype class 
   as the file, but may have different byte order and other properties.  The HDF5 
-  library automatically transforms data elements between the source and destination 
+  Library automatically transforms data elements between the source and destination 
   layouts. See the chapter "<a href="11_Datatypes.html">HDF5 Datatypes</a>" 
   for more details.
 
-  <p>For a write, the memory Datatype defines the layout of the data to be written, 
-  e.g., IEEE floating point numbers in native byte order. If the file Datatype (defined 
-  when the Dataset is created) is different but compatible, the HDF5 library will 
+  <p>For a write, the memory datatype defines the layout of the data to be written, 
+  e.g., IEEE floating point numbers in native byte order. If the file datatype (defined 
+  when the dataset is created) is different but compatible, the HDF5 Library will 
   transform each data element when it is written. For example, if the file byte 
-  order is different than the native byte order, the HDF5 library 
+  order is different than the native byte order, the HDF5 Library 
   will swap the bytes.
 
-  <p>For a read, the memory Datatype defines the desired layout of the data to be read. 
-  This must be compatible with the file Datatype, but should generally use native 
-  formats, e.g., byte orders. The HDF5 library will transform each data 
+  <p>For a read, the memory datatype defines the desired layout of the data to be read. 
+  This must be compatible with the file datatype, but should generally use native 
+  formats, e.g., byte orders. The HDF5 Library will transform each data 
   element as it is read.
 
 <h4><em>Selection</em></h4>
 
-  <p>The data transfer will transfer some or all of the elements of the Dataset, 
-  depending on the Dataspace selection. The selection is two Dataspace objects 
+  <p>The data transfer will transfer some or all of the elements of the dataset, 
+  depending on the dataspace selection. The selection is two dataspace objects 
   (one for the source, and one for the destination) which describe which elements 
-  of the Dataspace to be transferred, which may be all of the data, or just some 
+  of the dataspace to be transferred, which may be all of the data, or just some 
   elements (partial I/O). Partial I/O is defined by defining hyperslabs or lists 
-  of elements in a Dataspace object.
+  of elements in a dataspace object.
 
-  <p>The Dataspace selection for the source defines the indices of the elements 
-  to be read, the Dataspace selection for the destination defines the indices of 
+  <p>The dataspace selection for the source defines the indices of the elements 
+  to be read, the dataspace selection for the destination defines the indices of 
   the elements to be written. The two selections must define the same number of 
-  points, but the order and layout may be different.  The HDF5 library 
+  points, but the order and layout may be different.  The HDF5 Library 
   automatically selects and distributes the elements, according to the selections, 
   e.g., to perform a scatter-gather or sub-set of the data. 
 <!-- editingComment
@@ -799,7 +833,7 @@ document.writeln ("
 
   <p>For some data transfers, additional parameters should be set using the 
   transfer property list. Table 2 lists the categories of transfer properties. 
-  These properties set parameters for the HDF5 library, and may be used to 
+  These properties set parameters for the HDF5 Library, and may be used to 
   pass parameters for optional filters and file drivers. For example, transfer 
   properties are used to select independent or collective 
   operation when using MPI-I/O.</p>
@@ -839,7 +873,7 @@ document.writeln ("
 <h4><em>Data Transfer Operation (read or write)</em></h4>
 
   <p>The data transfer is done by calling H5Dread or H5Dwrite with the parameters 
-  described above. The HDF5 library constructs the required pipe-line, 
+  described above. The HDF5 Library constructs the required pipe-line, 
   which will scatter-gather, transform data types, apply the requested filters, 
   and use the correct file driver.
 
@@ -875,7 +909,7 @@ document.writeln ("
   the data is initialized in the memory array dset_data.  The dataset has already 
   been created in the file, so it is opened with H5Dopen.
 
-  <p>The Data is written with H5Dwrite. The arguments are the dataset handle, the memory 
+  <p>The data is written with H5Dwrite. The arguments are the dataset handle, the memory 
   datatype (H5T_NATIVE_INT), the memory and file selections (H5S_ALL in this case: 
   the whole array), and the default (empty) property list. The last argument is 
   the data to be transferred.</p>
@@ -986,6 +1020,7 @@ document.writeln ("
   Define memory dataspace of read. (Optional if dataspace is H5S_SELECT_ALL)<br> 
   Open the dataset.<br> 
   Get the dataset dataspace. (If using H5S_SELECT_ALL above)<br> 
+
 <dir>Else define dataset dataspace of read.</dir> 
   Define the memory datatype. (Optional)<br> 
   Define the memory buffer.<br> 
@@ -1047,8 +1082,8 @@ document.writeln ("
 
 <h4>3.4 Retrieve properties of a Dataset</h4>
 
-  <p>The Dataset can be queried to discover its properties (Table 4).  The Dataspace 
-  and Datatype, and Dataset creation properties can be retrieved.  
+  <p>The dataset can be queried to discover its properties (Table 4).  The dataspace 
+  and datatype, and dataset creation properties can be retrieved.  
   These calls return a handle to an object.
 
   <p>The total size of the data can be retrieved. This is the amount of stored 
@@ -1125,7 +1160,7 @@ document.writeln ("
 
 <h4>3.5 Other Operations</h4>
 
-  <p>The Dataset is used for other miscellaneous operations.</p>
+  <p>The dataset is used for other miscellaneous operations.</p>
   
 <table x-use-null-cells
 		class="ColumnTable"
@@ -1168,13 +1203,14 @@ document.writeln ("
 </SCRIPT>
 
 <!-- NEW PAGE -->
+<a name="DTransfer">
 <h3 class=pagebefore>4. Data Transfer: Raw Data I/O</h3>
+</a>
 
-
-  <p>The HDF5 library implements data transfers through a pipeline which implements 
-  data transformations (according to the Datatype and selections), chunking (as 
+  <p>The HDF5 Library implements data transfers through a pipeline which implements 
+  data transformations (according to the datatype and selections), chunking (as 
   requested), and I/O operations using different mechanisms (file drivers). 
-  The pipeline is automatically configured by the HDF5 library. Metadata is 
+  The pipeline is automatically configured by the HDF5 Library. Metadata is 
   stored in the file so that the correct pipeline can be constructed to retrieve 
   the data. In addition, optional filters, such as compression, may be 
   added to the standard pipeline. 
@@ -1209,12 +1245,12 @@ document.writeln ("
 
 <!-- NEW PAGE -->
   <p>The last stage of a write (and first stage of a read) is managed by an HDF5 
-  File Driver module.  The Virtual File Layer of the HDF5 library implements a 
+  file driver module.  The virtual file layer of the HDF5 Library implements a 
   standard interface to alternative I/O methods, including memory (AKA "core") files, 
-  single serial file I/O, multiple file I/O, and parallel I/O. The File Driver maps 
+  single serial file I/O, multiple file I/O, and parallel I/O. The file driver maps 
   a simple abstract HDF5 file to the specific access methods.
 
-  <p>The raw data of an HDF5 Dataset is conceived to be a multi-dimensional array of 
+  <p>The raw data of an HDF5 dataset is conceived to be a multi-dimensional array of 
   data elements. This array may be stored in the file according to 
   several storage strategies:</p> 
 
@@ -1230,16 +1266,16 @@ document.writeln ("
 
   <p>Overall, the data transfer operations (H5Dread and H5Dwrite) work identically 
   for any storage method, for any file driver, and for any filters and transformations. 
-  The HDF5 library automatically manages the data transfer process. In some cases, 
+  The HDF5 Library automatically manages the data transfer process. In some cases, 
   transfer properties should or must be used to pass additional parameters, such as 
   MPI/IO directives when used the parallel file driver.
 
 <h4>4.1 Data pipeline</h4>
 
-  <p>When data is written or read to or from and HDF5 file, the HDF5 library passes 
+  <p>When data is written or read to or from and HDF5 file, the HDF5 Library passes 
   the data through a sequence of processing steps, the HDF5 data pipeline. This data 
   pipeline performs operations on the data in memory, including byte swapping, alignment, 
-  scatter-gather, and hyperslab selections. The HDF5 library automatically determines 
+  scatter-gather, and hyperslab selections. The HDF5 Library automatically determines 
   which operations are needed and manages the organization of memory operations, 
   such as extracting selected elements from a data block. The data pipeline modules 
   operate on data buffers, each processes the buffer and passes the 
@@ -1313,7 +1349,7 @@ document.writeln ("
 		align="center">
   <tr valign=top> 
     <td class="fullImgTableImgCell" align="center">
-    <img src="Images/Dsets_fig10.JPG">
+    <img src="Images/Dsets_fig10.JPG"><br>
     </td>
   </tr>
   <tr> 
@@ -1325,21 +1361,21 @@ document.writeln ("
   <br>
   <p>The HDF5 Library automatically applies the stages as needed.  
 
-  <p>When the memory Dataspace selection is other than the whole Dataspace, the Memory 
-  Hyperslab stage scatters/gathers the data elements between the appliation 
+  <p>When the memory dataspace selection is other than the whole dataspace, the memory 
+  hyperslab stage scatters/gathers the data elements between the appliation 
   memory (described by the selection) and contiguous memory buffer for the pipeline. 
   On a write, this is a gather operation, on a read, this is a scatter operation.
 
-  <p>When the Memory Datatype is different from the File Datatype, the Datatype 
-  Conversion stage transforms each data element. For example, if data is written 
-  from 32-bit Big Endian memory, and the File Datatype is 32-bit Little Endian, 
-  the Datatype Conversion stage will swap the bytes of every elements.  Similarly, 
+  <p>When the memory datatype is different from the file datatype, the datatype 
+  conversion stage transforms each data element. For example, if data is written 
+  from 32-bit big endian memory, and the file datatype is 32-bit little endian, 
+  the datatype conversion stage will swap the bytes of every elements.  Similarly, 
   when data is read from the file to native memory, byte swapping will be 
   applied automatically when needed.
 
-  <p>The File Hyperslab stage is similar to the Memory Hyperslab stage, 
-  but is managing the arrangement of the elements according to the File 
-  Dataspace selection. When data is read, data elements are gathered from 
+  <p>The file hyperslab stage is similar to the memory hyperslab stage, 
+  but is managing the arrangement of the elements according to the file 
+  dataspace selection. When data is read, data elements are gathered from 
   the data blocks from the file to fill the contiguous buffers, which are 
   processed by the pipeline. When data is read, the elements from a buffer 
   are scattered to the data blocks of the file.
@@ -1347,7 +1383,7 @@ document.writeln ("
 <h4>4.2 Filters</h4>
 
   <p>In addition to the standard pipeline, optional stages, called filters, 
-  can be inserted in the pipeline. (Filters may be used only for chunked data. 
+  can be inserted in the pipeline. 
 <!-- editingComment
   <span class="editingComment">[ [ [
   see [[chunked]]) 
@@ -1358,8 +1394,8 @@ document.writeln ("
   add custom filters as well.
 
   <p>The HDF5 Library currently has three optional filters, listed in Table 6. 
-  The filters are applied in the pipeline between the Virtual File Layer and 
-  the File Hyperslab Operation (Figure 10). The application can use any 
+  The filters are applied in the pipeline between the virtual file layer and 
+  the file hyperslab operation (Figure 10). The application can use any 
   number of filters, in any order.</p>
   
 <table x-use-null-cells
@@ -1395,20 +1431,20 @@ document.writeln ("
   </tr>
 </table>
 
-  <p>The filters are applied to chunks of data between the File Hyperslab stage 
-  and the Virtual File Layer. At this stage in the pipeline, the data is 
-  organized fixed size blocks of elements, the filter stage 
-  processes each chunk separately.
+  <p>Filters may be used only for chunked data and are applied to chunks of 
+  data between the file hyperslab stage and the virtual file layer. At this 
+  stage in the pipeline, the data is organized fixed size blocks of elements, 
+  the filter stage processes each chunk separately.
 
-  <p>Filters are selected by Dataset Creation properties, and some behavior may 
-  be controlled by Data Transfer properties. The library determines what 
+  <p>Filters are selected by dataset creation properties, and some behavior may 
+  be controlled by data transfer properties. The library determines what 
   filters must be applied and in what order.
 
 <h4>4.3 File drivers</h4>
 
-  <p>I/O is performed by the HDF5 Virtual File layer. The File Driver interface 
+  <p>I/O is performed by the HDF5 virtual file layer. The file driver interface 
   writes and reads blocks of data, each driver module implements the interface 
-  using different I/O mechanisms. Table 7 lists the File Drivers currently supported. 
+  using different I/O mechanisms. Table 7 lists the file drivers currently supported. 
   Note that the I/O mechanisms are separated from the pipeline processing: 
   the pipeline and filter operations are identical no matter what 
   data access mechanism is used.</p>
@@ -1498,11 +1534,11 @@ document.writeln ("
   </tr>
 </table>
 
-  <p>Each File Driver writes/reads contiguous blocks of bytes from a logically 
-  contiguous address space. The File Driver is responsible for managing the 
+  <p>Each file driver writes/reads contiguous blocks of bytes from a logically 
+  contiguous address space. The file driver is responsible for managing the 
   details of the different physical storage methods.
 
-  <p>In general, everything above the Virtual File Layer works identically no 
+  <p>In general, everything above the virtual file layer works identically no 
   matter what storage method is used. However, some combinations of storage 
   strategies and file drivers are not allowed.  Also, some options may have 
   substantially different performance depending on the file driver that is used. 
@@ -1511,7 +1547,7 @@ document.writeln ("
 
 <h4>4.4 Data Transfer Properties to manage the pipeline</h4>
 
-  <p>Data Transfer properties set optional parameters that control parts of the 
+  <p>Data transfer properties set optional parameters that control parts of the 
   data pipeline. Table 8 lists three transfer properties that control the behavior 
   of the library.  
 <!-- editingComment
@@ -1553,9 +1589,9 @@ document.writeln ("
   </tr>
 </table>
 
-  <p>Some filters and File Drivers require or use additional parameters from the 
+  <p>Some filters and file drivers require or use additional parameters from the 
   application program. These can be passed in the transfer property list. 
-  Table 9 lists the four File Driver property lists.</p>
+  Table 9 lists the four file driver property lists.</p>
   
 <table x-use-null-cells
 		class="ColumnTable"
@@ -1591,7 +1627,7 @@ document.writeln ("
     <td class="ColumnLeftCell"> <p>H5Pset_small_data_block_size</td>
     <td class="ColumnRightCell"> 
         <p>Reserves blocks of size bytes for the contiguous storage of the raw 
-	data portion of small datasets. The HDF5 library then writes the raw data 
+	data portion of small datasets. The HDF5 Library then writes the raw data 
 	from small datasets to this reserved space, thus reducing unnecessary 
 	discontinuities within blocks of meta data and 
 	improving IO performance.</td>
@@ -1604,7 +1640,7 @@ document.writeln ("
   </tr>
 </table>
 
-  <p>The Transfer Properties are set in a property list, which is passed as a 
+  <p>The transfer properties are set in a property list, which is passed as a 
   parameter of the H5Dread or H5Dwrite call.  The transfer properties are 
   passed to each pipeline stage, which may use or ignore any property in the 
   list. In short, there is one property list, which contains all the properties.
@@ -1735,10 +1771,10 @@ document.writeln ("
 </table>
 
 <!-- NEW PAGE -->
-  <p>Chunks may be any size and shape that fits in the Dataspace of the dataset. 
-  For example, a three dimensional Dataspace can be chunked as 3-D cubes, 
+  <p>Chunks may be any size and shape that fits in the dataspace of the dataset. 
+  For example, a three dimensional dataspace can be chunked as 3-D cubes, 
   2-D planes, or 1-D lines. The chunks may extend beyond the size of the 
-  Dataspace, for example a 3 X 3 dataset might by chunked in 2 X 2 chunks. 
+  dataspace, for example a 3 X 3 dataset might by chunked in 2 X 2 chunks. 
   Sufficient chunks will be allocated to store the array, any extra space 
   will not be accessible. So, to store the 3X3 array, four 2X2 chunks would 
   be allocated, with 5 unused elements stored.
@@ -1753,7 +1789,7 @@ document.writeln ("
   
 <h4><em>Compact</em></h4>
 
-  <p>For Contiguous and Chunked storage, the Dataset header information and data 
+  <p>For contiguous and chunked storage, the dataset header information and data 
   are stored in two (or more) blocks (Figure 15). Therefore, at least two I/O operations 
   are required to access the data, one to access the header, and one (or more) 
   to access data. For a small dataset, this is considerable overhead.
@@ -1769,7 +1805,7 @@ document.writeln ("
 
   <p>Data transfers can write or read some of the data elements of the dataset. 
   This is controlled by specifying two selections, one for the source and one for 
-  the destination. Selections are specified by creating a Dataspace 
+  the destination. Selections are specified by creating a dataspace 
   with selections. 
 <!-- editingComment
   <span class="editingComment">[ [ [
@@ -1778,16 +1814,16 @@ document.writeln ("
 -->
 
   <p>Selections may be a union of hyperslabs, where a hyperslab is a contiguous 
-  hyper-rectangle from the Dataspace. A second form of selection is a list 
+  hyper-rectangle from the dataspace. A second form of selection is a list 
   of points. Selected fields of compound data type may be read or written. 
-  In this case, the selection is controlled by the memory and file Datatypes.
+  In this case, the selection is controlled by the memory and file datatypes.
 
-  <p>Summary of Procedure:</p>
+  <p>Summary of procedure:</p>
   
   <ol>
-      <li>open the Dataset
-      <li>define the memory Datatype
-      <li>define the memory Dataspace selection and file Dataspace selection
+      <li>open the dataset
+      <li>define the memory datatype
+      <li>define the memory dataspace selection and file dataspace selection
       <li>transfer data (H5Dread or H5Dwrite)
   </ol>
 
@@ -1807,11 +1843,13 @@ document.writeln ("
 </SCRIPT>
 
 <!-- NEW PAGE -->
+<a name="Allocation">
 <h3 class=pagebefore>5. Allocation of Space in the File</h3>
+</a>
 
   <p>When a dataset is created, space is allocated in the file for its header and 
   initial data. The amount of space allocated when the dataset is created depends 
-  on the storage properties. When the Dataset is modified (data is written, 
+  on the storage properties. When the dataset is modified (data is written, 
   attributes added, or other changes), additional storage may be 
   allocated if necessary.</p>
 
@@ -1914,7 +1952,7 @@ document.writeln ("
   storage depends on the number and size of the attributes.
 
   <p>In addition, the data set must have at least one link, including a name, 
-  which is stored in the file and in the Group it is a linked from.
+  which is stored in the file and in the group it is a linked from.
 
   <p>The different storage strategies determine when and how much space is 
   allocated for the data array. See the discussion of fill values below
@@ -2003,9 +2041,9 @@ document.writeln ("
   For example, using serial I/O, the properties can select to can allocate 
   chunks when the dataset is created
 
-  <p>H5Dextend is used to change the current dimensions of the Dataset, within 
-  the limits of the Dataspace.  Each dimension can be extended up to its maximum, 
-  or unlimited. Extending the Dataspace may or may not allocate space in the file, 
+  <p>H5Dextend is used to change the current dimensions of the dataset, within 
+  the limits of the dataspace.  Each dimension can be extended up to its maximum, 
+  or unlimited. Extending the dataspace may or may not allocate space in the file, 
   and may or may not write fill values, if they are defined.  See the next 
   section for an explanation.
   
@@ -2063,11 +2101,11 @@ document.writeln ("
   (e.g., create or extend), while serial programs may benefit from delaying the 
   allocation until the data is written.
 
-  <p>Two File Creation properties control "when to allocate space", "when to 
+  <p>Two file creation properties control "when to allocate space", "when to 
   write the fill-value" and the actual fill-value to write. 
 
   <p>Table 13 shows the three options for when data is allocated in the file. "Early" 
-  allocation is done during dataset create call. Certain File Drivers (especially 
+  allocation is done during dataset create call. Certain file drivers (especially 
   MPI-I/O and MPI-posix) require space to be allocated when a dataset is created, 
   so all processors will have the correct view of the data.</p>
   
@@ -2111,11 +2149,11 @@ document.writeln ("
 </table>
 
   <p>"Late" allocation is done at the time of the first write to dataset. Space 
-  for the whole Dataset is allocated at the first write.
+  for the whole dataset is allocated at the first write.
 
   <p>"Incremental" allocation (chunks only) is done at the time of the first 
   write to the chunk. Chunks that have never been written are not allocated 
-  in the file. In a sparsely populated Dataset, this option allocates chunks 
+  in the file. In a sparsely populated dataset, this option allocates chunks 
   only where data is actually written.
 
   <p>The "Default" property selects the option recommended as appropriate for 
@@ -2379,9 +2417,9 @@ document.writeln ("
 
   <p>The size of the dataset cannot be reduced after it is created. The dataset 
   can be expanded by extending one or more dimensions, with H5Dextend. It is 
-  not possible to contract a Dataspace, or to reclaim allocated space.
+  not possible to contract a dataspace, or to reclaim allocated space.
 
-  <p>HDF5 does not at this time provide a mechanism to remove a Dataset from a 
+  <p>HDF5 does not at this time provide a mechanism to remove a dataset from a 
   file, or to reclaim the storage from deleted objects. Through the H5Gunlink 
   function one can remove links to a dataset from the file structure. Once all 
   links to a dataset have been removed, that dataset becomes inaccessible to any 
@@ -2397,13 +2435,13 @@ document.writeln ("
 
 <h4>5.3 Releasing memory resources (handles) when no longer needed</h4>
 
-  <p>The system resources required for HDF5 objects, including Datasets, 
-  Datatypes, and Dataspaces, should be released once access to the object is 
+  <p>The system resources required for HDF5 objects, including datasets, 
+  datatypes, and dataspaces, should be released once access to the object is 
   no longer needed. This is accomplished via the appropriate close function. 
   This is not particular to datasets but a general requirement when working 
-  with the HDF5 library; failure to close objects will result in resource leaks. 
+  with the HDF5 Library; failure to close objects will result in resource leaks. 
 
-  <p>In the case where a Dataset is created or data has been transferred, 
+  <p>In the case where a dataset is created or data has been transferred, 
   there are several objects that must be closed, 
 <!-- editingComment
 <span class="editingComment">
@@ -2414,40 +2452,40 @@ document.writeln ("
    ] ] ]
   </span>
 -->
-  including  the Dataset, 
-  the Datatype, Dataspace, and property lists. 
+  including the dataset, 
+  the datatype, dataspace, and property lists. 
 
   <p>The application program must free any memory variables and buffers it 
   allocates. When accessing data from the file, the amount of memory required 
-  can be determined by determining the size of the memory Datatype and the 
+  can be determined by determining the size of the memory datatype and the 
   number of elements in the memory selection.
 
   <p>Variable length data are organized in two or more areas of memory 
   (see "<a href="11_Datatypes.html">HDF5 Datatypes</a>").
   When writing data, the application 
   creates an array of vl_info_t, which contains pointers to the elements, 
-  e.g., strings. In the file, the Variable Length data is stored in two parts: 
+  e.g., strings. In the file, the variable length data is stored in two parts: 
   a heap with the variable length values of the data elements, and an array 
   vlinfo_t elements. When the data is read, the amount of memory required 
   for the heap can be determined with the H5Dget_vlen_buf_size call.
 
-  <p>The a Data Transfer property may be used to set a custom memory manager 
+  <p>The data transfer property may be used to set a custom memory manager 
   for allocating variable length data for a H5Dread. This is set with the 
   H5Pset_vlen_mem_manager call.
 
-  <p>To free the memory for Variable Length data, it is necessary to visit each 
+  <p>To free the memory for variable length data, it is necessary to visit each 
   element, free the variable length data, and reset the element. The application 
   must free the memory it has allocated. For memory allocated by the HDF5 Library 
   during a read, the H5Dvlen_reclaim function can be used to perform this operation.
 
 <h4>5.4 External Storage Properties</h4>
 
-  <p>The External storage format allows data to be stored across a set of 
+  <p>The external storage format allows data to be stored across a set of 
   non-HDF5 files. A set segments (offsets and sizes) in one or more files 
   is defined as an external file list, or EFL, and the contiguous logical 
   addresses of the data storage are mapped onto these segments. Currently, 
   only the H5D_CONTIGUOUS storage format allows external storage. External 
-  storage is enabled by a Dataset Creation Property. Table 18 shows the API.</p>
+  storage is enabled by a dataset creation property. Table 18 shows the API.</p>
   
 <table x-use-null-cells
 		class="ColumnTable"
@@ -2568,7 +2606,7 @@ document.writeln ("
 		align="center">
   <tr valign=top> 
     <td class="fullImgTableImgCell" align="center">
-    <img src="Images/Dsets_fig21.GIF">
+	<img src="Images/Dsets_fig20.jpg">
     </td>
   </tr>
   <tr> 
@@ -2581,7 +2619,7 @@ document.writeln ("
   <p>Figure 21 shows code for this example.
 
   <p>In this example, the library maps the multi-dimensional array onto a linear 
-  address space as defined by the HDF5 Format Specification, and then maps that 
+  address space as defined by the HDF5 format specification, and then maps that 
   address space into the segments defined in the external file list. 
 
   <p>

@@ -1,0 +1,2176 @@
+<!doctype HTML public "-//W3C//DTD HTML 4.0 Frameset//EN">
+<html>
+<head>
+
+<title>HDF5 User's Guide: Special Topics</title>
+
+<!--(Meta)==========================================================-->
+
+
+<!--(Links)=========================================================-->
+
+<link href="ed_styles/NewUGelect.css" rel="stylesheet" type="text/css">
+
+<!--( Begin styles definition )=====================================-->
+<!--     Replaced with external stylesheet 'styles_NewUG.css'.      -->
+<!--( End styles definition )=======================================-->
+
+</head>
+
+<body>
+
+<!--( TOC )=========================================================-->
+<SCRIPT language="JavaScript">
+<!--
+document.writeln ('\
+<table x-use-null-cells\
+                align=right\
+		width=240\
+		cellspacing=0\
+		class="tocTable">\
+  <tr valign=top> \
+    <td class="tocTableHeaderCell" colspan="2"> \
+        <span class=TableHead>Chapter Contents</span></td>\
+  </tr>\
+<!-- Table Version 3 -->\
+  <tr valign=top> \
+    <td class="tocTableContentCell2"> \
+      <a href="#Intro">1.</a></td>\
+    <td class="tocTableContentCell3">\
+	  <a href="#Intro">Introduction</a></td> \
+  </tr>\
+  <tr valign=top> \
+    <td class="tocTableContentCell2"> \
+      <a href="#NBitDatatype">2.</a></td>\
+    <td class="tocTableContentCell3">\
+	  <a href="#NBitDatatype">N-Bit Datatype</a></td>\
+  </tr>\
+  <tr valign=top> \
+    <td class="tocTableContentCell2"> \
+      <a href="#ScaleOffsetFilter">3.</a></td>\
+    <td class="tocTableContentCell3">\
+	  <a href="#ScaleOffsetFilter">Scale-Offset Filter</a></td> \
+  </tr>\
+\
+  <tr valign=top> \
+    <td class="tocTableContentCell"> \
+<!-- editingComment -- "tocTableContentCell" and "tocTableContentCell4" \
+-->\
+<!-- are the table-closing cell class.\
+    <td class="tocTableContentCell2"> \
+-->\
+      <a href="#MetadataCache">4.</a></td>\
+    <td class="tocTableContentCell4">\
+	  <a href="#MetadataCache">Metadata Caching in HDF5</a>\
+  </td></tr>\
+</table>\
+')
+-->
+</SCRIPT>
+<!--(End TOC)=======================================================-->
+
+<!-- HEADER LEFT "HDF5 User's Guide" -->
+<!-- HEADER RIGHT "HDF5 Special Topics" -->
+
+<div align="center">
+<a name="TOP">
+<h2>Chapter 10<br><font size="7">HDF5 Special Topics</font></h2>
+</a>
+</div>
+
+<a name="Intro">
+<h3>1. Introduction</h3>
+</a>
+
+<a name="NBitDatatype">
+<h3>2. N-Bit datatype</h3>
+</a>
+
+<p>The HDF5 user can create an N-Bit datatype by writing codes like [2]:
+  <dl>
+    <dd>hid_t nbit_datatype = H5Tcopy(H5T_STD_I32LE);
+	<dd>H5Tset_precision(nbit_datatype, 16);
+	<dd>H5Tset_offset(nbit_datatype, 4);
+  </dl>
+  
+<p>Currently, the datatype classes of N-Bit datatype or N-Bit field of a 
+  compound datatype or an array datatype are limited to integer or 
+  floating-point.
+  
+<p>In memory, one value of above example N-Bit datatype will be stored on 
+  a little-endian machine like this:
+  
+    <dl>
+	  <dt>
+	    <table border="1" width="80%" align="center">
+		  <tr>
+		    <td width="25%" align="center">byte 3</td>
+		    <td width="25%" align="center">byte 2</td>
+		    <td width="25%" align="center">byte 1</td>
+		    <td width="25%" align="center">byte 0</td>
+		  </tr>
+		  <tr>
+		    <td width="25%" align="center">????????</td>
+		    <td width="25%" align="center">????SPPP</td>
+		    <td width="25%" align="center">PPPPPPPP</td>
+		    <td width="25%" align="center">PPPP????</td>
+		  </tr>
+		</table>
+		<table width="80%" border="0" align="center">
+		  <tr>
+		    <td colspan="4">Note: S - sign bit, P - significant bit, 
+			  ? - padding bit 
+			  <br>For signed integer, the sign bit is 
+			  included in the precision</td>
+		  </tr>
+		</table>
+		<br>
+		
+	  </dt>
+	</dl>
+	
+<h4>2.1 N-Bit filter</h4>
+
+<p>When data of above datatype are stored on disk using N-Bit filter, 
+  all padding bits are chopped off and only significant bits are stored. 
+  So, values on disk will be something like:
+  
+    <dl>
+	  <dt>
+	    <table border="1" width="80%" align="center">
+		  <tr>
+		    <td width="45%" align="center">1st value</td>
+		    <td width="45%" align="center">2nd value</td>
+		    <td width="10%" align="center">&nbsp;</td>
+		  </tr>
+		  <tr>
+		    <td width="45%" align="center">SPPPPPPP&nbsp;PPPPPPPP</td>
+		    <td width="45%" align="center">SPPPPPPP&nbsp;PPPPPPPP</td>
+		    <td width="10%" align="center">...</td>
+		  </tr>
+		</table>
+      </dt>
+	</dl>
+
+<p>The N-Bit filter is used effectively for compressing data of N-Bit 
+  datatype as well as compound and array datatype with N-Bit fields. 
+  It supports complex situations where a compound datatype contains member(s) 
+  of compound datatype or an array datatype has compound datatype 
+  as the base type.
+		
+<p>At present, the N-Bit filter supports all datatypes. For datatype of class 
+  time, string, bitfield, opaque, reference, enum, and variable length, the 
+  N-Bit filter acts like a no-op. For convenience, the rest of this document 
+  will refer to such datatype as no-op datatype.
+		
+<p>Like other I/O filters supported by the HDF5 library, application using 
+  the N-Bit filter must store data with chuncked storage.
+  
+<h4>2.2 Related library datatype conversion</h4>
+
+<p>The N-Bit filter always compresses/decompresses based on dataset 
+  properties (datatype, dataspace, dataset creation property list) 
+  supplied by the HDF5 library.
+		
+<p>The dataset datatype refers to how data is store on disk while the 
+  memory datatype refers to how data is stored in memory.
+		
+<p>The HDF5 library will do datatype convertion when writing from data 
+  in memory to the dataset or reading data from the datase to memory if 
+  memory datatype differs from dataset datatype. Datatype conversion is 
+  done by HDF5 library before N-Bit compression and after N-Bit 
+  decompression.
+  
+<h4>2.2.1 Integer N-Bit conversion</h4>
+
+<p>To understand how library converts datatype for N-Bit filter, a 
+  common case is illustrated where the datatype class of dataset datatype 
+  is integer (less than full precision) and the memory datatype is 
+  <code>H5T_NATIVE_INT</code>.
+		
+<p>The precision of <code>H5T_NATIVE_INT</code> is 8 muliplied by sizeof(int). 
+  Since size of int differs from platform to platform, let it be 4 for 
+  illustration purpose. Let the memory byte order be little-endian.
+		
+<p>Now, in memory, precision of <code>H5T_NATIVE_INT</code> is 32, offset is 0. 
+  One value of <code>H5T_NATIVE_INT</code> is layed out in memory like this:
+  
+  <h1><strong>ASK FRANK ABOUT TABLE FORMAT</strong></h1>
+
+<table border="1" width="80%" align="center">
+  <tr>
+    <td>
+<pre>
+            | byte 3 | byte 2 | byte 1 | byte 0 |
+                           |                 |
+                |SPPPPPPP|PPPPP|PPP|PPPPPPPP|PPPP|PPPP|
+                           |_________________|
+                              truncated bits
+</pre>
+	</td>
+  </tr>
+</table>
+  
+<p>Suppose the dataset datatype has precision of 16 and offset of 4. After 
+  HDF5 converts from memory datatype to dataset datatype, it passes something 
+  like this to the N-Bit filter for compression:
+  
+  <h1><strong>ASK FRANK ABOUT TABLE FORMAT</strong></h1>
+  
+<table border="1" width="80%" align="center">
+  <tr>
+    <td>
+<pre>
+            | byte 3 | byte 2 | byte 1 | byte 0 |
+                           |                 |
+                |????????|????S|PPP|PPPPPPPP|PPPP|????|
+                           |_________________|
+                              truncated bits
+</pre>
+	</td>
+  </tr>
+</table>
+<table border="0" width="80%" align="center">
+  <tr>
+    <td>Note: S - sign bit, P - significant bit, ? - padding bit<br> 
+	  For signed integer, the sign bit is included in the precision</td>
+  </tr>
+</table>
+	
+		  
+<p>Notice that only the truncated part of 15 significant bits and the 
+  sign bit are kept during conversion. All other significant bits are 
+  discarded because the dataset datatype only needs precision of 16 bits. 
+  After N-Bit compression, none of the padding bits will be stored on disk, 
+  like what is described in section 1.2.
+  
+<h4>2.2.2 Floating-point N-Bit conversion</h4>
+
+<p>If the dataset datatype class is floating point, things get more 
+  complicated. Another example is given to illustrate how library converts 
+  from memory datatype <code>H5T_NATIVE_FLOAT</code> to dataset datatype 
+  of class floating-point.
+  
+<p>Like before, let the <code>H5T_NATIVE_FLOAT</code> be 4-byte long, 
+  and memory byte order be little-endian. Following the IEEE standard [4], 
+  one value of <code>H5T_NATIVE_FLOAT</code> is layed out in memory like this:
+  
+  <h1><strong>ASK FRANK ABOUT TABLE FORMAT</strong></h1>
+<table border="1" width="80%" align="center">
+  <tr>
+    <td>
+<pre>
+            | byte 3 | byte 2  | byte 1  | byte 0 |
+                       |              |
+                |SEEEEEEE|E|MMMMMMM|MMMMMM|MM|MMMMMMMM|
+                         |______________|
+                       truncated mantisa
+</pre>
+	</td>
+  </tr>
+</table>
+<table border="0" width="80%" align="center">
+  <tr>
+    <td>Note: S - sign bit, E - exponent bit, M - matisa bit<br> 
+	  For float, the sign bit is included in the precision
+	</td>
+  </tr>
+</table>
+  
+  <br>
+	  
+<p>Suppose the dataset datatype has precision of 20, offset of 7, mantissa 
+  size of 13, mantissa position of 7, exponent size of 6, exponent position 
+  of 20, sign position of 26. (Please refer to [3] for details of how to create 
+  a user-defined floating-point datatype).
+  
+<p>After HDF5 converts from memory datatype to dataset datatype, it passes 
+  something like this to the N-Bit filter for compression:
+  
+  <h1><strong>ASK FRANK ABOUT TABLE FORMAT</strong></h1>
+<table border="1" width="80%" align="center">
+  <tr>
+    <td>
+<pre>
+              | byte 3 | byte 2  | byte 1 | byte 0  |
+                          |               |
+                |?????SEE|EEEE|MMMM|MMMMMMMM|M|???????|
+                          |_______________|
+                          truncated mantisa
+</pre>
+	</td>
+  </tr>
+</table>
+  
+<p>The sign bit and truncated mantisa bits are not changed during 
+  datatype conversion by HDF5 library. However, the conversion of 
+  8-bit exponent to 6-bit exponent is a little bit tricky:
+  
+<p>The bias for exponent with n-bit is 2&#094;(n-1)-1, and the following 
+  formula is needed for the above exponent conversion:
+  
+<p>exp8 - (2&#094;(8-1)-1) = exp6 - (2&#094;(6-1)-1) = actual exponent value where,
+  <br>&nbsp;&nbsp;exp8 - stored decimal value presented by the 8-bit exponent
+  <br>&nbsp;&nbsp;exp6 - stored decimal value presented by the 6-bit exponent
+
+<p>Caution must be taken to ensure that after conversion, the actual exponent 
+  value is within the range where a 6-bit exponent can represent. For example, 
+  8-bit exponent can represent -127 to 128 while 6-bit exponent can 
+  only represent -31 to 32.
+  
+<a name="Design">
+<h3>2.3 Design</h3>
+</a>
+
+<p>The N-Bit filter was designed to treat the incoming data byte by byte at 
+  the lowest level. The purpose was to make the N-Bit filter as generic as 
+  possible so that no pointer cast related to datatype is needed.
+
+<p>Bitwise operations are employed for packing and unpacking at the byte level.
+
+<p>Recursive function calls are used to treat compound and array datatype.
+
+<h4>2.3.1 N-Bit compression</h4>
+
+<dl>
+<dt>The main idea of N-Bit compression is to use a loop to compress each data 
+  element in the chunk. Depending on the datatype of each element, the N-Bit 
+  filter will call four different functions:  
+
+    <br><dd><ol>
+	  <li>function to compress data element of no-op datatype;
+	  <li>function to compress data element of atomic datatype;
+	  <li>function to compress data element of compound datatype;
+	  <li>function to compress data element of array datatype.
+	</ol></dd>  
+  </dl>
+  
+
+<h4>2.3.1.1 Function to compress data element of no-op datatype</h4>
+
+<p>The N-Bit filter does not actually compress no-op datatype. It just 
+  copies the data buffer of no-op datatype from noncompressed buffer to 
+  proper location of the compressed buffer (compressed buffer has no holes). 
+  The word 'compress' is used simply to distinguish this function from function 
+  that does the opposite operation during decompression.
+  
+<h4>2.3.1.2 Function to compress data element of atomic datatype</h4>
+
+<dl><dt>The N-Bit filter will find the bytes where significant bits are located 
+  and try to compress these bytes one byte at a time using a loop. At this level, 
+  the filter needs to know:
+  <dd><ol>
+    <li>the byte offset of the beginning of current data element with respect 
+	  to the beginning of input data buffer; 
+	<li>datatype size, precision, offset, and byte order.  
+  </ol></dd>
+</dl>
+
+<p>The N-Bit filter compresses from the most significant byte containing 
+  the significant bits. So for big-endian, the index of loop goes from 
+  smaller to larger while for little-endian, the index goes from larger 
+  to smaller.
+
+<p>An extreme case of this function is to just copy the content of the datatype 
+  to the output buffer if the datatype has full precision.
+  
+<h4>2.3.1.3 Function to compress data element of compound datatype</h4>
+
+<p>The N-Bit filter will compress each data member of the compound datatype. 
+  If the member datatype is integer or floating-point datatype, the N-Bit 
+  filter will call function 2.1.2. If the member datatype is no-op datatype, 
+  the filter will call function 2.1.1. If the member datatype is compound datatype, 
+  the filter will make a recursive function call of function 2.1.3. If the member 
+  datatype is array datatype, the filter will call function 2.1.4.
+  
+<h4>2.3.1.4 Function to compress data element of array datatype</h4>
+
+<p>The N-Bit filter will use a loop to compress each array elements in 
+  the array. If the base datatype of array element is integer or 
+  floating-point datatype, the N-Bit filter will call function 2.1.2. 
+  If the base datatype is no-op datatype, the filter will call function 
+  2.1.1. If the base datatype is compound datatype, the filter will call 
+  function 2.1.3. If the member datatype is array datatype, the filter 
+  will make a recursive function call of function 2.1.4.
+  
+<h4>2.3.2 N-Bit decompression</h4>
+
+<p>The N-Bit decompression algorithm is very similar to N-Bit compression. 
+  The only difference is that at the byte level, compression packs out all 
+  padding bits and stores only significant bits into a continous buffer 
+  (unsigned char) while decompression unpacks significant bits and inserts 
+  padding bits (zero) at proper positions to recover data bytes before 
+  compression.
+  
+<h4>2.3.3 Storing N-Bit parameters to array <code>cd_value[]</code></h4>
+
+<p>All information (parameters) needed by the N-Bit filter are gathered and 
+  stored in the array <code>cd_values[]</code> by function 
+  <code>H5Z_set_local_nbit</code> and are passed to the function 
+  <code>H5Z_filter_nbit</code> by the HDF5 library. 
+  
+<dl><dt>These parameters include:
+<dd>
+  <ol>
+    <li>parameters related to the datatype;
+    <li>the number of elements within the chunk;
+    <li>flag indicating whether compression is needed.
+  </ol>
+</dl>
+
+<p>1 and 2 can be obtained using the HDF5 dataspace and datatype 
+  interface calls. 3 is set during the storing process as described 
+  in section 3.2.
+
+<p>Compound datatype can have members of array or compound datatype. Array 
+  datatype's base datatype can be a complex compound datatype. Recursive 
+  calls are needed for setting parameters for these complex situations.
+
+<p>Before setting the parameters, number of parameters should be calculated 
+  first to dynamically allocate the array <code>cd_values[]</code> to be passed 
+  to HDF5 library. This also requires recursive calls.
+  
+<p>For atomic datatype (integer/floating-point), parameters to store include 
+  its size, endianness, precision, offset. <br>For no-op datatype, 
+  only size is needed.
+
+<p>For compound datatype, parameters to store include total size, number of 
+  members. For each member, its member offset needs to be stored. Other 
+  paramters for members depends on its datatype class.
+
+<p>For array datatype, parameters to store includes total size. Other 
+  paramters for its base type depends on the base type's datatype class. 
+  Also, in order to correctly retrieve the parameter for use of N-Bit 
+  compressionor decompression later, parameters for distinguishing between 
+  datatype classes should be stored.
+  
+<a name="implementation">
+<h3>2.4 Implementation</h3>
+</a>
+
+<p>Three filter call-back functions were written for N-Bit:
+  <br><code>H5Z_can_apply_nbit</code>, <code>H5Z_set_local_nbit</code>, 
+  <code>H5Z_filter_nbit</code>. These functions are called internally by 
+  the HDF5 library. A number of utility functions were written for function 
+  <code>H5Z_set_local_nbit</code>. Compression and decompression functions 
+  were written and called by function <code>H5Z_filter_nbit</code>. All these 
+  functions are included in the file "<code>H5Znbit.c</code>".
+
+<p>Another function written is <code>H5Pset_nbit</code>, which is called by 
+  the application for setting up using the N-Bit filter [2]. This function 
+  is included in the file "<code>H5Pdcpl.c</code>". User of N-Bit filter 
+  does not need supply any parameters.
+  
+<h4>2.4.1 How N-Bit parameters are stored</h4>
+
+<p> A scheme of storing parameters for N-Bit filter in array 
+  <code>cd_values[]</code> was developed utilizing recursive function calls.
+
+
+<p>Four utility functions <code>H5Z_set_parms_atomic</code>, 
+  <code>H5Z_set_parms_array</code>, <code>H5Z_set_parms_nooptype</code>, 
+  <code>H5Z_set_parms_compound</code> are written for storing paramters 
+  of atomic (integer or floating-point), no-op, array, and compound datatype.
+
+<p>The scheme is briefly described below:
+
+<p>First assign a numeric code for datatype class atomic (integer or float), 
+  no-op, array, and compound datatype. The code is stored before other datatype 
+  related parameters are stored.
+  
+<dl>
+  <dt>The first three parameters of <code>cd_values[]</code> are reserved for:
+    <dd>
+	  <ol>
+	    <li>number of valid entries in array <code>cd_values</code>
+		<li>flag indicating whether compression is needed
+		<li>number of elements in the chunk
+	  </ol><br>Note: i is the index of <code>cd_values[]</code>.
+	</dd>
+</dl>
+
+<dl>
+  <dt>In function <code>H5Z_set_local_nbit</code>:
+    <dd>
+	  <ol>
+	    <li><code>i</code> = 2
+		<li>get number of elements in the chunk and store in
+          <code>cd_value[i]</code>, increment <code>i</code>
+		<li>get class of datatype
+		  <br>&nbsp;&nbsp;If is integer or floating-point datatype, call 
+		  <code>H5Z_set_parms_atomic</code> 
+		  <br>&nbsp;&nbsp;If is array datatype, call 
+		    <code>H5Z_set_parms_array</code>
+		  <br>&nbsp;&nbsp;If is compound datatype, call 
+		    <code>H5Z_set_parms_compound</code>
+		  <br>&nbsp;&nbsp;If is not any of above datatype, call 
+		    <code>H5Z_set_parms_noopdatatype</code>
+		<li>store <code>i</code> in <code>cd_value[0]</code>, and flag in 
+		  <code>cd_values[1]</code>
+	  </ol>
+	</dd>
+</dl>
+
+<dl>
+  <dt>In function <code>H5Z_set_parms_atomic</code>:</dt>
+    <dd>
+	  <ol>
+	    <li>store code for atomic datatype in <code>cd_value[i]</code>, 
+		  increment <code>i</code>
+		<li>get size of atomic datatype and store in <code>cd_value[i]</code>, 
+		  increment <code>i</code>
+		<li>get order of atomic datatype and store in <code>cd_value[i]</code>,  
+		  increment <code>i</code>
+		<li>get precision of atomic datatype and store in <code>cd_value[i]</code>, 
+		  increment <code>i</code>
+		<li>get offset of atomic datatype and store in <code>cd_value[i]</code>, 
+		  increment <code>i</code>
+		<li>check if at this point the need to do compression
+	  </ol>
+	</dd>
+</dl>
+
+<dl>
+  <dt>In function <code>H5Z_set_parms_nooptype</code>:
+    <dd>
+	  <ol>
+	    <li>store code for no-op datatype in <code>cd_value[i]</code>, 
+		  increment <code>i</code>
+		<li>get size of no-op datatype and store in <code>cd_value[i]</code>, 
+		  increment <code>i</code>
+	  </ol>
+	</dd>
+</dl>
+
+<dl>
+  <dt>In function <code>H5Z_set_parms_array</code>:
+    <dd>
+	  <ol>
+	    <li>store code for array datatype in <code>cd_value[i]</code>, 
+		  increment <code>i</code>
+		<li>get size of array datatype and store in <code>cd_value[i]</code>,
+          increment <code>i</code>
+		<li>get class of its base datatype
+		  <br>&nbsp;&nbsp;If is integer or floating-point datatype, 
+		    call <code>H5Z_set_parms_atomic</code>
+		  <br>&nbsp;&nbsp;If is array datatype, call 
+		    <code>H5Z_set_parms_array</code>
+		  <br>&nbsp;&nbsp;If is compound datatype, call 
+		    <code>H5Z_set_parms_compound</code>
+		  <br>&nbsp;&nbsp;If is not any of above datatype, 
+		    call <code>H5Z_set_parms_noopdatatype</code>
+	  </ol>
+	</dd>
+</dl>
+
+<dl>
+  <dt>In function <code>H5Z_set_parms_compound</code>:
+    <dd>
+	  <ol>
+	    <li>store code for compound datatype in <code>cd_value[i]</code>, 
+		  increment <code>i</code>
+		<li>get size of compound datatype and store in <code>cd_value[i]</code>, 
+		  increment <code>i</code>
+		<li>get number of members and store in <code>cd_values[i]</code>, 
+		  increment <code>i</code>
+		<li>for each member
+		  <br>&nbsp;&nbsp;get member offset and store in <code>cd_values[i]</code>, 
+		    increment <code>i</code>
+		  <br>&nbsp;&nbsp;get class of member datatype
+		  <br>&nbsp;&nbsp;If is integer or floating-point datatype, 
+		    call <code>H5Z_set_parms_atomic</code>
+		  <br>&nbsp;&nbsp;If is array datatype, call <code>H5Z_set_parms_array</code>
+          <br>&nbsp;&nbsp;If is compound datatype, call <code>H5Z_set_parms_compound</code>
+          <br>&nbsp;&nbsp;If is not any of above datatype, 
+		    call <code>H5Z_set_parms_noopdatatype</code>
+	  </ol>
+	</dd>
+</dl>
+
+<h4>2.4.2 N-Bit compression and decompression functions</h4>
+
+<p>The N-Bit compression and decompression functions are called 
+  by function <code>H5Z_filter_nbit</code>. The compress and decompress 
+  functions retrieve the N-Bit parameters from <code>cd_values[]</code> 
+  passed to compression and decompression functions by function 
+  <code>H5Z_filter_nbit</code>. Parameters are retrieved in exactly the 
+  same order they are stored and lower-level compression and 
+  decompression functions for different datatype class are called. 
+  Their implementation follows what is described in section 2.1 and 2.2.
+  
+<p>The N-Bit compression is not implemented in place. Considering the 
+  difficulty to calculate actual output buffer size after compression, 
+  the same space as that of input buffer is allocated for the output 
+  buffer passed to the compression function. However, the size of the 
+  output buffer passed by reference to the compression function will 
+  be changed (smaller) after the compression is done.
+  
+<a name="examples">
+<h3>2.5 Usage examples</h3>
+</a>
+
+<p>Example 1: Use N-Bit filter for writing and reading N-Bit integer data
+
+<pre>
+#include "hdf5.h"
+#include &lt;stdlib.h&gt;
+#include &lt;math.h&gt;
+#define H5FILE_NAME  "nbit_test_int.h5"
+#define DATASET_NAME "nbit_int"
+#define NX 200
+#define NY 300
+#define CH_NX 10
+#define CH_NY 15
+</pre>
+
+<pre>
+int main(void)
+{
+   hid_t   file, dataspace, dataset, datatype, mem_datatype, properties;
+   hsize_t dims[2], chunk_size[2];
+   int     orig_data[NX][NY];
+   int     new_data[NX][NY];
+   int     i, j;
+   size_t  precision, offset;
+
+
+
+   /* Define dataset datatype (integer), and set precision, offset */
+   datatype = H5Tcopy(H5T_NATIVE_INT);
+   precision = 17; /* precision includes sign bit */
+   if(H5Tset_precision(datatype,precision)&lt;0) {
+      printf("Error: fail to set precision\n");
+      return -1;
+   }
+   offset = 4;
+   if(H5Tset_offset(datatype,offset)&lt;0) {
+      printf("Error: fail to set offset\n");
+      return -1;
+   }
+
+
+   /* Copy to memory datatype */
+   mem_datatype = H5Tcopy(datatype);
+
+
+   /* Set order of dataset datatype */
+   if(H5Tset_order(datatype, H5T_ORDER_BE)&lt;0) {
+      printf("Error: fail to set endianness\n");
+      return -1;
+   }
+
+
+  /* Initiliaze data buffer with random data within correct range
+   * corresponding to the memory datatype's precision and offset.
+   */
+   for (i=0; i &lt; NX; i++)
+       for (j=0; j &lt; NY; j++)
+           orig_data[i][j] = rand() % (int)pow(2, precision-1) &lt;&lt;offset;
+
+
+   /* Describe the size of the array. */
+   dims[0] = NX;
+   dims[1] = NY;
+   if((dataspace = H5Screate_simple (2, dims, NULL))<0) {
+      printf("Error: fail to create data space\n");
+      return -1;
+   }
+
+
+  /*
+   * Create a new file using read/write access, default file
+   * creation properties, and default file access properties.
+   */
+   if((file = H5Fcreate (H5FILE_NAME, H5F_ACC_TRUNC,
+                         H5P_DEFAULT, H5P_DEFAULT))<0) {
+      printf("Error: fail to create file\n");
+      return -1;
+   }
+
+
+  /*
+   * Set the dataset creation property list to specify that
+   * the raw data is to be partitioned into 10x15 element
+   * chunks and that each chunk is to be compressed.
+   */
+   chunk_size[0] = CH_NX;
+   chunk_size[1] = CH_NY;
+   if((properties = H5Pcreate (H5P_DATASET_CREATE))<0) {
+      printf("Error: fail to create dataset property\n");
+      return -1;
+   }
+   if(H5Pset_chunk (properties, 2, chunk_size)<0) {
+      printf("Error: fail to set chunk\n");
+      return -1;
+   }
+
+
+  /*
+   * Set parameters for N-Bit compression; check the description of
+   * the H5Pset_nbit function in the HDF5 Reference Manual for more
+   * information.
+   */
+   if(H5Pset_nbit (properties)<0) {
+      printf("Error: fail to set nbit filter\n");
+      return -1;
+   }
+
+
+  /*
+   * Create a new dataset within the file.  The datatype
+   * and data space describe the data on disk, which may
+   * be different from the format used in the application's
+   * memory.
+   */
+   if((dataset = H5Dcreate (file, DATASET_NAME, datatype,
+                            dataspace, properties))<0) {
+      printf("Error: fail to create dataset\n");
+      return -1;
+   }
+
+
+  /*
+   * Write the array to the file. The datatype and dataspace
+   * describe the format of the data in the 'orig_data' buffer.
+   * The raw data is translated to the format required on disk,
+   * as defined above. We use default raw data transfer properties.
+   */
+   if(H5Dwrite (dataset, mem_datatype, H5S_ALL, H5S_ALL,
+                H5P_DEFAULT, orig_data)<0) {
+      printf("Error: fail to write to dataset\n");
+      return -1;
+   }
+
+
+   H5Dclose (dataset);
+
+
+   if((dataset = H5Dopen(file, DATASET_NAME))<0) {
+      printf("Error: fail to open dataset\n");
+      return -1;
+   }
+
+
+  /*
+   * Read the array. This is similar to writing data,
+   * except the data flows in the opposite direction.
+   * Note: Decompression is automatic.
+   */
+   if(H5Dread (dataset, mem_datatype, H5S_ALL, H5S_ALL,
+               H5P_DEFAULT, new_data)<0) {
+      printf("Error: fail to read from dataset\n");
+      return -1;
+   }
+
+
+   H5Tclose (datatype);
+   H5Tclose (mem_datatype);
+   H5Dclose (dataset);
+   H5Sclose (dataspace);
+   H5Pclose (properties);
+   H5Fclose (file);
+
+
+   return 0;
+}
+</pre>
+
+<br>
+<p>Example 2: Use N-Bit filter for writing and reading N-Bit floating-point data
+
+<pre>
+#include "hdf5.h"
+#define H5FILE_NAME  "nbit_test_float.h5"
+#define DATASET_NAME "nbit_float"
+#define NX 2
+#define NY 5
+#define CH_NX 2
+#define CH_NY 5
+</pre>
+
+<pre>
+int main(void)
+{
+   hid_t   file, dataspace, dataset, datatype, properties;
+   hsize_t dims[2], chunk_size[2];
+  /* orig_data[] are initialized to be within the range that can be
+   * represented by dataset datatype (no precision loss during
+   * datatype conversion)
+   */
+   float   orig_data[NX][NY] = {{188384.00, 19.103516, -1.0831790e9,
+   -84.242188, 5.2045898}, {-49140.000, 2350.2500, -3.2110596e-1,
+   6.4998865e-5, -0.0000000}};
+   float   new_data[NX][NY];
+   size_t  precision, offset;
+
+
+  /* Define single-precision floating-point type for dataset
+   *-------------------------------------------------------------------
+   * size=4 byte, precision=20 bits, offset=7 bits,
+   * mantissa size=13 bits, mantissa position=7,
+   * exponent size=6 bits, exponent position=20,
+   * exponent bias=31.
+   * It can be illustrated in little-endian order as:
+   * (S - sign bit, E - exponent bit, M - matisa bit,
+   *  ? - padding bit)
+   *
+   *           3        2        1        0
+   *       ?????SEE EEEEMMMM MMMMMMMM M???????
+   *
+   * To create a new floating-point type, the following
+   * properties must be set in the order of
+   *     set fields -> set offset -> set precision -> set size.
+   * All these properties must be set before the type can function.
+   * Other properties can be set anytime. Derived type size cannot
+   * be expanded bigger than original size but can be decreased.
+   * There should be no holes among the significant bits. Exponent
+   * bias usually is set 2^(n-1)-1, where n is the exponent size [3].
+
+
+*-------------------------------------------------------------------*/
+   datatype = H5Tcopy(H5T_IEEE_F32BE);
+   if(H5Tset_fields(datatype, 26, 20, 6, 7, 13)&lt;0) {
+      printf("Error: fail to set fields\n");
+      return -1;
+   }
+   offset = 7;
+   if(H5Tset_offset(datatype,offset)&lt;0) {
+      printf("Error: fail to set offset\n");
+      return -1;
+   }
+   precision = 20;
+   if(H5Tset_precision(datatype,precision)&lt;0) {
+      printf("Error: fail to set precision\n");
+      return -1;
+   }
+   if(H5Tset_size(datatype, 4)&lt;0) {
+      printf("Error: fail to set size\n");
+      return -1;
+   }
+   if(H5Tset_ebias(datatype, 31)&lt;0) {
+      printf("Error: fail to set exponent bias\n");
+      return -1;
+   }
+
+
+   /* Describe the size of the array. */
+   dims[0] = NX;
+   dims[1] = NY;
+   if((dataspace = H5Screate_simple (2, dims, NULL))&lt;0) {
+      printf("Error: fail to create data space\n");
+      return -1;
+   }
+
+
+  /*
+   * Create a new file using read/write access, default file
+   * creation properties, and default file access properties.
+   */
+   if((file = H5Fcreate (H5FILE_NAME, H5F_ACC_TRUNC,
+                         H5P_DEFAULT, H5P_DEFAULT))&lt;0) {
+      printf("Error: fail to create file\n");
+      return -1;
+   }
+
+
+  /*
+   * Set the dataset creation property list to specify that
+   * the raw data is to be partitioned into 2x5 element
+   * chunks and that each chunk is to be compressed.
+   */
+   chunk_size[0] = CH_NX;
+   chunk_size[1] = CH_NY;
+   if((properties = H5Pcreate (H5P_DATASET_CREATE))&lt;0) {
+      printf("Error: fail to create dataset property\n");
+      return -1;
+   }
+   if(H5Pset_chunk (properties, 2, chunk_size)&lt;0) {
+      printf("Error: fail to set chunk\n");
+      return -1;
+   }
+
+
+  /*
+   * Set parameters for N-Bit compression; check the description
+   * of the H5Pset_nbit function in the HDF5 Reference Manual
+   * for more information.
+   */
+   if(H5Pset_nbit (properties)&lt;0) {
+      printf("Error: fail to set nbit filter\n");
+      return -1;
+   }
+
+
+  /*
+   * Create a new dataset within the file.  The datatype
+   * and data space describe the data on disk, which may
+   * be different from the format used in the application's
+   * memory.
+   */
+   if((dataset = H5Dcreate (file, DATASET_NAME, datatype,
+                            dataspace, properties))&lt;0) {
+      printf("Error: fail to create dataset\n");
+      return -1;
+   }
+
+
+  /*
+   * Write the array to the file. The datatype and dataspace
+   * describe the format of the data in the 'orig_data' buffer.
+   * The raw data is translated to the format required on disk,
+   * as defined above. We use default raw data transfer properties.
+   */
+   if(H5Dwrite (dataset, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL,
+                H5P_DEFAULT, orig_data)&lt;0) {
+      printf("Error: fail to write to dataset\n");
+      return -1;
+   }
+
+
+   H5Dclose (dataset);
+
+
+   if((dataset = H5Dopen(file, DATASET_NAME))&lt;0) {
+      printf("Error: fail to open dataset\n");
+      return -1;
+   }
+
+
+  /*
+   * Read the array. This is similar to writing data,
+   * except the data flows in the opposite direction.
+   * Note: Decompression is automatic.
+   */
+   if(H5Dread (dataset, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL,
+               H5P_DEFAULT, new_data)&lt;0) {
+      printf("Error: fail to read from dataset\n");
+      return -1;
+   }
+
+
+   H5Tclose (datatype);
+   H5Dclose (dataset);
+   H5Sclose (dataspace);
+   H5Pclose (properties);
+   H5Fclose (file);
+
+
+   return 0;
+}
+</pre>
+
+<a name="limitations">
+<h3>2.6 Limitations</h3>
+</a>
+
+<p>Because the array <code>cd_values[]</code> have to fit into an object 
+  header message of 64K, the N-Bit filter has an uppper limit on the number 
+  of N-Bit paramters to store in it. To be conservative, a maximum of 4K is 
+  allowed for the number of parameters.
+
+<p>The N-Bit filter currently only compress N-Bit dataype or field derived 
+  from integer or floating-point datatype. The N-Bit filter assumes padding 
+  bits of zero. This may not be true since the HDF5 user can set padding bit 
+  to be zero, one, or leave the background alone. However, it is expected 
+  the N-Bit filter will be modified to adjust such situations.
+
+<p>The N-Bit filter does not have a way to handle the situation where fill 
+  value of a dataset is defined and the fill value is not of N-Bit datatype 
+  although the dataset datatype is.
+
+<a name="ScaleOffsetFilter">
+<h3>3. Scale-Offset Filter</h3>
+</a> 
+
+<p>Generally speaking, Scale-Offset compression performs a scale and/or 
+  offset operation on each data value and truncates the resulting value 
+  to a minimum number of bits (minimum-bits) before storing it [1]. 
+
+<p>The current Scale-Offset filter supports integer and floating-point 
+  datatype only. For floating-point datatype, float and double are supported 
+  while long double is not supported.
+
+<p>Integer data compression uses a straight-forward algorithm. Floating-point 
+  data compression adopts the GRiB data packing mechanism [2], which offers 
+  two alternate methods: a fixed minimum-bits method, and a variable 
+  minimum-bits method. Currently, only the variable minimum-bits method 
+  is implemented.
+
+<p>Like other I/O filters supported by the HDF5 library, application 
+  using the Scale-Offset filter must store data with chunked storage.
+  
+<p><strong>Integer type</strong>
+	
+<p>The minimum-bits of integer data can be determined by the filter. 
+  For example, if the maximum value of data to be compressed is 7065 
+  and the minimum value is 2970. Then the "span" of dataset values is 
+  equal to(max-min+1),which is 4676. If no fill value is defined for the 
+  dataset, the minimum-bits is: ceiling(log2(span)) = 12. With fill 
+  value set, the minimum-bits is: ceiling(log2(span+1)) = 13[1].
+
+<p>HDF5 user can also set the minimum-bits. However, if the user gives 
+  a minimum-bits that is less than that calculated by the filter, 
+  the compression will be lossy.
+	
+<p><strong>Floating-point type</strong>
+
+<p>The basic idea of scaleoffset filter for floating-point type is 
+  to transform the data by some kind of scaling to integer data and 
+  then follow the procedure of scaleoffset filter for integer type to 
+  do the data compression. Due to the data transformation from 
+  floating-point to integer, the scaleoffset filter is 
+  lossy in nature. 
+
+<p>Two methods of scaling the floating-point data are used, the so-called 
+  D-scaling and E-scaling. D-scaling is more straightforward and easy to 
+  understand. For HDF5 1.8 release, only D-scaling method is implemented. 
+  More information about D-scaling and E-scaling can be found from [2].
+  
+<h3>3.1 Design</h3>
+
+<p>Before the filter does any real work, it needs to gather some information 
+  from the HDF5 library through API calls. The parameters the filter needs 
+  are: Minimum-bits of the data value, number of data elements in the chunk, 
+  datatype class, size, sign (only for integer type), byte order, fill value 
+  if defined. Size and sign are needed to determine what kind of pointer cast 
+  to use when retrieving values from data buffer.
+
+<p>The pipeline of filter can be divided into four parts: (1)pre-compression; 
+  (2)compression; (3)decompression; (4)post-decompression.	
+	
+<p>Depending on whether fill value is defined or not, the filter will handle 
+  pre-compression and post-decompression differently. 
+
+<p>The scaleoffset filter only needs the memory byte order, size of datatype, 
+  and minimum-bits for compression and decompression.	
+	
+<p>Since decompression has no access to the original data, the minimum-bits 
+  and the minimum value need to be stored with the compressed data for 
+  decompression and post-decompression.
+  
+<h4>3.1.1 Integer type</h4>
+
+<br>
+
+<h4>3.1.1.1 Pre-compression</h4>
+
+<p>During pre-compression Minimum-bits is calculated if it is not 
+  set by the user. Calculation of Minimum-bits has already been 
+  illustrated in section 1. 
+ 
+<p>If fill value is defined, finding of maximum and minimum value 
+  should ignore the data element whose value is equal to the fill value. 
+
+<p>If no fill value is defined, value of each data element is subtracted 
+  by minimum value during this stage.
+
+<p>If fill value is defined, fill value is assigned to the maximum value. 
+  In this way minimum-bits can represent data element whose value is equal 
+  to the fill value and subtracts the minimum value from data element whose 
+  value is not equal to the fill value.	
+
+<p>Fill value, if defined, number of elements inside the chunk, class of 
+  datatype, size of datatype, memory order of the datatype etc. should be 
+  stored into HDF5 object header for the usage of post-decompression.
+
+<p>After pre-compression, all values are non-negative and are within the range 
+  that can be store by Minimum-bits.
+  
+<h4>3.1.1.2 Compression</h4>
+
+<p>All modified data values after pre-compression are packed together 
+  into the compressed data buffer. The number of bit for each data value 
+  decreases from the number of bit of integer (32 for most platforms) to 
+  minimum-bits. The value of minimum-bits and minimum-value are added to 
+  the data buffer and the whole buffer is sent back to the library. In this 
+  way, number of bit for each modified value is no more than 
+  the size of minimum-bits.
+  
+<h4>3.1.1.3 Decompression</h4>
+
+<p>In this stage, the number of bit for each data value is resumed from 
+  minimum-bits to the number of bit of integer.
+
+<h4>3.1.1.4 Post-decompression</h4>
+
+<p>For the stage of the post-decompression the filter does the opposite 
+  of what it does during pre-compression except that it does not calculate 
+  the minimum-bits or the minimum value. 
+ 
+<p>They have been saved during compression and can be retrieved through 
+  the resumed data buffer. If no fill value is defined, the filter adds 
+  the minimum value back to each data element.
+
+<p>If fill value is defined, the filter assigns the fill value to data 
+  element whose value is equal to the maximum value that minimum-bits can 
+  represent and adds the minimum value back to each data element whose value 
+  is not equal to the maximum value  that minimum-bits can represent.
+  
+<h4>3.1.2 Floating-point type</h4>
+
+<p>The filter will do data transformation from floating-point type to 
+  integer type and then handle the data by using the procedure for handling 
+  the integer data inside the filter.  Since insignificant bits of floating-point 
+  data will be cut off during data transformation, so this filter is 
+  a lossy compression method.
+
+<p>Two scaling methods are introduced by[2]; namely D-scaling and E-scaling. 
+  HDF5 1.8 release only supports D-scaling. In this document, we only 
+  introduce D-scaling. E-scaling should be similar conceptually. D-scaling 
+  means decimal scaling. In order to transform data from floating-point to 
+  integer, a scale factor is introduced. The minimum value will be calculated. 
+  Each data element value will subtract the minimum value. The modified data 
+  will be multiplied by 10(Decimal) to the power of <code>scale_factor</code> 
+  and only the integer part will be kept and manipulated through the routines 
+  for integer type of the filter during the pre-compression and compression. 
+  The integer data will be divided by 10 to the power of <code>scale_factor</code> 
+  to transform back to the floating-point data during the decompression and 
+  post-decompression.  Each data element value will then add the minimum value 
+  and the floating-data are resumed. However, the resumed data will lose some 
+  insignificant bits compared with the original value.
+
+<p>For example, the following floating point data are manipulated by the filter, 
+  the D-scaling factor is 2.
+  
+<p>{104.561, 99.459, 100.545, 105.644}
+
+<p>The minimum value is 99.459, each data element subtracts 99.459, the 
+  modified data is {5.102, 0, 1.086, 6.185}
+
+<p>Since D-scaling factor is 2, all floating-point data will be 
+  multiplied by 10^2,
+
+<p>{510.2, 0, 108.6, 618.5}
+
+<p>The digit after decimal point will be rounded off. The set looks like: 
+  {510 , 0, 109, 619}
+
+<p>After decompression, each value will be divided by 10^2 and add 
+  the offset 99.459,
+
+<p>The floating point data becomes {104.559, 99.459, 100.549, 105.649}
+
+<p>The relative error for each value should be no more than 
+  5* (10^(D-scaling factor +1)). D-scaling sometimes is also refered 
+  as variable Minimum-bits method since for different datasets the 
+  minimum-bits to represent the same decimal precision will vary. The 
+  Data value is modified to 2 to power <code>scale_factor</code> of for 
+  E-scaling. E-scaling is also called fixed-bits method since for different 
+  datasets the minimum-bits will always be fixed to the scale factor of 
+  E-scaling. Currently HDF5 ONLY supports D-scaling(variable Minimum-bits) method.
+  
+<h3>3.2 Implementation</h3>
+
+<p>The Scale-Offset filter implementation was written and included in the file 
+  "<code>H5Zscaleoffset.c</code>". Function <code>H5Pset_scaleoffset</code> was 
+  written and included in the file "<code>H5Pdcpl.c</code>". The HDF5 user can 
+  supply minimum-bits by calling function <code>H5Pset_scaleoffset</code> [3].
+
+<p>The Scale-Offset filter was implemented based on the design outlined in 
+  section 2. However, the following factors need to be considered:
+  
+<dl>
+  <dd>
+    <ol>
+	  <li>The filter needs the appropriate cast pointer whenever it needs 
+	    to retrieve data values.
+	  <li>The HDF5 library passes to the filter the to-be-compressed data 
+	    in format of dataset datatype and the filter passes back the decompressed 
+		data in the same format. If fill value is defined, it is also in dataset 
+		datatype format. For example, if byte order of dataset datatype is different 
+		from that of the memory datatype of the platform compression or decompression 
+		performs, endianness conversion of data buffer is needed. Moreover, it should 
+		be aware that memory byte order can be different during compression 
+		and decompression.
+	  <li>The difference of endianness and datatype between file and memory should be 
+	    considered when saving and retrieval of minimum-bits, minimum value, 
+		and fill value.
+	  <li>If the user sets the minimum-bits to full precision of the datatype, no 
+	    operation is needed at the filter side. If the full precision is a result 
+		of calculation by the filter, then the minimum-bits needs to be saved for 
+		decompression but no compression or decompression is needed (only copy of the 
+		input buffer is needed).
+	  <li>If by calculation of the filter, the minimum-bits is equal to zero, special 
+	    handling is needed. Since it means all values are the same, no compression or 
+		decompression is needed. But the minimum-bits and minimum value still need to 
+		be saved during compression.
+	  <li>For floating-point data, the minimum value of the dataset should be calculated 
+	    at first. Each data element value will then subtract the minimum value to obtain 
+		the "offset" data. The offset data will then follow 2.2 <strong>(3.1.2??)</strong> 
+		to do data transformation to integer and rounding.
+	</ol>
+  </dd>
+</dl>
+
+<h3>3.3 Usage examples</h3>
+
+<p>Example 1: Use Scale-Offset filter for writing and reading integer data
+
+<pre>
+#include "hdf5.h"
+#include &lt;stdlib.h&gt;
+#define H5FILE_NAME  "scaleoffset_test_int.h5"
+#define DATASET_NAME "scaleoffset_int"
+#define NX 200
+#define NY 300
+#define CH_NX 10
+#define CH_NY 15
+</pre>
+
+<pre>
+int main(void)
+{
+   hid_t   file, dataspace, dataset, datatype, properties;
+   hsize_t dims[2], chunk_size[2];
+   int     orig_data[NX][NY];
+   int     new_data[NX][NY];   
+   int     i, j, fill_val;   
+
+   /* Define dataset datatype */
+   datatype = H5Tcopy(H5T_NATIVE_INT);   
+   
+   /* Initiliaze data buffer */
+   for (i=0; i &lt; NX; i++) 
+       for (j=0; j &lt; NY; j++)
+           orig_data[i][j] = rand() % 10000;
+
+   /* Describe the size of the array. */
+   dims[0] = NX;
+   dims[1] = NY;
+   if((dataspace = H5Screate_simple (2, dims, NULL))&lt;0) {
+      printf("Error: fail to create data space\n");
+      return -1;
+   }
+
+  /*
+   * Create a new file using read/write access, default file
+   * creation properties, and default file access properties.
+   */
+   if((file = H5Fcreate (H5FILE_NAME, H5F_ACC_TRUNC, 
+                         H5P_DEFAULT, H5P_DEFAULT))&lt;0) {
+      printf("Error: fail to create file\n");
+      return -1;
+   }
+
+  /*
+   * Set the dataset creation property list to specify that
+   * the raw data is to be partitioned into 10x15 element
+   * chunks and that each chunk is to be compressed.
+   */
+   chunk_size[0] = CH_NX;
+   chunk_size[1] = CH_NY;
+   if((properties = H5Pcreate (H5P_DATASET_CREATE))&lt;0) {
+      printf("Error: fail to create dataset property\n");
+      return -1;
+   }
+   if(H5Pset_chunk (properties, 2, chunk_size)&lt;0) {
+      printf("Error: fail to set chunk\n");
+      return -1;
+   }
+
+   /* Set the fill value of dataset */
+   fill_val = 10000;
+   if (H5Pset_fill_value(properties, H5T_NATIVE_INT, 
+       &fill_val)&lt;0) {
+      printf("Error: can not set fill value for dataset\n");
+      return -1;
+   }
+
+  /*
+   * Set parameters for Scale-Offset compression. Check the 
+   * description of the H5Pset_scaleoffset function in the 
+   * HDF5 Reference Manual for more information [3].
+   */
+   if(H5Pset_scaleoffset (properties, H5_SO_INT_MINIMUMBITS_DEFAULT, 
+                          H5_SO_INT)&lt;0) {
+      printf("Error: fail to set scaleoffset filter\n");
+      return -1;
+   }
+
+  /*
+   * Create a new dataset within the file. The datatype
+   * and data space describe the data on disk, which may
+   * or may not be different from the format used in the 
+   * application's memory.
+   */
+   if((dataset = H5Dcreate (file, DATASET_NAME, datatype,
+                            dataspace, properties))&lt;0) {
+      printf("Error: fail to create dataset\n");
+      return -1;
+   }
+
+  /*
+   * Write the array to the file. The datatype and dataspace
+   * describe the format of the data in the 'orig_data' buffer.
+   * We use default raw data transfer properties.
+   */
+   if(H5Dwrite (dataset, H5T_NATIVE_INT, H5S_ALL, H5S_ALL,
+                H5P_DEFAULT, orig_data)&lt;0) {
+      printf("Error: fail to write to dataset\n");
+      return -1;
+   }
+
+   H5Dclose (dataset);
+
+   if((dataset = H5Dopen(file, DATASET_NAME))&lt;0) {
+      printf("Error: fail to open dataset\n");
+      return -1;
+   }   
+
+  /*
+   * Read the array. This is similar to writing data,
+   * except the data flows in the opposite direction.
+   * Note: Decompression is automatic.
+   */
+   if(H5Dread (dataset, H5T_NATIVE_INT, H5S_ALL, H5S_ALL,
+               H5P_DEFAULT, new_data)&lt;0) {
+      printf("Error: fail to read from dataset\n");
+      return -1;
+   }
+
+   H5Tclose (datatype);
+   H5Dclose (dataset);
+   H5Sclose (dataspace);
+   H5Pclose (properties);
+   H5Fclose (file);
+
+   return 0;
+}
+</pre>
+
+<p>Example 2: Use Scale-Offset filter (set for variable minimum-bits method) 
+  for writing and reading floating-point data
+  
+<pre>
+#include "hdf5.h"
+#include &lt;stdlib.h&gt;
+#define H5FILE_NAME  "scaleoffset_test_float_Dscale.h5"
+#define DATASET_NAME "scaleoffset_float_Dscale"
+#define NX 200
+#define NY 300
+#define CH_NX 10
+#define CH_NY 15
+</pre>
+
+<pre>
+int main(void)
+{
+   hid_t   file, dataspace, dataset, datatype, properties;
+   hsize_t dims[2], chunk_size[2];
+   float   orig_data[NX][NY];
+   float   new_data[NX][NY];
+   float   fill_val;   
+   int     i, j;   
+
+   /* Define dataset datatype */
+   datatype = H5Tcopy(H5T_NATIVE_FLOAT);   
+   
+   /* Initiliaze data buffer */
+   for (i=0; i < NX; i++) 
+       for (j=0; j < NY; j++)
+           orig_data[i][j] = (rand() % 10000) / 1000.0;
+
+   /* Describe the size of the array. */
+   dims[0] = NX;
+   dims[1] = NY;
+   if((dataspace = H5Screate_simple (2, dims, NULL))<0) {
+      printf("Error: fail to create data space\n");
+      return -1;
+   }
+
+  /*
+   * Create a new file using read/write access, default file
+   * creation properties, and default file access properties.
+   */
+   if((file = H5Fcreate (H5FILE_NAME, H5F_ACC_TRUNC, 
+                         H5P_DEFAULT, H5P_DEFAULT))<0) {
+      printf("Error: fail to create file\n");
+      return -1;
+   }
+
+  /*
+   * Set the dataset creation property list to specify that
+   * the raw data is to be partitioned into 10x15 element
+   * chunks and that each chunk is to be compressed.
+   */
+   chunk_size[0] = CH_NX;
+   chunk_size[1] = CH_NY;
+   if((properties = H5Pcreate (H5P_DATASET_CREATE))<0) {
+      printf("Error: fail to create dataset property\n");
+      return -1;
+   }
+   if(H5Pset_chunk (properties, 2, chunk_size)<0) {
+      printf("Error: fail to set chunk\n");
+      return -1;
+   }
+
+   /* Set the fill value of dataset */
+   fill_val = 10000.0;
+   if (H5Pset_fill_value(properties, H5T_NATIVE_FLOAT, 
+       &fill_val)<0) {
+      printf("Error: can not set fill value for dataset\n");
+      return -1;
+   }
+
+  /*
+   * Set parameters for Scale-Offset compression; use varialbe
+   * minimum-bits method, set decimal scale factor to 3. Check the 
+   * description of the H5Pset_scaleoffset function in the HDF5 
+   * Reference Manual for more information [3].
+   */
+   if(H5Pset_scaleoffset (properties, 3, H5_SO_FLOAT_DSCALE)<0) {
+      printf("Error: fail to set scaleoffset filter\n");
+      return -1;
+   }
+
+  /*
+   * Create a new dataset within the file. The datatype
+   * and data space describe the data on disk, which may
+   * or may not be different from the format used in the 
+   * application's memory.
+   */
+   if((dataset = H5Dcreate (file, DATASET_NAME, datatype,
+                            dataspace, properties))<0) {
+      printf("Error: fail to create dataset\n");
+      return -1;
+   }
+
+  /*
+   * Write the array to the file. The datatype and dataspace
+   * describe the format of the data in the 'orig_data' buffer.
+   * We use default raw data transfer properties.
+   */
+   if(H5Dwrite (dataset, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL,
+                H5P_DEFAULT, orig_data)<0) {
+      printf("Error: fail to write to dataset\n");
+      return -1;
+   }
+
+   H5Dclose (dataset);
+
+   if((dataset = H5Dopen(file, DATASET_NAME))<0) {
+      printf("Error: fail to open dataset\n");
+      return -1;
+   }   
+
+  /*
+   * Read the array. This is similar to writing data,
+   * except the data flows in the opposite direction.
+   * Note: Decompression is automatic.
+   */
+   if(H5Dread (dataset, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL,
+               H5P_DEFAULT, new_data)<0) {
+      printf("Error: fail to read from dataset\n");
+      return -1;
+   }
+
+   H5Tclose (datatype);
+   H5Dclose (dataset);
+   H5Sclose (dataspace);
+   H5Pclose (properties);
+   H5Fclose (file);
+
+   return 0;
+}
+</pre>
+
+<h3>3.4 Limitations</h3>
+
+<p>For floating-point data handling, there are some algorithmic 
+  limitations to the GRiB data packing mechanism:
+
+<dl>
+  <dd>
+    <ol>
+	  <li>Both E-scaling and D-scaling method are lossy compression.
+	  <li>For D-scaling method, since data values have been rounded to 
+	    integer values (positive) before truncating to the minimum-bits, 
+		their range is limited by the maximum value that can be represented 
+		by the corresponding unsigned integer type (same size with that of 
+		floating-point type).
+	</ol>
+  </dd>
+</dl>
+
+<h3>3.5 Suggestions</h3>
+
+<p>Some suggestions for using the filter for floating-point data:
+
+<dl>
+  <dd>
+    <ol>
+	  <li>It is better to convert the units of data so that it is 
+	    within certain common range (e.g. 1200m to 1.2km).
+	  <li>If data values to be compressed are very near to zero, it 
+	    is strongly recommended that the user sets the fill value away 
+		from zero (e.g. a large positive number) because if the user does 
+		nothing the HDF5 library will set the fill value to zero, which 
+		may cause the compression not as desirable.
+	  <li>Users are not encouraged to use a very large decimal scale 
+	    factor (e.g. 100) for the D-scaling method. This can cause the 
+		filter not to ignore fill value when finding maximum and minimum 
+		values, and get a much larger minimum-bits (poor compression).
+	</ol>
+  </dd>
+</dl>
+
+<a name="MetadataCache">
+<h3>4. Metadata Caching in HDF5</h3>
+</a>
+
+<p>In the 1.6.4 release, we introduced a re-implementation of the 
+  metadata cache.  That release contained an incomplete version of 
+  the cache which could not be controlled via the API.  The version 
+  in the 1.8 release is more mature, and includes new API calls that 
+  allow the user program to configure the metadata cache both on file 
+  open and at run time.
+
+<p>From the user perspective, the most striking effect of the new 
+  cache should be a large reduction in the cache memory requirements 
+  when working with complex HDF5 files.
+
+<p>Those working with such files may also notice a reduction in 
+  file close time.
+
+<p>Those working with HDF5 files with simple structure shouldn't 
+  notice any particular changes in most cases.  In rare cases, 
+  there may be a significant improvement in performance.
+
+<p>The remainder of this document contains an architectural 
+  overview of the old and new metadata caches, a discussion of 
+  algorithms used to attempt to automatically adjust cache size 
+  to circumstances, and a high level discussion of the cache 
+  configuration controls.  It can be safely skipped by anyone who 
+  works only with HDF5 files with relatively simple structure (i.e. 
+  no huge groups, datasets with large numbers of chunks, or objects 
+  with large numbers of attributes.)
+
+<p>On the other hand, it is mandatory reading if you want to use 
+  other than the default metadata cache configuration.  The 
+  documentation on the metadata cache related API calls will not make 
+  much sense without this background.
+  
+<h4>4.1 The Old Metadata Cache:</h4>
+
+<p>The old metadata cache indexed the cache with a hash table with 
+  no provision for collisions.  Instead, collisions were handled 
+  by evicting the existing entry to make room for the new entry. 
+  Aside from flushes, there was no other mechanism for evicting 
+  entries, so the replacement policy could best be described as 
+  "Evict on Collision".
+
+<p>As a result, if two frequently used entries hashed to the same 
+  location, they would evict each other regularly.  To decrease 
+  the likelyhood of this situation, the default hash table size 
+  was slightly more than 10,000.  However, since the size of 
+  metadata entries is not bounded, and since entries were only 
+  evicted on collision, this allowed the cache size to explode 
+  when working with HDF5 files with complex structure.
+
+<p>The "Evict on Collision" replacement policy also caused 
+  problems with the parallel version of the HDF5 library, as a 
+  collision with a dirty entry could force a write in response
+  to a metadata read.  Since all metadata writes must be collective 
+  in the parallel case, this caused the library to hang.  Prior 
+  to the implementation of the new metadata cache, we dealt with 
+  this issue by maintaining a shadow cache for dirty entries 
+  evicted by a read.
+  
+<h4>4.2 The New Metadata Cache:</h4>
+
+<p>The new metadata cache was designed to address the above 
+  issues.  After implementation, it became evident that the 
+  working set size for HDF5 files varies widely depending on 
+  both structure and access pattern.  Thus it was necessary to 
+  add support for cache size adjustment under either automatic 
+  or user program control.
+
+<p>Structurally, the new metadata cache can be thought of as a 
+  heavily modified version of the UNIX buffer cache as described 
+  in chapter three of M. J. Bach's "The Design of the UNIX Operating 
+  System"  In essence the UNIX buffer cache uses a hash table with 
+  chaining to index a pool of fixed size buffers.  It uses the LRU 
+  replacement policy to select candidates for eviction.
+
+<p>Since HDF5 metadata entries are of no fixed size, and may 
+  grow arbitrarily large, the size of the new metadata cache 
+  cannot be controlled by setting a maximum number of entries. 
+  Instead the new cache keeps a running sum of the size of all 
+  entries, and will attempt to evict entries as necessary to stay 
+  within a user specified maximum size.  At present, the LRU 
+  replacement policy is the only option for selecting candidates 
+  for eviction.
+
+<p>The cache cannot evict entries that are locked, and thus it 
+  will temporarily grow beyond its maximum size if there are 
+  insufficient unlocked entries available for eviction.
+
+<p>To help avoid generating writes in response to a read while 
+  running in parallel, the cache maintains a "clean" LRU list in 
+  addition to the regular LRU list.  This list contains only clean 
+  entries, and is used as a source of candidates for eviction when 
+  servicing a read request in parallel mode.  If the clean LRU list 
+  is exhausted, the cache will temporarily exceed its specified 
+  maximum size.
+
+<p>To increase the likelyhood that this will not happen, the 
+  new cache allows the user to specify a minimum clean size -- 
+  which is a minimum total size of all the entries on the clean 
+  LRU plus all unused space in the cache.  Note that the clean 
+  LRU list is only maintained in the parallel version of the HDF5 
+  library, and thus that the minimum clean size is only relevant 
+  when running that version.
+
+<p>While the new metadata cache only supports the LRU replacement 
+  policy at present, that may change.  Support for multiple 
+  replacement policies was very much in mind when the cache was 
+  designed, as was the ability to switch replacement policies at 
+  run time.  The situation has been complicated by the late addition 
+  of the adaptive cache resizing requirement, as two of our resizing 
+  algorithms piggyback on the LRU list.  However, if there is need 
+  for additional replacement policies, it shouldn't be too hard to 
+  implement them.
+  
+<h4>4.3 Adaptive Cache Resizing in the New Metadata Cache:</h4>
+
+<p>As mentioned earlier, the metadata working set size for a HDF5 
+  file varies wildly depending on the structure of the file and the 
+  access pattern.  For example, a 2MB limit on metadata cache size 
+  is excessive for an H5repack of almost all HDF5 files we have tested. 
+  However, I have a file submitted by one of our users that that will 
+  run a 13% hit rate with this cache size, and will lock up one of our 
+  linux boxes using the old metadata cache.  Increase the new metadata 
+  cache size to 4 MB, and the hit rate exceeds 99%.
+
+<p>In this case the main culprit is a root group with more than 
+  20,000 entries in it.  As a result, the root group heap exceeds 
+  1 MB, which tends to crowd out the rest of the metadata in a 2 MB 
+  cache
+
+<p>This case and a number of synthetic tests convinced us that we 
+  needed to modify the new metadata cache to expand and contract 
+  according to need within user specified bounds.
+
+<p>I was unable to find any previous work on this problem, so I 
+  invented solutions as I went along.  If you are aware of prior 
+  work, please send me references.  The closest I was able to come 
+  was a group of embedded CPU designers who were turning off 
+  sections of their cache to conserve power.
+  
+<h4>4.3.1 Increasing the Cache Size:</h4>
+
+<p>Perhaps the most obvious heuristic for identifying cases in which 
+  the cache is too small involves monitoring the hit rate.  If the hit 
+  rate is low for a while, and the cache is at its maximum size, the 
+  cache is probably too small.
+
+<p>The hit rate threshold algorithm for increasing cache size 
+  applies this intuition directly.
+
+<p>Hit rate statistics are collected over a user specified number 
+  of cache accesses.  This period is known as an epoch.
+
+<p>At the end of each epoch, the hit rate is computed, and the 
+  counters are reset.  If the hit rate is below a user specified 
+  threshold and the cache is at its maximum size, the maximum size of 
+  the cache is increased by a user specified multiple.  If required, 
+  the new cache maximum size is clipped to stay within the user 
+  specified upper bound, and optionally, within a user specified 
+  maximum increment.
+
+<p>My tests indicate that this algorithm works well in most cases. 
+  However, in a synthetic test in which hit rate increased slowly with 
+  cache size, and load remained steady for many epochs, I observed a 
+  case in which cache size increased until hit rate just exceeded 
+  the specified minimum and then stalled.
+
+<p>If this case occurs frequently in actual use, I will have to 
+  come up with an improved cache size increase algorithm.  Please let 
+  me know if you see this behavior.  However, I had to work rather 
+  hard to create it in my synthetic tests, so I would expect it to 
+  be uncommon.
+  
+<h4>4.3.2 Decreasing the Cache Size:</h4>
+
+<p>Identifying cases in which the maximum cache size is larger than 
+  necessary turned out to be more difficult.
+  
+<h4>4.3.2.1 Hit Rate Threshold Cache Size Reduction</h4>
+
+<p>One obvious heuristic is to monitor the hit rate and guess that we 
+  can safely decrease cache size if hit rate exceeds some user supplied 
+  threshold (say .99995). 
+
+<p>The hit rate threshold size decrement algorithm implemented in the 
+  new metadata cache implements this intuition as follows:
+
+<p>At the end of each epoch (this is the same epoch that is used in 
+  the cache size increment algorithm), the hit rate is compared with 
+  the user specified threshold.  If the hit rate exceeds that threshold, 
+  the maximum cache size is decreased by a user specified factor.  If 
+  required, the size of the reduction is clipped to stay within a user 
+  specified lower bound, and optionally, within a user specified maximum 
+  decrement.
+
+<p>In my synthetic tests, this algorithm works poorly.  Even with a 
+  very high threshold and a small maximum reduction, it results in 
+  cache size oscillations.  The size increment code typically increments 
+  cache size above the working set size.  This results in a high hit 
+  rate, which causes the threshold size decrement code to reduce the 
+  cache size below the working set size, which causes hit rate to crash 
+  causing the cycle to repeat.  The resulting average hit rate is poor.
+
+<p>It remains to be seen if this behavior will be seen in the field. 
+  The algorithm is available for use, but it wouldn't be my first choice.
+  
+<h4>4.3.2.2 Ageout Cache Size Reduction:</h4>
+
+<p>Another heuristic for dealing with oversized cache conditions is to 
+  look for entries that haven't been accessed for a long time, delete 
+  them, and reduce the cache size accordingly.
+
+<p>The ageout cache size reduction applies this intuition as follows: 
+  At the end of each epoch (again the same epoch as used in the cache 
+  size increment algorithm), all entries that haven't been accessed for 
+  a user configurable number of epochs (1 - 10 at present) are evicted. 
+  The maximum cache size is then reduced to equal the sum of the sizes 
+  of the remaining entries.  The size of the reduction is clipped to stay 
+  within a user specified lower bound, and optionally, within a user 
+  specified maximum decrement.
+
+<p>In addition, the user may specify a minimum fraction of the cache 
+  which must be empty before the cache size is reduced.  Thus if an 
+  empty reserve of 0.1 was specified on a 10 MB cache, there would be no 
+  cache size reduction unless the eviction of aged out entries resulted 
+  in more than 1 MB of empty space.  Further, even after the reduction, 
+  the cache would be one tenth empty.
+
+<p>In my synthetic tests, the ageout algorithm works rather well, 
+  although it is somewhat sensitive to the epoch length and ageout 
+  period selection.
+
+<h4>4.3.2.3 Ageout With Hit Rate Threshold Cache Size Reduction:</h4>
+
+<p>To address these issues, I combined the hit rate threshold and 
+  ageout heuristics.
+
+<p>Ageout with threshold works just like ageout, save that the 
+  algorithm is not run unless the hit rate exceeded a user specified 
+  threshold in the previous epoch.
+
+<p>In my synthetic tests, ageout with threshold seems to work 
+  nicely, with no observed oscillation.  Thus I have selected it as the 
+  default cache size reduction algorithm.
+
+<p>For those interested in such things, the ageout algorithm is 
+  implemented by inserting a marker entry at the head of the LRU 
+  list at the beginning of each epoch.  Entries that haven't been 
+  accessed for at least n epochs are simply entries that appear in 
+  the LRU list after the n-th marker at the end of an epoch.
+
+<h4>4.4 Configuring the New Metadata Cache:</h4>
+
+<p>Due to lack of resources, the design work on the automatic cache 
+  size adjustment algorithms was done hastily, using primarily synthetic 
+  tests.  I don't think I spent more than a couple weeks writing and 
+  running performance tests -- most time when into coding and 
+  functional testing.
+
+<p>As a result, while I think the algorithms provided for adaptive 
+  cache resizing will work well in actual use, I don't really know. 
+  Fortunately, the issue shouldn't arise for the vast majority of 
+  HDF5 users, and those for whom it may arise should be savy enough to 
+  recognize problems and deal with them.
+
+<p>For this latter class of users, I have implemented a number of 
+  new API calls allowing the user to select and configure the cache 
+  resize algorithms, or to turn them off and control cache size 
+  directly from the user program.  There are also API calls that 
+  allow the user program to monitor hit rate and cache size.
+
+<p>From the user perspective, all the cache configuration data is 
+  contained in an instance of the <code>H5AC_cache_config_t</code> 
+  structure -- the definition of which is given below:
+  
+<pre>
+        typedef struct H5AC_cache_config_t
+        {
+            /* general configuration fields: */
+            int                         version;
+
+            hbool_t                     rpt_fcn_enabled;
+
+            hbool_t                     set_initial_size;
+            size_t                      initial_size;
+
+            double                      min_clean_fraction;
+
+            size_t                      max_size;
+            size_t                      min_size;
+
+            long int                    epoch_length;
+
+
+            /* size increase control fields: */
+            enum H5C_cache_incr_mode    incr_mode;
+
+            double                      lower_hr_threshold;
+
+            double                      increment;
+
+            hbool_t                     apply_max_increment;
+            size_t                      max_increment;
+
+
+            /* size decrease control fields: */
+            enum H5C_cache_decr_mode    decr_mode;
+
+            double                      upper_hr_threshold;
+
+            double                      decrement;
+
+            hbool_t                     apply_max_decrement;
+            size_t                      max_decrement;
+
+            int                         epochs_before_eviction;
+
+            hbool_t                     apply_empty_reserve;
+            double                      empty_reserve;
+
+
+        } H5AC_cache_config_t;
+</pre>
+
+<p>This structure is defined in <code>H5ACpublic.h</code>.  
+  Each field is discussed in the associated header comment.
+
+<p>The C API allows you get and set this structure directly.  
+  Unfortunately the Fortran API has to do this with individual 
+  parameters for each of the fields (with the exception of version).
+
+<p>While the API calls are discussed individually in the reference 
+  manual, an overall discussion of what fields to change for different 
+  purposes should be useful.
+  
+<h4>4.4.1 General Configuration:</h4>
+
+<p>The version field is intended to allow us to change the 
+  <code>H5AC_cache_config_t</code> structure without breaking 
+  old code.  For now, this field should always be set to 
+  <code>H5AC__CURR_CACHE_CONFIG_VERSION</code>, even when you are 
+  getting the current configuration data from the cache.  The library 
+  needs the version number to know which fields are located where with 
+  reference to the supplied base address.
+
+<p>The <code>rpt_fcn_enabled</code> field is a boolean flag that 
+  allows you to turn on and off the resize reporting function that 
+  reports the activities of the adaptive cache resize code at the end 
+  of each epoch -- assuming that it is enabled.
+
+<p>The report function is unsupported, so you are on your own if you use 
+  it.  Since it dumps status data to stdout, you should not attempt to use 
+  it with Windows unless you modify the source.  You may find it useful if 
+  you want to experiment with different adaptive resize configurations. 
+  It is also a convenient way of diagnosing poor cache configuration. 
+  Finally, if you do lots of runs with identical behavior, you can use it 
+  to determine the metadata cache size needed in each phase of your 
+  program so you can set the required cache sizes manually.
+  
+<p>As might be expected, the <code>max_size</code> and <code>min_size</code> 
+  fields specify the range of maximum sizes that may be set for the cache.  
+  <code>min_size</code> must be less than or equal to <code>max_size</code>, 
+  and both must lie in the range [<code>H5C__MIN_MAX_CACHE_SIZE</code>, 
+  <code>H5C__MAX_MAX_CACHE_SIZE</code>] -- currently [1 KB, 128 MB].  If you 
+  routinely run a cache size in the top half of this range, you should increase 
+  the hash table size.
+
+<p>The <code>set_initial_size</code> and <code>initial_size</code> fields 
+  allow you to specify an initial cache size.  If <code>set_initial_size</code> 
+  is TRUE, <code>initial_size</code> must lie in the interval [<code>min_size</code>, 
+  <code>max_size</code>]. If you disable the adaptive cache resizing code 
+  (done by setting <code>incr_mode</code> to <code>H5C_incr__off</code> and 
+  <code>decr_mode</code> to <code>H5C_decr__off</code>), you can use these fields 
+  to control cache size manually.
+
+<p>The <code>min_clean_fraction</code> sets the current minimum 
+  clean size as a fraction of the current max cache size.  This 
+  field is only used in the parallel version of the library, and must 
+  lie in the range [0.0, 1.0].  0.25 is a reasonable value.
+  
+<p>The epoch_length is the number of cache accesses between runs 
+  of the adaptive cache size control algorithms.  It is ignored 
+  if these algorithms are turned off.  It must lie in the range 
+  [<code>H5C__MIN_AR_EPOCH_LENGTH</code>, 
+  <code>H5C__MAX_AR_EPOCH_LENGTH</code>] -- currently [100, 1000000].  
+  The above constants are defined in <code>H5Cprivate.h</code>.  
+  50000 is a reasonable value.
+
+<h4>4.4.2 Increment Configuration:</h4>
+
+<p><code>incr_mode</code> specifies the cache size increment 
+  algorithm used. Its value must be a member of the 
+  <code>H5C_cache_incr_mode</code> enum type -- currently either 
+  <code>H5C_incr__off</code> or <code>H5C_incr__threshold</code>. 
+  This type is defined in <code>H5Cpublic.h</code>
+
+<p>If <code>incr_mode</code> is set to <code>H5C_incr__off</code>, 
+  automatic cache size increases are disabled, and the remaining 
+  fields in the cache size increase control section are ignored.
+  
+<h4>4.4.2.1 Hit Rate Threshold Cache Size Increase Configuration:</h4>
+
+<p>If <code>incr_mode</code> is <code>H5C_incr__threshold</code>, 
+  the cache size is increased via the hit rate threshold algorithm.  
+  The remaining fields in the section are then used as follows:
+
+<p><code>lower_hr_threshold</code> is the threshold below which hit 
+  rate must fall to trigger an increase.  The value must lie in the 
+  range [0.0 - 1.0].  In my tests, a relatively high value seems to 
+  work best -- 0.9 for example.
+
+<p><code>increment</code> is the factor by which the old maximum cache 
+  size is multiplied to obtain an initial new maximum cache size when 
+  an increment is needed.  The actual change in size may be smaller 
+  as required by <code>max_size</code> and <code>max_increment</code> 
+  (discussed below).  increment must be greater than or equal to 1.0.  
+  If you set it to 1.0, you will effectively turn off the increment 
+  code. 2.0 is a reasonable value.
+
+<p><code>apply_max_increment</code> and <code>max_increment</code> allow 
+  the user to specify a maximum increment.  If <code>apply_max_increment</code> 
+  is TRUE, the cache size will never be increased by more than the number of 
+  bytes specified in <code>max_increment</code> in any single increase.
+  
+<h4>4.4.3 Decrement Configuration:</h4>
+
+<p><code>decr_mode</code> specifies the cache size decrement algorithm used.
+  Its value must be a member of the <code>H5C_cache_decr_mode enum</code> 
+  type -- currently either <code>H5C_decr__off</code>, 
+  <code>H5C_decr__threshold</code>, <code>H5C_decr__age_out</code>, or 
+  <code>H5C_decr__age_out_with_threshold</code>.  This type is defined in 
+  <code>H5Cpublic.h</code>
+
+<p>If <code>decr_mode</code> is set to <code>H5C_decr__off</code>, automatic 
+  cache size decreases are disabled, and the remaining fields in the cache 
+  size decrease control section are ignored.
+  
+<h4>4.4.3.1 Hit Rate Threshold Cache Size Decrease Configuration:</h4>
+
+<p>if <code>decr_mode</code> is <code>H5C_decr__threshold</code>, the 
+  cache size is decreased by the threshold algorithm, and the remaining 
+  fields of decrement section are used as follows:
+
+<p><code>upper_hr_threshold</code> is the threshold above which the hit 
+  rate must fall to trigger cache size reduction.  It must be in the 
+  range [0.0, 1.0].  In my synthetic tests, very high values like .9995 
+  or .99995 seemed to work best.
+
+<p><code>decrement</code> is the factor by which the current maximum 
+  cache size is multiplied to obtain a tentative new maximum cache 
+  size.  It must lie in the range [0.0, 1.0].  Relatively large values 
+  like .9 seem to work best in my synthetic tests.  Note that the actual 
+  size reduction may be smaller as required by <code>min_size</code> and 
+  <code>max_decrement</code> (discussed below).
+
+<p><code>apply_max_decrement</code> and <code>max_decrement</code> 
+  allow the user to specify a maximum decrement.  If 
+  <code>apply_max_decrement</code> is TRUE, cache size will never 
+  be reduced by more than <code>max_decrement</code> bytes in any 
+  single reduction.
+
+<p>With the hit rate threshold cache size decrement algorithm, 
+  the remaining fields in the section are ignored.
+  
+<h4>4.4.3.2 Ageout Cache Size Reduction:</h4>
+
+<p>if <code>decr_mode</code> is <code>H5C_decr__age_out</code> 
+  the cache size is decreased by the ageout algorithm, and the 
+  remaining fields of decrement section are used as follows:
+
+<p><code>epochs_before_eviction</code> is the number of epochs 
+  an entry must reside unaccessed in the cache before it is 
+  evicted. This value must lie in the range [<code>1</code>, 
+  <code>H5C__MAX_EPOCH_MARKERS</code>]. 
+  <code>H5C__MAX_EPOCH_MARKERS</code> is defined in 
+  <code>H5Cprivate.h</code>, and is currently set to 10.
+
+<p><code>apply_max_decrement</code> and <code>max_decrement</code> 
+  are used as above.
+
+<p><code>apply_empty_reserve</code> and <code>empty_reserve</code> 
+  allow the user to specify a minimum empty reserve as discussed 
+  in section 4.2.2.  An empty reserve of 0.05 or 0.1 seems to work 
+  well.
+
+<p>The <code>decrement</code> and <code>upper_hr_threshold</code> 
+  fields are ignored in this case.
+
+<h4>4.4.3.3 Ageout With Hit Rate Threshold Cache Size Reduction:</h4>
+
+<p>If <code>decr_mode</code> is <code>H5C_decr__age_out_with_threshold</code>, 
+  the cache size is decreased by the ageout with hit rate threshold 
+  algorithm, and the fields of decrement section are used as per 
+  the Ageout algorithm with the exception of <code>upper_hr_threshold</code>.
+
+<p>Here, <code>upper_hr_threshold</code> is the threshold above 
+  which the hit rate must fall to trigger cache size reduction.  
+  It must be in the range [0.0, 1.0].  In my synthetic tests, high 
+  values like .999 seemed to work well.
+
+<h4>4.4.4 Interactions:</h4>
+
+<p>At present there is only one interaction between the increment 
+  and decrement section of the configuration.
+
+<p>If <code>incr_mode</code> is <code>H5C_incr__threshold</code>, 
+  and <code>decr_mode</code> is either <code>H5C_decr__threshold</code> 
+  or <code>H5C_decr__age_out_with_threshold,</code> then 
+  <code>lower_hr_threshold</code> must be strictly less than 
+  <code>upper_hr_threshold</code>.
+  
+<h4>4.4.5  Default Configuration:</h4>
+
+<p>At present, the default configuration for the new metadata 
+  cache is as follows:
+  
+<pre>
+{
+  /* int         version                = */ H5C__CURR_AUTO_SIZE_CTL_VER,
+  /* hbool_t     rpt_fcn_enabled        = */ FALSE,
+  /* hbool_t     set_initial_size       = */ TRUE,
+  /* size_t      initial_size           = */ (1 * 1024 * 1024),
+  /* double      min_clean_fraction     = */ 0.25,
+  /* size_t      max_size               = */ (16 * 1024 * 1024),
+  /* size_t      min_size               = */ ( 1 * 1024 * 1024),
+  /* long int    epoch_length           = */ 50000,
+  /* enum H5C_cache_incr_mode incr_mode = */ H5C_incr__threshold,
+  /* double      lower_hr_threshold     = */ 0.9,
+  /* double      increment              = */ 2.0,
+  /* hbool_t     apply_max_increment    = */ TRUE,
+  /* size_t      max_increment          = */ (4 * 1024 * 1024),
+  /* enum H5C_cache_decr_mode decr_mode = */ H5C_decr__age_out_with_threshold,
+  /* double      upper_hr_threshold     = */ 0.999,
+  /* double      decrement              = */ 0.9,
+  /* hbool_t     apply_max_decrement    = */ TRUE,
+  /* size_t      max_decrement          = */ (1 * 1024 * 1024),
+  /* int         epochs_before_eviction = */ 3,
+  /* hbool_t     apply_empty_reserve    = */ TRUE,
+  /* double      empty_reserve          = */ 0.1
+}
+</pre>
+
+<p>This configuration should be adequate for most HDF5 users. 
+  Outside of synthetic tests, I have only seen the cache increase 
+  beyond 1 MB on a few occasions, and never beyond 4 MB.
+
+<p>Should you need to change it, it can be found in 
+  <code>H5ACprivate.h</code>. Look for the definition of 
+  <code>H5AC__DEFAULT_RESIZE_CONFIG</code>.
+  
+<h4>4.5 New Metadata Cache Debugging Facilities:</h4>
+
+<p>The new metadata cache has a variety of debugging facilities 
+  that may be of use.  I doubt that any other than the report function 
+  will ever be accessible via the API, but they are relatively easy to 
+  turn on in the source code.
+
+<p>Note that none of this should be viewed as supported -- it is 
+  described here on the off chance that you want to use it, but you are 
+  on your own if you do.  Also, there are no promises as to consistency 
+  between versions.
+
+<p>As mentioned above, you can use the <code>rpt_fcn_enabled</code> 
+  field of the configuration structure to enable the default reporting 
+  function (<code>H5C_def_auto_resize_rpt_fcn()</code> in <code>H5C.c</code>).  
+  If this function doesn't work for you, you will have to write your own.  
+  In particular, remember that it uses <code>stdout</code>, so it will 
+  probably be unhappy under Windows.
+
+<p>Again, remember that this facility is not supported.  Further, 
+  it is likely to change every time I do any serious work on the cache.
+
+<p>There is also extensive stats collection code.  Use 
+  <code>H5C_COLLECT_CACHE_STATS</code> and 
+  <code>H5C_COLLECT_CACHE_ENTRY_STATS</code> in <code>H5Cprivate.h</code> 
+  to turn this on.  If you also turn on <code>H5AC_DUMP_STATS_ON_CLOSE</code> 
+  in <code>H5ACprivate.h</code>, stats will be dumped when you close a file.  
+  Alternatively you can call <code>H5C_stats()</code> and 
+  <code>H5C_stats__reset()</code> within the library to dump and reset stats. 
+  Both of these functions are defined in <code>H5C.c</code>
+
+<p>Finally, the cache also contains extensive sanity checking 
+  code.  Much of this is turned on when you compile in debug mode, 
+  but to enable the full suite, turn on <code>H5C_DO_SANITY_CHECKS</code> 
+  in <code>H5Cprivate.h</code>
+  
+<h4>4.6 Controlling the New Metadata Cache Size From Your Program:</h4>
+
+<p>You have already seen how <code>H5AC_cache_config_t</code> 
+  has facilities that allow you to control the metadata cache 
+  size directly.  Use <code>H5Fget_mdc_config()</code> and 
+  <code>H5Fset_mdc_config()</code> to get and set the metadata 
+  cache configuration on an open file.  Use <code>H5Pget_mdc_config()</code> 
+  and <code>H5Pset_mdc_config()</code> to get and set the initial 
+  metadata cache configuration in a file access property list.  Recall 
+  that this list contains configuration data used when opening a file.
+
+<p>Use <code>H5Fget_mdc_hit_rate()</code> to get the average hit rate 
+  since the last time the hit rate stats were reset.  This happens 
+  automatically at the beginning of each epoch if the adaptive cache 
+  resize code is enabled.  You can also do it manually with 
+  <code>H5Freset_mdc_hit_rate_stats()</code>. Be careful about doing 
+  this if the adaptive cache resize code is enabled, as you may 
+  confuse it.
+
+<p>Use <code>H5Fget_mdc_size()</code> to get metadata cache size 
+  data on an open file.
+
+<p>Finally, note that cache size and cache footprint are two different 
+  things -- in my tests, the cache footprint (as inferred from top) is 
+  typically about three times the maximum cache size.  I haven't tracked 
+  it down yet, but I would guess that most of this is due to the very 
+  small typical cache entry size.  This should be investigated further, 
+  but that will take time.
+  
+<h4>4.7 Trouble Shooting</h4>
+
+<p>Absent major bugs in the cache, the only trouble shooting you 
+  should have to do is diagnosing and fixing problems with your cache 
+  configuration.
+
+<p>Assuming it runs on your platform (I've only used it under Linux), 
+  the reporting function is probably the most convenient diagnosis tool. 
+  However, since it is unsupported code, I will not discuss it further 
+  beyond directing you to the source (<code>H5C_def_auto_resize_rpt_fcn()</code> 
+  in <code>H5C.c</code>).
+
+<p>Absent the reporting function, regular calls to 
+  <code>H5Fget_mdc_hit_rate()</code> should give you a good idea of 
+  hit rate over time.  Remember that the hit rate stats are reset at 
+  the end of each epoch (when adaptive cache resizing is enabled), 
+  so you should expect some jitter.
+
+<p>Similar calls to <code>H5Fget_mdc_size()</code> should 
+  allow you to monitor cache size, and the fraction of the 
+  cache that is actually in use.
+
+<p>If the hit rate is consistently low, and the cache it at its 
+  maximum size, increasing the maximum size is an obvious fix.
+
+<p>If you see hit rate and cache size oscillations, try disabling 
+  adaptive cache resizing and setting a fixed cache size a bit greater 
+  than the high end of the cache size oscillations you observed. 
+
+<p>If the hit rate oscillations don't go away, you are probably looking 
+  at a feature of your application which can't be helped without major 
+  changes to the cache.  Please send along a description of the situation.
+
+<p>If they do, you may be able to come up with a configuration that 
+  deals with the situation.  If that fails, control cache size manually, 
+  and write me, so I can try to develop an adaptive resize algorithm 
+  that works in your case.
+
+<p>Needless to say, you should give the cache a few epochs to adapt 
+  to circumstances.  If that is too slow for you, try manual cache 
+  size control.
+
