@@ -20,6 +20,7 @@ localdoc_DATA=BigDataSmMach.html ChStudy_1000x1000.gif ChStudy_250x250.gif      
          ExternalFiles.html FreeLists.html H4-H5Compat.html HeapMgmt.html  \
          IOPipe.html LibMaint.html MemoryMgmt.html MoveDStruct.html        \
          NamingScheme.html ObjectHeader.html RawDStorage.html              \
+         ReleaseSigning.html             \
          SWControls.html SymbolTables.html ThreadSafeLibrary.html VFL.html \
          VFLfunc.html Version.html openmp-hdf5.c openmp-hdf5.html          \
          pipe1.gif pipe2.gif pipe3.gif pipe4.gif pipe5.gif version.gif
