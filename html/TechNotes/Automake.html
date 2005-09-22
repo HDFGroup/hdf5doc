@@ -6,7 +6,8 @@
 </head>
 
 <h2>An Automake Primer for HDF5</h2>
-<h4>James Laird - May 2005</h4><br>
+<h4>James Laird - May 2005</h4>
+<h4>Last updated: September 2005</h4><br>
 
 <p><h2><u>How to:</u><h2></p>
 
@@ -17,6 +18,8 @@
 <p><h3>Add a simple test</h3></p>
 
 <p><h3>Add a test with multiple sources</h3></p>
+
+<p><h3>Add a test script</h3></p>
 
 <p><h3>Add a new directory</h3></p>
 
@@ -105,6 +108,31 @@ Now you need to tell Automake how to build newertest.  Add a new line below
 
 <p>You don't need to mention header files, as these will be automatically detected.<br>
 Now run <code>bin/reconfigure</code> to update the Makefile.in.</p>
+<br>
+
+<p><h4>Adding a test script</h4></p>
+
+<p>For the most part, test scripts are handled like test programs, except that
+they don't need to be compiled.  You can specify a test script using the
+<code>check_SCRIPT</code> variable:</p>
+
+<p><code>TEST_SCRIPT=testh5dump.sh</code></p>
+
+When your build directory is not the same as your source directory, scripts
+are often located in the source directory (unlike tests, they are not created
+when the library is built).  If this is the case, be careful to specify the
+full name of the script using the <code>${srcdir}</code> variable.</p>
+
+<p><code>TEST_SCRIPT=testh5dump.sh ${srcdir}/testh5dumpxml.sh</code></p>
+
+<p>Scripts also need to be told which program they're testing.  Do this using
+the <code>SCRIPT_DEPEND</code> variable.</p>
+
+<p><code>SCRIPT_DEPEND=h5dump${EXEEXT}</code></p>
+
+<p>This way, whenever <code>h5dump</code> changes, the Makefile will know that
+these test scripts need to be run again.  After you make changes to a
+Makefile.am, don't forget to run <code>bin/reconfigure</code>!</p>
 <br>
 
 <p><h4>Adding a directory</h4></p>
@@ -210,14 +238,28 @@ As always, if you change a Makefile.am or <code>config/commence.am</code>, don't
 
 <p><h4>Changing HDF5's API</h4></p>
 
-<p>If you have added or removed a function from HDF5, or if you have changed a function
-signature, you must indicate this by updating the file <code>lt_vers.am</code> located in
-the <code>config</code> directory.<br>
-If you have changed the API at all, increment <code>LT_VERS_INTERFACE</code> and set
-<code>LT_VERS_REVISION</code> to zero.<br>
-If you have added functions but not altered or removed existing ones, also increment
-<code>LT_VERS_AGE</code>.<br>
-If instead you have altered or removed any functions, reset <code>LT_VERS_AGE</code> to
-zero.</p>
+<p>If you have added or removed a function from HDF5, or if you have changed a
+function signature, you should indicate this by updating the file
+<code>lt_vers.am</code> located in the <code>config</code> directory.  The
+libtool shared library version number helps users who use HDF5 applications
+to link dynamically against new versions of the library.  Don't confuse
+libtool's versioning system with HDF5's library version--the two numbers
+are not related!</p>
+<p>If you have changed the API at all, increment
+<code>LT_VERS_INTERFACE</code> and set <code>LT_VERS_REVISION</code> to zero.
+This tells users (and their linkers) that the interface has changed.</p>
+<p>If you have added functions but not altered or removed existing ones,
+also increment <code>LT_VERS_AGE</code>.  The age of an interface is its
+"backwards compatibility," the number of previous interfaces that can use
+this interface.  When you increase both the interface number and the age,
+you are telling linkers that programs that could use the previous interface can
+still use this one.</p>
+<p>If instead you have altered or removed any functions, reset
+<code>LT_VERS_AGE</code> to zero.  Previous interfaces should not count on
+being able to use this interface, since some functions might not be present
+(or might have changed their signatures).</p>
+<p>LT_VERS_REVISION is incremented when the library changes internally but
+the API does not.  You shouldn't need to increment it, since this should be
+done automatically during a snapshot release.</p> 
 </body>
 </html>
