@@ -1595,33 +1595,62 @@ int main(void)
 <p>Since HDF5 metadata entries are of no fixed size, and may 
   grow arbitrarily large, the size of the new metadata cache 
   cannot be controlled by setting a maximum number of entries. 
-  Instead the new cache keeps a running sum of the size of all 
+  Instead the new cache keeps a running sum of the sizes of all 
   entries, and will attempt to evict entries as necessary to stay 
   within a user specified maximum size.  At present, the LRU 
   replacement policy is the only option for selecting candidates 
   for eviction.
+  
+<p>Per the buffer cache, dirty entries are given two passes 
+  through the LRU list before being evicted. The first time they 
+  reach the end of the LRU list, they are flushed, marked as clean, 
+  and moved to the head of the LRU list. When a clean entry reaches 
+  the end of the LRU list, it is simply evicted if space is needed.
 
 <p>The cache cannot evict entries that are locked, and thus it 
   will temporarily grow beyond its maximum size if there are 
   insufficient unlocked entries available for eviction.
 
-<p>To help avoid generating writes in response to a read while 
-  running in parallel, the cache maintains a "clean" LRU list in 
-  addition to the regular LRU list.  This list contains only clean 
-  entries, and is used as a source of candidates for eviction when 
-  servicing a read request in parallel mode.  If the clean LRU list 
-  is exhausted, the cache will temporarily exceed its specified 
-  maximum size.
+<p>When operating in parallel, only the cache running under 
+  process 0 of the file comunicator is allowed to write metadata 
+  to file.  All the other caches must retain dirty metadata until 
+  the process 0 cache tells them that the metadata is clean.
 
-<p>To increase the likelyhood that this will not happen, the 
-  new cache allows the user to specify a minimum clean size -- 
-  which is a minimum total size of all the entries on the clean 
-  LRU plus all unused space in the cache.  Note that the clean 
-  LRU list is only maintained in the parallel version of the HDF5 
-  library, and thus that the minimum clean size is only relevant 
-  when running that version.
+<p>Since all operations modifying metadata must be collective, 
+  all caches see the same stream of dirty metadata.  This fact 
+  is used to allow them to synchronize every n bytes of dirty 
+  metadata, where n is a user configurable value that defaults 
+  to 256 KB.
 
-<p>While the new metadata cache only supports the LRU replacement 
+<p>To avoid sending the other caches messages from the future, 
+  process 0 must not write any dirty entries until it reaches the 
+  synchronization point.  When it reaches this point, it writes
+  entries as needed, and then broadcasts the list of flushed
+  entries to the other caches.  The caches on the other processes
+  use this list to mark entries clean, allowing them to evict
+  those entries as needed.
+
+<p>The caches will also synchronize on a user initiated flush.
+
+<p>To minimize overhead when running in parallel, the cache
+  maintains a "clean" LRU list in addition to the regular LRU
+  list.  This list contains only clean entries, and is used as 
+  a source of candidates for eviction when flushing dirty entries
+  is not allowed.
+
+<p>Since flushing entries is forbidden most of the time when
+  running in parallel, the caches can be forced to exceed their
+  maximum sizes if they run out of clean entries to evict.
+
+<p>To decrease the likelyhood of this event, the new cache allows
+  the user to specify a minimum clean size -- which is a minimum
+  total size of all the entries on the clean LRU plus all unused
+  space in the cache.  Note that the clean LRU list is only
+  maintained in the parallel version of the HDF5 library, and
+  thus that the minimum clean size is only relevant when running
+  that version.
+
+<p>While the new metadata cache only supports the LRU replacement
   policy at present, that may change.  Support for multiple 
   replacement policies was very much in mind when the cache was 
   designed, as was the ability to switch replacement policies at 
@@ -1726,7 +1755,7 @@ int main(void)
 <h4>4.3.2.2 Ageout Cache Size Reduction:</h4>
 
 <p>Another heuristic for dealing with oversized cache conditions is to 
-  look for entries that haven't been accessed for a long time, delete 
+  look for entries that haven't been accessed for a long time, evict 
   them, and reduce the cache size accordingly.
 
 <p>The ageout cache size reduction applies this intuition as follows: 
@@ -1836,7 +1865,10 @@ int main(void)
 
             hbool_t                     apply_empty_reserve;
             double                      empty_reserve;
-
+			                            
+			                            
+			/* parallel configuration fields: */
+			int                         dirty_bytes_threshold;			
 
         } H5AC_cache_config_t;
 </pre>
@@ -2017,10 +2049,42 @@ int main(void)
   It must be in the range [0.0, 1.0].  In my synthetic tests, high 
   values like .999 seemed to work well.
 
-<h4>4.4.4 Interactions:</h4>
+<h4>4.4.4 Parallel Configuration</h4>
+
+<p>This section is a catch-all for parallel specific
+  configuration data.  At present, it has only one field 
+  -- <code>dirty_bytes_threshold</code>.
+
+<p>In PHDF5, all operations that modify metadata must be
+  executed collectively.  We used to think that this was
+  enough to ensure consistency across the metadata caches, 
+  but since we allow processes to read metadata individually, 
+  the order of dirty entries in the LRU list can vary across
+  processes, which can result in inconsistencies between the
+  caches.
+
+<p>To prevent this, only the metadata cache on process 0 of
+  the file communicator is allowed to write to file, and then
+  only after synchronizing with the other caches.  After it
+  writes entries to file, it sends the base addresses of the
+  now clean entries to the other caches, so they can mark these
+  entries clean as well.
+
+<p>The different caches know when to synchronize by counting
+  the number of bytes of dirty metadata created by the
+  collective operations modifying metadata.  Whenever this count
+  exceeds the value specified in the <code>dirty_bytes_threshold</code>,
+  process 0 flushes down to its minimum clean size, and then
+  sends the list of newly cleaned entries to the other caches.
+
+<p>Needless to say, the value of the <code>dirty_bytes_threshold</code>
+  field must be consistant across all the caches operating on
+  a given file.
+
+<h4>4.4.5 Interactions:</h4>
 
 <p>At present there is only one interaction between the increment 
-  and decrement section of the configuration.
+  and decrement sections of the configuration.
 
 <p>If <code>incr_mode</code> is <code>H5C_incr__threshold</code>, 
   and <code>decr_mode</code> is either <code>H5C_decr__threshold</code> 
@@ -2028,7 +2092,7 @@ int main(void)
   <code>lower_hr_threshold</code> must be strictly less than 
   <code>upper_hr_threshold</code>.
   
-<h4>4.4.5  Default Configuration:</h4>
+<h4>4.4.6  Default Configuration:</h4>
 
 <p>At present, the default configuration for the new metadata 
   cache is as follows:
@@ -2039,7 +2103,7 @@ int main(void)
   /* hbool_t     rpt_fcn_enabled        = */ FALSE,
   /* hbool_t     set_initial_size       = */ TRUE,
   /* size_t      initial_size           = */ (1 * 1024 * 1024),
-  /* double      min_clean_fraction     = */ 0.25,
+  /* double      min_clean_fraction     = */ 0.5,
   /* size_t      max_size               = */ (16 * 1024 * 1024),
   /* size_t      min_size               = */ ( 1 * 1024 * 1024),
   /* long int    epoch_length           = */ 50000,
@@ -2055,13 +2119,14 @@ int main(void)
   /* size_t      max_decrement          = */ (1 * 1024 * 1024),
   /* int         epochs_before_eviction = */ 3,
   /* hbool_t     apply_empty_reserve    = */ TRUE,
-  /* double      empty_reserve          = */ 0.1
+  /* double      empty_reserve          = */ 0.1,
+  /* int         dirty_bytes_threshold  = */ (256 * 1024)
 }
 </pre>
 
 <p>This configuration should be adequate for most HDF5 users. 
   Outside of synthetic tests, I have only seen the cache increase 
-  beyond 1 MB on a few occasions, and never beyond 4 MB.
+  beyond 1 MB on a few occasions, and never beyond 8 MB.
 
 <p>Should you need to change it, it can be found in 
   <code>H5ACprivate.h</code>. Look for the definition of 
