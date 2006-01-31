@@ -652,7 +652,7 @@ document.writeln ("
 
      /* 
       * Create dataspace: Describe the size of the array and 
-      * create the data space for fixed size dataset. 
+      * create the data space for fixed-size dataset. 
      */
      dimsf[0] = 7;
      dimsf[1] = 8;
@@ -1433,7 +1433,7 @@ document.writeln ("
 
   <p>Filters may be used only for chunked data and are applied to chunks of 
   data between the file hyperslab stage and the virtual file layer. At this 
-  stage in the pipeline, the data is organized fixed size blocks of elements, 
+  stage in the pipeline, the data is organized fixed-size blocks of elements, 
   the filter stage processes each chunk separately.
 
   <p>Filters are selected by dataset creation properties, and some behavior may 
@@ -1674,7 +1674,7 @@ document.writeln ("
   <tr valign=top> 
     <td class="ColumnLeftCell"> <p>CHUNKED</td>
     <td class="ColumnRightCell"> 
-        <p>The dataset is stored as fixed sized chunks.</td>
+        <p>The dataset is stored as fixed-size chunks.</td>
   </tr>
   <tr valign=top> 
     <td class="ColumnLeftBottom"> <p>COMPACT</td>
@@ -1683,25 +1683,6 @@ document.writeln ("
   </tr>
 </table>
 
-<br>
-
-<table x-use-null-cells
-		width=600
-		cellspacing=0
-                class="fullImgTable"
-		align="center">
-  <tr valign=top> 
-    <td class="fullImgTableImgCell" align="center">
-    <img src="Images/Dsets_fig12.JPG">
-    </td>
-  </tr>
-  <tr> 
-    <td align=center class="fullImgTableCapCell"> 
-    <span class=figurenumber>Figure 12</span></td>
-  </tr>
-</table>
-
-  <br>
   <p>The different storage strategies do not affect the data transfer operations of 
   the dataset: reads and writes work the same for any storage strategy.
 
@@ -1725,7 +1706,40 @@ document.writeln ("
   ] ] ]</span>
 -->
   with according to the datatype. By default, data is stored contiguously.</p>
-  
+
+
+<table x-use-null-cells
+		width=600
+		cellspacing=0
+                class="fullImgTable"
+		align="center">
+  <tr valign=top> 
+    <td class="fullImgTableImgCell" align="center">
+    <img src="Images/Dsets_fig12.JPG">
+    </td>
+  </tr>
+  <tr> 
+    <td align=center class="fullImgTableCapCell"> 
+    <span class=figurenumber>Figure 12</span></td>
+  </tr>
+</table>
+
+
+  <p>Contiguous storage is the simplest model. It has several limitations. 
+  First, the dataset must be a fixed size: it is not possible to extend the 
+  limit of dataset, or to have unlimited dimensions. Second, because data is 
+  passed through the pipeline as fixed-size blocks, compression and other 
+  filters cannot be used with contiguous data.
+
+<h4><em>Chunked</em></h4>
+
+  <p>The data of a dataset may be stored as fixed-size chunks (Figure 14). 
+  A chunk is a hyper-rectangle of any shape. 
+  When a dataset is chunked, each chunk is read or written as a single I/O 
+  operation, and individually passed from stage to stage of the pipeline 
+  and filters.</p>
+
+
 <table x-use-null-cells
 		width=600
 		cellspacing=0
@@ -1742,19 +1756,45 @@ document.writeln ("
   </tr>
 </table>
 
-  <p>Contiguous storage is the simplest model. It has several limitations. 
-  First, the dataset must be a fixed size: it is not possible to extend the 
-  limit of dataset, or to have unlimited dimensions. Second, because data is 
-  passed through the pipeline as fixed sized blocks, compression and other 
-  filters cannot be used with contiguous data.
 
-<h4><em>Chunked</em></h4>
+<!-- NEW PAGE -->
+  <p>Chunks may be any size and shape that fits in the dataspace of the dataset.
+  For example, a three dimensional dataspace can be chunked as 3-D cubes, 
+  2-D planes, or 1-D lines. The chunks may extend beyond the size of the 
+  dataspace, for example a 3 X 3 dataset might by chunked in 2 X 2 chunks. 
+  Sufficient chunks will be allocated to store the array, any extra space 
+  will not be accessible. So, to store the 3X3 array, four 2X2 chunks would 
+  be allocated, with 5 unused elements stored.
 
-  <p>The data of a dataset may be stored as fixed sized chunks (Figure 14). A chunk is 
-  a hyper-rectangle of any shape (less than or equal to the rank of the dataset).  
-  When a dataset is chunked, each chunk is read or written as a single I/O operation, 
-  and passed from stage to stage of the pipeline and filters.</p>
-  
+  <p>Chunked datasets can be unlimited (in any direction), 
+  and can be compressed or filtered.
+
+  <p>Since the data is read or written by chunks, chunking can have a dramatic 
+  effect on performance by optimizing what is read and written.  Note, too, 
+  that for specific access patterns (e.g., parallel I./O) decomposition into 
+  chunks can have a large impact on performance.
+
+  <p>Two restrictions are placed on chunk shape and size:
+<table width=100%><tr align=left><td>
+    <ul>
+      <li>The rank of a chunk must be less than or equal to 
+          the rank of the dataset.  
+      <li>Chunk size cannot exceed the size of a fixed-size dataset. 
+          For example, a dataset consisting of a 5x4 fixed-size array 
+          cannot be defined with 10x10 chunks. 
+    </ul>
+</td></tr></table>
+
+
+
+<h4><em>Compact</em></h4>
+
+  <p>For contiguous and chunked storage, the dataset header information and data 
+  are stored in two (or more) blocks (Figure 15). Therefore, at least two I/O operations 
+  are required to access the data, one to access the header, and one (or more) 
+  to access data. For a small dataset, this is considerable overhead.
+
+
 <table x-use-null-cells
 		cellspacing=0
                 class="fullImgTable"
@@ -1770,29 +1810,6 @@ document.writeln ("
   </tr>
 </table>
 
-<!-- NEW PAGE -->
-  <p>Chunks may be any size and shape that fits in the dataspace of the dataset. 
-  For example, a three dimensional dataspace can be chunked as 3-D cubes, 
-  2-D planes, or 1-D lines. The chunks may extend beyond the size of the 
-  dataspace, for example a 3 X 3 dataset might by chunked in 2 X 2 chunks. 
-  Sufficient chunks will be allocated to store the array, any extra space 
-  will not be accessible. So, to store the 3X3 array, four 2X2 chunks would 
-  be allocated, with 5 unused elements stored.
-
-  <p>Chunked datasets can be unlimited (in any direction), 
-  and can be compressed or filtered.
-
-  <p>Since the data is read or written by chunks, chunking can have a dramatic 
-  effect on performance by optimizing what is read and written.  Note, too, 
-  that for specific access patterns (e.g., parallel I./O) decomposition into 
-  chunks can have a large impact on performance.
-  
-<h4><em>Compact</em></h4>
-
-  <p>For contiguous and chunked storage, the dataset header information and data 
-  are stored in two (or more) blocks (Figure 15). Therefore, at least two I/O operations 
-  are required to access the data, one to access the header, and one (or more) 
-  to access data. For a small dataset, this is considerable overhead.
 
   <p>A small dataset may be stored in a continuous array of bytes in the 
   header block, using the COMPACT storage option. This dataset can be read 
