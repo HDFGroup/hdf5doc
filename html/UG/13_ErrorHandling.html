@@ -15,7 +15,23 @@
 
 <body>
 
-<!--( TOC )=========================================================-->
+<!-- #BeginLibraryItem "/ed_libs/Copyright.lbi" -->
+<!--
+  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+  * Copyright by the Board of Trustees of the University of Illinois.         *
+  * All rights reserved.                                                      *
+  *                                                                           *
+  * This file is part of HDF5.  The full HDF5 copyright notice, including     *
+  * terms governing use, modification, and redistribution, is contained in    *
+  * the files COPYING and Copyright.html.  COPYING can be found at the root   *
+  * of the source code distribution tree; Copyright.html can be found at the  *
+  * root level of an installed copy of the electronic HDF5 document set and   *
+  * is linked from the top-level documents page.  It can also be found at     *
+  * http://hdf.ncsa.uiuc.edu/HDF5/doc/Copyright.html.  If you do not have     *
+  * access to either file, you may request a copy from hdfhelp@ncsa.uiuc.edu. *
+  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+ -->
+ <!-- #EndLibraryItem --><!--( TOC )=========================================================-->
 <SCRIPT language="JavaScript">
 <!--
 document.writeln ('\
@@ -37,35 +53,35 @@ document.writeln ('\
   </tr>\
   <tr valign=top> \
     <td class="tocTableContentCell2"> \
-      <a href="#ErrorHandling">2.</a></td>\
+      <a href="#ProgModel">2.</a></td>\
     <td class="tocTableContentCell3">\
-	  <a href="#ErrorHandling">Error Handling (H5E) Function Summaries</a></td>\
+	  <a href="#ProgModel">Programming Model</a></td>\
   </tr>\
   <tr valign=top> \
     <td class="tocTableContentCell2"> \
-      <a href="#ProgModel">3.</a></td>\
+      <a href="#ErrorHandling">3.</a></td>\
     <td class="tocTableContentCell3">\
-	  <a href="#ProgModel">Programming Model</a></td> \
+	  <a href="#ErrorHandling">Error Handling (H5E) Function Summaries</a></td> \
   </tr>\
   <tr valign=top> \
     <td class="tocTableContentCell2"> \
-      <a href="#DataTransfer">4.</a></td>\
+      <a href="#BasicErrorHandling">4.</a></td>\
     <td class="tocTableContentCell3">\
-	  <a href="#DataTransfer">Data Transfer: Raw Data I/O</a>\
+	  <a href="#BasicErrorHandling">Basic Error Handling Operations</a>\
 	  </td>\
   </tr>\
+  <tr valign=top>\
+    <td class="tocTableContentCell">\
+      <a href="#AdvancedErrorHandling">5.</a></td>\
+    <td class="tocTableContentCell4">\
+      <a href="#AdvancedErrorHandling">Advanced Error Handling Operations</a>\
+      </td>\
 \
-  <tr valign=top> \
-    <td class="tocTableContentCell"> \
 <!-- editingComment -- "tocTableContentCell" and "tocTableContentCell4" \
 -->\
 <!-- are the table-closing cell class.\
-    <td class="tocTableContentCell2"> \
 -->\
-      <a href="#AllocOfSpace">5.</a></td>\
-    <td class="tocTableContentCell4">\
-	  <a href="#AllocOfSpace">Allocation of Space in the File</a>\
-  </td></tr>\
+\
 </table>\
 ')
 -->
@@ -85,9 +101,45 @@ document.writeln ('\
 <h3>1. Introduction</h3>
 </a>
 
-<!-- NEW PAGE -->
+<p>The HDF5 Library provides an error reporting mechanism for both 
+  the library itself and user application programs.  It can trace 
+  errors through function stack and error information like file name, 
+  function name, line number, and error description.  
+
+<p>Section 2 of this chapter discusses the HDF5 error handling programming 
+  model.  
+
+<p>Section 3 presents summaries of HDF5&rsquo;s error handling functions.
+
+<p>Section 4 discusses the basic error concepts, such as error 
+  stack, error record, and error message, and the related API functions.  
+  These concepts and functions are sufficient for application programs to 
+  trace errors inside the HDF5 Library.
+
+<p>Section 5 talks about the advanced concepts of error class and error 
+  stack handle, and the related functions.  With these concepts and functions, 
+  an application library or program using the HDF5 Library can have its own 
+  error report blended with HDF5&rsquo;s error report.
+
+<p>Starting with Release 1.8, we have a new set of Error Handling API functions.
+  For the purpose of backward compatibility with version 1.6 and before, we 
+  still keep the old API functions, <code>H5Epush</code>, <code>H5Eprint</code>,
+  <code>H5Ewalk</code>, <code>H5Eclear</code>, <code>H5Eget_auto</code>, 
+  <code>H5Eset_auto</code>.  These functions do not have the error stack as 
+  parameter.  The library allows them to operate on the default error stack.  
+  Users do not have to change their code to catch up with the new Error API 
+  but are encouraged to do so.
+
+<p>The old API is similar to functionality discussed in Section 4.  The 
+  functionality discussed in Section 5, the ability of allowing applications to 
+  add their own error records, is the library new design for the Error API.
+
+<a name="ProgModel">
+<h3 class=pagebefore>2. Programming Model</h3>
+</a>
+
 <a name="ErrorHandling">
-<h3 class=pagebefore>2. Error Handling (H5E) Function Summaries</h3>
+<h3 class=pagebefore>3. Error Handling (H5E) Function Summaries</h3>
 </a>
 
 <br>
@@ -336,20 +388,478 @@ document.writeln ('\
   </tr>
 </table>
 
-<!-- NEW PAGE -->
-<a name="ProgModel">
-<h3 class=pagebefore>3. Programming Model</h3>
+<a name="BasicErrorHandling">
+<h3>4. Basic Error Handling Operations</h3>
 </a>
 
-<!-- NEW PAGE -->
-<a name="DataTransfer">
-<h3 class=pagebefore>4. Data Transfer: Raw Data I/O</h3>
+<h4>4.1 Introduction</h4>
+
+<p>Let us first try to understand the error stack.  An <em>error stack</em> 
+  is a collection of error records.   Error records can be pushed onto or 
+  popped off the error stack.  By default, when an error occurs deep within 
+  the HDF5 Library, an error record is pushed onto an error stack and that 
+  function returns a failure indication. Its caller detects the failure, pushes 
+  another record onto the stack, and returns a failure indication.  This 
+  continues until the API function called by the application returns a failure 
+  indication.  The next API function being called will reset the error stack.  
+  All HDF5 Library error records belong to the same error class (explained in 
+  Section 5).
+  
+<h4>4.2 Error Stack and Error Message</h4>
+
+<p>In normal circumstances, an error causes the stack to be printed on the 
+  standard error stream automatically.  This automatic error stack is the 
+  library&rsquo;s default stack.  For all the functions in this section, 
+  whenever an error stack ID is needed as a parameter, <code>H5E_DEFAULT</code> 
+  can be used to indicate the library&rsquo;s default stack.  The first error record 
+  of the error stack, number "#000", is produced by the API function itself and 
+  is usually sufficient to indicate to the application what went wrong.
+  
+<p>Example: An Error Report
+
+<p>If an application calls <code>H5Tclose</code> on a predefined data type 
+  then the following message is printed on the standard error stream. 
+  This is a simple error that has only one component, the API function; 
+  other errors may have many components.
+  
+<pre>
+HDF5-DIAG: Error detected in HDF5 (1.6.4) thread 0.
+  #000: H5T.c line 462 in H5Tclose(): predefined datatype
+    major: Function argument
+    minor: Bad value
+</pre>
+
+<p>From the example we can see, an <em>error record</em> has a major 
+  message and a minor message. A <em>major message</em> generally 
+  indicates where the error happens.  The location can be data set, 
+  data space, or heap, etc.  A <em>minor message</em> explains further 
+  details of the error, for example, &ldquo;unable to open file&rdquo;.  Another 
+  specific detail about the error can be found at the end of the first 
+  line of each error record.  This <em>error description</em> is usually 
+  added by the library designer to tell what exactly goes wrong.  
+  In the example above, the &ldquo;predefined datatype&rdquo; is an error description.
+  
+<h4>4.3 Print and Clear Error Stack</h4>
+
+<p>Besides the automatic error report, the error stack can also be printed 
+  and cleared by the functions <code>H5Eprint_stack()</code> and 
+  <code>H5Eclear_stack()</code>.  If an application wishes to make explicit 
+  calls to <code>H5Eprint_stack()</code> to print the error stack, the 
+  automatic printing should be turned off to prevent error messages from 
+  being displayed twice (see <code>H5Eset_auto_stack()</code> below). 
+
+<p><em>herr_t</em> <code>H5Eprint_stack</code>(<em>hid_t</em> 
+  <code>error_stack</code>, <em>FILE *</em> <code>stream</code>)
+
+<p>Prints the error stack specified by <code>error_stack</code> on the 
+  specified stream, <code>stream</code>. Even if the error stack is empty, 
+  a one-line message will be printed like this if the error is in HDF5 
+  Library: <br><code>HDF5-DIAG</code>: <code>Error detected in HDF5 Library 
+  version</code>: <code>1.5.62 thread 0</code>.
+
+<p><em>herr_t</em> <code>H5Eclear_stack</code>(<em>hid_t</em> 
+  <code>error_stack</code>) 
+
+<p><code>H5Eclear</code> clears the error stack specified by 
+  <code>error_stack</code>. <code>H5E_DEFAULT</code> can be passed in to 
+  clear the current error stack.  The current stack is also cleared 
+  whenever an API function is called, with certain exceptions (for instance, 
+  <code>H5Eprint_stack()</code>). 
+  
+<h4>4.4 Mute Error Stack</h4>
+
+<p>Sometimes an application calls a function for the sake of its return value, 
+  fully expecting the function to fail; sometimes the application wants to 
+  call <code>H5Eprint_stack()</code> explicitly.  In these situations, it 
+  would be misleading if an error message were still automatically printed.  
+  Using the <code>H5Eset_auto_stack()</code> function can control the automatic 
+  printing of error messages:
+  
+<p><em>herr_t</em> <code>H5Eset_auto_stack</code>(<em>hid_t</em> 
+  <code>error_stack</code>, <em>H5E_auto_t</em> <code>func</code>, 
+  <em>void *</em><code>client_data</code>)
+  <br>Turns on or off automatic printing of errors for the error stack 
+  specified by <code>error_stack</code>. When turned on (non-null <code>func</code> 
+  pointer), any API function which returns an error indication will first call 
+  <code>func</code>, passing it <code>client_data</code> as an argument.  
+  When the library is first initialized the auto printing function is set to 
+  <code>H5Eprint()</code> (cast appropriately) and <code>client_data</code> is 
+  the standard error stream pointer, <code>stderr</code>.
+  
+<p><em>herr_t</em> <code>H5Eget_auto_stack</code>(<em>hid_t</em> 
+  <code>error_stack</code>, <em>H5E_auto_t *</em> <code>func</code>, 
+  <em>void **</em><code>client_data</code> )
+  <br>Returns the current settings for the automatic error stack traversal 
+  function, <code>func</code>, and its data, <code>client_data</code>. 
+  Either (or both) arguments may be null in which case the value is not returned.
+  
+<p>Example: Error Control
+
+<p>An application can temporarily turn off error messages while "probing" a function.
+
+<pre>
+/* Save old error handler */
+herr_t (*old_func)(void*);
+void *old_client_data;
+
+H5Eget_auto_stack(error_stack, &amp;old_func, &amp;old_client_data);
+
+/* Turn off error handling */
+H5Eset_auto_stack(error_stack, NULL, NULL);
+
+/* Probe. Likely to fail, but that's okay */
+status = H5Fopen (......);
+
+/* Restore previous error handler */
+H5Eset_auto_stack(error_stack, old_func, old_client_data);
+</pre>
+
+<p>Or automatic printing can be disabled altogether and error messages 
+  can be explicitly printed.
+  
+<pre>
+/* Turn off error handling permanently */
+H5Eset_auto_stack(error_stack, NULL, NULL);
+</pre><pre>
+/* If failure, print error message */
+if (H5Fopen (....)&lt;0) {
+    H5Eprint_stack(H5E_DEFAULT, stderr);
+    exit (1);
+}
+</pre>
+
+<h4>4.5 Customized Printing of Error Stack</h4>
+
+<p>The application is allowed to define an automatic error traversal 
+  function other than the default <code>H5Eprint_stack()</code>. For 
+  instance, one can define a function that prints a simple, one-line 
+  error message to the standard error stream and then exits.
+  
+<p>Example: Simple Messages
+
+<p>The application defines a function to print a simple error message to 
+  the standard error stream.
+  
+<pre>
+herr_t
+my_hdf5_error_handler(void *unused)
+{
+   fprintf (stderr, "An HDF5 error was detected. Bye.\n");
+   exit (1);
+}
+</pre>
+
+<p>The function is installed as the error handler by saying
+
+<pre>
+H5Eset_auto_stack(H5E_DEFAULT, my_hdf5_error_handler, NULL);
+</pre>
+
+<h4>4.6 Walk Through the Error Stack</h4>
+
+<p>The <code>H5Eprint_stack()</code> function is actually just a 
+  wrapper around the more complex <code>H5Ewalk_stack()</code> 
+  function which traverses an error stack and calls a user-defined 
+  function for each member of the stack.
+  
+<p><em>herr_t</em> <code>H5Ewalk_stack</code>(<em>hid_t</em> 
+  <code>err_stack</code>, <em>H5E_direction_t</em> 
+  <code>direction</code>, <em>H5E_walk_t</em> <code>func</code>, 
+  <em>void *</em><code>client_data</code>) <br>The error stack 
+  <code>err_stack</code> is traversed and <code>func</code> is 
+  called for each member of the stack. Its arguments are an integer 
+  sequence number beginning at zero (regardless of <code>direction</code>), 
+  and the <code>client_data</code> pointer. If <code>direction</code> 
+  is <code>H5E_WALK_UPWARD</code> then traversal begins at the inner-most 
+  function that detected the error and concludes with the API function. 
+  The opposite order is <code>H5E_WALK_DOWNWARD</code>.
+  
+<p><em>typedef herr_t</em> (<code>*H5E_walk_t</code>)(<em>unsigned</em> 
+  <code>n</code>, <em>H5E_error_t *</em><code>eptr</code>, <em>void *</em>
+  <code>client_data</code>)
+  <br>An error stack traversal callback function takes three arguments: 
+  <code>n</code> is a sequence number beginning at zero for each traversal, 
+  <code>eptr</code> is a pointer to an error stack member, and 
+  <code>client_data</code> is the same pointer passed to 
+  <code>H5Ewalk_stack()</code>.
+  
+<pre>
+typedef struct {
+    hid_t	 cls_id;
+    hid_t       maj_num;
+    hid_t       min_num;
+    const char  *func_name;
+    const char  *file_name;
+    unsigned    line;
+    const char  *desc;
+} H5E_error_t;
+</pre>
+
+<p>The <em>maj_num</em> and <em>min_num</em> are major and minor error IDs, 
+  <em>func_name</em> is the name of the function where the error was 
+  detected, <em>file_name</em> and <em>line</em> locate the error within 
+  the HDF5 Library source code, and <em>desc</em> points to a description 
+  of the error.
+  
+<p>Example: H5Ewalk_cb
+
+<p>This is the implementation of the library&rsquo;s default error stack 
+  traversal callback function.
+  
+<pre>
+herr_t
+H5E_walk_cb(unsigned n, const H5E_error_t *err_desc, void *client_data)
+{
+    H5E_print_t         *eprint  = (H5E_print_t *)client_data;
+    FILE                *stream;        /* I/O stream to print */
+    H5E_cls_t           *cls_ptr;       /* Pointer to error class */
+    H5E_msg_t           *maj_ptr;       /* Pointer to major error */
+    H5E_msg_t           *min_ptr;       /* Pointer to minor error */
+    const char          *maj_str = "No major description";    
+    const char          *min_str = "No minor description";    
+    unsigned            have_desc=1;
+
+    /* Check arguments */
+    assert (err_desc);
+
+    /* If no client data was passed, output to stderr */
+    if (!client_data) stream = stderr;
+    else stream = eprint->stream;
+    
+    /* Get descriptions for the major and minor error numbers */
+    maj_ptr = H5I_object_verify(err_desc->maj_num, H5I_ERROR_MSG);
+    min_ptr = H5I_object_verify(err_desc->min_num, H5I_ERROR_MSG);
+    assert(maj_ptr &amp;&amp; min_ptr);
+    if(maj_ptr->msg)
+        maj_str = maj_ptr->msg;
+    if(min_ptr->msg)
+        min_str = min_ptr->msg;
+
+    /* Get error class info */
+    cls_ptr = maj_ptr->cls;
+
+    /* Print error class header if new class */
+    if(eprint->cls.lib_name==NULL || HDstrcmp(cls_ptr->lib_name,     
+        eprint->cls.lib_name)) {
+        /* update to the new class information */
+        if(cls_ptr->cls_name) eprint->cls.cls_name = cls_ptr->cls_name;
+        if(cls_ptr->lib_name) eprint->cls.lib_name = cls_ptr->lib_name;
+        if(cls_ptr->lib_vers) eprint->cls.lib_vers = cls_ptr->lib_vers;
+
+        fprintf (stream, "%s-DIAG: Error detected in %s (%s) ", cls_ptr->cls_name, 
+	  cls_ptr->lib_name, cls_ptr->lib_vers);
+        fprintf (stream, "thread 0");
+        fprintf (stream, ":\n");
+    }
+
+    /* Check for "real" error description - used to format output more nicely */
+    if(err_desc->desc==NULL || HDstrlen(err_desc->desc)==0)
+        have_desc=0;
+
+    /* Print error message */
+    fprintf (stream, "%*s#%03u: %s line %u in %s()%s%s\n",
+             H5E_INDENT, "", n, err_desc->file_name, err_desc->line,
+             err_desc->func_name, (have_desc ? ": " : ""),
+             (err_desc->desc ? err_desc->desc : ""));
+    fprintf (stream, "%*smajor: %s\n", H5E_INDENT*2, "", maj_str);
+    fprintf (stream, "%*sminor: %s\n", H5E_INDENT*2, "", min_str);
+
+    return 0;
+}
+</pre>
+
+<a name="AdvancedErrorHandling">
+<h3>5. Advanced Error Handling Operations</h3>
 </a>
 
-<!-- NEW PAGE -->
-<a name="AllocOfSpace">
-<h3 class=pagebefore>5. Allocation of Space in the File</h3>
-</a>
+<h4>5.1 Introduction</h4>
+
+<p>Section 4 discusses the basic error handling operations of the library.  
+  In that section, all the error records on the error stack are from the 
+  library itself.  In this section, we are going to introduce the operations 
+  that allow an application program to push its own error records onto the 
+  error stack once it declares an error class for its own through the 
+  HDF5&rsquo;s Error API.
+  
+<p>Example: An Error Report
+
+<p>An error report shows both the library&rsquo;s error record and the application&rsquo;s 
+  error records.
+  
+<pre>
+Error Test-DIAG: Error detected in Error Program (1.0) thread 8192:
+  #000: ../../hdf5/test/error_test.c line 468 in main(): Error test failed
+    major: Error in test
+    minor: Error in subroutine
+  #001: ../../hdf5/test/error_test.c line 150 in test_error(): H5Dwrite failed 
+      as supposed to
+    major: Error in IO
+    minor: Error in H5Dwrite
+HDF5-DIAG: Error detected in HDF5 (1.7.5) thread 8192:
+  #002: ../../hdf5/src/H5Dio.c line 420 in H5Dwrite(): not a dataset
+    major: Invalid arguments to routine
+    minor: Inappropriate type 
+</pre> 
+
+<p>Notice in the line above error record <code>#002</code> in the example, 
+  the starting phrase is <code>HDF5</code>.  This is the error class name 
+  of the HDF5 Library.  All of the library&rsquo;s error messages 
+  (major and minor) are in this default error class.  
+  The <code>Error Test</code> in the beginning of the line above error record 
+  <code>#000</code> is the name of the application&rsquo;s error class.  
+  The first two error records, <code>#000</code> and <code>#001</code>, 
+  are from application&rsquo;s error class.
+  
+<p>In definition, an error class is a group of major and minor error messages 
+  for certain library (the HDF5 or an application library built on top of the 
+  HDF5 Library) or application program.  Error class can be registered for an 
+  application library or program through the HDF5 Error API.  Major messages 
+  and minor messages can be defined in an error class.  An application will 
+  have object handles for error class, major and minor messages for 
+  further operation.
+  
+<h4>5.2 Register Application with Error API</h4>
+
+<p>These functions can be used to register or unregister an error class, 
+  create or close error messages, or do query on an error class and 
+  error message:
+  
+<p><em>hid_t</em> <code>H5Eregister_class</code>(<em>const char*</em> 
+  <code>cls_name</code>, <em>const char*</em> <code>lib_name</code>, 
+  <em>const char*</em> <code>version</code>)
+  <br>Registers an error class to HDF5 Library so that the application 
+  library or program can report errors together with HDF5 Library.
+  
+<p><em>hid_t</em> <code>H5Ecreate_msg</code>(<em>hid_t</em> <code>class</code>, 
+  <em>H5E_type_t</em> <code>msg_type</code>, <em>const char*</em> <code>mesg</code>)
+  <br>Adds an error message to an error class defined by application library or 
+  program.  The error message can be either major or minor which is indicated by 
+  parameter <code>msg_type</code>.
+  
+<p><em>ssize_t</em> <code>H5Eget_class_name</code>(<em>hid_t</em> <code>class_id</code>, 
+  <em>char*</em> <code>name</code>, <em>size_t</em> <code>size</code>)
+  <br>Retrieves the name of the error class specified by the class <code>ID</code>.
+  
+<p><em>ssize_t</em> <code>H5Eget_msg</code>(<em>hid_t</em> <code>mesg_id</code>, 
+  <em>H5E_type_t*</em> <code>mesg_type</code>, <em>char*</em> <code>mesg</code>, 
+  <em>size_t</em> <code>size</code>)
+  <br>Retrieves the error message including its length and type.
+  
+<p><em>herr_t</em> <code>H5Eclose_msg</code>(<em>hid_t</em> 
+  <code>mesg_id</code>)
+  <br>Closes an error message.
+  
+<p><em>herr_t</em> <code>H5Eunregister_class</code>(<em>hid_t</em> 
+  <code>class_id</code>)
+  <br>Removes an error class from the error API.
+  
+<p>Example: Error Class and Its Message
+
+<p>An application creates an error class and error messages.
+
+<pre>
+/* Create an error class */
+class_id = H5Eregister_class(ERR_CLS_NAME, PROG_NAME, PROG_VERS);
+
+/* Retrieve class name */
+H5Eget_class_name(class_id, cls_name, cls_size); 
+
+/* Create a major error message in the class */
+maj_id = H5Ecreate_msg(class_id, H5E_MAJOR, "... ...");
+
+/* Create a minor error message in the class */
+min_id = H5Ecreate_msg(class_id, H5E_MINOR, "... ...");
+</pre>
+
+<p>Application closes error messages and un-registers error class.
+
+<pre>
+H5Eclose_msg(maj_id);
+H5Eclose_msg(min_id);
+H5Eunregister_class(class_id);
+</pre>
+
+<h4>5.3 Push Application Error Message Onto Error Stack</h4>
+
+<p>An application can push error records onto or pop error records 
+  off the error stack, just as the library does internally.  An 
+  error stack can be registered, and an object handle can be 
+  returned to the application, so that the application can 
+  manipulate a registered error stack.
+  
+<p><em>hid_t</em> <code>H5Eget_current_stack</code>(<em>void</em>)
+  <br>Registers the current error stack, returns an object handle, 
+  and clears the current error stack.  An empty error stack will 
+  also be assigned an ID.
+
+<p><em>herr_t</em> <code>H5Eset_current_stack</code>(<em>hid_t</em> 
+  <code>error_stack</code>)
+  <br>Replaces the current error stack with another error stack 
+  specified by <code>error_stack</code>, clears the current error stack.  
+  The object handle <code>error_stack</code> is closed after this function call.
+  
+<p><em>herr_t</em> <code>H5Epush_stack</code>(<em>hid_t</em> 
+  <code>error_stack</code>, <em>const char*</em> <code>file</code>, 
+  <em>const char*</em> <code>func</code>, <em>unsigned</em> <code>line</code>, 
+  <em>hid_t</em> <code>cls_id</code>, <em>hid_t</em> <code>major_id</code>, 
+  <em>hid_t</em> <code>minor_id</code>, <em>const char*</em> <code>desc</code>, 
+  ... )
+  <br>Pushes a new error record onto the error stack for the current thread.
+  
+<p><em>herr_t</em> <code>H5Epop</code>(<em>hid_t</em> <code>error_stack</code>, 
+  <em>size_t</em> <code>count</code>)
+  <br>Deletes some error messages from the error stack.
+  
+<p><em>int</em> <code>H5Eget_num</code>(<em>hid_t</em> <code>error_stack</code>)
+  <br>Retrieves the number of error records from an error stack.
+  
+<p><em>herr_t</em> <code>H5Eclear_stack</code>(<em>hid_t</em> 
+  <code>error_stack</code>)
+  <br>Clears the error stack.
+  
+<p><em>herr_t</em> <code>H5Eclose_stack</code>(<em>hid_t</em> 
+  <code>error_stack</code>)
+  <br>Closes the object handle for an error stack and releases its resources.
+  
+<p>Example: Error Stack
+
+<p>An application pushes error record onto default error stack.
+
+<pre>
+/* Make call to HDF5 I/O routine */
+if((dset_id=H5Dopen(file_id, dset_name))&lt;0)
+{
+	/* Push client error onto error stack */
+	H5Epush_stack(H5E_DEFAULT,__FILE__,FUNC,__LINE__,cls_id,CLIENT_ERR_MAJ_IO,
+		CLIENT_ERR_MINOR_OPEN,"H5Dopen failed");
+
+	/* Indicate error occurred in function */
+	return(0);
+}
+</pre>
+
+<p>The application registers current error stack and creates 
+  an object handle to avoid another HDF5 function clearing the error stack.
+  
+<pre>
+if(H5Dwrite(dset_id, mem_type_id, mem_space_id, file_space_id, dset_xfer_plist_id, buf)&lt;0)
+{
+	/* Push client error onto error stack */
+	H5Epush_stack(H5E_DEFAULT,__FILE__,FUNC,__LINE__,cls_id,CLIENT_ERR_MAJ_IO,
+		    CLIENT_ERR_MINOR_HDF5,"H5Dwrite failed");
+
+	/* Preserve the error stack by assigning an object handle to it */
+    error_stack = H5Eget_current_stack();
+                
+	/* Close dataset */
+	H5Dclose(dset_id);
+               
+    /* Replace the current error stack with the preserved one */
+    H5Eset_current_stack(error_stack);
+
+	Return(0);
+} 
+</pre>
 
 </body>
 </html>
