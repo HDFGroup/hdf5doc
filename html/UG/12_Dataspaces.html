@@ -487,10 +487,11 @@ document.writeln ("
   <p>An HDF5 dataspace is a required component of an HDF5 dataset or attribute. 
   A dataspace defines the size and the shape of a dataset's or an attribute’s 
   raw data. 
-  Currently HDF5 supports two types of the dataspaces: 
+  Currently, HDF5 supports the following types of the dataspaces: 
   <ul>
     <li>scalar dataspaces</li> 
     <li>simple dataspaces</li>
+    <li>null dataspaces</li>
   </ul>
   
   <p>A <em>scalar dataspace</em> represents just one element, a scalar. 
@@ -512,6 +513,10 @@ document.writeln ("
   The sizes of dimensions at any particular time of the datatype life are 
   called the <i>current dimensions</i> or the <i>dataspace extent</i>. 
   They can be queried along with the maximum sizes.
+  
+  <p>A <em>null dataspace</em> contains no data elements.
+  Note that no selections can be applied to a null dataset 
+  as there is nothing to select.
 
   <p>As shown in the UML diagram in Figure 1, an HDF5 simple dataspace object 
   has three attributes: 
@@ -650,9 +655,9 @@ document.writeln ("
 
   <h4>Creating a dataspace</h4>
 
-  <p>Both scalar and simple dataspace can be created by calling the
-  <span class="codeText">H5Screate</span> 
-  (<span class="codeText">h5screate_f</span> in Fortran) function. 
+  <p>A dataspace can be created by calling the
+  <span class="codeText">H5Screate</span> function
+  (<span class="codeText">h5screate_f</span> in Fortran). 
   Since definition of the simple dataspace requires the specification of 
   dimensionality (or rank) and initial and maximum dimension sizes, 
   the HDF5 Library provides a <i>convenience</i> API, 
@@ -686,6 +691,34 @@ document.writeln ("
   e.g. the attribute <span class="codeText">temperature</span> with the 
   value <span class="codeText">celsius</span> is used to indicate that the 
   dataset with this attribute stores temperature values using the celsius scale.
+
+  
+  <h4>Creating a null dataspace</h4>
+  
+  <p>A null dataspace is created with the <code>H5Screate</code>
+  or the <code>h5screate_f</code> function:
+  
+  <p>In C:
+  <pre>
+          hid_t space_id;
+          . . .
+          space_id = H5Screate(H5S_NULL);
+  </pre>
+
+  <p>In Fortran: 
+     (<code>H5S_NULL</code> not yet implemented in Fortran.)
+  <pre>
+          INTEGER(HID_T) :: space_id
+          . . .
+          CALL h5screate_f(H5S_NULL_F, space_id, error)
+  </pre>
+
+  As mentioned above, the dataspace will contain no elements.
+<!--
+               NEED MORE INFO.  
+               SPECIFICALLY, HOW ARE SUCH DATASPACES USED? 
+               AND WHAT ATTRIBUTES ARE RELEVANT?
+-->
 
   
 
