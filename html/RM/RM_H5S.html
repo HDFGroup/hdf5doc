@@ -2,9 +2,12 @@
 <head><title>
 HDF5/H5S API Specification
 </title>
+<link href="../ed_styles/RMelect.css" rel="stylesheet" type="text/css">
+</head>
+
+<body bgcolor="#FFFFFF">
 
 <!-- #BeginLibraryItem "/ed_libs/styles_RM.lbi" -->
-
 <!--
   * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
   * Copyright by the Board of Trustees of the University of Illinois.         *
@@ -20,13 +23,7 @@ HDF5/H5S API Specification
   * access to either file, you may request a copy from hdfhelp@ncsa.uiuc.edu. *
   * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  -->
-
-<link href="../ed_styles/RMelect.css" rel="stylesheet" type="text/css">
-<!-- #EndLibraryItem --></head>
-
-<body bgcolor="#FFFFFF">
-<!-- HEADER RIGHT " " -->
-
+<!-- #EndLibraryItem --><!-- HEADER RIGHT " " -->
 
 <!-- #BeginLibraryItem "/ed_libs/NavBar_RM.lbi" --><hr>
 <center>
@@ -43,10 +40,11 @@ HDF5/H5S API Specification
 And in this document, the 
 <a href="RM_H5Front.html">HDF5 Reference Manual</a>&nbsp;&nbsp;
 <br>
-<a href="http://hdf.ncsa.uiuc.edu/HDF5/hdf5_hl/doc/RM_hdf5im.html">H5IM</a>&nbsp;&nbsp;
-<a href="http://hdf.ncsa.uiuc.edu/HDF5/hdf5_hl/doc/RM_hdf5lt.html">H5LT</a>&nbsp;&nbsp;
-<a href="http://hdf.ncsa.uiuc.edu/HDF5/hdf5_hl/doc/RM_hdf5pt.html">H5PT</a>&nbsp;&nbsp;
-<a href="http://hdf.ncsa.uiuc.edu/HDF5/hdf5_hl/doc/RM_hdf5tb.html">H5TB</a>&nbsp;&nbsp;
+<a href="../HL/RM_H5DS.html">H5DS</a>&nbsp;&nbsp;
+<a href="../HL/RM_H5IM.html">H5IM</a>&nbsp;&nbsp;
+<a href="../HL/RM_H5LT.html">H5LT</a>&nbsp;&nbsp;
+<a href="../HL/RM_H5PT.html">H5PT</a>&nbsp;&nbsp;
+<a href="../HL/RM_H5TB.html">H5TB</a>&nbsp;&nbsp;
 <br>
 <a href="RM_H5.html">H5</a>&nbsp;&nbsp;
 <a href="RM_H5A.html">H5A</a>&nbsp;&nbsp;
@@ -85,6 +83,8 @@ elements of a dataset.
     <li><a href="#Dataspace-Create">H5Screate</a>
     <li><a href="#Dataspace-Copy">H5Scopy</a>
     <li><a href="#Dataspace-Close">H5Sclose</a>
+    <li><a href="#Dataspace-Decode">H5Sdecode</a>
+    <li><a href="#Dataspace-Encode">H5Sencode</a>
     <li><a href="#Dataspace-CreateSimple">H5Screate_simple</a>
     <li><a href="#Dataspace-IsSimple">H5Sis_simple</a>
     <li><a href="#Dataspace-OffsetSimple">H5Soffset_simple</a>
@@ -98,6 +98,7 @@ elements of a dataset.
     <li><a href="#Dataspace-ExtentClass">H5Sextent_class</a>
 -->
     <li><a href="#Dataspace-ExtentCopy">H5Sextent_copy</a>
+    <li><a href="#Dataspace-ExtentEqual">H5Sextent_equal</a>
     <li><a href="#Dataspace-SetExtentSimple">H5Sset_extent_simple</a>
     <li><a href="#Dataspace-SetExtentNone">H5Sset_extent_none</a>
     <li><a href="#Dataspace-GetSelectType">H5Sget_select_type</a>
@@ -129,16 +130,20 @@ elements of a dataset.
       <li><a href="#Dataspace-Copy">H5Scopy</a>
       <li><a href="#Dataspace-Create">H5Screate</a>
       <li><a href="#Dataspace-CreateSimple">H5Screate_simple</a>
+      <li><a href="#Dataspace-Decode">H5Sdecode</a>
+      <li><a href="#Dataspace-Encode">H5Sencode</a>
       <li><a href="#Dataspace-ExtentCopy">H5Sextent_copy</a>
+      <li><a href="#Dataspace-ExtentEqual">H5Sextent_equal</a>
       <li><a href="#Dataspace-SelectBounds">H5Sget_select_bounds</a>
       <li><a href="#Dataspace-SelectElemNPoints">H5Sget_select_elem_npoints</a>
-      <li><a href="#Dataspace-SelectElemPointList">H5Sget_select_elem_pointlist</a>
-      <li><a href="#Dataspace-SelectHyperBlockList">H5Sget_select_hyper_blocklist</a>      
+     
     </td>
     
     <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
     
-    <td valign="top">      
+    <td valign="top">
+      <li><a href="#Dataspace-SelectElemPointList">H5Sget_select_elem_pointlist</a>
+      <li><a href="#Dataspace-SelectHyperBlockList">H5Sget_select_hyper_blocklist</a>    
       <li><a href="#Dataspace-SelectHyperNBlocks">H5Sget_select_hyper_nblocks</a>
       <li><a href="#Dataspace-SelectNpoints">H5Sget_select_npoints</a>
       <li><a href="#Dataspace-GetSelectType">H5Sget_select_type</a>
@@ -147,13 +152,12 @@ elements of a dataset.
       <li><a href="#Dataspace-ExtentNpoints">H5Sget_simple_extent_npoints</a>
       <li><a href="#Dataspace-ExtentType">H5Sget_simple_extent_type</a>
       <li><a href="#Dataspace-IsSimple">H5Sis_simple</a>
-      <li><a href="#Dataspace-OffsetSimple">H5Soffset_simple</a>
     </td>
     
     <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
     
     <td valign="top">
-      
+      <li><a href="#Dataspace-OffsetSimple">H5Soffset_simple</a>      
       <li><a href="#Dataspace-SelectAll">H5Sselect_all</a>
       <li><a href="#Dataspace-SelectElements">H5Sselect_elements</a>
       <li><a href="#Dataspace-SelectHyperslab">H5Sselect_hyperslab</a>
@@ -464,6 +468,94 @@ END SUBROUTINE h5screate_simple_f
 </dl>
 
 <!-- NEW PAGE -->
+<!-- HEADER RIGHT "H5Sdecode" -->
+<hr>
+<dl>
+<dt><strong>Name:</strong> <a name="Dataspace-Decode">H5Sdecode</a>
+<dt><strong>Signature:</strong>
+    <dd><em>hid_t</em> <code>H5Sdecode</code>
+      (<em>unsigned char *</em><code>buf</code>)
+<dt><strong>Purpose:</strong>
+    <dd>Decode a binary object description of data space and 
+      return a new object handle.
+<dt><strong>Description:</strong>
+    <dd>Given an object description of data space in binary in a 
+      buffer, <code>H5Sdecode</code> reconstructs the HDF5 data 
+      type object and returns a new object handle for it.  The binary 
+      description of the object is encoded by <code>H5Sencode</code>.  
+      User is responsible for passing in the right buffer.
+      The types of data space we address in this function are null, 
+      scalar, and simple space.  For simple data space, the information of 
+      selection, for example, hyperslab selection, is also encoded and 
+      decoded.  Complex data space has not been implemented in the 
+      library.
+<dt><strong>Parameters:</strong>
+    <ul>
+      <table>
+        <tr>
+	  <td valign="top"><em>unsigned&nbsp;char&nbsp;*</em><code>buf</code>&nbsp;&nbsp;&nbsp;&nbsp;</td>
+          <td valign="top">IN: Buffer for the data space object 
+	    to be decoded.</td></tr>
+      </table>
+    </ul>
+<dt><strong>Returns:</strong>
+    <dd>Returns an object ID(non-negative) if successful; 
+      otherwise returns a negative value.
+</dl>
+
+<!-- NEW PAGE -->
+<!-- HEADER RIGHT "H5Sencode" -->
+<hr>
+<dl>
+<dt><strong>Name:</strong> <a name="Dataspace-Encode">H5Sencode</a>
+<dt><strong>Signature:</strong>
+    <dd><em>herr_t</em> <code>H5Sencode</code>(<em>hid_t</em> 
+      <code>obj_id</code>, <em>unsigned char *</em><code>buf</code>, 
+      <em>size_t *</em><code>nalloc</code>)
+<dt><strong>Purpose:</strong>
+    <dd>Encode a data space object description into a binary buffer.
+<dt><strong>Description:</strong>
+    <dd>Given the data space ID, <code>H5Sencode</code> converts a 
+      data space description into binary form in a buffer.  Using this 
+      binary form in the buffer, a data space object can be reconstructed 
+      using <code>H5Sdecode</code> to return a new object 
+      handle(<code>hid_t</code>) for this data space.
+      <p>A preliminary <code>H5Sencode</code> call can be made to find out 
+      the size of the buffer needed. This value is returned as 
+      <code>nalloc</code>.  That value can then be assigned to 
+      <code>nalloc</code> for a second <code>H5Sencode</code> call, 
+      which will retrieve the actual encoded object. 
+      <p>If the library finds out <code>nalloc</code> is not big enough 
+      for the object, it simply returns the size of the buffer needed 
+      through <code>nalloc</code> without encoding the provided buffer.
+      <p>The types of data space we address in this function are null, scalar, 
+      and simple space.  For simple data space, the information of selection, 
+      for example, hyperslab selection, is also encoded and decoded.  Complex 
+      data space has not been implemented in the library.
+<dt><strong>Parameters:</strong>
+    <ul>
+      <table>
+        <tr>
+	  <td valign="top"><em>hid_t</em> <code>obj_id</code></td>
+          <td valign="top">IN: Identifier of the object to be 
+	    encoded.</td></tr>
+        <tr>
+	  <td valign="top"><em>unsigned&nbsp;char&nbsp;*</em><code>buf</code>&nbsp;&nbsp;&nbsp;&nbsp;</td>
+          <td valign="top">IN/OUT: Buffer for the object to be encoded into.  
+	    If the provided buffer is NULL, only the size of buffer needed is 
+	    returned through <code>nalloc</code>.</td></tr>
+        <tr>
+	  <td valign="top"><em>size_t *</em><code>nalloc</code></td>
+          <td valign="top">IN: The size of the allocated buffer.
+	    <br>OUT: The size of the buffer needed.</td></tr>
+      </table>
+    </ul>
+<dt><strong>Returns:</strong>
+    <dd>Returns a non-negative value if successful;
+        otherwise returns a negative value.
+</dl>
+
+<!-- NEW PAGE -->
 <!-- HEADER RIGHT "H5Sextent_copy" -->
 <hr>
 <dl>
@@ -512,6 +604,31 @@ END SUBROUTINE h5sextent_copy_f
         <img src="Graphics/Java.gif"> 
         <img src="Graphics/C++.gif">
         -->
+</dl>
+
+<!-- NEW PAGE -->
+<!-- HEADER RIGHT "H5Sextent_equal" -->
+<hr>
+<dl>
+<dt><strong>Name:</strong> <a name="Dataspace-ExtentEqual">H5Sextent_equal</a>
+<dt><strong>Signature:</strong>
+    <dd><em>htri_t</em> <code>H5Sextent_equal</code>(<em>hid_t</em> 
+      <code>space1_id</code>, <em>hid_t</em> <code>space2_id</code>)
+<dt><strong>Purpose:</strong>
+    <dd>Determines whether two dataspace extents are equal.
+<dt><strong>Description:</strong>
+    <dd>&nbsp; 
+<dt><strong>Parameters:</strong>
+    <ul>
+      <table>
+        <tr>
+	  <td valign="top">&nbsp;</td>
+          <td valign="top">&nbsp;</td></tr>
+      </table>
+    </ul>
+<dt><strong>Returns:</strong>
+    <dd>Returns <code>TRUE</code> if equal, <code>FALSE</code> 
+      if unequal, if successful; otherwise returns a negative value.
 </dl>
 
 <!-- NEW PAGE -->
@@ -1928,10 +2045,11 @@ END SUBROUTINE h5sset_extent_simple_f
 And in this document, the 
 <a href="RM_H5Front.html">HDF5 Reference Manual</a>&nbsp;&nbsp;
 <br>
-<a href="http://hdf.ncsa.uiuc.edu/HDF5/hdf5_hl/doc/RM_hdf5im.html">H5IM</a>&nbsp;&nbsp;
-<a href="http://hdf.ncsa.uiuc.edu/HDF5/hdf5_hl/doc/RM_hdf5lt.html">H5LT</a>&nbsp;&nbsp;
-<a href="http://hdf.ncsa.uiuc.edu/HDF5/hdf5_hl/doc/RM_hdf5pt.html">H5PT</a>&nbsp;&nbsp;
-<a href="http://hdf.ncsa.uiuc.edu/HDF5/hdf5_hl/doc/RM_hdf5tb.html">H5TB</a>&nbsp;&nbsp;
+<a href="../HL/RM_H5DS.html">H5DS</a>&nbsp;&nbsp;
+<a href="../HL/RM_H5IM.html">H5IM</a>&nbsp;&nbsp;
+<a href="../HL/RM_H5LT.html">H5LT</a>&nbsp;&nbsp;
+<a href="../HL/RM_H5PT.html">H5PT</a>&nbsp;&nbsp;
+<a href="../HL/RM_H5TB.html">H5TB</a>&nbsp;&nbsp;
 <br>
 <a href="RM_H5.html">H5</a>&nbsp;&nbsp;
 <a href="RM_H5A.html">H5A</a>&nbsp;&nbsp;
@@ -1958,7 +2076,7 @@ And in this document, the
 Describes HDF5 Release 1.7, the unreleased development branch; working toward HDF5 Release 1.8.0
 </address><!-- #EndLibraryItem --><SCRIPT LANGUAGE="JAVASCRIPT">
 <!--
-document.writeln("Last modified: 14 February 2006");
+document.writeln("Last modified: 5 April 2006");
 -->
 </SCRIPT> 
 
