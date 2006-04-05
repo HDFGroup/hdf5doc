@@ -2,9 +2,12 @@
 <head><title>
 HDF5/H5T API Specification
 </title>
+<link href="../ed_styles/RMelect.css" rel="stylesheet" type="text/css">
+</head>
+
+<body bgcolor="#FFFFFF">
 
 <!-- #BeginLibraryItem "/ed_libs/styles_RM.lbi" -->
-
 <!--
   * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
   * Copyright by the Board of Trustees of the University of Illinois.         *
@@ -20,15 +23,7 @@ HDF5/H5T API Specification
   * access to either file, you may request a copy from hdfhelp@ncsa.uiuc.edu. *
   * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  -->
-
-<link href="../ed_styles/RMelect.css" rel="stylesheet" type="text/css">
-<!-- #EndLibraryItem -->
-
-</head>
-
-<body bgcolor="#FFFFFF">
-<!-- HEADER RIGHT " " -->
-
+<!-- #EndLibraryItem --><!-- HEADER RIGHT " " -->
 
 <!-- #BeginLibraryItem "/ed_libs/NavBar_RM.lbi" --><hr>
 <center>
@@ -45,10 +40,11 @@ HDF5/H5T API Specification
 And in this document, the 
 <a href="RM_H5Front.html">HDF5 Reference Manual</a>&nbsp;&nbsp;
 <br>
-<a href="http://hdf.ncsa.uiuc.edu/HDF5/hdf5_hl/doc/RM_hdf5im.html">H5IM</a>&nbsp;&nbsp;
-<a href="http://hdf.ncsa.uiuc.edu/HDF5/hdf5_hl/doc/RM_hdf5lt.html">H5LT</a>&nbsp;&nbsp;
-<a href="http://hdf.ncsa.uiuc.edu/HDF5/hdf5_hl/doc/RM_hdf5pt.html">H5PT</a>&nbsp;&nbsp;
-<a href="http://hdf.ncsa.uiuc.edu/HDF5/hdf5_hl/doc/RM_hdf5tb.html">H5TB</a>&nbsp;&nbsp;
+<a href="../HL/RM_H5DS.html">H5DS</a>&nbsp;&nbsp;
+<a href="../HL/RM_H5IM.html">H5IM</a>&nbsp;&nbsp;
+<a href="../HL/RM_H5LT.html">H5LT</a>&nbsp;&nbsp;
+<a href="../HL/RM_H5PT.html">H5PT</a>&nbsp;&nbsp;
+<a href="../HL/RM_H5TB.html">H5TB</a>&nbsp;&nbsp;
 <br>
 <a href="RM_H5.html">H5</a>&nbsp;&nbsp;
 <a href="RM_H5A.html">H5A</a>&nbsp;&nbsp;
@@ -102,10 +98,11 @@ of a dataset.
 <i>Conversion Functions</i>
     <li><a href="#Datatype-Convert">H5Tconvert</a>
     <li><a href="#Datatype-Find">H5Tfind</a>
-    <li><a href="#Datatype-SetOverflow">H5Tset_overflow</a>
-    <li><a href="#Datatype-GetOverflow">H5Tget_overflow</a>
+    <li><a href="#Datatype-CompilerConv">H5Tcompiler_conv</a>
     <li><a href="#Datatype-Register">H5Tregister</a>
     <li><a href="#Datatype-Unregister">H5Tunregister</a>
+    <li><a href="#Datatype-Decode">H5Tdecode</a>
+    <li><a href="#Datatype-Encode">H5Tencode</a>
 </td><td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td><td valign=top>
 <i>Atomic Datatype Properties</i>
   <table><tr><td valign=top>
@@ -181,10 +178,13 @@ of a dataset.
       <li><a href="#Datatype-Close">H5Tclose</a>
       <li><a href="#Datatype-Commit">H5Tcommit</a>
       <li><a href="#Datatype-Committed">H5Tcommitted</a>
+      <li><a href="#Datatype-CompilerConv">H5Tcompiler_conv</a>
       <li><a href="#Datatype-Convert">H5Tconvert</a>
       <li><a href="#Datatype-Copy">H5Tcopy</a>
       <li><a href="#Datatype-Create">H5Tcreate</a>
+      <li><a href="#Datatype-Decode">H5Tdecode</a>
       <li><a href="#Datatype-DetectClass">H5Tdetect_class</a>
+      <li><a href="#Datatype-Encode">H5Tencode</a>
       <li><a href="#Datatype-EnumCreate">H5Tenum_create</a>
       <li><a href="#Datatype-EnumInsert">H5Tenum_insert</a>
       <li><a href="#Datatype-EnumNameOf">H5Tenum_nameof</a>
@@ -195,14 +195,14 @@ of a dataset.
       <li><a href="#Datatype-GetArrayNdims">H5Tget_array_ndims</a>
       <li><a href="#Datatype-GetClass">H5Tget_class</a>
       <li><a href="#Datatype-GetCset">H5Tget_cset</a>
-      <li><a href="#Datatype-GetEbias">H5Tget_ebias</a>
-      <li><a href="#Datatype-GetFields">H5Tget_fields</a>
-      <li><a href="#Datatype-GetInpad">H5Tget_inpad</a>    
     </td>
     
     <td width=3%>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
     
-    <td valign="top" width=30%>      
+    <td valign="top" width=30%>
+      <li><a href="#Datatype-GetEbias">H5Tget_ebias</a>
+      <li><a href="#Datatype-GetFields">H5Tget_fields</a>
+      <li><a href="#Datatype-GetInpad">H5Tget_inpad</a>    
       <li><a href="#Datatype-GetMemberClass">H5Tget_member_class</a>
       <li><a href="#Datatype-GetMemberIndex">H5Tget_member_index</a>
       <li><a href="#Datatype-GetMemberName">H5Tget_member_name</a>
@@ -214,7 +214,6 @@ of a dataset.
       <li><a href="#Datatype-GetNorm">H5Tget_norm</a>
       <li><a href="#Datatype-GetOffset">H5Tget_offset</a>
       <li><a href="#Datatype-GetOrder">H5Tget_order</a>
-      <li><a href="#Datatype-GetOverflow">H5Tget_overflow</a>
       <li><a href="#Datatype-GetPad">H5Tget_pad</a>
       <li><a href="#Datatype-GetPrecision">H5Tget_precision</a>
       <li><a href="#Datatype-GetSign">H5Tget_sign</a>
@@ -222,13 +221,13 @@ of a dataset.
       <li><a href="#Datatype-GetStrpad">H5Tget_strpad</a>
       <li><a href="#Datatype-GetSuper">H5Tget_super</a>
       <li><a href="#Datatype-GetTag">H5Tget_tag</a>
-      <li><a href="#Datatype-Insert">H5Tinsert</a>
-      <li><a href="#Datatype-IsVariableString">H5Tis_variable_str</a>
     </td>
     
     <td width=3%>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
     
-    <td valign="top">      
+    <td valign="top">
+      <li><a href="#Datatype-Insert">H5Tinsert</a>
+      <li><a href="#Datatype-IsVariableString">H5Tis_variable_str</a>     
       <li><a href="#Datatype-Lock">H5Tlock</a>
       <li><a href="#Datatype-Open">H5Topen</a>
       <li><a href="#Datatype-Pack">H5Tpack</a>
@@ -240,7 +239,6 @@ of a dataset.
       <li><a href="#Datatype-SetNorm">H5Tset_norm</a>
       <li><a href="#Datatype-SetOffset">H5Tset_offset</a>
       <li><a href="#Datatype-SetOrder">H5Tset_order</a>
-      <li><a href="#Datatype-SetOverflow">H5Tset_overflow</a>
       <li><a href="#Datatype-SetPad">H5Tset_pad</a>
       <li><a href="#Datatype-SetPrecision">H5Tset_precision</a>
       <li><a href="#Datatype-SetSign">H5Tset_sign</a>
@@ -280,8 +278,6 @@ as the corresponding C function.
 <!--<i>Conversion Functions</i>                                             -->
 <!--<li><a href="#Datatype-Convert">h5tconvert_f</a>                    -->
 <!--<li><a href="#Datatype-Find">h5tfind_f</a>                          -->
-<!--<li><a href="#Datatype-SetOverflow">h5tset_overflow_f</a>           -->
-<!--<li><a href="#Datatype-GetOverflow">h5tget_overflow_f</a>           -->
 <!--<li><a href="#Datatype-Register">h5tregister_f</a>                  -->
 <!--<li><a href="#Datatype-Unregister">h5tunregister_f</a>              -->
     <br><br>
@@ -614,6 +610,42 @@ END SUBROUTINE h5tcommitted_f
 </dl>
 
 <!-- NEW PAGE -->
+<!-- HEADER RIGHT "H5Tcompiler_conv" -->
+<hr>
+<dl>
+<dt><strong>Name:</strong> <a name="Datatype-CompilerConv">H5Tcompiler_conv</a>
+<dt><strong>Signature:</strong>
+  <dd><em>htri_t</em> <code>H5Tcompiler_conv</code>(<em>hid_t</em> 
+    <code>src_id</code>, <em>hid_t</em> <code>dst_id</code>)
+<dt><strong>Purpose:</strong>
+  <dd>Check whether the library’s default conversion is hard conversion.
+<dt><strong>Description:</strong>
+  <dd><code>H5Tcompiler_conv</code> finds out whether the library’s 
+    conversion function from type <code>src_id</code> to type 
+    <code>dst_id</code> is a compiler (hard) conversion.  A compiler 
+    conversion uses compiler’s casting; a library (soft) conversion uses 
+    the library’s own conversion function.
+<dt><strong>Parameters:</strong>
+  <ul>
+    <table>
+      <tr>
+        <td valign="top"><em>hid_t</em>&nbsp;<code>src_id</code>&nbsp;&nbsp;&nbsp;&nbsp;</td>
+	<td valign="top">IN: Identifier for the source datatype.</td>
+      </tr>
+      <tr>
+        <td valign="top"><em>hid_t</em> <code>dst_id</code></td>
+	<td valign="top">IN: Identifier for the destination datatype.</td>
+      </tr>
+    </table>
+  </ul>
+<dt><strong>Returns:</strong>
+  <dd>Returns TRUE for compiler conversion, FALSE for library conversion, 
+    FAIL for the function’s failure.
+<dt><strong>Fortran90 Interface:</strong>
+  <dd>None.
+</dl>
+
+<!-- NEW PAGE -->
 <!-- HEADER RIGHT "H5Tconvert" -->
 <hr>
 <dl>
@@ -874,6 +906,41 @@ END SUBROUTINE h5tcreate_f
 </dl>
 
 <!-- NEW PAGE -->
+<!-- HEADER RIGHT "H5Tdecode" -->
+<hr>
+<dl>
+<dt><strong>Name:</strong> <a name="Datatype-Decode">H5Tdecode</a>
+<dt><strong>Signature:</strong>
+    <dd><em>hid_t</em> <code>H5Tdecode</code>
+      (<em>unsigned char *</em><code>buf</code>)
+<dt><strong>Purpose:</strong>
+    <dd>Decode a binary object description of data type and 
+      return a new object handle.
+<dt><strong>Description:</strong>
+    <dd>Given an object description of data type in binary in a buffer, 
+      <code>H5Tdecode</code> reconstructs the HDF5 data type object and 
+      returns a new object handle for it. The binary description of the 
+      object is encoded by <code>H5Tencode</code>.  User is responsible 
+      for passing in the right buffer.
+
+<dt><strong>Parameters:</strong>
+    <ul>
+      <table>
+        <tr>
+            <td valign="top"><em>unsigned&nbsp;char&nbsp;*</em><code>buf</code>&nbsp;&nbsp;&nbsp;&nbsp;</td>
+            <td valign="top">IN: Buffer for the data type 
+	      object to be decoded.</td>
+	</tr>
+      </table>
+    </ul>
+<dt><strong>Returns:</strong>
+    <dd>Returns an object ID(non-negative) if successful; 
+      otherwise returns a negative value.
+<dt><strong>Fortran90 Interface:</strong>
+    <dd>None.
+</dl>
+
+<!-- NEW PAGE -->
 <!-- HEADER RIGHT "H5Tdetect_class" -->
 <hr>
 <dl>
@@ -935,6 +1002,60 @@ SUBROUTINE
           <td valign="top">
 		    Function introduced in this release.</td></tr>
     </table></ul>
+</dl>
+
+<!-- NEW PAGE -->
+<!-- HEADER RIGHT "H5Tencode" -->
+<hr>
+<dl>
+<dt><strong>Name:</strong> <a name="Datatype-Encode">H5Tencode</a>
+<dt><strong>Signature:</strong>
+    <dd><em>herr_t</em> <code>H5Tencode</code>(<em>hid_t</em> 
+      <code>obj_id</code>, <em>unsigned char *</em><code>buf</code>, 
+      <em>size_t *</em><code>nalloc</code>)
+<dt><strong>Purpose:</strong>
+    <dd>Encode a data type object description into a binary buffer.
+<dt><strong>Description:</strong>
+    <dd>Given data type ID, <code>H5Tencode</code> converts a data 
+      type description into binary form in a buffer.  Using this 
+      binary form in the buffer, a data type object can be reconstructed 
+      using <code>H5Tdecode</code> to return a new object handle
+      (<em>hid_t</em>) for this data type.
+      <p>A preliminary <code>H5Tencode</code> call can be made to find 
+      out the size of the buffer needed. This value is returned as 
+      <code>nalloc</code>. That value can then be assigned to 
+      <code>nalloc</code> for a second <code>H5Tencode</code> call, 
+      which will retrieve the actual encoded object.
+      <p>If the library finds out <code>nalloc</code> is not big 
+      enough for the object, it simply returns the size of the buffer 
+      needed through <code>nalloc</code> without encoding the provided buffer.
+
+<dt><strong>Parameters:</strong>
+    <ul>
+      <table>
+        <tr>
+            <td valign="top"><em>hid_t</em> <code>obj_id</code></td>
+            <td valign="top">IN: Identifier of the object to be 
+	      encoded.</td>
+	</tr>
+        <tr>
+            <td valign="top"><em>unsigned&nbsp;char*</em><code>buf</code>&nbsp;&nbsp;&nbsp;&nbsp;</code></td>
+            <td valign="top">IN/OUT: Buffer for the object to be 
+	      encoded into.  If the provided buffer is NULL, only 
+	      the size of buffer needed is returned through <code>nalloc</code>.</td>
+	</tr>
+        <tr>
+            <td valign="top"><em>size_t *</em><code>nalloc</code></td>
+            <td valign="top">IN: The size of the allocated buffer.
+	      <br>OUT: The size of the buffer needed.</td>
+	</tr>
+      </table>
+    </ul>
+<dt><strong>Returns:</strong>
+    <dd>Returns a non-negative value if successful; 
+      otherwise returns a negative value.
+<dt><strong>Fortran90 Interface:</strong>
+    <dd>None.
 </dl>
 
 <!-- NEW PAGE -->
@@ -2142,7 +2263,7 @@ END SUBROUTINE h5tget_member_value_f
 	</table>
         <p>
 	<code>H5Tget_native_type</code> is designed primarily for
-	use with intenger and floating point datatypes.
+	use with integer and floating point datatypes.
 	Time, bifield, opaque, and reference datatypes are returned
 	as a copy of <code>type_id</code>.
         <p>
@@ -2427,47 +2548,6 @@ SUBROUTINE h5tget_order_f(type_id, order, hdferr)
                                         ! 0 on success and -1 on failure
 END SUBROUTINE h5tget_order_f
 	</pre>		
-		
-		<!--<dt><strong>Non-C API(s):</strong>
-    	<dd>
-        
-        <img src="Graphics/Java.gif"> 
-        <img src="Graphics/C++.gif">
-        -->
-</dl>
-
-<!-- NEW PAGE -->
-<!-- HEADER RIGHT "H5Tget_overflow" -->
-<hr>
-<dl>
-<dt><strong>Name:</strong> <a name="Datatype-GetOverflow">H5Tget_overflow</a>
-<dt><strong>Signature:</strong>
-
-
-H5Tget_overflow ()
-    <dd><em>H5T_overflow_t</em> <code>H5Tget_overflow</code>(<code>void</code>)
-<dt><strong>Purpose:</strong>
-    <dd>Returns a pointer to the current global overflow function.
-<dt><strong>Description:</strong>
-    <dd><code>H5Tset_overflow</code> returns a pointer 
-        to the current global overflow function.
-        This is an application-defined function that is called whenever a 
-        datatype conversion causes an overflow. 
-<dt><strong>Parameters:</strong>
-    <dl>
-        <dt>None.
-    </dl>
-<dt><strong>Returns:</strong>
-    <dd>Returns a pointer to an application-defined function if successful.
-        Otherwise returns NULL; this can happen if no overflow handling
-        function is registered.  
-<dt><strong>Fortran90 Interface:</strong>
-    <dd>None.
-<!--
-	<pre>
-SUBROUTINE
-	</pre>
--->		
 		
 		<!--<dt><strong>Non-C API(s):</strong>
     	<dd>
@@ -3657,55 +3737,6 @@ END SUBROUTINE h5tset_order_f
 </dl>
 
 <!-- NEW PAGE -->
-<!-- HEADER RIGHT "H5Tset_overflow" -->
-<hr>
-<dl>
-<dt><strong>Name:</strong> <a name="Datatype-SetOverflow">H5Tset_overflow</a>
-<dt><strong>Signature:</strong>
-    <dd><em>herr_t</em> <code>H5Tset_overflow</code>(<em>H5T_overflow_t</em> <code>func</code>)
-<dt><strong>Purpose:</strong>
-    <dd>Sets the overflow handler to a specified function. 
-<dt><strong>Description:</strong>
-    <dd><code>H5Tset_overflow</code> sets the overflow handler 
-        to be the function specified by <code>func</code>.
-        <code>func</code> will be called for all datatype conversions that 
-        result in an overflow.  
-        <p>
-        See the definition of <code>H5T_overflow_t</code> in 
-        <code>H5Tpublic.h</code> for documentation  
-        of arguments and return values.  
-        The prototype for <code>H5T_overflow_t</code> is as follows:<br>
-              <code>herr_t (*H5T_overflow_t)(hid_t src_id, hid_t dst_id,
-                                 void *src_buf, void *dst_buf);
-              </code>
-        <p>
-        The NULL pointer may be passed to remove the overflow handler.
-<dt><strong>Parameters:</strong>
-    <ul><table>
-        <tr>
-		    <td valign="top"><em>H5T_overflow_t</em>&nbsp;<code>func&nbsp;&nbsp;&nbsp;&nbsp;</code></td>
-            <td valign="top">Overflow function.</td></tr>
-    </table></ul>
-<dt><strong>Returns:</strong>
-    <dd>Returns a non-negative value if successful;
-        otherwise returns a negative value.
-<dt><strong>Fortran90 Interface:</strong>
-    <dd>None.
-<!--
-	<pre>
-SUBROUTINE
-	</pre>		
--->
-		
-		<!--<dt><strong>Non-C API(s):</strong>
-    	<dd>
-        
-        <img src="Graphics/Java.gif"> 
-        <img src="Graphics/C++.gif">
-        -->
-</dl>
-
-<!-- NEW PAGE -->
 <!-- HEADER RIGHT "H5Tset_pad" -->
 <hr>
 <dl>
@@ -3906,8 +3937,9 @@ END SUBROUTINE h5tset_sign_f
          The size set for a string should include space for the null-terminator
          character, otherwise it will not be stored on (or retrieved from) disk.
          Adjusting the size of a string automatically sets the precision
-         to 8*<code>size</code>.  A compound datatype may increase in size, 
-         but may not shrink.  All datatypes must have a positive size.
+         to 8*<code>size</code>.  A compound datatype may increase or decrease 
+	 in size as long as its member field is not trailed.  All datatypes 
+	 must have a positive size.
 <dt><strong>Parameters:</strong>
     <ul><table>
         <tr>
@@ -4091,21 +4123,54 @@ END SUBROUTINE h5tset_tag_f
 <dl>
 <dt><strong>Name:</strong> <a name="Datatype-Unregister">H5Tunregister</a>
 <dt><strong>Signature:</strong>
-    <dd><em>herr_t</em> <code>H5Tunregister</code>(<em>H5T_conv_t</em> <code>func</code>
-    )
+    <dd><em>herr_t</em> <code>H5Tunregister</code>(<em>H5T_pers_t</em> 
+      <code>pers</code>, <em>const char</em> *<code>name</code>, 
+      <em>hid_t</em> <code>src_id</code>, <em>hid_t</em> <code>dst_id</code>, 
+      <em>H5T_conv_t</em> <code>func</code>)
 <dt><strong>Purpose:</strong>
-    <dd>Removes a conversion function from all conversion paths.
+    <dd>Removes a conversion function.
 <dt><strong>Description:</strong>
-    <dd><code>H5Tunregister</code> removes a conversion function from all conversion paths.
-        <P>
-        The conversion function pointer type declaration is described in 
-        <a href="#Datatype-Register">H5Tregister</a>.
+    <dd>H5Tunregister removes a conversion function matching certain 
+      criteria, like soft or hard conversion, source and destination types, 
+      and the conversion function.
+      <p>If a user is trying to remove a conversion function he registered, 
+      all parameters can be used.  If he is trying to remove a library’s 
+      default conversion function, there is no guarantee the <code>name</code> 
+      and <code>func</code> parameters will match user’s chosen values.  
+      Passing in some values may cause this function to fail.  A good practice 
+      is to pass in NULL as their values.
+      <p>All parameters are optional.  The missing parameters will be used to 
+      generalize the searching criteria. 
+      <p>The conversion function pointer type declaration is described in 
+      <a href="#Datatype-Register">H5Tregister</a>.
 <dt><strong>Parameters:</strong>
-    <ul><table>
-        <tr>
-		    <td valign="top"><em>H5T_conv_t</em>&nbsp;<code>func&nbsp;&nbsp;&nbsp;&nbsp;</code></td>
-            <td valign="top">Function to remove from conversion paths.</td>
-    </table></ul>
+  <ul>
+    <table>
+      <tr>
+        <td valign="top"><em>H5T_pers_t</em> <code>pers</code></td>
+        <td valign="top"><code>H5T_PERS_HARD</code> for hard conversion 
+	  functions; <br><code>H5T_PERS_SOFT</code> for soft conversion 
+	  functions.</td>
+      </tr>
+      <tr>
+        <td valign="top"><em>const char *</em><code>name</code></td>
+	<td valign="top">Name displayed in diagnostic output.</td>
+      </tr>
+      <tr>
+        <td valign="top"><em>hid_t</em> <code>src_id</code></td>
+	<td valign="top">Identifier of source datatype.</td>
+      </tr>
+      <tr>
+        <td valign="top"><em>hid_t</em> <code>dst_id</code></td>
+	<td valign="top">Identifier of destination datatype.</td>
+      </tr>
+      <tr>
+        <td valign="top"><em>H5T_conv_t</em>&nbsp;<code>func</code>&nbsp;&nbsp;&nbsp;&nbsp;</td>
+	<td valign="top">Function to convert between source and 
+	  destination datatypes.</td>
+      </tr>
+    </table>
+  </ul>
 <dt><strong>Returns:</strong>
     <dd>Returns a non-negative value if successful;
         otherwise returns a negative value.
@@ -4223,10 +4288,11 @@ END SUBROUTINE h5tvlen_create_f
 And in this document, the 
 <a href="RM_H5Front.html">HDF5 Reference Manual</a>&nbsp;&nbsp;
 <br>
-<a href="http://hdf.ncsa.uiuc.edu/HDF5/hdf5_hl/doc/RM_hdf5im.html">H5IM</a>&nbsp;&nbsp;
-<a href="http://hdf.ncsa.uiuc.edu/HDF5/hdf5_hl/doc/RM_hdf5lt.html">H5LT</a>&nbsp;&nbsp;
-<a href="http://hdf.ncsa.uiuc.edu/HDF5/hdf5_hl/doc/RM_hdf5pt.html">H5PT</a>&nbsp;&nbsp;
-<a href="http://hdf.ncsa.uiuc.edu/HDF5/hdf5_hl/doc/RM_hdf5tb.html">H5TB</a>&nbsp;&nbsp;
+<a href="../HL/RM_H5DS.html">H5DS</a>&nbsp;&nbsp;
+<a href="../HL/RM_H5IM.html">H5IM</a>&nbsp;&nbsp;
+<a href="../HL/RM_H5LT.html">H5LT</a>&nbsp;&nbsp;
+<a href="../HL/RM_H5PT.html">H5PT</a>&nbsp;&nbsp;
+<a href="../HL/RM_H5TB.html">H5TB</a>&nbsp;&nbsp;
 <br>
 <a href="RM_H5.html">H5</a>&nbsp;&nbsp;
 <a href="RM_H5A.html">H5A</a>&nbsp;&nbsp;
@@ -4253,7 +4319,7 @@ And in this document, the
 Describes HDF5 Release 1.7, the unreleased development branch; working toward HDF5 Release 1.8.0
 </address><!-- #EndLibraryItem --><SCRIPT LANGUAGE="JAVASCRIPT">
 <!--
-document.writeln("Last modified: 15 February 2006");
+document.writeln("Last modified: 5 April 2006");
 -->
 </SCRIPT>
  
