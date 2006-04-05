@@ -2,9 +2,12 @@
 <head><title>
 HDF5/H5A API Specification
 </title>
+<link href="../ed_styles/RMelect.css" rel="stylesheet" type="text/css">
+</head>
+
+<body bgcolor="#FFFFFF">
 
 <!-- #BeginLibraryItem "/ed_libs/styles_RM.lbi" -->
-
 <!--
   * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
   * Copyright by the Board of Trustees of the University of Illinois.         *
@@ -20,14 +23,7 @@ HDF5/H5A API Specification
   * access to either file, you may request a copy from hdfhelp@ncsa.uiuc.edu. *
   * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  -->
-
-<link href="../ed_styles/RMelect.css" rel="stylesheet" type="text/css">
-<!-- #EndLibraryItem -->
-
-</head>
-
-<body bgcolor="#FFFFFF">
-<!-- HEADER RIGHT " " -->
+<!-- #EndLibraryItem --><!-- HEADER RIGHT " " -->
 
 
 <!-- #BeginLibraryItem "/ed_libs/NavBar_RM.lbi" --><hr>
@@ -45,10 +41,11 @@ HDF5/H5A API Specification
 And in this document, the 
 <a href="RM_H5Front.html">HDF5 Reference Manual</a>&nbsp;&nbsp;
 <br>
-<a href="http://hdf.ncsa.uiuc.edu/HDF5/hdf5_hl/doc/RM_hdf5im.html">H5IM</a>&nbsp;&nbsp;
-<a href="http://hdf.ncsa.uiuc.edu/HDF5/hdf5_hl/doc/RM_hdf5lt.html">H5LT</a>&nbsp;&nbsp;
-<a href="http://hdf.ncsa.uiuc.edu/HDF5/hdf5_hl/doc/RM_hdf5pt.html">H5PT</a>&nbsp;&nbsp;
-<a href="http://hdf.ncsa.uiuc.edu/HDF5/hdf5_hl/doc/RM_hdf5tb.html">H5TB</a>&nbsp;&nbsp;
+<a href="../HL/RM_H5DS.html">H5DS</a>&nbsp;&nbsp;
+<a href="../HL/RM_H5IM.html">H5IM</a>&nbsp;&nbsp;
+<a href="../HL/RM_H5LT.html">H5LT</a>&nbsp;&nbsp;
+<a href="../HL/RM_H5PT.html">H5PT</a>&nbsp;&nbsp;
+<a href="../HL/RM_H5TB.html">H5TB</a>&nbsp;&nbsp;
 <br>
 <a href="RM_H5.html">H5</a>&nbsp;&nbsp;
 <a href="RM_H5A.html">H5A</a>&nbsp;&nbsp;
@@ -88,18 +85,20 @@ and information about attributes.
     <li><a href="#Annot-Write">H5Awrite</a>
     <li><a href="#Annot-Read">H5Aread</a>
     <li><a href="#Annot-Close">H5Aclose</a>
+    <li><a href="#Annot-GetName">H5Aget_name</a>
 </ul>
 </td><td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td><td valign=top>
 <ul>
-    <li><a href="#Annot-GetName">H5Aget_name</a>
+    <li><a href="#Annot-Rename">H5Arename</a>
     <li><a href="#Annot-OpenName">H5Aopen_name</a>
     <li><a href="#Annot-OpenIdx">H5Aopen_idx</a>
     <li><a href="#Annot-GetSpace">H5Aget_space</a>
+    <li><a href="#Annot-GetType">H5Aget_type</a>
 </ul>
 </td><td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td><td valign=top>
 <ul>
-    <li><a href="#Annot-GetType">H5Aget_type</a>
     <li><a href="#Annot-NumAttrs">H5Aget_num_attrs</a>
+    <li><a href="#Annot-GetStorageSize">H5Aget_storage_size</a>
     <li><a href="#Annot-Iterate">H5Aiterate</a>
     <li><a href="#Annot-Delete">H5Adelete</a>
 </ul>
@@ -117,6 +116,7 @@ and information about attributes.
       <li><a href="#Annot-Create">H5Acreate</a>
       <li><a href="#Annot-Delete">H5Adelete</a>
       <li><a href="#Annot-GetName">H5Aget_name</a>
+      <li><a href="#Annot-NumAttrs">H5Aget_num_attrs</a>	
 	</ul>      
     </td>
     
@@ -124,10 +124,11 @@ and information about attributes.
     
     <td valign="top">
 	<ul>
-      <li><a href="#Annot-NumAttrs">H5Aget_num_attrs</a>
       <li><a href="#Annot-GetSpace">H5Aget_space</a>
+      <li><a href="#Annot-GetStorageSize">H5Aget_storage_size</a>
       <li><a href="#Annot-GetType">H5Aget_type</a>
       <li><a href="#Annot-Iterate">H5Aiterate</a>
+      <li><a href="#Annot-OpenIdx">H5Aopen_idx</a>   
     </ul>
 	</td>
     
@@ -135,9 +136,9 @@ and information about attributes.
     
     <td valign="top">
 	<ul>
-      <li><a href="#Annot-OpenIdx">H5Aopen_idx</a>
       <li><a href="#Annot-OpenName">H5Aopen_name</a>
       <li><a href="#Annot-Read">H5Aread</a>
+      <li><a href="#Annot-Rename">H5Arename</a>
       <li><a href="#Annot-Write">H5Awrite</a>
 	</ul>
     </td>
@@ -393,47 +394,38 @@ END SUBROUTINE h5adelete_f
     <dd>Gets an attribute name.
 <dt><strong>Description:</strong>
     <dd><code>H5Aget_name</code> retrieves the name of an attribute 
-        specified by the identifier, <code>attr_id</code>.
-        Up to <code>buf_size</code> characters are stored in 
-        <code>buf</code> followed by a <code>\0</code> string
-        terminator.  If the name of the attribute is longer than 
-        <code>(buf_size -1)</code>, the string terminator is stored in the
-        last position of the buffer to properly terminate the string.
+      specified by the identifier, <code>attr_id</code>. Up to 
+      <code>buf_size</code> characters are stored in buf followed by 
+      a \0 string terminator. If the name of the attribute is longer 
+      than (<code>buf_size</code> -1), the string terminator is stored 
+      in the last position of the buffer to properly terminate the string.
+      <p>If user only wants to find out the size of this name, value 0 and 
+      NULL can be passed in for parameters <code>bufsize</code> and 
+      <code>buf</code>.
+
 <dt><strong>Parameters:</strong>
-    <ul><table>
-        <tr>
-		    <td valign="top"><em>hid_t</em> <code>attr_id</code></td>
-            <td valign="top">IN: Identifier of the attribute.</td></tr>
-        <tr>
-		    <td valign="top"><em>size_t</em>&nbsp;<code>buf_size&nbsp;&nbsp;&nbsp;&nbsp;</code></td>
-            <td valign="top">IN: The size of the buffer to store the name in.</td></tr>
-        <tr>
-		    <td valign="top"><em>char *</em><code>buf</code></td>
-            <td valign="top">IN: Buffer to store name in.</td></tr>
-    </table></ul>
+  <ul>
+    <table>
+      <tr>
+        <td valign="top"><em>hid_t</em> <code>attr_id</code></td>
+        <td valign="top">IN: Identifier of the attribute.</td>
+      </tr>
+      <tr>
+        <td valign="top"><em>size_t</em>&nbsp;<code>buf_size&nbsp;&nbsp;&nbsp;&nbsp;</code></td>
+        <td valign="top">IN: The size of the buffer to store the name in.</td>
+      </tr>
+      <tr>
+        <td valign="top"><em>char *</em><code>buf</code></td>
+        <td valign="top">IN: Buffer to store name in.</td>
+      </tr>
+    </table>
+  </ul>
 <dt><strong>Returns:</strong>
     <dd>Returns the length of the attribute's name, which may be
         longer than <code>buf_size</code>, if successful.
         Otherwise returns a negative value.
-<dt><strong>Fortran90 Interface:</strong> h5aget_name_f
-    <dd>
-	<pre>
-SUBROUTINE h5aget_name_f(attr_id, size, buf, hdferr) 
-  IMPLICIT NONE
-  INTEGER(HID_T), INTENT(IN) :: attr_id  ! Attribute identifier 
-  INTEGER, INTENT(IN) :: size            ! Buffer size 
-  CHARACTER(LEN=*), INTENT(OUT) :: buf   ! Buffer to hold attribute name
-  INTEGER, INTENT(OUT) :: hdferr         ! Error code: name length  
-                                         ! on success and -1 on failure
-END SUBROUTINE h5aget_name_f
-	</pre>		
-		
-		<!--<dt><strong>Non-C API(s):</strong>
-    	<dd>
-        
-        <img src="Graphics/Java.gif"> 
-        <img src="Graphics/C++.gif">
-        -->
+<dt><strong>Fortran90 Interface:</strong>
+    <dd>None.
 </dl>
 
 <!-- NEW PAGE -->
@@ -520,6 +512,34 @@ END SUBROUTINE h5aget_space_f
         <img src="Graphics/Java.gif"> 
         <img src="Graphics/C++.gif">
         -->
+</dl>
+
+<!-- NEW PAGE -->
+<!-- HEADER RIGHT "H5Aget_storage_size" -->
+<hr>
+<dl>
+<dt><strong>Name:</strong> <a name="Annot-GetStorageSize">H5Aget_storage_size</a>
+<dt><strong>Signature:</strong>
+    <dd><em>hsize_t</em> <code>H5Aget_storage_size</code>(<em>hid_t</em> 
+      <code>attr_id</code>)
+<dt><strong>Purpose:</strong>
+    <dd>Returns the amount of storage required for an attribute.
+<dt><strong>Description:</strong>
+    <dd><code>H5Aget_storage_size</code> returns the amount of storage 
+      that is required for the specified attribute, <code>attr_id</code>.
+<dt><strong>Parameters:</strong>
+  <ul>
+    <table>
+      <tr>
+        <td valign="top"><em>hid_t</em>&nbsp;<code>attr_id</code>&nbsp;&nbsp;&nbsp;&nbsp;</td>
+        <td valign="top">IN: Identifier of the attribute to query.</td></tr>
+    </table>
+  </ul>
+<dt><strong>Returns:</strong>
+    <dd>Returns the amount of storage size allocated for the attribute; 
+      otherwise returns 0 (zero).
+<dt><strong>Fortran90 Interface:</strong>
+    <dd>None.
 </dl>
 
 <!-- NEW PAGE -->
@@ -846,6 +866,43 @@ END SUBROUTINE h5aread_f
 </dl>
 
 <!-- NEW PAGE -->
+<!-- HEADER RIGHT "H5Arename" -->
+<hr>
+<dl>
+<dt><strong>Name:</strong> <a name="Annot-Rename">H5Arename</a>
+<dt><strong>Signature:</strong>
+    <dd><em>herr_t</em> <code>H5Arename</code>(<em>hid_t</em> 
+      <code>loc_id</code>, <em>char *</em><code>old_name</code>, 
+      <em>char *</em><code>new_name</code>)
+<dt><strong>Purpose:</strong>
+    <dd>Rename an attribute.
+<dt><strong>Description:</strong>
+    <dd><code>H5Arename</code> changes the name of the attribute 
+      located at <code>loc_id</code>.
+<dt><strong>Parameters:</strong>
+  <ul>
+    <table>
+      <tr>
+        <td valign="top"><em>hid_t</em> <code>loc_id</code></td>
+        <td valign="top">IN: Location of the attribute.</td>
+      </tr>
+      <tr>
+        <td valign="top"><em>char&nbsp;*</em><code>old_name</code>&nbsp;&nbsp;&nbsp;&nbsp;</td>
+        <td valign="top">IN: Name of the attribute to be changed.</td>
+      </tr>
+      <tr>
+        <td valign="top"><em>char *</em><code>new_name</code></td>
+        <td valign="top">IN: New name for the attribute.</td>
+      </tr>
+    </table></ul>
+<dt><strong>Returns:</strong>
+    <dd>Returns a non-negative value if successful;
+        otherwise returns a negative value.
+<dt><strong>Fortran90 Interface:</strong>
+    <dd>None.
+</dl>
+
+<!-- NEW PAGE -->
 <!-- HEADER RIGHT "H5Awrite" -->
 <hr>
 <dl>
@@ -942,10 +999,11 @@ END SUBROUTINE h5awrite_f
 And in this document, the 
 <a href="RM_H5Front.html">HDF5 Reference Manual</a>&nbsp;&nbsp;
 <br>
-<a href="http://hdf.ncsa.uiuc.edu/HDF5/hdf5_hl/doc/RM_hdf5im.html">H5IM</a>&nbsp;&nbsp;
-<a href="http://hdf.ncsa.uiuc.edu/HDF5/hdf5_hl/doc/RM_hdf5lt.html">H5LT</a>&nbsp;&nbsp;
-<a href="http://hdf.ncsa.uiuc.edu/HDF5/hdf5_hl/doc/RM_hdf5pt.html">H5PT</a>&nbsp;&nbsp;
-<a href="http://hdf.ncsa.uiuc.edu/HDF5/hdf5_hl/doc/RM_hdf5tb.html">H5TB</a>&nbsp;&nbsp;
+<a href="../HL/RM_H5DS.html">H5DS</a>&nbsp;&nbsp;
+<a href="../HL/RM_H5IM.html">H5IM</a>&nbsp;&nbsp;
+<a href="../HL/RM_H5LT.html">H5LT</a>&nbsp;&nbsp;
+<a href="../HL/RM_H5PT.html">H5PT</a>&nbsp;&nbsp;
+<a href="../HL/RM_H5TB.html">H5TB</a>&nbsp;&nbsp;
 <br>
 <a href="RM_H5.html">H5</a>&nbsp;&nbsp;
 <a href="RM_H5A.html">H5A</a>&nbsp;&nbsp;
@@ -972,7 +1030,7 @@ And in this document, the
 Describes HDF5 Release 1.7, the unreleased development branch; working toward HDF5 Release 1.8.0
 </address><!-- #EndLibraryItem --><SCRIPT LANGUAGE="JAVASCRIPT">
 <!--
-document.writeln("Last modified: 6 September 2005");
+document.writeln("Last modified: 17 March 2006");
 -->
 </SCRIPT>
  
