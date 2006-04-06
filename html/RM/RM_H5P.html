@@ -1,3 +1,4 @@
+
 <html>
 <head><title>
 HDF5/H5P API Specification
@@ -263,6 +264,9 @@ which require many different parameters to be easily manipulated.
     <li><a href="#Property-SetVLMemManager">H5Pset_vlen_mem_manager</a>
     <li><a href="#Property-GetVLMemManager">H5Pget_vlen_mem_manager</a>
     <li><a href="#Property-SetDxplMpio">H5Pset_dxpl_mpio</a>&nbsp;&nbsp;&nbsp;||
+    <li><a href="#Property-SetDxplMpioChunkOpt">H5Pset_dxpl_mpio_chunk_opt</a>&nbsp;&nbsp;&nbsp;||
+    <li><a href="#Property-SetDxplMpioChunkOptNum">H5Pset_dxpl_mpio_chunk_opt_num</a>&nbsp;&nbsp;&nbsp;||
+    <li><a href="#Property-SetDxplMpioChunkOptRatio">H5Pset_dxpl_mpio_chunk_opt_ratio</a>&nbsp;&nbsp;&nbsp;||
     <li><a href="#Property-GetDxplMpio">H5Pget_dxpl_mpio</a>&nbsp;&nbsp;&nbsp;||
     <li><a href="#Property-SetDxplMulti">H5Pset_dxpl_multi</a>
     <li><a href="#Property-GetDxplMulti">H5Pget_dxpl_multi</a>
@@ -367,10 +371,6 @@ which require many different parameters to be easily manipulated.
     <li><a href="#Property-GetCache">H5Pget_cache</a>
     <li><a href="#Property-SetGCReferences">H5Pset_gc_references</a>
     <li><a href="#Property-GetGCReferences">H5Pget_gc_references</a>
-    <li><a href="#Property-SetFaplGass">H5Pset_fapl_gass</a>
-    <li><a href="#Property-GetFaplGass">H5Pget_fapl_gass</a>
-    <li><a href="#Property-SetFaplSrb">H5Pset_fapl_srb</a>
-    <li><a href="#Property-GetFaplSrb">H5Pget_fapl_srb</a>
     <li><a href="#Property-SetSmallData">H5Pset_small_data_block_size</a>
     <li><a href="#Property-GetSmallData">H5Pget_small_data_block_size</a>
 <!-- FOR USE WITH PRINT VERSION ---------------------------------------->
@@ -581,6 +581,9 @@ See further notes in the description of each function.
       <li><a href="#Property-SetDeflate">H5Pset_deflate</a>
 <!--  <li><a href="#Property-SetDriver">H5Pset_driver</a>              -->
       <li><a href="#Property-SetDxplMpio">H5Pset_dxpl_mpio</a>&nbsp;&nbsp;&nbsp;||
+      <li><a href="#Property-SetDxplMpioChunkOpt">H5Pset_dxpl_mpio_chunk_opt</a>&nbsp;&nbsp;&nbsp;||
+      <li><a href="#Property-SetDxplMpioChunkOptNum">H5Pset_dxpl_mpio_chunk_opt_num</a>&nbsp;&nbsp;&nbsp;||
+      <li><a href="#Property-SetDxplMpioChunkOptRatio">H5Pset_dxpl_mpio_chunk_opt_ratio</a>&nbsp;&nbsp;&nbsp;||
       <li><a href="#Property-SetDxplMulti">H5Pset_dxpl_multi</a>
       <li><a href="#Property-SetEdcCheck">H5Pset_edc_check</a>
       <li><a href="#Property-SetExternal">H5Pset_external</a>
@@ -812,7 +815,10 @@ as the corresponding C function.
     <li><a href="#Property-GetHyperVectorSize">h5pget_hyper_vector_size_f</a>
     <li><a href="#Property-SetBTreeRatios">h5pset_btree_ratios_f</a>
     <li><a href="#Property-GetBTreeRatios">h5pget_btree_ratios_f</a>
-    <li><a href="#Property-SetDxplMpio">h5pset_dxpl_mpio_f</a>&nbsp;&nbsp;&nbsp;|| 
+    <li><a href="#Property-SetDxplMpio">h5pset_dxpl_mpio_f</a>&nbsp;&nbsp;&nbsp;||
+<!--<li><a href="#Property-SetDxplMpioChunkOpt">H5Pset_dxpl_mpio_chunk_opt_f</a>&nbsp;&nbsp;&nbsp;||              -->
+<!--<li><a href="#Property-SetDxplMpioChunkOptNum">H5Pset_dxpl_mpio_chunk_opt_num_f</a>&nbsp;&nbsp;&nbsp;||       -->
+<!--<li><a href="#Property-SetDxplMpioChunkOptRatio">H5Pset_dxpl_mpio_chunk_opt_ratio_f</a>&nbsp;&nbsp;&nbsp;||   -->
     <li><a href="#Property-GetDxplMpio">h5pget_dxpl_mpio_f</a>&nbsp;&nbsp;&nbsp;|| 
 <!--<li><a href="#Property-SetDxplMulti">h5pset_dxpl_multi_f</a>          -->
 <!--<li><a href="#Property-GetDxplMulti">h5pget_dxpl_multi_f</a>          -->
@@ -7120,6 +7126,139 @@ END SUBROUTINE h5pset_dxpl_mpio_f
     </table></ul>
 </dl>
 
+
+<!-- NEW PAGE -->
+<!-- HEADER RIGHT "H5Pset_dxpl_mpio_chunk_opt" -->
+<hr>
+<dl>
+  <dt><strong>Name:</strong> 
+    <a name="Property-SetDxplMpioChunkOpt">H5Pset_dxpl_mpio_chunk_opt</a>
+  
+  <dt><strong>Signature:</strong>
+    <dd><em>herr_t</em> <code>H5Pset_dxpl_mpio_chunk_opt</code> 
+      (<em>hid_t</em> <code>dxpl_id</code>, <em>H5FD_mpio_chunk_opt_t</em> 
+      <code>opt_mode</code>)
+
+  <dt><strong>Purpose:</strong>
+    <dd>To set a flag to choose linked chunk IO or multi-chunk IO without 
+      involving decision-making inside HDF5.
+
+  <dt><strong>Description:</strong>
+    <dd>The library will do linked chunk IO or multi-chunk IO without 
+      involving communications for decision-making process. The library 
+      won't behave as it asks for only when we find that the low-level 
+      MPI-IO package doesn't support this.
+      
+  <dt><strong>Parameters:</strong>
+    <ul>
+      <table>
+        <tr>
+	  <td valign="top"><em>hid_t</em> <code>dxpl_id</code></td>
+          <td valign="top">IN: Data transfer property list 
+	    identifier</td>
+	</tr>
+        <tr>
+          <td valign="top"><em>H5FD_mpio_chunk_opt_t</em>&nbsp;<code>opt_mode</code>&nbsp;&nbsp;&nbsp;&nbsp;</td>
+          <td valign="top">IN: The optimization flag for 
+	    linked chunk IO or multi-chunk IO.</td>
+	</tr>
+      </table>
+    </ul>
+  
+  <dt><strong>Returns:</strong>
+    <dd>Returns a non-negative value if successful.
+        Otherwise returns a negative value.
+</dl>
+
+
+<!-- NEW PAGE -->
+<!-- HEADER RIGHT "H5Pset_dxpl_mpio_chunk_opt_num" -->
+<hr>
+<dl>
+  <dt><strong>Name:</strong> 
+    <a name="Property-SetDxplMpioChunkOptNum">H5Pset_dxpl_mpio_chunk_opt_num</a>
+  
+  <dt><strong>Signature:</strong>
+    <dd><em>herr_t</em> <code>H5Pset_dxpl_mpio_chunk_opt_num</code> 
+      (<em>hid_t</em> <code>dxpl_id</code>, <em>unsigned</em> 
+      <code>num_chunk_per_proc</code>)
+
+  <dt><strong>Purpose:</strong>
+    <dd>To set a threshold for doing linked chunk IO.
+
+  <dt><strong>Description:</strong>
+    <dd>The library will calculate the average number of chunk 
+      selected by each process. If the number is greater than the 
+      threshold set by the user, the library will do linked chunk IO; 
+      otherwise, IO will be done for every chunk.
+      
+  <dt><strong>Parameters:</strong>
+    <ul>
+      <table>
+        <tr>
+	  <td valign="top"><em>hid_t</em> <code>dxpl_id</code></td>
+          <td valign="top">IN: Data transfer property list 
+	    identifier</td>
+	</tr>
+        <tr>
+          <td valign="top"><em>unsigned</em>&nbsp;<code>num_proc_per_chunk</code>&nbsp;&nbsp;&nbsp;&nbsp;</td>
+          <td valign="top">IN: the threshold of the average number 
+	    of chunks selected by each process</td>
+	</tr>
+      </table>
+    </ul>
+  
+  <dt><strong>Returns:</strong>
+    <dd>Returns a non-negative value if successful.
+        Otherwise returns a negative value.
+</dl>
+
+
+<!-- NEW PAGE -->
+<!-- HEADER RIGHT "H5Pset_dxpl_mpio_chunk_opt_ratio" -->
+<hr>
+<dl>
+  <dt><strong>Name:</strong> 
+    <a name="Property-SetDxplMpioChunkOptRatio">H5Pset_dxpl_mpio_chunk_opt_ratio</a>
+  
+  <dt><strong>Signature:</strong>
+    <dd><em>herr_t</em> <code>H5Pset_dxpl_mpio_chunk_opt_ratio</code>
+      (<em>hid_t</em> <code>dxpl_id</code>, <em>unsigned</em> 
+      <code>percent_num_proc_per_chunk</code>)
+
+  <dt><strong>Purpose:</strong>
+    <dd>To set a threshold for doing collective IO for each chunk.
+
+  <dt><strong>Description:</strong>
+    <dd>The library will calculate the percentage of the number 
+      of process holding selections at each chunk. If that percentage 
+      of number of process in the individual chunk is greater than the 
+      threshold set by the user, the library will do collective chunk 
+      IO for this chunk; otherwise, independent IO will be done for 
+      this chunk.
+      
+  <dt><strong>Parameters:</strong>
+    <ul>
+      <table>
+        <tr>
+	  <td valign="top"><em>hid_t</em> <code>dxpl_id</code></td>
+          <td valign="top">IN: Data transfer property list 
+	    identifier</td>
+	</tr>
+        <tr>
+          <td valign="top"><em>unsigned</em>&nbsp;<code>percent_num_proc_per_chunk</code>&nbsp;&nbsp;&nbsp;&nbsp;</td>
+          <td valign="top">IN: the threshold of the percentage 
+	    of the number of process holding selections per chunk</td>
+	</tr>
+      </table>
+    </ul>
+  
+  <dt><strong>Returns:</strong>
+    <dd>Returns a non-negative value if successful.
+        Otherwise returns a negative value.
+</dl>
+
+
 <!-- NEW PAGE -->
 <!-- HEADER RIGHT "H5Pset_dxpl_multi" -->
 <hr>
@@ -11233,7 +11372,7 @@ And in this document, the
 Describes HDF5 Release 1.7, the unreleased development branch; working toward HDF5 Release 1.8.0
 </address><!-- #EndLibraryItem --><SCRIPT LANGUAGE="JAVASCRIPT">
 <!--
-document.writeln("Last modified: 3 February 2006");
+document.writeln("Last modified: 6 March 2006");
 -->
 </SCRIPT>
  
