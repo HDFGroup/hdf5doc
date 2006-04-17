@@ -101,6 +101,14 @@ certain sets of features in the existing APIs. This version of the API has two s
       <li><a href="#H5LTrepack">H5LTrepack</a> </li>
         </ul>
       </blockquote>
+     <i>Datatype functions</i>
+      <blockquote>
+        <p><i>Datatype translation functions</i></p>
+	<ul>
+	  <li><a href="#H5LTtext_to_dtype">H5LTtext_to_dtype</a>
+	  <li><a href="#H5LTdtype_to_text">H5LTdtype_to_text</a>
+	</ul>
+      </blockquote>
     </td>
     <td width="50%" valign="top"><i>Attribute functions</i>
       <blockquote>
@@ -114,6 +122,7 @@ certain sets of features in the existing APIs. This version of the API has two s
       <li><a href="#H5LTset_attribute_int">H5LTset_attribute_int</a> </li>
       <li><a href="#H5LTset_attribute_uint">H5LTset_attribute_uint</a> </li>
       <li><a href="#H5LTset_attribute_long">H5LTset_attribute_long</a> </li>
+      <li><a href="#H5LTset_attribute_long_long">H5LTset_attribute_long_long</a> </li>
       <li><a href="#H5LTset_attribute_ulong">H5LTset_attribute_ulong</a> </li>
       <li><a href="#H5LTset_attribute_float">H5LTset_attribute_float</a> </li>
       <li><a href="#H5LTset_attribute_double">H5LTset_attribute_double</a> </li>
@@ -129,6 +138,7 @@ certain sets of features in the existing APIs. This version of the API has two s
       <li><a href="#H5LTget_attribute_int">H5LTget_attribute_int</a> </li>
       <li><a href="#H5LTget_attribute_uint">H5LTget_attribute_uint</a> </li>
       <li><a href="#H5LTget_attribute_long">H5LTget_attribute_long</a> </li>
+      <li><a href="#H5LTget_attribute_long_long">H5LTget_attribute_long_long</a> </li>
       <li><a href="#H5LTget_attribute_ulong">H5LTget_attribute_ulong</a> </li>
       <li><a href="#H5LTget_attribute_float">H5LTget_attribute_float</a> </li>
       <li><a href="#H5LTget_attribute_double">H5LTget_attribute_double</a> </li>
@@ -213,42 +223,65 @@ cases.</p>
 <!-- NEW PAGE -->
 <!-- HEADER RIGHT " H5LTmake_dataset -->
 <hr>
-
 <dl>
-  <dt style="background-color: #CCCCFF"><strong>Name:</strong>       <a name="H5LTmake_dataset">H5LTmake_dataset</a> </dt>
-  <dt><strong>Signature:</strong> </dt>
-  <dl><dt> <em>herr_t</em>      H5LTmake_dataset ( <em>hid_t</em>
-    loc_id, <em>const char</em> *dset_name, <em>int</em> rank, <em>const hsize_t</em> *dims, <em>hid_t</em>
-      type_id, <em>const void</em> *buffer )</dt>
-  </dl>
-  <dt><strong>Purpose:</strong> </dt>
-  <dd>Creates and writes a dataset of a type <code> type_id</code>. </dd>
-  <dt><strong>Description:</strong> </dt>
-  <dd><code>H5LT</code><code>make_dataset </code> creates and writes a dataset named <code>dset_name</code> attached to
-    the object specified by the identifier <code>loc_id</code>. The parameter <code> type_id
-    </code>can be any valid HDF5 <a href="http://hdf.ncsa.uiuc.edu/HDF5/doc/PredefDTypes.html">predefined
-    native datatype</a>, for example H5T_NATIVE_INT.&nbsp; </dd>
-  <dt><strong>Parameters:</strong> </dt>
-  <dl>
-    <dt><em>hid_t</em> <code>loc_id</code> </dt>
-    <dd>IN: Identifier of the file or group to create the dataset within. </dd>
-    <dt><em>const char *</em><code>dset_name</code> </dt>
-    <dd>IN: The name of the dataset to create. </dd>
-    <dt><em>int</em> <code>rank</code> </dt>
-    <dd>IN: Number of dimensions of dataspace. </dd>
-    <dt><em>const hsize_t *</em> <code>dims</code> </dt>
-    <dd>IN: An array of the size of each dimension. </dd>
-    <dt><em>hid_t</em>  <code>type_id</code> </dt>
-    <dd>IN: Identifier of the datatype to use when creating the dataset. </dd>
-    <dt><em>const void *</em> <code>buffer</code></dt>
-    <dd>IN: Buffer with data to be written to the dataset.</dd>
-  </dl>
-</dl>
+  <dt style="background-color: #CCCCFF">
+    <strong>Name:</strong> <a name="H5LTmake_dataset">H5LTmake_dataset</a>
+  
+  <dt><strong>Signature:</strong>
+    <dd><em>herr_t</em> H5LTmake_dataset ( <em>hid_t</em> loc_id, 
+      <em>const char</em> *dset_name, <em>int</em> rank, 
+      <em>const hsize_t</em> *dims, <em>hid_t</em> type_id, 
+      <em>const void</em> *buffer )
 
-<dl>
-  <dt><strong>Returns:</strong> </dt>
-  <dd>Returns a non-negative value if successful; otherwise returns a negative value. </dd>
-  <dt><strong>Fortran90 Interface:</strong>  h5ltmake_dataset_f</dt>
+  <dt><strong>Purpose:</strong>
+    <dd>Creates and writes a dataset of a type <code>type_id</code>.
+  
+  <dt><strong>Description:</strong>
+    <dd><code>H5LT</code><code>make_dataset </code> creates and writes a 
+      dataset named <code>dset_name</code> attached to the object specified 
+      by the identifier <code>loc_id</code>. The parameter 
+      <code>type_id</code> can be any valid HDF5 
+      <a href="http://hdf.ncsa.uiuc.edu/HDF5/doc/PredefDTypes.html">
+      predefined native datatype</a>, for example <code>H5T_NATIVE_INT</code>.
+  
+  <dt><strong>Parameters:</strong>
+    <ul>
+      <table>
+        <tr>
+	  <td valign="top"><em>hid_t</em> <code>loc_id</code></td>
+	  <td valign="top">IN: Identifier of the file or group to create 
+	    the dataset within.</td>
+	</tr>
+        <tr>
+	  <td valign="top"><em>const&nbsp;char *</em><code>dset_name</code></td>
+	  <td valign="top">IN: The name of the dataset to create.</td>
+	</tr>
+        <tr>
+	  <td valign="top"><em>int</em> <code>rank</code></td>
+	  <td valign="top">IN: Number of dimensions of dataspace.</td>
+	</tr>
+        <tr>
+	  <td valign="top"><em>const hsize_t *</em> <code>dims</code></td>
+	  <td valign="top">IN: An array of the size of each dimension.</td>
+	</tr>
+        <tr>
+	  <td valign="top"><em>hid_t</em>  <code>type_id</code></td>
+	  <td valign="top">IN: Identifier of the datatype to use when 
+	    creating the dataset.</td>
+	</tr>
+        <tr>
+	  <td valign="top"><em>const void *</em> <code>buffer</code></td>
+	  <td valign="top">IN: Buffer with data to be written to the 
+	    dataset.</td>
+	</tr>
+      </table>
+    </ul>
+
+  <dt><strong>Returns:</strong>
+    <dd>Returns a non-negative value if successful; 
+      otherwise returns a negative value.
+  
+  <dt><strong>Fortran90 Interface:</strong> h5ltmake_dataset_f
     <dd>
    
       <pre>
@@ -271,35 +304,55 @@ end subroutine h5ltmake_dataset_f
 <!-- HEADER RIGHT " H5LTmake_dataset_char -->
 <hr>
 <dl>
-  <dt style="background-color: #CCCCFF"><strong>Name:</strong>        <a name="H5LTmake_dataset_char">H5LTmake_dataset_char</a> </dt>
-  <dt><strong>Signature:<br>
-    </strong> <em>herr_t</em>      H5LTmake_dataset_char ( <em>hid_t</em>
-    loc_id, <em>const char</em>  *dset_name, <em>int</em> rank, <em>const hsize_t</em> *dims, <em>const
-    char</em> *buffer ) </dt>
+  <dt style="background-color: #CCCCFF">
+    <strong>Name:</strong> 
+    <a name="H5LTmake_dataset_char">H5LTmake_dataset_char</a>
+  
+  <dt><strong>Signature:</strong> 
+    <dd><em>herr_t</em> H5LTmake_dataset_char ( <em>hid_t</em> loc_id, 
+      <em>const char</em>  *dset_name, <em>int</em> rank, 
+      <em>const hsize_t</em> *dims, <em>const char</em> *buffer )
 
+  <dt><strong>Purpose:</strong>
+    <dd>Creates and writes a dataset.
+  
+  <dt><strong>Description:</strong>
+    <dd><code>H5LT</code><code>make_dataset_char </code> creates and writes 
+      a dataset named <code>dset_name</code> attached to the object specified 
+      by the identifier <code>loc_id</code>. The HDF5 datatype is 
+      H5T_NATIVE_CHAR.
+      
+  <dt><strong>Parameters:</strong>
+    <ul>
+      <table>
+        <tr>
+	  <td valign="top"><em>hid_t</em> <code>loc_id</code></td>
+	  <td valign="top">IN: Identifier of the file or group to create 
+	    the dataset within.</td>
+	</tr>
+        <tr>
+	  <td valign="top"><em>const char *</em><code>dset_name</code></td>
+	  <td valign="top">IN: The name of the dataset to create.</td>
+	</tr>
+        <tr>
+	  <td valign="top"><em>int</em> <code>rank</code></td>
+	  <td valign="top">IN: Number of dimensions of dataspace.</td>
+	</tr>
+        <tr>
+	  <td valign="top"><em>const hsize_t *</em> <code>dims</code></td>
+	  <td valign="top">IN: An array of the size of each dimension.</td>
+	</tr>
+        <tr>
+	  <td valign="top"><em>const char *</em> <code>buffer</code></td>
+	  <td valign="top">IN: Buffer with data to be written to 
+	    the dataset.</td>
+	</tr>
+      </table>
+    </ul>
 
-  <dt><strong>Purpose:</strong> </dt>
-  <dd>Creates and writes a dataset. </dd>
-  <dt><strong>Description:</strong> </dt>
-  <dd><code>H5LT</code><code>make_dataset_char </code> creates and writes a dataset named <code>dset_name</code> attached to
-    the object specified by the identifier <code>loc_id</code>. The HDF5
-    datatype is H5T_NATIVE_CHAR. </dd>
-  <dt><strong>Parameters:</strong> </dt>
-  <dl>
-    <dt><em>hid_t</em> <code>loc_id</code> </dt>
-    <dd>IN: Identifier of the file or group to create the dataset within. </dd>
-    <dt><em>const char *</em><code>dset_name</code> </dt>
-    <dd>IN: The name of the dataset to create. </dd>
-    <dt><em>int</em> <code>rank</code> </dt>
-    <dd>IN: Number of dimensions of dataspace. </dd>
-    <dt><em>const hsize_t *</em> <code>dims</code> </dt>
-    <dd>IN: An array of the size of each dimension. </dd>
-    <dt><em>const char *</em> <code>buffer</code></dt>
-    <dd>IN: Buffer with data to be written to the dataset.</dd>
-  </dl>
-
-  <dt><strong>Returns:</strong> </dt>
-  <dd>Returns a non-negative value if successful; otherwise returns a negative value. </dd>
+  <dt><strong>Returns:</strong>
+    <dd>Returns a non-negative value if successful; 
+      otherwise returns a negative value.
 
 </dl>
 
@@ -307,35 +360,54 @@ end subroutine h5ltmake_dataset_f
 <!-- HEADER RIGHT " H5LTmake_dataset_short -->
 <hr>
 <dl>
-  <dt style="background-color: #CCCCFF"><strong>Name:</strong>        <a name="H5LTmake_dataset_short">H5LTmake_dataset_short</a> </dt>
-  <dt><strong>Signature:<br>
-    </strong> <em>herr_t</em>      H5LTmake_dataset_short ( <em>hid_t</em>
-    loc_id, <em>const char</em>  *dset_name, <em>int</em> rank, <em>const hsize_t</em> *dims, <em>const
-    short</em> *buffer ) </dt>
+  <dt style="background-color: #CCCCFF">
+    <strong>Name:</strong> 
+    <a name="H5LTmake_dataset_short">H5LTmake_dataset_short</a>
+  
+  <dt><strong>Signature:</strong> 
+    <dd><em>herr_t</em> H5LTmake_dataset_short ( <em>hid_t</em> loc_id, 
+      <em>const char</em>  *dset_name, <em>int</em> rank, 
+      <em>const hsize_t</em> *dims, <em>const short</em> *buffer )
 
+  <dt><strong>Purpose:</strong>
+    <dd>Creates and writes a dataset.
+    
+  <dt><strong>Description:</strong>
+    <dd><code>H5LTmake_dataset_short </code> creates and writes a dataset 
+      named <code>dset_name</code> attached to the object specified by the 
+      identifier <code>loc_id</code>. The HDF5 datatype is H5T_NATIVE_SHORT.
+  
+  <dt><strong>Parameters:</strong>
+    <ul>
+      <table>
+        <tr>
+	  <td valign="top"><em>hid_t</em> <code>loc_id</code></td>
+	  <td valign="top">IN: Identifier of the file or group to create 
+	    the dataset within.</td>
+	</tr>
+        <tr>
+	  <td valign="top"><em>const char *</em><code>dset_name</code></td>
+	  <td valign="top">IN: The name of the dataset to create.</td>
+	</tr>
+        <tr>
+	  <td valign="top"><em>int</em> <code>rank</code></td>
+	  <td valign="top">IN: Number of dimensions of dataspace.</td>
+	</tr>
+        <tr>
+	  <td valign="top"><em>const hsize_t *</em> <code>dims</code></td>
+	  <td valign="top">IN: An array of the size of each dimension.</td>
+	</tr>
+        <tr>
+	  <td valign="top"><em>const short *</em> <code>buffer</code></td>
+	  <td valign="top">IN: Buffer with data to be written to 
+	    the dataset.</td>
+	</tr>
+      </table>
+    </ul>
 
-  <dt><strong>Purpose:</strong> </dt>
-  <dd>Creates and writes a dataset. </dd>
-  <dt><strong>Description:</strong> </dt>
-  <dd><code>H5LTmake_dataset_short </code> creates and writes a dataset named <code>dset_name</code> attached to
-    the object specified by the identifier <code>loc_id</code>. The HDF5
-    datatype is H5T_NATIVE_SHORT. </dd>
-  <dt><strong>Parameters:</strong> </dt>
-  <dl>
-    <dt><em>hid_t</em> <code>loc_id</code> </dt>
-    <dd>IN: Identifier of the file or group to create the dataset within. </dd>
-    <dt><em>const char *</em><code>dset_name</code> </dt>
-    <dd>IN: The name of the dataset to create. </dd>
-    <dt><em>int</em> <code>rank</code> </dt>
-    <dd>IN: Number of dimensions of dataspace. </dd>
-    <dt><em>const hsize_t *</em> <code>dims</code> </dt>
-    <dd>IN: An array of the size of each dimension. </dd>
-    <dt><em>const short *</em> <code>buffer</code></dt>
-    <dd>IN: Buffer with data to be written to the dataset.</dd>
-  </dl>
-
-  <dt><strong>Returns:</strong> </dt>
-  <dd>Returns a non-negative value if successful; otherwise returns a negative value. </dd>
+  <dt><strong>Returns:</strong>
+    <dd>Returns a non-negative value if successful; 
+      otherwise returns a negative value.
 
 </dl>
 
@@ -1294,6 +1366,54 @@ end subroutine h5ltset_attribute_int_f
 </dl>
 
 <!-- NEW PAGE -->
+<!-- HEADER RIGHT "H5LTset_attribute_long_long" -->
+<hr>
+<dl>
+  <dt style="background-color: #CCCCFF"><strong>Name:</strong>
+    <a name="H5LTset_attribute_long_long">H5LTset_attribute_long_long</a>
+  <dt><strong>Signature:</strong>
+    <dd><em>herr_t</em> <code>H5LTset_attribute_long_long</code> (<em>hid_t</em>
+      <code>loc_id</code>, <em>const char *</em><code>obj_name</code>,
+      <em>const char *</em><code>attr_name</code>,
+      <em>const long_long *</em><code>data</code>, <em>size_t</em> 
+      <code>size</code>)      
+  <dt><strong>Purpose:</strong>
+    <dd>Creates and writes an attribute.
+  <dt><strong>Description:</strong>
+    <dd><code>H5LTset_attribute_long_long</code> creates and writes
+      an attribute with a <i>long long</i> the datatype.
+  <dt><strong>Parameters:</strong>
+    <ul>
+      <table>
+        <tr>
+	  <td valign="top"><em>hid_t</em> <code>loc_id</code></td>
+	  <td valign="top">Location of the object to which the 
+	    attribute is to be attached.</td>
+	</tr>
+        <tr>
+	  <td valign="top"><em>const char *</em><code>obj_name</code></td>
+	  <td valign="top">That object's name.</td>
+	</tr>
+        <tr>
+	  <td valign="top"><em>const char *</em><code>attr_name</code></td>
+	  <td valign="top">Attribute name.</td>
+	</tr>
+        <tr>
+	  <td valign="top"><em>const&nbsp;long_long&nbsp;*</em><code>data</code>&nbsp;&nbsp;&nbsp;&nbsp;</td>
+	  <td valign="top">Attribute value.</td>
+	</tr>
+        <tr>
+	  <td valign="top"><em>size_t</em> <code>size</code></td>
+	  <td valign="top">Attribute size.</td>
+	</tr>
+      </table>
+    </ul>
+
+  <dt><strong>Returns:</strong>
+    <dd>Returns a non-negative value if successful; otherwise returns a negative value. </dd>
+</dl>
+
+<!-- NEW PAGE -->
 <!-- HEADER RIGHT "H5LTset_attribute_ulong" -->
 <hr>
 <dl>
@@ -1706,6 +1826,49 @@ end subroutine h5ltget_attribute_int_f
 </dl>
 
 <!-- NEW PAGE -->
+<!-- HEADER RIGHT "H5LTget_attribute_long_long" -->
+<hr>
+<dl>
+  <dt style="background-color: #CCCCFF"><strong>Name:</strong>
+    <a name="H5LTget_attribute_long_long">H5LTget_attribute_long_long</a>
+  <dt><strong>Signature:</strong>
+    <dd><em>herr_t</em> <code>H5LTget_attribute_long_long</code> (<em>hid_t</em>
+      <code>loc_id</code>, <em>const char *</em><code>obj_name</code>,
+      <em>const char *</em><code>attr_name</code>,
+      <em>long_long *</em><code>data</code>)      
+  <dt><strong>Purpose:</strong>
+    <dd>Reads a <em>long long</em> attribute.
+  <dt><strong>Description:</strong>
+    <dd><code>H5LTget_attribute_long_long</code> reads the attribute 
+      specified by <code>loc_id</code> and <code>obj_name</code>. 
+  <dt><strong>Parameters:</strong>
+    <ul>
+      <table>
+        <tr>
+	  <td valign="top"><em>hid_t</em> <code>loc_id</code></td>
+	  <td valign="top">Location of the object to which the attribute
+	    is attached.</td>
+	</tr>
+        <tr>
+	  <td valign="top"><em>const char *</em><code>obj_name</code></td>
+	  <td valign="top">That object's name.</td>
+	</tr>
+        <tr>
+	  <td valign="top"><em>const&nbsp;char&nbsp;*</em><code>attr_name</code>&nbsp;&nbsp;&nbsp;&nbsp;</td>
+	  <td valign="top">Attribute name.</td>
+	</tr>
+        <tr>
+	  <td valign="top"><em>long_long *</em><code>data</code></td>
+	  <td valign="top">Attribute value.</td>
+	</tr>
+      </table>
+    </ul>
+
+  <dt><strong>Returns:</strong>
+    <dd>Returns a non-negative value if successful; otherwise returns a negative value. </dd>
+</dl>
+
+<!-- NEW PAGE -->
 <!-- HEADER RIGHT "H5LTset_attribute_char" -->
 <hr>
 <dl>
@@ -2011,12 +2174,132 @@ end subroutine h5ltget_attribute_info_f
   </dl>
 </dl>
 
-
-
 <dl>
   <dt><strong>Returns:</strong> </dt>
   <dd>Returns a non-negative value if successful; otherwise returns a negative value. </dd>
   <dt>&nbsp;</dt>
+  </dl>
+  
+<!-- NEW PAGE -->
+<!-- HEADER RIGHT "H5LTtext_to_dtype" -->
+<hr>
+<dl>
+  <dt style="background-color: #CCCCFF"><strong>Name:</strong>      
+    <a name="H5LTtext_to_dtype">H5LTtext_to_dtype</a>
+  <dt><strong>Signature:</strong>
+    <dd><em>hid_t</em> <code>H5LTtext_to_dtype</code>(
+      <em>const char *</em><code>text</code>, <em>H5LT_lang_t</em> 
+      <code>lang_type</code>)
+  <dt><strong>Purpose:</strong>
+    <dd>Create a HDF5 data type given a text description.
+  <dt><strong>Description:</strong>
+    <dd>Given a text description of a data type, this function 
+      creates an HDF5 datatype and returns the datatype identifier.  
+      The text description of the datatype has to comply with the 
+      <code>lang_type</code> definition of HDF5 datatypes.  Currently, 
+      only the DDL(<code>H5LT_DDL</code>) is supported.  The complete 
+      DDL definition of HDF5 datatypes can be found in the last 
+      chapter of the <em>HDF5 User’s Guide</em>.  
+      <p>An example of DDL definition of <code>enum</code> type is 
+      shown as follows.
+<pre>
+“H5T_ENUM { H5T_NATIVE_INT; 
+            “Bob”        0;
+            “Elena”      1;
+            “Quincey”    2;      
+            “Frank”      3;      }”
+</pre>
+ 	    
+  <dt><strong>Parameters:</strong>
+    <dd>
+      <ul>
+        <table>
+          <tr>
+            <td valign="top"><em>const char *</em><code>str</code></td>
+	    <td valign="top">IN: A character string containing 
+	      a DDL definition of the datatype to be created.</td>
+          </tr>
+          <tr>
+	    <td valign="top"><em>H5LT_lang_t</em>&nbsp;<code>lang_type</code>&nbsp;&nbsp;&nbsp;&nbsp;</td>
+            <td valign="top">IN: The language used to describe the datatype.  
+	      The only currently supported language 
+              is <code>H5LT_DDL</code>.</td>
+	  </tr>
+        </table>
+      </ul>
+
+ <dt><strong>Returns:</strong>
+  <dd>Returns the datatype identifier(non-negative) if successful; 
+    otherwise returns a negative value.
+</dl>
+
+<!-- NEW PAGE -->
+<!-- HEADER RIGHT "H5LTdtype_to_text" -->
+<hr>
+<dl>
+  <dt style="background-color: #CCCCFF"><strong>Name:</strong>      
+    <a name="H5LTdtype_to_text">H5LTdtype_to_text</a>
+  <dt><strong>Signature:</strong>
+    <dd><em>herr_t</em> <code>H5LTtype_to_text</code>(<em>hid_t</em> 
+      <code>datatype</code>, <em>char*</em> <code>str</code>, 
+      <em>H5LT_lang_t</em> <code>lang_type</code>, 
+      <em>size_t*</em> <code>len</code>)
+  <dt><strong>Purpose:</strong>
+    <dd>Creates a text description of a HDF5 data type.
+  <dt><strong>Description:</strong>
+    <dd>Given an HDF5 datatype identifier, this function creates a 
+      description of this datatype in <code>lang_type</code> language 
+      format.
+      <p>A preliminary <code>H5LTdtype_to_text</code> call can be made 
+      to determine the size of the buffer needed with a <code>NULL</code> 
+      passed in for <code>str</code>. This value is returned as <code>len</code>.  
+      That value can then be assigned to <code>len</code> for a second 
+      <code>H5Ttype_to_text</code> call, which will retrieve the actual text 
+      description for the datatype.
+      <p>If <code>len</code> is not big enough for the description, 
+      the text description will be truncated to fit in the buffer.
+      <p>Currently only DDL (<code>H5LT_DDL</code>) is supported for 
+      <code>lang_type</code>. The complete DDL definition of HDF5 data 
+      types can be found in the last chapter of the <em>HDF5 User’s Guide</em>.  
+      An example of DDL definition of <code>enum</code> type is shown as follows.
+
+<pre>
+“H5T_ENUM { H5T_NATIVE_INT; 
+            “Bob”        0;
+            “Elena”      1;
+            “Quincey”    2;      
+            “Frank”      3;      }”
+</pre>
+	    
+  <dt><strong>Parameters:</strong>
+      <ul>
+        <table>
+          <tr>
+            <td valign="top"><em>hid_t</em> <code>datatype</code></td>
+	    <td valign="top">IN: Identifier of the datatype to be converted.</td>
+          </tr>
+          <tr>
+	    <td valign="top"><em>char*</em> <code>str</code></td>
+            <td valign="top">OUT: Buffer for the text description of the 
+	      datatype.</td>
+	  </tr>
+	  <tr>
+	    <td valign="top"><em>H5LT_lang_t</em>&nbsp;<code>lang_type</code>&nbsp;&nbsp;&nbsp;&nbsp;</td>
+	    <td valign="top">IN: The language used to describe the datatype. 
+	      The currently supported language is <code>H5LT_DDL.</code></td>
+	  </tr>
+	  <tr>
+	    <td valign="top"><em>size_t*</em> <code>len</code></td>
+	    <td valign="top">OUT: the size of buffer needed to store the 
+	      text description.</td>
+	  </tr>
+        </table>
+      </ul>
+
+ <dt><strong>Returns:</strong>
+  <dd>Returns non-negative if successful; 
+    otherwise returns a negative value.
+</dl>
   
 <!-- HEADER RIGHT " " -->
   
