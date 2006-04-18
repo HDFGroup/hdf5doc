@@ -83,6 +83,7 @@ of objects in an HDF5 file.
     <li><a href="#Group-Create">H5Gcreate</a>
     <li><a href="#Group-Open">H5Gopen</a>
     <li><a href="#Group-Close">H5Gclose</a>
+    <li><a href="#Group-Copy">H5Gcopy</a>
     <li><a href="#Group-SetComment">H5Gset_comment</a>
     <li><a href="#Group-GetComment">H5Gget_comment</a>
 </ul>
@@ -114,6 +115,7 @@ of objects in an HDF5 file.
     <td valign="top">
 	<ul>
       <li><a href="#Group-Close">H5Gclose</a>
+      <li><a href="#Group-Copy">H5Gcopy</a>
       <li><a href="#Group-Create">H5Gcreate</a>
       <li><a href="#Group-GetComment">H5Gget_comment</a>
       <li><a href="#Group-GetLinkval">H5Gget_linkval</a>
@@ -161,6 +163,7 @@ as the corresponding C function.
     <li><a href="#Group-Create">h5gcreate_f</a>
     <li><a href="#Group-Open">h5gopen_f</a>
     <li><a href="#Group-Close">h5gclose_f</a>
+<!--<li><a href="#Group-Copy">h5gcopy_f</a>                     -->
     <li><a href="#Group-SetComment">h5gset_comment_f</a>
     <li><a href="#Group-GetComment">h5gget_comment_f</a>
 </ul>
@@ -252,6 +255,162 @@ END SUBROUTINE h5gclose_f
         <img src="Graphics/C++.gif">
         -->
 </dl>
+
+<!-- NEW PAGE -->
+<!-- HEADER RIGHT " " -->
+<!-- NEW PAGE -->
+<!-- HEADER RIGHT "H5Gcopy" -->
+<hr>
+<dl>
+  <dt><strong>Name:</strong> <a name="Group-Copy">H5Gcopy</a>
+  <dt><strong>Signature:</strong>
+    <dd><em>herr_t </em><code>H5Gcopy</code>(
+            <em>hid_t </em><code>src_loc_id</code>
+            <em>const char *</em><code>src_name</code>
+            <em>hid_t </em><code>dst_loc_id</code>
+            <em>const char *</em><code>dst_name</code>
+            <em>hid_t </em><code>plist_id</code>
+        )
+  <dt><strong>Purpose:</strong>
+    <dd>Copies a group or dataset.
+  <dt><strong>Description:</strong>
+    <dd><code>H5Gcopy</code> copies the object 
+      specified by <code>src_name</code> 
+      from the file or group specified by <code>src_loc_id</code> 
+      to the destination location <code>dst_loc_id</code> 
+      with the name <code>dst_name</code>. 
+      <p>
+      The object being copied can be a group or dataset.
+      <p>
+      The destination location, as specified in <code>dst_loc_id</code>,
+      may be a group in the current file or a location in a different file.
+      If <code>dst_loc_id</code> is a file identifier, the copy will
+      be placed in that file's root group.
+      <p>
+      The new copy of the object is created with the property list
+      specified by <code>plist_id</code>.
+      <p>
+      Several flags are available to govern the behavior of 
+      <code>H5Gcopy</code>.
+      These flags are set in the property list <code>plist_id</code>
+      with <code>H5Pset_copy_group</code> and
+      <code>H5Pset_create_intermediate_group</code>.
+      In each case below, the effect of setting the flag on the left
+      is described by the first statement on the right; 
+      The default action, without the flag set, is desribed in the second 
+      statement.  
+      Only the default behavior is currently available to user applications.
+      <ul><table>
+        <tr>
+          <td valign="top"><code>H5G_CREATE_INTERMEDIATE_GROUP_FLAG&nbsp;&nbsp;&nbsp;&nbsp;</code>
+          </td>
+          <td valign="top">
+              Create missing groups when creating a group.
+              <br>
+              Do not create missing groups when creating a group&nbsp;<i>(default)</i>.
+          </td></tr>
+        <tr>
+          <td valign="top"><code>H5G_COPY_SHALLOW_HIERARCHY_FLAG</code>
+          </td>
+          <td valign="top">
+              Copy only immediate members.
+              <br>
+              Recursively copy all objects below the group&nbsp;<i>(default)</i>.
+          </td></tr>
+        <tr>
+          <td valign="top"><code>H5G_COPY_EXPAND_SOFT_LINK_FLAG</code>
+          </td>
+          <td valign="top">
+              Expand soft links into new objects.
+              <br>
+              Keep soft links as they are&nbsp;<i>(default)</i>.
+          </td></tr>
+        <tr>
+          <td valign="top"><code>H5G_COPY_EXPAND_EXT_LINK_FLAG</code>
+          </td>
+          <td valign="top">
+              Expand external link into new objects.
+              <br>
+              Keep external links as they are&nbsp;<i>(default)</i>.
+          </td></tr>
+        <tr>
+          <td valign="top"><code>H5G_COPY_EXPAND_OBJ_REFERENCE_FLAG</code>
+          </td>
+          <td valign="top">
+              Copy objects that are pointed by references.
+              <br>
+              Update only the values of object references&nbsp;<i>(default)</i>.
+          </td></tr>
+        <tr>
+          <td valign="top"><code>H5G_COPY_WITHOUT_ATTR_FLAG</code>
+          </td>
+          <td valign="top">
+              Copy object without copying attributes.
+              <br>
+              Copy object along with all its attributes&nbsp;<i>(default)</i>.
+          </td></tr>
+      </table></ul>
+  <dt><strong>Parameters:</strong>
+    <ul><table>
+      <tr>
+        <td valign="top"><em>hid_t </em><code>src_loc_id</code>
+        </td>
+        <td valign="top">File or group identifier indicating the
+            location of the source object
+        </td></tr>
+      <tr>
+        <td valign="top"><em>const char *</em><code>src_name</code>
+        </td>
+        <td valign="top">Name of the object to be copied
+        </td></tr>
+      <tr>
+        <td valign="top"><em>hid_t </em><code>dst_loc_id</code>
+        </td>
+        <td valign="top">Destination file or group identifier
+        </td></tr>
+      <tr>
+        <td valign="top"><em>const char *</em><code>dst_name&nbsp;&nbsp;&nbsp;&nbsp;</code>
+        </td>
+        <td valign="top">Name to be assigned to the new copy
+        </td></tr>
+      <tr>
+        <td valign="top"><em>hid_t </em><code>plist_id</code>
+        </td>
+        <td valign="top">Property list of the copy
+        </td></tr>
+    </table></ul>
+  <dt><strong>Returns:</strong>
+    <dd>Returns a non-negative value if successful;
+        otherwise returns a negative value.
+  <dt><strong>Fortran90 Interface:</strong> <!--h5gclose_f-->
+    <dd>
+      None.
+<!--
+	<pre>
+
+	</pre>		
+-->
+		
+ <!--<dt><strong>Non-C API(s):</strong>
+    	<dd>
+        
+        <img src="Graphics/Java.gif"> 
+        <img src="Graphics/C++.gif">
+        -->
+<dt><strong>History:</strong>
+    <ul><table width="90%">
+        <tr>
+		  <td valign="top" align="left" width="10%">
+		    <strong>Release</strong>&nbsp;&nbsp;&nbsp;&nbsp;</td>
+          <td valign="top" align="left">
+		    <strong>C</strong></td></tr>
+        <tr>
+		  <td valign="top">1.8.0</td>
+          <td valign="top">
+		    Function introduced in this release.</td></tr>
+    </table></ul>
+</dl>
+
 
 <!-- NEW PAGE -->
 <!-- HEADER RIGHT "H5Gcreate" -->
@@ -1576,7 +1735,7 @@ And in this document, the
 Describes HDF5 Release 1.7, the unreleased development branch; working toward HDF5 Release 1.8.0
 </address><!-- #EndLibraryItem --><SCRIPT LANGUAGE="JAVASCRIPT">
 <!--
-document.writeln("Last modified: 11 February 2006");
+document.writeln("Last modified: 6 April 2006");
 -->
 </SCRIPT>
  
