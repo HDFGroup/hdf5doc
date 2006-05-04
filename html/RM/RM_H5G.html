@@ -81,9 +81,9 @@ of objects in an HDF5 file.
 <tr><td valign=top>
 <ul>
     <li><a href="#Group-Create">H5Gcreate</a>
+    <li><a href="#Group-CreateExpand">H5Gcreate_expand</a>
     <li><a href="#Group-Open">H5Gopen</a>
     <li><a href="#Group-Close">H5Gclose</a>
-    <li><a href="#Group-Copy">H5Gcopy</a>
     <li><a href="#Group-SetComment">H5Gset_comment</a>
     <li><a href="#Group-GetComment">H5Gget_comment</a>
 </ul>
@@ -95,10 +95,12 @@ of objects in an HDF5 file.
     <li><a href="#Group-Unlink">H5Gunlink</a> 
     <li><a href="#Group-Move">H5Gmove</a>
     <li><a href="#Group-Move2">H5Gmove2</a> 
+    <li><a href="#Group-Copy">H5Gcopy</a>
 </ul>
 </td><td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td><td valign=top>
 <ul>
     <li><a href="#Group-Iterate">H5Giterate</a> 
+    <li><a href="#Group-GetCreatePlist">H5Gget_create_plist</a>
     <li><a href="#Group-GetObjinfo">H5Gget_objinfo</a>
     <li><a href="#Group-GetNumObjs">H5Gget_num_objs</a>
     <li><a href="#Group-GetObjNameByIdx">H5Gget_objname_by_idx</a>
@@ -117,10 +119,10 @@ of objects in an HDF5 file.
       <li><a href="#Group-Close">H5Gclose</a>
       <li><a href="#Group-Copy">H5Gcopy</a>
       <li><a href="#Group-Create">H5Gcreate</a>
+      <li><a href="#Group-CreateExpand">H5Gcreate_expand</a>
       <li><a href="#Group-GetComment">H5Gget_comment</a>
+      <li><a href="#Group-GetCreatePlist">H5Gget_create_plist</a>
       <li><a href="#Group-GetLinkval">H5Gget_linkval</a>
-      <li><a href="#Group-GetNumObjs">H5Gget_num_objs</a>
-      <li><a href="#Group-GetObjinfo">H5Gget_objinfo</a>
     </ul>     
     </td>
     
@@ -128,12 +130,13 @@ of objects in an HDF5 file.
     
     <td valign="top">
 	<ul>
+      <li><a href="#Group-GetNumObjs">H5Gget_num_objs</a>
+      <li><a href="#Group-GetObjinfo">H5Gget_objinfo</a>
       <li><a href="#Group-GetObjNameByIdx">H5Gget_objname_by_idx</a>
       <li><a href="#Group-GetObjTypeByIdx">H5Gget_objtype_by_idx</a>
       <li><a href="#Group-Iterate">H5Giterate</a>
       <li><a href="#Group-Link">H5Glink</a>
       <li><a href="#Group-Link2">H5Glink2</a>
-      <li><a href="#Group-Move">H5Gmove</a>
 	</ul>
     </td>
     
@@ -141,6 +144,7 @@ of objects in an HDF5 file.
     
     <td valign="top">
 	<ul>
+      <li><a href="#Group-Move">H5Gmove</a>
       <li><a href="#Group-Move2">H5Gmove2</a>
       <li><a href="#Group-Open">H5Gopen</a>
       <li><a href="#Group-SetComment">H5Gset_comment</a>
@@ -256,8 +260,7 @@ END SUBROUTINE h5gclose_f
         -->
 </dl>
 
-<!-- NEW PAGE -->
-<!-- HEADER RIGHT " " -->
+
 <!-- NEW PAGE -->
 <!-- HEADER RIGHT "H5Gcopy" -->
 <hr>
@@ -265,11 +268,11 @@ END SUBROUTINE h5gclose_f
   <dt><strong>Name:</strong> <a name="Group-Copy">H5Gcopy</a>
   <dt><strong>Signature:</strong>
     <dd><em>herr_t </em><code>H5Gcopy</code>(
-            <em>hid_t </em><code>src_loc_id</code>
-            <em>const char *</em><code>src_name</code>
-            <em>hid_t </em><code>dst_loc_id</code>
-            <em>const char *</em><code>dst_name</code>
-            <em>hid_t </em><code>plist_id</code>
+            <em>hid_t </em><code>src_loc_id</code>,
+            <em>const char *</em><code>src_name</code>,
+            <em>hid_t </em><code>dst_loc_id</code>,
+            <em>const char *</em><code>dst_name</code>,
+            <em>hid_t </em><code>cplist_id</code>
         )
   <dt><strong>Purpose:</strong>
     <dd>Copies a group or dataset.
@@ -277,85 +280,33 @@ END SUBROUTINE h5gclose_f
     <dd><code>H5Gcopy</code> copies the object 
       specified by <code>src_name</code> 
       from the file or group specified by <code>src_loc_id</code> 
-      to the destination location <code>dst_loc_id</code> 
-      with the name <code>dst_name</code>. 
+      to the destination location <code>dst_loc_id</code>.
+      The new copy will be created with the name <code>dst_name</code>. 
       <p>
-      The object being copied can be a group or dataset.
+      The object being copied can be a group, dataset or named datatype.
       <p>
       The destination location, as specified in <code>dst_loc_id</code>,
       may be a group in the current file or a location in a different file.
       If <code>dst_loc_id</code> is a file identifier, the copy will
-      be placed in that file's root group.
+      be placed in that file&rsquo;s root group.
       <p>
-      The new copy of the object is created with the property list
-      specified by <code>plist_id</code>.
+      The new copy of the object is created with the creation property list
+      specified by <code>cplist_id</code>.
       <p>
       Several flags are available to govern the behavior of 
       <code>H5Gcopy</code>.
-      These flags are set in the property list <code>plist_id</code>
-      with <code>H5Pset_copy_group</code> and
-      <code>H5Pset_create_intermediate_group</code>.
-      In each case below, the effect of setting the flag on the left
-      is described by the first statement on the right; 
-      The default action, without the flag set, is desribed in the second 
-      statement.  
-      Only the default behavior is currently available to user applications.
-      <ul><table>
-        <tr>
-          <td valign="top"><code>H5G_CREATE_INTERMEDIATE_GROUP_FLAG&nbsp;&nbsp;&nbsp;&nbsp;</code>
-          </td>
-          <td valign="top">
-              Create missing groups when creating a group.
-              <br>
-              Do not create missing groups when creating a group&nbsp;<i>(default)</i>.
-          </td></tr>
-        <tr>
-          <td valign="top"><code>H5G_COPY_SHALLOW_HIERARCHY_FLAG</code>
-          </td>
-          <td valign="top">
-              Copy only immediate members.
-              <br>
-              Recursively copy all objects below the group&nbsp;<i>(default)</i>.
-          </td></tr>
-        <tr>
-          <td valign="top"><code>H5G_COPY_EXPAND_SOFT_LINK_FLAG</code>
-          </td>
-          <td valign="top">
-              Expand soft links into new objects.
-              <br>
-              Keep soft links as they are&nbsp;<i>(default)</i>.
-          </td></tr>
-        <tr>
-          <td valign="top"><code>H5G_COPY_EXPAND_EXT_LINK_FLAG</code>
-          </td>
-          <td valign="top">
-              Expand external link into new objects.
-              <br>
-              Keep external links as they are&nbsp;<i>(default)</i>.
-          </td></tr>
-        <tr>
-          <td valign="top"><code>H5G_COPY_EXPAND_OBJ_REFERENCE_FLAG</code>
-          </td>
-          <td valign="top">
-              Copy objects that are pointed by references.
-              <br>
-              Update only the values of object references&nbsp;<i>(default)</i>.
-          </td></tr>
-        <tr>
-          <td valign="top"><code>H5G_COPY_WITHOUT_ATTR_FLAG</code>
-          </td>
-          <td valign="top">
-              Copy object without copying attributes.
-              <br>
-              Copy object along with all its attributes&nbsp;<i>(default)</i>.
-          </td></tr>
-      </table></ul>
+      These flags are set in the creation property list 
+      <code>cplist_id</code> with 
+      <a href="RM_H5P.html#Property-SetCopyObject"><code>H5Pset_copy_object</code></a> and
+      <a href="RM_H5P.html#Property-SetCreateIntermediateGroup"><code>H5Pset_create_intermediate_group</code></a>.
+      All of the available flags are described at 
+      <a href="RM_H5P.html#Property-SetCopyObject"><code>H5Pset_copy_object</code></a>.
   <dt><strong>Parameters:</strong>
     <ul><table>
       <tr>
         <td valign="top"><em>hid_t </em><code>src_loc_id</code>
         </td>
-        <td valign="top">File or group identifier indicating the
+        <td valign="top">Object identifier indicating the
             location of the source object
         </td></tr>
       <tr>
@@ -366,17 +317,17 @@ END SUBROUTINE h5gclose_f
       <tr>
         <td valign="top"><em>hid_t </em><code>dst_loc_id</code>
         </td>
-        <td valign="top">Destination file or group identifier
+        <td valign="top">Location identifier specifying the destination
         </td></tr>
       <tr>
-        <td valign="top"><em>const char *</em><code>dst_name&nbsp;&nbsp;&nbsp;&nbsp;</code>
+        <td valign="top"><em>const&nbsp;char&nbsp;*</em><code>dst_name&nbsp;&nbsp;&nbsp;&nbsp;</code>
         </td>
         <td valign="top">Name to be assigned to the new copy
         </td></tr>
       <tr>
-        <td valign="top"><em>hid_t </em><code>plist_id</code>
+        <td valign="top"><em>hid_t </em><code>cplist_id</code>
         </td>
-        <td valign="top">Property list of the copy
+        <td valign="top">Creation property list of the copy
         </td></tr>
     </table></ul>
   <dt><strong>Returns:</strong>
@@ -495,6 +446,119 @@ END SUBROUTINE h5gcreate_f
         -->
 </dl>
 
+
+<!-- NEW PAGE -->
+<!-- HEADER RIGHT "H5Gcreate_expand" -->
+<hr>
+<dl>
+  <dt><strong>Name:</strong> <a name="Group-CreateExpand">H5Gcreate_expand</a>
+  <dt><strong>Signature:</strong>
+    <dd><em>hid_t </em><code>H5Gcreate_expand</code>(
+            <em>hid_t </em><code>loc_id</code>,
+            <em>const char *</em><code>name</code>,
+            <em>hid_t </em><code>gcpl_id</code>,
+            <em>hid_t </em><code>gapl_id</code>
+        )
+  <dt><strong>Purpose:</strong>
+    <dd>Creates a new group.
+  <dt><strong>Description:</strong>
+    <dd><code>H5Gcreate_expand</code> creates a new group, <code>name</code>,
+      relative to the location specified by <code>loc_id</code>.
+      With default settings, <code>H5Gcreate_expand</code> provides
+      functionality identical to that of <code>H5Gcreate</code>.
+      <p>
+      <code>name</code> may specify 
+          a group to be created at <code>loc_id</code>,
+          a relative path from <code>loc_id</code> to the new group, or
+          an absolute path from the root of the file to the new group.
+      <p>
+      The new group&rsquo;s creation and access properties are specified in
+      <code>gcpl_id</code> and <code>gapl_id</code>, respectively.
+      <p>
+      By default, <code>H5Gcreate_expand</code> creates only the 
+      group specified in <code>name</code>.  
+      If <code>name</code> is a path traversing several nodes, 
+      each of the intermediate group nodes must already exist.  
+      This behavior can be modified by means of the group creation
+      property list, <code>gcpl_id</code>
+      (see <a href="RM_H5P.html#Property-SetCreateIntermediateGroup"><code>H5Pset_create_intermediate_group</code></a>).
+      <ul>
+      <li>If <code>H5G_CREATE_INTERMEDIATE_GROUP_FLAG</code> is set,
+        <code>H5Gcreate_expand</code> will create any missing intermediate
+        groups in the path <code>name</code>.
+      <li>If <code>H5G_CREATE_INTERMEDIATE_GROUP_FLAG</code> 
+        has not been set and there are such missing intermediate groups, 
+        <code>H5Gcreate_expand</code> will fail.
+      </ul>
+  <dt><strong>Parameters:</strong>
+    <ul><table>
+      <tr>
+        <td valign="top"><em>hid_t </em><code>loc_id</code>
+        </td>
+        <td valign="top">File or group identifier specifying the
+            location of the new group
+        </td></tr>
+      <tr>
+        <td valign="top"><em>const&nbsp;char&nbsp;*</em><code>name</code>&nbsp;&nbsp;&nbsp;&nbsp;
+        </td>
+        <td valign="top">Absolute or relative name of the new group
+        </td></tr>
+      <tr>
+        <td valign="top"><em>hid_t </em><code>gcpl_id</code>
+        </td>
+        <td valign="top">Group creation property list identifier
+          <br>
+          (<code>H5P_DEFAULT</code> for the default property list)
+        </td></tr>
+      <tr>
+        <td valign="top"><em>hid_t </em><code>gapl_id</code>
+        </td>
+        <td valign="top">Group access property list identifier
+          <br>
+          (<code>H5P_DEFAULT</code> for the default property list)
+        </td></tr>
+    </table></ul>
+  <dt><strong>Returns:</strong>
+    <dd>Returns a new group identifier if successful;
+        otherwise returns a negative value.
+  <dt><strong>Example:</strong>
+    <dd>Suppose that an application must create the group <code>C</code> 
+      with the path <code>/A/B01/C</code> but may not know at run time 
+      whether the groups <code>A</code> and <code>B01</code> exist.
+      The following code ensures that those groups are created if they are missing:
+      <pre>    hid_t gcpl_id = H5Pcreate(H5P_GROUP_CREATE);
+    int   status  = H5Pset_create_intermediate_group(gcpl_id, TRUE);
+    hid_t gid     = H5Gcreate_expand(file_id, "/A/B01/grp", gcpl_id, H5P_DEFAULT);</pre>
+  <dt><strong>Fortran90 Interface:</strong> <!--h5gclose_f-->
+    <dd>
+      None.
+<!--
+	<pre>
+
+	</pre>		
+-->
+		
+ <!--<dt><strong>Non-C API(s):</strong>
+    	<dd>
+        
+        <img src="Graphics/Java.gif"> 
+        <img src="Graphics/C++.gif">
+        -->
+<dt><strong>History:</strong>
+    <ul><table width="90%">
+        <tr>
+          <td valign="top" align="left" width="10%">
+            <strong>Release</strong>&nbsp;&nbsp;&nbsp;&nbsp;</td>
+          <td valign="top" align="left">
+            <strong>C</strong></td></tr>
+        <tr>
+          <td valign="top">1.8.0</td>
+          <td valign="top">
+            Function introduced in this release.</td></tr>
+    </table></ul>
+</dl>
+
+
 <!-- NEW PAGE -->
 <!-- HEADER RIGHT "H5Gget_comment" -->
 <hr>
@@ -572,6 +636,50 @@ END SUBROUTINE h5gget_comment_f
         <img src="Graphics/C++.gif">
         -->
 </dl>
+
+
+<!-- NEW PAGE -->
+<!-- HEADER RIGHT "H5Gget_create_plist" -->
+<hr>
+<dl>
+<dt><strong>Name:</strong> <a name="Group-GetCreatePlist">H5Gget_create_plist</a>
+<dt><strong>Signature:</strong>
+    <dd><em>hid_t</em> <code>H5Gget_create_plist</code>(<em>hid_t</em> <code>group_id</code>)
+<dt><strong>Purpose:</strong>
+    <dd>Gets a group creation property list identifier.
+<dt><strong>Description:</strong>
+    <dd><code>H5Gget_create_plist</code> retrieves an identifier 
+      for the group creation property list associated with the 
+      group <code>group_id</code>.
+<dt><strong>Parameters:</strong>
+  <ul>
+    <table>
+      <tr>
+        <td valign="top"><em>hid_t</em>&nbsp;<code>group_id</code>&nbsp;&nbsp;&nbsp;&nbsp;</td>
+        <td valign="top">IN: Identifier of the group.</td>
+      </tr>
+    </table>
+  </ul>
+<dt><strong>Returns:</strong>
+    <dd>Returns an identifier for the group&rsquo;s creation property list
+        if successful.
+        Otherwise returns a negative value.
+<dt><strong>Fortran90 Interface:</strong>
+    <dd>None.
+<dt><strong>History:</strong>
+    <ul><table width="90%">
+        <tr>
+		  <td valign="top" align="left" width="10%">
+		    <strong>Release</strong>&nbsp;&nbsp;&nbsp;&nbsp;</td>
+          <td valign="top" align="left">
+		    <strong>C</strong></td></tr>
+        <tr>
+		  <td valign="top">1.8.0</td>
+          <td valign="top">
+		    Function introduced in this release.</td></tr>
+    </table></ul>
+</dl>
+
 
 <!-- NEW PAGE -->
 <!-- HEADER RIGHT "H5Gget_linkval" -->
@@ -1737,7 +1845,7 @@ Describes HDF5 Release 1.8.0-alpha.
 
 <!-- #EndLibraryItem --><SCRIPT LANGUAGE="JAVASCRIPT">
 <!--
-document.writeln("Last modified: 6 April 2006");
+document.writeln("Last modified: 2 May 2006");
 -->
 </SCRIPT>
  
