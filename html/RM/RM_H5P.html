@@ -3887,7 +3887,8 @@ END SUBROUTINE h5pget_fill_value_f
         <em>size_t *</em><code>cd_nelmts</code>,
         <em>unsigned int *</em><code>cd_values</code>,
         <em>size_t</em> <code>namelen</code>,
-        <em>char</em> <code>name[]</code>
+        <em>char</em> <code>name[]</code>,
+        <em>unsigned int *</em><code>filter_config_flags</code>
     )
   <dt><strong>Purpose:</strong>
     <dd>Returns information about a filter in a pipeline.
@@ -3901,16 +3902,19 @@ END SUBROUTINE h5pget_fill_value_f
         if <code>plist</code> is a dataset transfer property list, 
         the pipeline is a transient filter pipeline.
         <p>
-        On input, <code>cd_nelmts</code> indicates the number of entries 
-        in the <code>cd_values</code> array, as allocated by the caller;
-        on return,<code>cd_nelmts</code> contains the number of values 
-        defined by the filter. 
-        <p>
         <code>filter_number</code> is a value between zero and 
         <em>N</em>-1, as described in 
         <a href="#Property-GetNFilters"><code>H5Pget_nfilters</code></a>.
         The function will return a negative value if the filter number 
         is out of range.  
+        <p>
+        The structure of the <code>flags</code> argument is discussed
+        in <a href="#Property-SetFilter"><code>H5Pset_filter</code></a>.
+        <p>
+        On input, <code>cd_nelmts</code> indicates the number of entries 
+        in the <code>cd_values</code> array, as allocated by the caller;
+        on return,<code>cd_nelmts</code> contains the number of values 
+        defined by the filter. 
         <p>
         If <code>name</code> is a pointer to an array of at least 
         <code>namelen</code> bytes, the filter name will be copied 
@@ -3919,8 +3923,8 @@ END SUBROUTINE h5pget_fill_value_f
         will be the name appearing in the file, the name registered
         for the filter, or an empty string.  
         <p>
-        The structure of the <code>flags</code> argument is discussed
-        in <a href="#Property-SetFilter"><code>H5Pset_filter</code></a>.
+        <code>filter_config_flags</code> is the bit field described in
+        <a href="RM_H5Z.html#Compression-GetFilterInfo">H5Zget_filter_info</a>.
   <dt><strong>Note:</strong>
     <dd>This function currently supports only the permanent filter
         pipeline; <code>plist</code> must be a dataset creation property 
@@ -3928,28 +3932,34 @@ END SUBROUTINE h5pget_fill_value_f
   <dt><strong>Parameters:</strong>
     <ul><table>
         <tr>
-		    <td valign="top"><em>hid_t</em> <code>plist</code></td>
+            <td valign="top"><em>hid_t</em> <code>plist</code></td>
             <td valign="top">IN: Property list identifier.</td></tr>
         <tr>
-		    <td valign="top"><em>int</em> <code>filter_number</code></td>
+            <td valign="top"><em>int</em> <code>filter_number</code></td>
             <td valign="top">IN: Sequence number within the filter pipeline of 
                 the filter for which information is sought.</td></tr>
         <tr>
-		    <td valign="top"><em>unsigned int *</em><code>flags</code></td>
-            <td valign="top">OUT: Bit vector specifying certain general properties
-                of the filter.</td></tr>
+            <td valign="top"><em>unsigned int *</em><code>flags</code></td>
+            <td valign="top">OUT: Bit vector specifying certain general 
+                properties of the filter.</td></tr>
         <tr>
-		    <td valign="top"><em>size_t *</em><code>cd_nelmts</code></td>
-            <td valign="top">IN/OUT: Number of elements in <code>cd_values</code>.</td></tr>
+            <td valign="top"><em>size_t *</em><code>cd_nelmts</code></td>
+            <td valign="top">IN/OUT: Number of elements in 
+                <code>cd_values</code>.</td></tr>
         <tr>
-		    <td valign="top"><em>unsigned&nbsp;int&nbsp;*</em><code>cd_values&nbsp;&nbsp;&nbsp;&nbsp;</code></td>
+            <td valign="top"><em>unsigned int *</em><code>cd_values</code></td>
             <td valign="top">OUT: Auxiliary data for the filter.</td></tr>
         <tr>
-		    <td valign="top"><em>size_t</em> <code>namelen</code></td>
-            <td valign="top">IN: Anticipated number of characters in <code>name</code>.</td></tr>
+            <td valign="top"><em>size_t</em> <code>namelen</code></td>
+            <td valign="top">IN: Anticipated number of characters in 
+                <code>name</code>.</td></tr>
         <tr>
-		    <td valign="top"><em>char</em> <code>name[]</code></td>
+            <td valign="top"><em>char</em> <code>name[]</code></td>
             <td valign="top">OUT: Name of the filter.</td></tr>
+        <tr>
+            <td valign="top"><em>unsigned&nbsp;int&nbsp;*</em><code>filter_config_flags&nbsp;&nbsp;&nbsp;&nbsp;</code></td>
+            <td valign="top">OUT: Bit field, as described in
+                <a href="RM_H5Z.html#Compression-GetFilterInfo">H5Zget_filter_info</a>.</td></tr>
     </table></ul>
 <!-- NEW PAGE -->
   <dt><strong>Returns:</strong>
@@ -3975,6 +3985,16 @@ END SUBROUTINE h5pget_fill_value_f
             <code>H5Z_FILTER_SZIP</code> 
             </td><td>
             Data compression filter, employing the SZIP algorithm 
+        </td></tr>
+        <tr valign=top align=left><td>
+            <code>H5Z_FILTER_NBIT</code> 
+            </td><td>
+            Data compression filter, employing the N-bit algorithm 
+        </td></tr>
+        <tr valign=top align=left><td>
+            <code>H5Z_FILTER_SCALEOFFSET</code> 
+            </td><td>
+            Data compression filter, employing the scale-offset algorithm 
         </td></tr>
 	</table>
 	</center>
@@ -4038,7 +4058,8 @@ END SUBROUTINE h5pget_filter_f
             <em>size_t *</em><code>cd_nelmts</code>,
             <em>unsigned int</em> <code>cd_values[]</code>,
             <em>size_t</em> <code>namelen</code>,
-            <em>char </em><code>name[]</code>
+            <em>char </em><code>name[]</code>,
+            <em>unsigned int *</em><code>filter_config_flags</code>
             )
   <dt><strong>Purpose:</strong>
     <dd>Returns information about the specified filter.
@@ -4068,6 +4089,9 @@ END SUBROUTINE h5pget_filter_f
 	On exit it contains the length in characters of name of the filter.
 	On exit <code>name[]</code> contains the name of the filter
         with one character of the name in each element of the array.
+        <p>
+        <code>filter_config_flags</code> is the bit field described in
+        <a href="RM_H5Z.html#Compression-GetFilterInfo">H5Zget_filter_info</a>.
 	<p>
         If the filter specified in <code>filter</code> is not
         set for the property list, an error will be returned
@@ -4075,28 +4099,32 @@ END SUBROUTINE h5pget_filter_f
  <dt><strong>Parameters:</strong>
     <ul><table>
         <tr>
-		    <td valign="top"><em>hid_t</em> <code>plist_id</code></td>
+            <td valign="top"><em>hid_t</em> <code>plist_id</code></td>
             <td valign="top">IN: Property list identifier.</td></tr>
         <tr>
-		    <td valign="top"><em>H5Z_filter_t</em> <code>filter</code></td>
+            <td valign="top"><em>H5Z_filter_t</em> <code>filter</code></td>
             <td valign="top">IN: Filter identifier.</td></tr>
         <tr>
-		    <td valign="top"><em>unsigned int</em> <code>flags</code></td>
-            <td valign="top">OUT:  Bit vector specifying certain general properties
-                of the filter.</td></tr>
+            <td valign="top"><em>unsigned int</em> <code>flags</code></td>
+            <td valign="top">OUT:  Bit vector specifying certain general 
+                properties of the filter.</td></tr>
         <tr>
-		    <td valign="top"><em>size_t</em> <code>cd_nelmts</code></td>
+            <td valign="top"><em>size_t</em> <code>cd_nelmts</code></td>
             <td valign="top">IN/OUT: Number of elements in <code>cd_values</code>.</td></tr>
         <tr>
-		    <td valign="top"><em>const&nbsp;unsigned&nbsp;int</em>&nbsp;<code>cd_values[]&nbsp;&nbsp;&nbsp;&nbsp;</code></td>
+            <td valign="top"><em>unsigned int *</em><code>cd_values</code></td>
             <td valign="top">OUT: Auxiliary data for the filter.</td></tr>
         <tr>
-		    <td valign="top"><em>size_t</em> <code>namelen</code></td>
+            <td valign="top"><em>size_t</em> <code>namelen</code></td>
             <td valign="top">IN/OUT: Length of filter name and 
 	        number of elements in <code>name[]</code>.</td></tr>
         <tr>
-		    <td valign="top"><em>char *</em><code>name[]</code></td>
+            <td valign="top"><em>char *</em><code>name[]</code></td>
             <td valign="top">OUT: Name of filter.</td></tr>
+        <tr>
+            <td valign="top"><em>unsigned&nbsp;int&nbsp;*</em><code>filter_config_flags&nbsp;&nbsp;&nbsp;&nbsp;</code></td>
+            <td valign="top">OUT: Bit field, as described in
+                <a href="RM_H5Z.html#Compression-GetFilterInfo">H5Zget_filter_info</a>.</td></tr>
     </table></ul>
   <dt><strong>Returns:</strong>
     <dd>Returns a non-negative value if successful;
@@ -4122,7 +4150,7 @@ SUBROUTINE h5pget_filter_by_id_f(prp_id, filter_id, flags, cd_nelmts,
   INTEGER, INTENT(OUT)          :: hdferr   ! Error code
                                             ! 0 on success and -1 on failure
 END SUBROUTINE h5pget_filter_by_id_f
-	</pre>		
+	</pre>
 		
 		<!--<dt><strong>Non-C API(s):</strong>
     	<dd>
@@ -11796,7 +11824,7 @@ Describes HDF5 Release 1.8.0-alpha.
 
 <!-- #EndLibraryItem --><SCRIPT LANGUAGE="JAVASCRIPT">
 <!--
-document.writeln("Last modified: 2 May 2006");
+document.writeln("Last modified: 5 May 2006");
 -->
 </SCRIPT>
  
