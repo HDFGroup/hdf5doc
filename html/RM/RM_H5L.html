@@ -705,14 +705,144 @@ H5L_link_t is described in H5Lpublic.h.
 </dl>
 
 
+<!-- NEW PAGE -->
+<!-- HEADER RIGHT "H5Lget_linkinfo" -->
+<hr>
+<dl>
+  <dt><strong>Name:</strong> <a name="Link-GetLinkInfo">H5Lget_linkinfo</a>
+  <dt><strong>Signature:</strong>
+    <dd><em>herr_t</em> <code>H5Lget_linkinfo</code>(
+        <em>hid_t</em> <code>loc_id</code>,
+        <em>const char *</em><code>name</code>,
+        <em>H5L_linkinfo_t *</em><code>link_buff</code>,
+        <em>hid_t</em> <code>lapl_id</code>
+    )
+  <dt><strong>Purpose:</strong>
+    <dd>Returns information about a link.  
+  <dt><strong>Description:</strong>
+    <dd><code>H5Lget_linkinfo</code> returns information about the 
+        specified link through the <code>link_buff</code> argument. 
+        <p>
+        A file or group identifier, <code>loc_id</code>, 
+        and a link name, <code>name</code>, relative to <code>loc_id</code>,
+        are commonly used to specify the object.  
+        However, if the link identifier is already known to the application,
+        an alternative approach is to use that identifier, 
+        <code>link_id</code> in place of <code>loc_id</code>, 
+        and a dot (<code>.</code>) in place of <code>name</code>.  
+        Thus, the two alternative versions of the first portion of an 
+        <code>H5Lget_linkinfo</code> call would be as follows:
+        <br>
+        <code>
+        &nbsp;&nbsp;&nbsp;&nbsp;H5Lget_linkinfo (loc_id name&nbsp;&nbsp;...)
+        <br>
+        &nbsp;&nbsp;&nbsp;&nbsp;H5Lget_linkinfo (link_id .&nbsp;&nbsp;&nbsp;&nbsp;...)
+        </code>
+        <p>
+        <code>lapl_id</code> is the link access property list associated 
+	with the link <code>name</code>.
+        <p>
+        <code>H5Lget_linkinfo</code> returns information about  
+	<code>name</code> in the data structure <code>H5L_linkinfo_t</code>,
+        which is described below and defined in <code>H5Lpublic.h</code>.
+	This structure is returned in the buffer <code>link_buff</code>.
+        <pre>
+                  typedef struct H5L_linkinfo_t {
+                      H5T_cset_t cset;
+                      time_t ctime; 
+                      H5L_link_t linkclass;
+                      union {
+                          haddr_t address;
+                          size_t linklen;
+                      } u;
+                  } H5Llinkinfo_t
+        </pre>
 
-
-
-
-
-
-
-
+        <p>
+        In the above struct,
+        <code>cset</code> specifies the character set of the link name.
+        <p>
+        <code>ctime</code> is the link&rsquo;s creation time.
+        (Note that some systems will be able to record the creation time  
+        accurately but unable to retrieve the correct time; such systems, 
+        e.g., Irix64, will report a <code>ctime</code> value of 0 (zero))
+        <p>
+        <code>linkclass</code> specifies the link class.  
+	Valid values include 
+		<code>H5L_LINK_ERROR</code>, 
+		<code>H5L_LINK_HARD</code>,
+        	<code>H5L_LINK_SOFT</code>, and
+		<code>H5L_LINK_EXTERNAL</code>.  
+        There will be additional valid values if user-defined links 
+	have been registered
+	<p>
+	<code>address</code> specifies the file address that the link
+	points to.
+        <p>
+	<code>link_size</code> specifies the size of a soft link 
+	or a user-defined link.
+	If <code>name</code> is a symbolic link,
+        <code>link_size</code> will be the length of the link value 
+        (the name of the pointed-to object with the null terminator);
+        otherwise <code>link_size</code> will be zero.  
+        <p>
+  <dt><strong>Parameters:</strong>
+    <ul><table>
+      <tr>
+        <td valign="top"><em>hid_t</em> <code>loc_id</code></td>
+        <td valign="top">IN: File or group identifier.
+            <br>
+            <i>Alternative:</i> A link identifier, 
+            <code>link_id</code></td></tr>
+      <tr>
+        <td valign="top"><em>const char</em> <code>*name</code></td>
+        <td valign="top">IN: Name of the object for which status is being 
+            sought.
+            <br>
+            <i>Alternative:</i> If the preceding parameter is the 
+            direct link identifier, i.e., the <code>link_id</code>, 
+            this parameter should be a dot (<code>.</code>).</td></tr>
+      <tr>
+        <td valign="top"><em>H5L_linkinfo_t</em>&nbsp;<code>*link_buff&nbsp;&nbsp;&nbsp;&nbsp;</code></td>
+        <td valign="top">OUT: Buffer in which llink information is 
+	    returned.</td></tr>
+      <tr>
+        <td valign="top"><em>hid_t</em> <code>lapl_id</code></td>
+        <td valign="top">IN: Link access property list identifier.</td></tr>
+    </table></ul>
+  <dt><strong>Returns:</strong>
+    <dd> Returns a non-negative value if successful, with the fields of 
+         <code>link_buff</code> (if non-null) initialized.
+         Otherwise returns a negative value.
+  <dt><strong>Fortran90 Interface:</strong>
+    <dd>None.
+	
+<!--
+	<pre>
+SUBROUTINE
+	</pre>
+-->		
+		
+        <!--<dt><strong>Non-C API(s):</strong>
+    	<dd>
+        
+        <img src="Graphics/Java.gif"> 
+        <img src="Graphics/C++.gif">
+        -->
+  <dt><strong>History:</strong>
+    <ul><table width="90%">
+        <tr>
+          <td valign="top" align="left" width="10%">
+            <strong>Release</strong>&nbsp;&nbsp;&nbsp;&nbsp;</td>
+          <td valign="top" align="left">
+            <strong>C</strong></td></tr>
+        <tr>
+          <td valign="top">1.6.1</td>
+          <td valign="top">
+            Two new fields were added to the 
+            <code>H5G_stat_t</code> struct in this release.</td></tr>
+    </table></ul>
+</dl>
 
 
 <!-- NEW PAGE -->
@@ -803,150 +933,6 @@ END SUBROUTINE h5gget_linkval_f
         <img src="Graphics/C++.gif">
         -->
 </dl>
-
-
-
-<!-- NEW PAGE -->
-<!-- HEADER RIGHT "H5Lget_linkinfo" -->
-<hr>
-<dl>
-  <dt><strong>Name:</strong> <a name="Link-GetLinkInfo">H5Lget_linkinfo</a>
-  <dt><strong>Signature:</strong>
-    <dd><em>herr_t</em> <code>H5Lget_linkinfo</code>(
-        <em>hid_t</em> <code>loc_id</code>,
-        <em>const char *</em><code>name</code>,
-        <em>H5L_linkinfo_t *</em><code>link_buff</code>,
-        <em>hid_t</em> <code>lapl_id</code>
-    )
-  <dt><strong>Purpose:</strong>
-    <dd>Returns information about a link.  
-  <dt><strong>Description:</strong>
-    <dd><code>H5Lget_linkinfo</code> returns information about the 
-        specified link through the <code>link_buff</code> argument. 
-        <p>
-        A file or group identifier, <code>loc_id</code>, 
-        and a link name, <code>name</code>, relative to <code>loc_id</code>,
-        are commonly used to specify the object.  
-        However, if the link identifier is already known to the application,
-        an alternative approach is to use that identifier, 
-        <code>link_id</code> in place of <code>loc_id</code>, 
-        and a dot (<code>.</code>) in place of <code>name</code>.  
-        Thus, the two alternative versions of the first portion of an 
-        <code>H5Lget_linkinfo</code> call would be as follows:
-        <br>
-        <code>
-        &nbsp;&nbsp;&nbsp;&nbsp;H5Lget_linkinfo (loc_id name&nbsp;&nbsp;...)
-        <br>
-        &nbsp;&nbsp;&nbsp;&nbsp;H5Lget_linkinfo (link_id .&nbsp;&nbsp;&nbsp;&nbsp;...)
-        </code>
-        <p>
-        <code>lapl_id</code> is the link access property list associated 
-	with the link <code>name</code>.
-        <p>
-        <code>H5Lget_linkinfo</code> returns information about  
-	<code>name</code> in the data structure <code>H5L_linkinfo_t</code>,
-        which is described below and defined in <code>H5Lpublic.h</code>.
-	This structure is returned in the buffer <code>link_buff</code>.
-        <pre>
-                  typedef struct H5L_linkinfo_t {
-                      H5T_cset_t cset;
-                      time_t ctime; 
-                      H5L_link_t linkclass;
-                      union {
-                          haddr_t address;
-                          size_t linklen;
-                      } u;
-                  } H5Llinkinfo_t
-        </pre>
-
-        
-        <p>
-        In the above struct,
-        <code>cset</code> specifies the character set of the link name.
-        <p>
-        <code>ctime</code> is the link&rsquo;s creation time.
-        (Note that some systems will be able to record the creation time  
-        accurately but unable to retrieve the correct time; such systems, 
-        e.g., Irix64, will report a <code>ctime</code> value of 0 (zero))
-        <p>
-        <code>linkclass</code> specifies the link class.  
-	Valid values include 
-		<code>H5L_LINK_ERROR</code>, 
-		<code>H5L_LINK_HARD</code>,
-        	<code>H5L_LINK_SOFT</code>, and
-		<code>H5L_LINK_EXTERNAL</code>.  
-        There will be additional valid values if user-defined links 
-	have been registered
-	<p>
-	<code>address</code> specifies the file address that the link
-	points to.
-        <p>
-	<code>link_size</code> specifies the size of a soft link 
-	or a user-defined link.
-	If <code>name</code> is a symbolic link,
-        <code>link_size</code> will be the length of the link value 
-        (the name of the pointed-to object with the null terminator);
-        otherwise <code>link_size</code> will be zero.  
-        <p>
-  <dt><strong>Parameters:</strong>
-    <ul><table>
-      <tr>
-        <td valign="top"><em>hid_t</em> <code>loc_id</code></td>
-        <td valign="top">IN: File or group identifier.
-            <br>
-            <i>Alternative:</i> A link identifier, 
-            <code>link_id</code></td></tr>
-      <tr>
-        <td valign="top"><em>const char</em> <code>*name</code></td>
-        <td valign="top">IN: Name of the object for which status is being 
-            sought.
-            <br>
-            <i>Alternative:</i> If the preceding parameter is the 
-            direct link identifier, i.e., the <code>link_id</code>, 
-            this parameter should be a dot (<code>.</code>).</td></tr>
-      <tr>
-        <td valign="top"><em>H5L_linkinfo_t</em>&nbsp;<code>*link_buff&nbsp;&nbsp;&nbsp;&nbsp;</code></td>
-        <td valign="top">OUT: Buffer in which llink information is 
-	    returned.</td></tr>
-      <tr>
-        <td valign="top"><em>hid_t</em> <code>lapl_id</code></td>
-        <td valign="top">IN: Link access property list identifier.</td></tr>
-    </table></ul>
-  <dt><strong>Returns:</strong>
-    <dd> Returns a non-negative value if successful, with the fields of 
-         <code>link_buff</code> (if non-null) initialized.
-         Otherwise returns a negative value.
-  <dt><strong>Fortran90 Interface:</strong>
-    <dd>None.
-	
-<!--
-	<pre>
-SUBROUTINE
-	</pre>
--->		
-		
-        <!--<dt><strong>Non-C API(s):</strong>
-    	<dd>
-        
-        <img src="Graphics/Java.gif"> 
-        <img src="Graphics/C++.gif">
-        -->
-  <dt><strong>History:</strong>
-    <ul><table width="90%">
-        <tr>
-          <td valign="top" align="left" width="10%">
-            <strong>Release</strong>&nbsp;&nbsp;&nbsp;&nbsp;</td>
-          <td valign="top" align="left">
-            <strong>C</strong></td></tr>
-        <tr>
-          <td valign="top">1.6.1</td>
-          <td valign="top">
-            Two new fields were added to the 
-            <code>H5G_stat_t</code> struct in this release.</td></tr>
-    </table></ul>
-</dl>
-
-
 
 
 <!-- NEW PAGE -->
