@@ -1,0 +1,634 @@
+<html>
+<head><title>
+HDF5/H5O API Specification
+</title>
+<link href="../ed_styles/RMelect.css" rel="stylesheet" type="text/css">
+</head>
+
+<body bgcolor="#FFFFFF">
+
+<!-- #BeginLibraryItem "/ed_libs/styles_RM.lbi" -->
+<!--
+  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+  * Copyright by the Board of Trustees of the University of Illinois.         *
+  * All rights reserved.                                                      *
+  *                                                                           *
+  * This file is part of HDF5.  The full HDF5 copyright notice, including     *
+  * terms governing use, modification, and redistribution, is contained in    *
+  * the files COPYING and Copyright.html.  COPYING can be found at the root   *
+  * of the source code distribution tree; Copyright.html can be found at the  *
+  * root level of an installed copy of the electronic HDF5 document set and   *
+  * is linked from the top-level documents page.  It can also be found at     *
+  * http://hdf.ncsa.uiuc.edu/HDF5/doc/Copyright.html.  If you do not have     *
+  * access to either file, you may request a copy from hdfhelp@ncsa.uiuc.edu. *
+  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+ -->
+<!-- #EndLibraryItem --><!-- HEADER RIGHT " " -->
+
+
+<!-- #BeginLibraryItem "/ed_libs/NavBar_RM.lbi" --><hr>
+<center>
+<table border=0 width=98%>
+<tr><td valign=top align=left>
+<a href="../index.html">HDF5 documents and links</a>&nbsp;<br>
+<a href="../H5.intro.html">Introduction to HDF5</a>&nbsp;<br>
+<a href="../UG/index.html">HDF5 User Guide</a>&nbsp;<br>
+<!--
+<a href="Glossary.html">Glossary</a><br>
+-->
+</td>
+<td valign=top align=right>
+And in this document, the 
+<a href="RM_H5Front.html">HDF5 Reference Manual</a>&nbsp;&nbsp;
+<br>
+<a href="../HL/RM_H5DS.html">H5DS</a>&nbsp;&nbsp;
+<a href="../HL/RM_H5IM.html">H5IM</a>&nbsp;&nbsp;
+<a href="../HL/RM_H5LT.html">H5LT</a>&nbsp;&nbsp;
+<a href="../HL/RM_H5PT.html">H5PT</a>&nbsp;&nbsp;
+<a href="../HL/RM_H5TB.html">H5TB</a>&nbsp;&nbsp;
+<br>
+<a href="RM_H5.html">H5</a>&nbsp;&nbsp;
+<a href="RM_H5A.html">H5A</a>&nbsp;&nbsp;
+<a href="RM_H5D.html">H5D</a>&nbsp;&nbsp;
+<a href="RM_H5E.html">H5E</a>&nbsp;&nbsp;
+<a href="RM_H5F.html">H5F</a>&nbsp;&nbsp;
+<a href="RM_H5G.html">H5G</a>&nbsp;&nbsp;
+<a href="RM_H5I.html">H5I</a>&nbsp;&nbsp;
+<a href="RM_H5L.html">H5L</a>&nbsp;&nbsp;
+<br>
+<a href="RM_H5P.html">H5P</a>&nbsp;&nbsp;
+<a href="RM_H5R.html">H5R</a>&nbsp;&nbsp;
+<a href="RM_H5S.html">H5S</a>&nbsp;&nbsp;
+<a href="RM_H5T.html">H5T</a>&nbsp;&nbsp;
+<a href="RM_H5Z.html">H5Z</a>&nbsp;&nbsp;
+<a href="Tools.html">Tools</a>&nbsp;&nbsp;
+<a href="PredefDTypes.html">Datatypes</a>&nbsp;&nbsp;
+</td></tr>
+</table>
+</center>
+<hr>
+<!-- #EndLibraryItem --><center>
+<h1>H5O: Link Interface</h1>
+</center>
+
+<h2>Object API Functions</h2>
+
+The Object interface functions manipulate objects and reference counts
+in an HDF5 file.
+<p>
+<strong>The C Interfaces:</strong>
+
+<table border=0>
+<tr><td valign=top>
+<ul>
+    <li><a href="#Object-Open">H5Oopen</a>
+    <li><a href="#Object-Close">H5Oclose</a>
+</ul>
+</td><td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
+<td valign=top> 
+<ul>
+    <li><a href="#Object-OpenByAddr">H5Oopen_by_addr</a>
+</ul>
+</td><td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td><td valign=top>
+<ul>
+    <li><a href="#Object-IncrRefCount">H5Oincr_refcount</a>
+    <li><a href="#Object-DecrRefCount">H5Odecr_refcount</a>
+</ul>
+</td></tr>
+</table>
+
+<i>Alphabetical Listing</i>
+
+
+
+<table border="0">
+  <tr>
+    <td valign="top">
+      <ul>
+      <li><a href="#Object-Close">H5Oclose</a>
+      </ul>     
+    </utd>
+    
+    <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
+    
+    <td valign="top">
+      <ul>
+      <li><a href="#Object-DecrRefCount">H5Odecr_refcount</a>
+      <li><a href="#Object-IncrRefCount">H5Oincr_refcount</a>
+      </ul>
+    </td>
+    
+    <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
+    
+    <td valign="top">
+      <ul>
+      <li><a href="#Object-Open">H5Oopen</a>
+      <li><a href="#Object-OpenByAddr">H5Oopen_by_addr</a>
+      </ul>
+    </td>
+  </tr>
+</table>
+
+<br>
+<strong>The FORTRAN90 Interfaces:</strong>
+<br>
+Fortran90 interfaces for the H5L APIs have not yet been implemented.
+<!--
+In general, each FORTRAN90 subroutine performs exactly the same task 
+as the corresponding C function.  
+<br>
+
+<table border=0>
+<tr><td valign=top>
+<ul>
+    <li><a href="#Object-Open">h5oopen_f</a>
+    <li><a href="#Object-Close">h5oclose_f</a>
+</ul>
+</td><td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
+<td valign=top> 
+<ul>
+    <li><a href="#Object-OpenByAddr">h5oopen_by_addr_f</a>
+</ul>
+</td><td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td><td valign=top>
+<ul>
+    <li><a href="#Object-IncrRefCount">h5oincr_refcount_f</a>
+    <li><a href="#Object-DecrRefCount">h5odecr_refcount_f</a>
+</ul>
+</td></tr>
+</table>
+-->
+
+<p>
+<i>&lt;&nbsp;&lt;&nbsp;Object API general description&nbsp;&gt;&nbsp;&gt;</i>
+
+<p>
+
+
+<!-- NEW PAGE -->
+<!-- HEADER RIGHT " " -->
+
+
+<!-- NEW PAGE -->
+<!-- HEADER RIGHT "H5Oclose" -->
+<hr>
+<dl>
+  <dt><strong>Name:</strong> <a name="Object-Close">H5Oclose</a>
+  <dt><strong>Signature:</strong>
+    <dd><em>herr_t </em><code>H5Oclose</code>(
+            <em>hid_t </em><code>object_id</code>
+        )
+  <p></p>
+  <dt><strong>Purpose:</strong>
+    <dd>Closes an object.
+  <p></p>
+  <dt><strong>Description:</strong>
+    <dd><code>H5Oclose</code> closes an object in an HDF5 file.
+      <p>
+<pre>
+This function is the companion to H5Oopen. It is used to 
+close open file object in an HDF5 file, including groups,
+datasets, and named datatypes.  It has the same effect as 
+calling H5Gclose, H5Dclose, or H5Tclose.
+
+H5Oclose is NOT used to close identifiers of objects that 
+are not file objects, such as property lists and dataspaces. 
+</pre>
+  </p>
+  <dt><strong>Parameters:</strong>
+    <ul><table>
+      <tr>
+        <td valign="top"><em>hid_t&nbsp;</em><code>object_id&nbsp;&nbsp;&nbsp;&nbsp;</code>
+        </td>
+        <td valign="top">IN: Object identifier 
+        </td></tr>
+    </table></ul>
+  <dt><strong>Returns:</strong>
+    <dd>Returns a non-negative value if successful;
+        otherwise returns a negative value.
+  <p></p>
+  <dt><strong>Fortran90 Interface:</strong> <!--h5gclose_f-->
+    <dd>
+      None.
+<!--
+	<pre>
+
+	</pre>		
+-->
+		
+ <!--<dt><strong>Non-C API(s):</strong>
+    	<dd>
+        
+        <img src="Graphics/Java.gif"> 
+        <img src="Graphics/C++.gif">
+        -->
+<p></p>
+<dt><strong>History:</strong>
+    <dd><table width="90%">
+        <tr>
+		  <td valign="top" align="left" width="10%">
+		    <strong>Release</strong>&nbsp;&nbsp;&nbsp;&nbsp;</td>
+          <td valign="top" align="left">
+		    <strong>C</strong></td></tr>
+        <tr>
+		  <td valign="top">1.8.0</td>
+          <td valign="top">
+		    Function introduced in this release.</td></tr>
+    </table>
+</dl>
+
+
+
+<!-- NEW PAGE -->
+<!-- HEADER RIGHT "H5Odecr_refcount" -->
+<hr>
+<dl>
+  <dt><strong>Name:</strong> <a name="Object-DecrRefCount">H5Odecr_refcount</a>
+  <dt><strong>Signature:</strong>
+    <dd><em>herr_t </em><code>H5Odecr_refcount</code>(
+            <em>hid_t </em><code>object_id</code>
+        )
+  <p></p>
+  <dt><strong>Purpose:</strong>
+    <dd>Decrements an object reference count.
+  <p></p>
+  <dt><strong>Description:</strong>
+    <dd>
+
+      <table border=2 bordercolor=red><tr><td valign=top align=left>
+        <font color=red>
+        Warning! This function is <i><b>extremely dangerous</b></i>!
+        <br>
+        Improper use can lead to <i><b>file corruption</b></i>, 
+        <i><b>inaccessible data</b></i>, 
+        and other <i><b>very bad things</b></i>!
+        </font>
+      </td></tr></table>
+
+      <p>
+      <code>H5Odecr_refcount</code> decrements the hard link reference count
+      for an object. It should be used any time a user-defined link 
+      that reference an object by address is deleted, and only
+      after <code>H5Oincr_refcount</code> has already been used.
+  </p>
+  <dt><strong>Parameters:</strong>
+    <ul><table>
+      <tr>
+        <td valign="top"><em>hid_t&nbsp;</em><code>object_id&nbsp;&nbsp;&nbsp;&nbsp;</code>
+        </td>
+        <td valign="top">IN: Object identifier 
+        </td></tr>
+    </table></ul>
+  <dt><strong>Returns:</strong>
+    <dd>Returns the object's new reference count if successful;
+        otherwise returns a negative value.
+  <p></p>
+  <dt><strong>Fortran90 Interface:</strong> <!--h5gclose_f-->
+    <dd>
+      None.
+<!--
+	<pre>
+
+	</pre>		
+-->
+		
+ <!--<dt><strong>Non-C API(s):</strong>
+    	<dd>
+        
+        <img src="Graphics/Java.gif"> 
+        <img src="Graphics/C++.gif">
+        -->
+<p></p>
+<dt><strong>History:</strong>
+    <dd><table width="90%">
+        <tr>
+		  <td valign="top" align="left" width="10%">
+		    <strong>Release</strong>&nbsp;&nbsp;&nbsp;&nbsp;</td>
+          <td valign="top" align="left">
+		    <strong>C</strong></td></tr>
+        <tr>
+		  <td valign="top">1.8.0</td>
+          <td valign="top">
+		    Function introduced in this release.</td></tr>
+    </table>
+</dl>
+
+
+
+
+<!-- NEW PAGE -->
+<!-- HEADER RIGHT "H5Oincr_refcount" -->
+<hr>
+<dl>
+  <dt><strong>Name:</strong> <a name="Object-IncrRefCount">H5Oincr_refcount</a>
+  <dt><strong>Signature:</strong>
+    <dd><em>herr_t </em><code>H5Oincr_refcount</code>(
+            <em>hid_t </em><code>object_id</code>
+        )
+  <p></p>
+  <dt><strong>Purpose:</strong>
+    <dd>Increments an object reference count.
+  <p></p>
+  <dt><strong>Description:</strong>
+    <dd>
+
+      <table border=2 bordercolor=red><tr><td valign=top align=left>
+        <font color=red>
+        Warning! This function is <i><b>extremely dangerous</b></i>!
+        <br>
+        Improper use can lead to <i><b>file corruption</b></i>, 
+        <i><b>inaccessible data</b></i>, 
+        and other <i><b>very bad things</b></i>!
+        </font>
+      </td></tr></table>
+
+      <p>
+      <code>H5Oincr_refcount</code> increments the hard link reference count
+      for an object. It should be used any time a user-defined link
+      that references an object by address is added. When the
+      link is deleted, <code>H5Odecr_refcount</code> should be used.
+  </p>
+  <dt><strong>Parameters:</strong>
+    <ul><table>
+      <tr>
+        <td valign="top"><em>hid_t&nbsp;</em><code>object_id&nbsp;&nbsp;&nbsp;&nbsp;</code>
+        </td>
+        <td valign="top">IN: Object identifier 
+        </td></tr>
+    </table></ul>
+  <dt><strong>Returns:</strong>
+    <dd>Returns the object's new reference count if successful;
+        otherwise returns a negative value.
+  <p></p>
+  <dt><strong>Fortran90 Interface:</strong> <!--h5gclose_f-->
+    <dd>
+      None.
+<!--
+	<pre>
+
+	</pre>		
+-->
+		
+ <!--<dt><strong>Non-C API(s):</strong>
+    	<dd>
+        
+        <img src="Graphics/Java.gif"> 
+        <img src="Graphics/C++.gif">
+        -->
+<p></p>
+<dt><strong>History:</strong>
+    <dd><table width="90%">
+        <tr>
+		  <td valign="top" align="left" width="10%">
+		    <strong>Release</strong>&nbsp;&nbsp;&nbsp;&nbsp;</td>
+          <td valign="top" align="left">
+		    <strong>C</strong></td></tr>
+        <tr>
+		  <td valign="top">1.8.0</td>
+          <td valign="top">
+		    Function introduced in this release.</td></tr>
+    </table>
+</dl>
+
+
+
+<!-- NEW PAGE -->
+<!-- HEADER RIGHT "H5Oopen" -->
+<hr>
+<dl>
+  <dt><strong>Name:</strong> <a name="Object-Open">H5Oopen</a>
+  <dt><strong>Signature:</strong>
+    <dd><em>hid_t </em><code>H5Oopen</code>(
+            <em>hid_t </em><code>loc_id</code>,
+            <em>const char *</em><code>name</code>,
+            <em>hid_t </em><code>lapl_id</code>
+        )
+  <p></p>
+  <dt><strong>Purpose:</strong>
+    <dd>Opens an object using its location identifier and name.
+  <p></p>
+  <dt><strong>Description:</strong>
+    <dd><code>H5Oopen</code> opens an object in an HDF5 file.
+      <p>
+<pre>
+This function opens an object in the same way that H5Gopen,
+H5Topen, and H5Dopen do. However, H5Oopen doesn't require
+the type of object to be known beforehand. This can be
+useful in user-defined links, for instance, when only a
+path is known.
+
+The opened object should be closed again with H5Oclose
+or H5Gclose, H5Tclose, or H5Dclose.
+</pre>
+  </p>
+  <dt><strong>Parameters:</strong>
+    <ul><table>
+      <tr>
+        <td valign="top"><em>hid_t </em><code>loc_id</code>
+        </td>
+        <td valign="top">IN: Object location identifier 
+        </td></tr>
+      <tr>
+        <td valign="top"><em>const&nbsp;char&nbsp;*</em><code>name&nbsp;&nbsp;&nbsp;&nbsp;</code>
+        </td>
+        <td valign="top">IN: Object name 
+        </td></tr>
+      <tr>
+        <td valign="top"><em>hid_t </em><code>lapl_id</code>
+        </td>
+        <td valign="top">IN: Access property list identifier 
+          for the link pointing to the object
+        </td></tr>
+    </table></ul>
+  <dt><strong>Returns:</strong>
+    <dd>Returns an object identifier for the opened object if successful;
+        otherwise returns a negative value.
+  <p></p>
+  <dt><strong>Fortran90 Interface:</strong> <!--h5gclose_f-->
+    <dd>
+      None.
+<!--
+	<pre>
+
+	</pre>		
+-->
+		
+ <!--<dt><strong>Non-C API(s):</strong>
+    	<dd>
+        
+        <img src="Graphics/Java.gif"> 
+        <img src="Graphics/C++.gif">
+        -->
+<p></p>
+<dt><strong>History:</strong>
+    <dd><table width="90%">
+        <tr>
+		  <td valign="top" align="left" width="10%">
+		    <strong>Release</strong>&nbsp;&nbsp;&nbsp;&nbsp;</td>
+          <td valign="top" align="left">
+		    <strong>C</strong></td></tr>
+        <tr>
+		  <td valign="top">1.8.0</td>
+          <td valign="top">
+		    Function introduced in this release.</td></tr>
+    </table>
+</dl>
+
+
+<!-- NEW PAGE -->
+<!-- HEADER RIGHT "H5Oopen_by_addr" -->
+<hr>
+<dl>
+  <dt><strong>Name:</strong> <a name="Object-OpenByAddr">H5Oopen_by_addr</a>
+  <dt><strong>Signature:</strong>
+    <dd><em>hid_t </em><code>H5Oopen_by_addr</code>(
+            <em>hid_t </em><code>loc_id</code>,
+            <em>haddr_t </em><code>addr</code>
+        )
+  <p></p>
+  <dt><strong>Purpose:</strong>
+    <dd>Opens an object using its file address.
+  <p></p>
+  <dt><strong>Description:</strong>
+    <dd>
+
+      <table border=2 bordercolor=red><tr><td valign=top align=left>
+        <font color=red>
+        Warning! This function is <i><b>extremely dangerous</b></i>!
+        <br>
+        Improper use can lead to <i><b>file corruption</b></i>, 
+        <i><b>inaccessible data</b></i>, 
+        and other <i><b>very bad things</b></i>!
+        </font>
+      </td></tr></table>
+
+      <p>
+<pre>
+H5Oopen_by_addr opens an object using its address within an 
+HDF5 file, similar to an HDF5 hard link. The open object
+is identical to an object opened with H5Oopen() and should 
+be closed with H5Oclose() or a type-specific closing
+function (such as H5Gclose() ).
+
+This function is very dangerous if called on an invalid
+address. For this reason, H5Oincr_refcount() should be
+used to prevent HDF5 from deleting any object that is
+referenced by address (e.g. by a user-defined link).
+H5Odecr_refcount() should be used when the object is
+no longer being referenced by address (e.g. when the UD link
+is deleted).
+
+The address of the HDF5 file on disk has no effect on
+H5Oopen_by_addr(), nor does the use of any unusual file
+drivers. The "address" is really the offset within the
+HDF5 file, and HDF5's file drivers will transparently
+map this to an address on disk for the filesystem.
+</pre>
+  </p>
+  <dt><strong>Parameters:</strong>
+    <ul><table>
+      <tr>
+        <td valign="top"><em>hid_t </em><code>loc_id</code>
+        </td>
+        <td valign="top">IN: Object location identifier 
+        </td></tr>
+      <tr>
+        <td valign="top"><em>haddr_t&nbsp;</em><code>addr&nbsp;&nbsp;&nbsp;&nbsp;</code>
+        </td>
+        <td valign="top">IN: Object's address in the file
+        </td></tr>
+    </table></ul>
+  <dt><strong>Returns:</strong>
+    <dd>Returns an object identifier for the opened object if successful;
+        otherwise returns a negative value.
+  <p></p>
+  <dt><strong>Fortran90 Interface:</strong> <!--h5gclose_f-->
+    <dd>
+      None.
+<!--
+	<pre>
+
+	</pre>		
+-->
+		
+ <!--<dt><strong>Non-C API(s):</strong>
+    	<dd>
+        
+        <img src="Graphics/Java.gif"> 
+        <img src="Graphics/C++.gif">
+        -->
+<p></p>
+<dt><strong>History:</strong>
+    <dd><table width="90%">
+        <tr>
+		  <td valign="top" align="left" width="10%">
+		    <strong>Release</strong>&nbsp;&nbsp;&nbsp;&nbsp;</td>
+          <td valign="top" align="left">
+		    <strong>C</strong></td></tr>
+        <tr>
+		  <td valign="top">1.8.0</td>
+          <td valign="top">
+		    Function introduced in this release.</td></tr>
+    </table>
+</dl>
+
+
+
+
+<!-- NEW PAGE -->
+
+
+<!-- #BeginLibraryItem "/ed_libs/NavBar_RM.lbi" --><hr>
+<center>
+<table border=0 width=98%>
+<tr><td valign=top align=left>
+<a href="../index.html">HDF5 documents and links</a>&nbsp;<br>
+<a href="../H5.intro.html">Introduction to HDF5</a>&nbsp;<br>
+<a href="../UG/index.html">HDF5 User Guide</a>&nbsp;<br>
+<!--
+<a href="Glossary.html">Glossary</a><br>
+-->
+</td>
+<td valign=top align=right>
+And in this document, the 
+<a href="RM_H5Front.html">HDF5 Reference Manual</a>&nbsp;&nbsp;
+<br>
+<a href="../HL/RM_H5DS.html">H5DS</a>&nbsp;&nbsp;
+<a href="../HL/RM_H5IM.html">H5IM</a>&nbsp;&nbsp;
+<a href="../HL/RM_H5LT.html">H5LT</a>&nbsp;&nbsp;
+<a href="../HL/RM_H5PT.html">H5PT</a>&nbsp;&nbsp;
+<a href="../HL/RM_H5TB.html">H5TB</a>&nbsp;&nbsp;
+<br>
+<a href="RM_H5.html">H5</a>&nbsp;&nbsp;
+<a href="RM_H5A.html">H5A</a>&nbsp;&nbsp;
+<a href="RM_H5D.html">H5D</a>&nbsp;&nbsp;
+<a href="RM_H5E.html">H5E</a>&nbsp;&nbsp;
+<a href="RM_H5F.html">H5F</a>&nbsp;&nbsp;
+<a href="RM_H5G.html">H5G</a>&nbsp;&nbsp;
+<a href="RM_H5I.html">H5I</a>&nbsp;&nbsp;
+<a href="RM_H5L.html">H5L</a>&nbsp;&nbsp;
+<br>
+<a href="RM_H5P.html">H5P</a>&nbsp;&nbsp;
+<a href="RM_H5R.html">H5R</a>&nbsp;&nbsp;
+<a href="RM_H5S.html">H5S</a>&nbsp;&nbsp;
+<a href="RM_H5T.html">H5T</a>&nbsp;&nbsp;
+<a href="RM_H5Z.html">H5Z</a>&nbsp;&nbsp;
+<a href="Tools.html">Tools</a>&nbsp;&nbsp;
+<a href="PredefDTypes.html">Datatypes</a>&nbsp;&nbsp;
+</td></tr>
+</table>
+</center>
+<hr>
+<!-- #EndLibraryItem --><!-- #BeginLibraryItem "/ed_libs/Footer.lbi" --><address>
+<a href="mailto:hdfhelp@ncsa.uiuc.edu">HDF Help Desk</a> 
+<br>
+Describes HDF5 Release 1.8.0-alpha.
+</address>
+
+<!-- #EndLibraryItem --><SCRIPT LANGUAGE="JAVASCRIPT">
+<!--
+document.writeln("Last modified: 20 September 2006");
+-->
+</SCRIPT>
+ 
+</body>
+</html>
