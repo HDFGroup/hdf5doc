@@ -518,29 +518,42 @@ END SUBROUTINE h5tclose_f
 <dt><strong>Signature:</strong>
     <dd><em>herr_t</em><code>H5Tcommit</code>(<em>hid_t</em> <code>loc_id</code>,
         <em>const char *</em> <code>name</code>,
-        <em>hid_t</em> <code>type</code>
+        <em>hid_t</em> <code>type_id</code>
     )
 <dt><strong>Purpose:</strong>
     <dd>Commits a transient datatype to a file, creating a new named datatype.
 <dt><strong>Description:</strong>
-    <dd><code>H5Tcommit</code> commits a transient datatype 
+    <dd><code>H5Tcommit</code> commits the transient datatype 
         (not immutable) to a file, turning it into a named datatype.  
-        The <code>loc_id</code> is either a file or group identifier  
-        which, when combined with <code>name</code>, refers to a new 
-        named datatype.
+        <p>
+        The datatype <code>type_id</code> is committed as a named datatype 
+        at the location <code>loc_id</code>, which is either a file or group 
+        identifier, with the name <code>name</code>.
+	<p>
+	<code>name</code> can be a relative path based at <code>loc_id</code>
+        or an absolute path from the root of the file.
+        If any of the groups specified in that path do not already exist, 
+        the dataset must be created with 
+        <a href="#Datatype-CommitExpand"><code>H5Tcommit_expand</code></a>
+        and linked into the file structure with 
+        <a href="RM_H5L.html#Link-Link"><code>H5Llink</code></a>.
         <p>
         As is the case for any object in a group, 
         the length of the name of a named datatype is not limited.  
+        <p>
+        See <a href="#Datatype-CommitExpand"><code>H5Tcommit_expand</code></a> 
+        for a discussion of the differences between <code>H5Tcommit</code> 
+        and <code>H5Tcommit_expand</code>.
 <dt><strong>Parameters:</strong>
     <ul><table>
         <tr>
-		  <td valign="top"><em>hid_t</em> <code>loc_id</code></td>
+          <td valign="top"><em>hid_t</em> <code>loc_id</code></td>
           <td valign="top">IN: A file or group identifier.</td></tr>
         <tr>
-		  <td valign="top"><em>const&nbsp;char&nbsp;*</em>&nbsp;<code>name&nbsp;&nbsp;&nbsp;&nbsp;</code></td>
+          <td valign="top"><em>const&nbsp;char&nbsp;*</em>&nbsp;<code>name&nbsp;&nbsp;&nbsp;&nbsp;</code></td>
           <td valign="top">IN: A datatype name.</td></tr>
         <tr>
-		  <td valign="top"><em>hid_t</em> <code>type</code></td>
+          <td valign="top"><em>hid_t</em> <code>type_id</code></td>
           <td valign="top">IN: A datatype identifier.</td></tr>
     </table></ul>
 <dt><strong>Returns:</strong>
@@ -574,53 +587,68 @@ END SUBROUTINE h5tcommit_f
 <dl>
 <dt><strong>Name:</strong> <a name="Datatype-CommitExpand">H5Tcommit_expand</a>
 <dt><strong>Signature:</strong>
-    <dd><em>herr_t</em><code>H5Tcommit_expand</code>(<em>hid_t</em> <code>loc_id</code>,
-        <em>const char *</em> <code>name</code>,
-        <em>hid_t</em> <code>type</code>,
+    <dd><em>herr_t</em> <code>H5Tcommit_expand</code>(
+        <em>hid_t</em> <code>loc_id</code>,
+        <em>hid_t</em> <code>type_id</code>,
         <em>hid_t</em> <code>tcpl_id</code>,
         <em>hid_t</em> <code>tapl_id</code>
     )
 <dt><strong>Purpose:</strong>
-    <dd>Commits a transient datatype to a file, creating a new named datatype with specified creation and property lists.
+    <dd>Commits a transient datatype to a file, creating a new named datatype 
+        with specified creation and access property lists.
 <dt><strong>Description:</strong>
     <dd><code>H5Tcommit_expand</code> commits a transient datatype 
         (not immutable) to a file, turning it into a named datatype
-        with specified creation and property lists.  
+        with the specified creation and property lists.  
         With default property lists, <code>H5P_DEFAULT</code>,
-        <code>H5Tcommit_expand</code> provides functionality identical
-        to that of <code>H5Tcommit</code>. 
-        <p>
-        The <code>loc_id</code> is either a file or group identifier  
-        which, when combined with <code>name</code>, refers to a new 
-        named datatype.
-        <p>
-        As is the case for any object in a group, 
-        the length of the name of a named datatype is not limited.  
-        <p>
-        The use of the datatype creation property list, <code>tcpl_id</code>,
-        enables the automatic creation of intermediate groups that may be
-        specified in <code>name</code>.  See
-        <a href="RM_H5P.html#Property-SetCreateIntermediateGroup">H5Pset_create_intermediate_group</a>.
+        <code>H5Tcommit_expand</code> provides similar functionality 
+        to that of <code>H5Tcommit</code>, with the differences 
+        described below.
         <p>
         The datatype access property list identifier, <code>tapl_id</code>,
         is provided for future functionality and is not used at this time.
-        This parameter should always be passed as the value <code>H5P_DEFAULT</code>.
+        This parameter should always be passed as the value 
+        <code>H5P_DEFAULT</code>.
+        <p>
+        Note that <code>H5Tcommit_expand</code> does not link this 
+        newly-committed datatype into the file.  
+        After the <code>H5Tcommit_expand</code> call, 
+        the datatype identifier <code>type_id</code> 
+        <i>must</i> be linked into the HDF5 file structure 
+        with <a href="RM_H5L.html#Link-Link"><code>H5Llink</code></a>
+        or it will be deleted from the file when the file is closed.
+        <p>
+        The differences between this function and 
+        <a href="#Datatype-Commit"><code>H5Tcommit</code></a> are as follows:
+        <ul>
+          <li><code>H5Tcommit_expand</code> explicitly includes property 
+            lists, which provides for greater control of the creation process 
+            and of the properties of the new named datatype.
+            <code>H5Tcommit</code> always uses default properties.
+          <li><code>H5Tcommit_expand</code> neither provides the new 
+            named datatype&rsquo;s name nor links it into the HDF5 file 
+            structure; those actions must be performed separately through a 
+            call to <a href="RM_H5L.html#Link-Link"><code>H5Llink</code></a>,
+            which offers greater control over linking.
+        </ul>
 <dt><strong>Parameters:</strong>
     <ul><table>
         <tr>
-		  <td valign="top"><em>hid_t</em> <code>loc_id</code></td>
-          <td valign="top">IN: A file or group identifier.</td></tr>
+          <td valign="top"><em>hid_t</em> <code>loc_id</code></td>
+          <td valign="top">IN: A file or group identifier specifying the file
+              in which the new named datatype is to be created.</td></tr>
         <tr>
-		  <td valign="top"><em>const&nbsp;char&nbsp;*</em>&nbsp;<code>name&nbsp;&nbsp;&nbsp;&nbsp;</code></td>
-          <td valign="top">IN: A datatype name.</td></tr>
-        <tr>
-		  <td valign="top"><em>hid_t</em> <code>type</code></td>
+          <td valign="top"><em>hid_t</em> <code>type_id</code></td>
           <td valign="top">IN: A datatype identifier.</td></tr>
         <tr>
-		  <td valign="top"><em>hid_t</em> <code>tcpl_id</code></td>
-          <td valign="top">IN: A datatype creation property list identifier.</td></tr>
+          <td valign="top"><em>hid_t</em> <code>tcpl_id</code></td>
+          <td valign="top">IN: A datatype creation property list 
+              identifier.
+              <br>
+              (<code>H5P_DEFAULT</code> for the default property list.)
+              </td></tr>
         <tr>
-		  <td valign="top"><em>hid_t</em> <code>tapl_id</code></td>
+          <td valign="top"><em>hid_t</em>&nbsp;<code>tapl_id&nbsp;&nbsp;&nbsp;&nbsp;</code></td>
           <td valign="top">IN: A datatype access property list identifier.
              <br>
              <i>Currently unused; should always be passed as the 
@@ -4414,7 +4442,7 @@ Describes HDF5 Release 1.8.0-alpha.
 
 <!-- #EndLibraryItem --><SCRIPT LANGUAGE="JAVASCRIPT">
 <!--
-document.writeln("Last modified: 12 May 2006");
+document.writeln("Last modified: 9 October 2006");
 -->
 </SCRIPT>
  
