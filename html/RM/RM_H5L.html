@@ -72,10 +72,12 @@ And in this document, the
 <h1>H5L: Link Interface</h1>
 </center>
 
-<h2>Link Object API Functions</h2>
+<h2>Link API Functions</h2>
 
-The Link interface functions create and manipulate links
+The Link interface, H5L, functions create and manipulate links
 in an HDF5 group.
+This interface includes functions that enable the creation and use of 
+user-defined link classes.
 <p>
 <strong>The C Interfaces:</strong>
 
@@ -187,7 +189,6 @@ as the corresponding C function.
 -->
 
 <p>
-<i>&lt;&nbsp;&lt;&nbsp;H5L API general description&nbsp;&gt;&nbsp;&gt;</i>
 
 <p>
 
@@ -219,26 +220,39 @@ as the corresponding C function.
       specified by <code>src_name</code> 
       from the file or group specified by <code>src_loc_id</code> 
       to the destination location <code>dst_loc_id</code>.
-      The new copy of the link will be created with the name 
-      <code>dst_name</code>. 
+      The new copy of the link is created with the name <code>dst_name</code>. 
       <p>
       The destination location, as specified in <code>dst_loc_id</code>,
-      may be a group in the current file or a location in a different file.
-      If <code>dst_loc_id</code> is a file identifier, the copy will
-      be placed in that file&rsquo;s root group.
+      may be a group in the current file. 
+      If <code>dst_loc_id</code> is the file identifier, the copy is
+      placed in the file&rsquo;s root group.
       <p>
       The new link is created with the creation and access property lists 
       specified by <code>lcpl_id</code> and <code>lapl_id</code>.
+      The interpretation of <code>lcpl_id</code> is limited in the manner
+      described in the next paragraph.
       <p>
       <code>H5Lcopy</code> retains the creation time and the target of 
       the original link.
+      However, since the link may be renamed, the character encoding 
+      is that specified in <code>lcpl_id</code> rather than that of 
+      the original link.  Other link creation properties are ignored.
       <p>
-      Several flags are available to govern the behavior of 
+      If the link is a soft link, also known as a symbolic link, its 
+      target is interpreted relative to the location of the copy.
+      <p>
+      Several properties are available to govern the behavior of 
       <code>H5Lcopy</code>.
-      These flags are set in the creation and access property lists, 
-      <code>lcpl_id</code> and <code>lapl_id</code>, with 
+      These properties are set in the link creation and access property lists, 
+      <code>lcpl_id</code> and <code>lapl_id</code>, respectively.
+      The property controlling creation of missing intermediate groups 
+      is set in the link creation property list with 
       <a href="RM_H5P.html#Property-SetCreateIntermediateGroup">
-          <code>H5Pset_create_intermediate_group</code></a>,
+          <code>H5Pset_create_intermediate_group</code></a>; 
+      this function ignores any other properties in the link creation 
+      property list.
+      Properties controlling character encoding, link traversals, and
+      external link prefixes are set in the link access property list with 
       <a href="RM_H5P.html#Property-SetCharEncoding">
           <code>H5Pset_char_encoding</code></a>,
       <a href="RM_H5P.html#Property-SetNLinks">
@@ -247,7 +261,7 @@ as the corresponding C function.
           <code>H5Pset_elink_prefix</code></a>.
   </p>
   <dt><strong>Parameters:</strong>
-    <ul><table>
+    <dd><table>
       <tr>
         <td valign="top"><em>hid_t </em><code>src_loc_id</code>
         </td>
@@ -279,7 +293,7 @@ as the corresponding C function.
         </td>
         <td valign="top">IN: Link access property list identifier
         </td></tr>
-    </table></ul>
+    </table>
   <dt><strong>Returns:</strong>
     <dd>Returns a non-negative value if successful;
         otherwise returns a negative value.
@@ -355,17 +369,17 @@ as the corresponding C function.
       link creation and access property lists associated with the 
       new link.
       <p> 
-      An external link is a specialized type of soft link, and like
+      An external link behaves similarly to a soft link, and like
       a soft link in an HDF5 file, it may <i>dangle</i>: the target 
       object need not exist at the time that the link is created.
       </p>
   <dt><strong>Parameters:</strong>
-    <ul><table>
+    <dd><table>
           <tr>
             <td valign="top"><em>const char *</em> <code>file_name</code></td>
             <td valign="top">IN: Name of the file containing the target object, 
-	        Neither the file nor the target object is required to 
-		exist.</td></tr>
+	        Neither the file nor the target object is required to exist.
+                May be the file the link is being created in.</td></tr>
           <tr>
             <td valign="top"><em>const&nbsp;char&nbsp;*</em>&nbsp;<code>object_name&nbsp;&nbsp;&nbsp;&nbsp;</code></td>
             <td valign="top">IN: Path within the target file to the target 
@@ -383,7 +397,7 @@ as the corresponding C function.
           <tr>
             <td valign="top"><em>hid_t</em> <code>lapl_id</code></td> 
             <td valign="top">IN: Link access property list identifier.</td></tr>
-    </table></ul>
+    </table>
        <p></p>
  <dt><strong>Returns:</strong>
     <dd>Returns a non-negative value if successful;
@@ -454,10 +468,10 @@ END SUBROUTINE h5lcreate_external_f
       <p> 
       The target object must already exist in the file.
       <p> 
-      Hard links are for use only if the target object is in the 
+      Hard  and soft links are for use only if the target object is in the 
       current file.  
       If the desired target object is in a different file from the 
-      new soft link, a soft link may be created with  
+      new link, an external link may be created with  
       <a href="#Link-External"><code>H5Lcreate_external</code></a>.
       <p>
       <code>lcpl</code> and <code>lapl</code> are the
@@ -466,11 +480,14 @@ END SUBROUTINE h5lcreate_external_f
       <p> 
       The HDF5 library keeps a count of all hard links pointing to an 
       object; if the hard link count reaches zero (<code>0</code>),
-      <font color="red"><i> &lt; something might happen &gt; </i></font>.
-      The library keeps no similar count for soft links.
+      the object will be deleted from the file.  Creating new hard links
+      to an object will prevent it from being deleted if other links 
+      are removed.
+      The library maintains no similar count for soft links and they 
+      can dangle.
       </p>
   <dt><strong>Parameters:</strong>
-    <ul><table>
+    <dd><table>
           <tr>
             <td valign="top"><em>hid_t</em> <code>curr_loc_id</code></td>
             <td valign="top">IN: The file or group identifier for the 
@@ -492,7 +509,7 @@ END SUBROUTINE h5lcreate_external_f
           <tr>
             <td valign="top"><em>hid_t</em> <code>lapl_id</code></td> 
             <td valign="top">IN: Link access property list identifier.</td></tr>
-    </table></ul>
+    </table>
        <p></p>
  <dt><strong>Returns:</strong>
     <dd>Returns a non-negative value if successful;
@@ -544,11 +561,11 @@ END SUBROUTINE h5lcreate_hard_f
       ) 
       <p></p>
   <dt><strong>Purpose:</strong>
-    <dd>Creates a soft link to an object.
+    <dd>Creates a soft link, or symbolic link, to an object.
       <p></p>
   <dt><strong>Description:</strong>  
-    <dd><code>H5Lcreate_soft</code> creates a new soft link to an 
-      object in an HDF5 file.  
+    <dd><code>H5Lcreate_soft</code> creates a new soft link, 
+      also known as a symbolic link, to an object in an HDF5 file.  
       The new link may be one of many that point to that object.
       <p>
       <code>curr_loc_id</code> and <code>curr_name</code> specify the 
@@ -564,13 +581,14 @@ END SUBROUTINE h5lcreate_hard_f
       For instance, if <code>target_name</code> is <code>./foo</code>,  
       <code>curr_loc_id</code> specifies <code>./x/y/bar</code>, 
       and a request is made for <code>./x/y/bar/curr_name</code>, 
-      then the actual object looked up is <code>./x/y/bar/foo</code>.                            
+      then the actual object looked up is <code>./x/y/bar/foo</code>.   
       <p> 
       <code>H5Lcreate_soft</code> is for use only if the target object 
       is in the current file.  
       If the desired target object is in a different file from the 
-      new soft link, use 
-      <a href="#Link-External"><code>H5Lcreate_external</code></a>.
+      new link, use 
+      <a href="#Link-External"><code>H5Lcreate_external</code></a>
+      to create an external link.
       <p>
       <code>lcpl</code> and <code>lapl</code> are the
       link creation and access property lists associated with the 
@@ -584,7 +602,7 @@ END SUBROUTINE h5lcreate_hard_f
       object; the library keeps no similar count for soft links.
       </p>
   <dt><strong>Parameters:</strong>
-    <ul><table>
+    <dd><table>
           <tr>
             <td valign="top"><em>const&nbsp;char&nbsp;*</em>&nbsp;<code>target_path&nbsp;&nbsp;&nbsp;&nbsp;</code></td>
             <td valign="top">IN: Path to the target object, 
@@ -602,7 +620,7 @@ END SUBROUTINE h5lcreate_hard_f
           <tr>
             <td valign="top"><em>hid_t</em> <code>lapl_id</code></td> 
             <td valign="top">IN: Link access property list identifier.</td></tr>
-    </table></ul>
+    </table>
        <p></p>
  <dt><strong>Returns:</strong>
     <dd>Returns a non-negative value if successful;
@@ -644,10 +662,10 @@ END SUBROUTINE h5lcreate_soft_f
 <dl>
   <dt><strong>Name:</strong> <a name="Link-CreateUD">H5Lcreate_ud</a>
   <dt><strong>Signature:</strong>
-    <dd><em>herr_t </em><code>H5Lcopy</code>(
+    <dd><em>herr_t </em><code>H5Lcreate_ud</code>(
             <em>hid_t</em> <code>link_loc_id</code>,
             <em>const char *</em><code>link_name</code>,
-            <em>H5L_link_t</em> <code>link_type</code>,
+            <em>H5L_type_t</em> <code>link_type</code>,
             <em>const char *</em><code>udata</code>,
             <em>size_t</em> <code>udata_size</code>,
             <em>hid_t</em> <code>lcpl_id</code>,
@@ -655,33 +673,60 @@ END SUBROUTINE h5lcreate_soft_f
         )
       <p></p>
   <dt><strong>Purpose:</strong>
-    <dd>Creates a user-defined link.
+    <dd>Creates a link of a  user-defined type.
       <p></p>
   <dt><strong>Description:</strong>
-    <dd><code>H5Lcreate_ud</code> ...
-      <p>
-
-<pre>
-Creates a user-defined link of type LINK_TYPE named LINK_NAME
-with user-specified data UDATA.
- 
-The format of the information pointed to by UDATA is
-defined by the user. UDATA_SIZE holds the size of this buffer.
-
-LINK_NAME is interpreted relative to LINK_LOC_ID. 
- 
-The property list specified by LCPL_ID holds properties used
-to create the link.
- 
-The link class of the new link must already be registered
-with the library.
-
-H5L_link_t is described in H5Lpublic.h.
-</pre>
-
-      <p></p>
+    <dd><code>H5Lcreate_ud</code> creates a link 
+       of user-defined type <code>link_type</code> 
+       named <code>link_name</code>
+       at the location specified in <code>link_loc_id</code>
+       with user-specified data <code>udata</code>.
+       <p>
+       <code>link_name</code> is interpreted relative to 
+       <code>link_loc_id</code>. 
+       <p>
+       The link class of the new link, <code>link_type</code>, 
+       must already be registered with the library.
+       Such user-defined link classes are registered with 
+       <a href="#Link-Register"><code>H5Lregister</code></a>.
+       <p>
+       The <code>H5L_type_t</code>, the <small>ENUM</small> specifying 
+       valid link classes, is defined in <code>H5Lpublic.h</code>.
+       Valid values without registered user-defined link types 
+       include the following:
+           <br><code>&nbsp;&nbsp;&nbsp;&nbsp;
+               H5L_LINK_HARD</code>
+           <br><code>&nbsp;&nbsp;&nbsp;&nbsp;
+               H5L_LINK_SOFT</code>
+           <br><code>&nbsp;&nbsp;&nbsp;&nbsp;
+               H5L_LINK_EXTERNAL</code>
+           <br>
+       Registering a user-defined link type with <code>H5Lregister</code>
+       adds a user-defined symbol to the <code>H5L_type_t</code>
+       <small>ENUM</small>; 
+       that user-defined symbol is then passed in the <code>link_type</code> 
+       parameter of <code>H5Lcreate_ud</code> 
+       and will be returned by <code>H5Lget_linkinfo</code>.
+       <p>
+       The format of the information pointed to by <code>udata</code> is
+       defined by the user. 
+       <code>udata_size</code> specifies the size of the <code>udata</code> 
+       buffer.
+       <code>udata</code> may be <small>NULL</small> if 
+       <code>udata_size</code> is zero (<code>0</code>).
+       <p>
+       The property lists specified by <code>lcpl_id</code> and
+       <code>lapl_id</code> specify properties used to create and access 
+       the link.
+       <p></p>
+  <dt><strong>Note:</strong>
+    <dd>Though the external link type is included in the HDF5 Library 
+        distribution, it is implemented as a user-defined link type.
+        This was done, in part, to provide a model for implementation
+        of other user-defined links.
+        <p>
   <dt><strong>Parameters:</strong>
-    <ul><table>
+    <dd><table>
       <tr>
         <td valign="top"><em>hid_t</em> <code>link_loc_id</code>
         </td>
@@ -693,7 +738,7 @@ H5L_link_t is described in H5Lpublic.h.
         <td valign="top">IN: Link name
         </td></tr>
       <tr>
-        <td valign="top"><em>H5L_link_t</em> <code>link_type</code>
+        <td valign="top"><em>H5L_type_t</em> <code>link_type</code>
         </td>
         <td valign="top">IN: User-defined link class
         </td></tr>
@@ -717,7 +762,7 @@ H5L_link_t is described in H5Lpublic.h.
         </td>
         <td valign="top">IN: Link access property list identifier
         </td></tr>
-    </table></ul>
+    </table>
       <p></p>
   <dt><strong>Returns:</strong>
     <dd>Returns a non-negative value if successful;
@@ -776,19 +821,7 @@ H5L_link_t is described in H5Lpublic.h.
         <p>
         A file or group identifier, <code>loc_id</code>, 
         and a link name, <code>name</code>, relative to <code>loc_id</code>,
-        are commonly used to specify the object.  
-        However, if the link identifier is already known to the application,
-        an alternative approach is to use that identifier, 
-        <code>link_id</code> in place of <code>loc_id</code>, 
-        and a dot (<code>.</code>) in place of <code>name</code>.  
-        Thus, the two alternative versions of the first portion of an 
-        <code>H5Lget_linkinfo</code> call would be as follows:
-        <br>
-        <code>
-        &nbsp;&nbsp;&nbsp;&nbsp;H5Lget_linkinfo (loc_id name&nbsp;&nbsp;...)
-        <br>
-        &nbsp;&nbsp;&nbsp;&nbsp;H5Lget_linkinfo (link_id .&nbsp;&nbsp;&nbsp;&nbsp;...)
-        </code>
+        are used to specify the object.  
         <p>
         <code>lapl_id</code> is the link access property list associated 
 	with the link <code>name</code>.
@@ -800,8 +833,9 @@ H5L_link_t is described in H5Lpublic.h.
         <pre>
                   typedef struct H5L_linkinfo_t {
                       H5T_cset_t cset;
-                      time_t ctime; 
-                      H5L_link_t linkclass;
+                      int64_t corder; 
+                      hbool_t corder_valid; 
+                      H5L_type_t type;
                       union {
                           haddr_t address;
                           size_t linklen;
@@ -813,19 +847,27 @@ H5L_link_t is described in H5Lpublic.h.
         In the above struct,
         <code>cset</code> specifies the character set of the link name.
         <p>
-        <code>ctime</code> is the link&rsquo;s creation time.
-        (Note that some systems will be able to record the creation time  
-        accurately but unable to retrieve the correct time; such systems, 
-        e.g., Irix64, will report a <code>ctime</code> value of 0 (zero))
+        <code>corder</code> specifies the link&rsquo;s creation order 
+        position.  <code>corder_valid</code> indicates whether the value 
+        in <code>corder</code> is valid.
         <p>
-        <code>linkclass</code> specifies the link class.  
+        <code>corder</code> starts at zero (<code>0</code>) 
+        and is incremented by one (<code>1</code>) as new links are created. 
+        But higher-numbered entries are not adjusted when a lower-numbered 
+        link is deleted; the deleted link&rsquo;s creation order position is 
+        simply left vacant.  
+        In such situations, the value of <code>corder</code> for the 
+        last link created will be larger than the number of links remaining 
+        in the group.
+        <p>
+        <code>type</code> specifies the link class.  
 	Valid values include 
 		<code>H5L_LINK_ERROR</code>, 
 		<code>H5L_LINK_HARD</code>,
         	<code>H5L_LINK_SOFT</code>, and
 		<code>H5L_LINK_EXTERNAL</code>.  
         There will be additional valid values if user-defined links 
-	have been registered
+	have been registered.
 	<p>
 	<code>address</code> specifies the file address that the link
 	points to.
@@ -838,29 +880,23 @@ H5L_link_t is described in H5Lpublic.h.
         otherwise <code>link_size</code> will be zero.  
         <p>
   <dt><strong>Parameters:</strong>
-    <ul><table>
+    <dd><table>
       <tr>
         <td valign="top"><em>hid_t</em> <code>loc_id</code></td>
-        <td valign="top">IN: File or group identifier.
-            <br>
-            <i>Alternative:</i> A link identifier, 
-            <code>link_id</code></td></tr>
+        <td valign="top">IN: File or group identifier.</td></tr>
       <tr>
         <td valign="top"><em>const char</em> <code>*name</code></td>
         <td valign="top">IN: Name of the object for which status is being 
-            sought.
-            <br>
-            <i>Alternative:</i> If the preceding parameter is the 
-            direct link identifier, i.e., the <code>link_id</code>, 
-            this parameter should be a dot (<code>.</code>).</td></tr>
+            sought.</td></tr>
       <tr>
         <td valign="top"><em>H5L_linkinfo_t</em>&nbsp;<code>*link_buff&nbsp;&nbsp;&nbsp;&nbsp;</code></td>
-        <td valign="top">OUT: Buffer in which llink information is 
+        <td valign="top">OUT: Buffer in which link information is 
 	    returned.</td></tr>
       <tr>
         <td valign="top"><em>hid_t</em> <code>lapl_id</code></td>
         <td valign="top">IN: Link access property list identifier.</td></tr>
-    </table></ul>
+    </table>
+  <p>
   <dt><strong>Returns:</strong>
     <dd> Returns a non-negative value if successful, with the fields of 
          <code>link_buff</code> (if non-null) initialized.
@@ -916,24 +952,28 @@ SUBROUTINE
   <p></p>
   <dt><strong>Description:</strong>
     <dd><code>H5Lget_linkval</code> returns the link value of the link 
-        <code>name</code>.  For symbolic links, this is the path to 
-	which the link points, including the null terminator;
-	for user-defined links, it is the link buffer.
+        <code>name</code>.  For soft links, this is the path to 
+	which the link points, including the null terminator; for
+	user-defined links, including external links, it is the link buffer.
         <p>
         The parameter <code>loc_id</code> is a file or group identifier.
         <p>
-        <code>name</code> must be a symbolic link and must be defined 
-	relative to <code>loc_id</code>.
+        <code>name</code> must be a soft or user-defined link 
+	and must be defined relative to <code>loc_id</code>.
 	<p>
 	The link value is returned in the buffer <code>linkval_buff</code>.
         If <code>size</code> is smaller than the size of the returned 
 	object name, then the name stored in <code>linkval_buff</code> 
-	will be truncated to <code>size</code> bytes and 
-	will not be null terminated. 
+	will be truncated to <code>size</code> bytes.
+	For soft links, this means that the value will not be null terminated. 
         <p> 
-        This function fails if <code>name</code> is not a symbolic link.  
-        The presence of a symbolic link can be tested by passing zero for  
-        <code>size</code> and NULL for <code>linkval_buff</code>.  
+	To retrieve the target file and object names for an external link, 
+        In the case of external links, the target file and object names
+        are extracted from <code>linkval_buff</code> by calling
+        <a href="#Link-UnpackELinkVal"><code>H5Lunpack_elink_val</code></a>.
+        <p> 
+        The link class of <code>name</code> can be determined with a call 
+        to <code>H5Lget_linkinfo</code>.
         <p>
         <code>lapl_id</code> specifies the link access property list 
 	associated with the link <code>name</code>.
@@ -942,7 +982,7 @@ SUBROUTINE
 	<code>H5Lget_linkinfo</code> has been called to verify that 
 	<code>name</code> is a symbolic link.
   <dt><strong>Parameters:</strong>
-    <ul><table>
+    <dd><table>
       <tr>
 	    <td valign="top"><em>hid_t</em> <code>loc_id</code></td>
         <td valign="top">IN: File or group identifier.</td></tr>
@@ -960,7 +1000,7 @@ SUBROUTINE
       <tr>
 	    <td valign="top"><em>hid_t</em> <code>lapl_id</code></td>
         <td valign="top">IN: List access property list identifier.</td></tr>
-    </table></ul>
+    </table>
   <dt><strong>Returns:</strong>
     <dd>Returns a non-negative value, with the link value in 
         <code>linkval_buff</code>, if successful.
@@ -1014,11 +1054,16 @@ END SUBROUTINE h5gget_linkval_f
         )
       <p></p>
   <dt><strong>Purpose:</strong>
-    <dd>Unregisters a class of user-defined links.
+    <dd>Determines whether a class of user-defined links is registered.
       <p></p>
   <dt><strong>Description:</strong>
     <dd><code>H5Lis_registered</code> tests whether a user-defined link 
-      class has been registered.
+      class is currently registered, either by the HDF5 Library 
+      or by the user through the use of 
+      <a href="#Link-Register"><code>H5Lregister</code></a>.
+      <p>
+      A link class must be registered to create new links of that type
+      or to traverse exisitng links of that type.
       <p></p>
   <dt><strong>Parameters:</strong>
     <dd><table>
@@ -1091,8 +1136,8 @@ END SUBROUTINE h5gget_linkval_f
       location and name of the new link while <code>obj_id</code>
       identifies the object that the link points to.
       <p>
-      <code>H5Llink</code> is designed for creating an additional
-      or alternative link to an object that has just been created.
+      <code>H5Llink</code> is designed for creating the first link 
+      to an object that has just been created.
       But it may be useful in other situations as well, such as
       adding additional structure to an existing file so that it 
       can be used for purposes beyond the original data design.
@@ -1102,23 +1147,41 @@ END SUBROUTINE h5gget_linkval_f
       new link.
       </p>
   <dt><strong>Parameters:</strong> 
-    <ul><table>
+    <dd><table>
       <tr>
         <td valign="top"><em>hid_t</em> <code>new_loc_id</code></td> 
-        <td valign="top">IN: Original file or group identifier.</td></tr>
+        <td valign="top">IN: File or group identifier specifying location 
+            of new link.</td></tr>
       <tr>
         <td valign="top"><em>const&nbsp;char</em>&nbsp;<code>*new_name&nbsp;&nbsp;&nbsp;&nbsp;</code></td> 
-        <td valign="top">IN: Original link name.</td></tr>
+        <td valign="top">IN: Link name to be created.</td></tr>
       <tr>
         <td valign="top"><em>hid_t</em> <code>obj_id</code></td> 
-        <td valign="top">IN: Destination file or group identifier.</td></tr>
+        <td valign="top">IN: Object to be linked.</td></tr>
       <tr>
         <td valign="top"><em>hid_t</em> <code>lcpl_id</code></td> 
         <td valign="top">IN: Link creation property list identifier.</td></tr>
       <tr>
         <td valign="top"><em>hid_t</em> <code>lapl_id</code></td> 
         <td valign="top">IN: Link access property list identifier.</td></tr>
-    </table></ul>
+    </table>
+      <p></p>
+  <dt><strong>Example:</strong> 
+  <dd>To create missing intermediate groups:<br>
+      Suppose that an application must create the group <code>C</code> 
+      with the path <code>/A/B01/C</code> but may not know at run time 
+      whether the groups <code>A</code> and <code>B01</code> exist. 
+      The following code ensures that those groups are created 
+      if they are missing:
+<pre>    hid_t lcpl_id = H5Pcreate(H5P_LINK_CREATE);
+    int   status  = H5Pset_create_intermediate_group(lcpl_id, TRUE);
+    hid_t gid     = H5Gcreate_expand(file_id, H5P_DEFAULT, H5P_DEFAULT);
+    status        = H5Llink(file_id, "/A/B01/C", gid, lcpl_id, H5P_DEFAULT);
+</pre>
+      <p>
+      Note that the <code>H5Llink</code> call is mandatory; 
+      the object will not be otherwise be linked into the HDF5 file structure 
+      and will be deleted when the file is closed.
       <p></p>
   <dt><strong>Returns:</strong> 
   <dd>Returns a non-negative value if successful; otherwise returns a negative 
@@ -1183,8 +1246,25 @@ END SUBROUTINE h5glink_f
       <code>src_name</code> and <code>dst_name</code>, respectively, 
       are interpreted relative to those identifiers. 
       <p>
-      <code>lcpl</code> and <code>lapl</code> are the link creation
-      and access property lists associated with the link.
+      Several properties are available to govern the behavior of 
+      <code>H5Lmove</code>.
+      These properties are set in the link creation and access property lists, 
+      <code>lcpl_id</code> and <code>lapl_id</code>, respectively.
+      The property controlling creation of missing intermediate groups 
+      is set in the link creation property list with 
+      <a href="RM_H5P.html#Property-SetCreateIntermediateGroup">
+          <code>H5Pset_create_intermediate_group</code></a>; 
+      this function ignores any other properties in the link creation 
+      property list.
+      Properties controlling character encoding, link traversals, and
+      external link prefixes are set in the link access property list with 
+      <a href="RM_H5P.html#Property-SetCharEncoding">
+          <code>H5Pset_char_encoding</code></a>,
+      <a href="RM_H5P.html#Property-SetNLinks">
+          <code>H5Pset_nlinks</code></a>, and
+      <a href="RM_H5P.html#Property-SetELinkPrefix">
+          <code>H5Pset_elink_prefix</code></a>.
+      </p>
   <dt><strong>Warning:</strong> 
   <dd>Exercise care in moving links as it is possible to render data in 
       a file inaccessible with <code>H5Lmove</code>. 
@@ -1193,7 +1273,7 @@ END SUBROUTINE h5glink_f
       the file.
       <p></p>
   <dt><strong>Parameters:</strong> 
-    <ul><table>
+    <dd><table>
       <tr>
 	    <td valign="top"><em>hid_t</em> <code>src_loc_id</code></td> 
         <td valign="top">IN: Original file or group identifier.</td></tr>
@@ -1212,7 +1292,7 @@ END SUBROUTINE h5glink_f
       <tr>
 	    <td valign="top"><em>hid_t</em> <code>lapl_id</code></td> 
         <td valign="top">IN: Link access property list identifier.</td></tr>
-    </table></ul>
+    </table>
       <p></p>
   <dt><strong>Returns:</strong> 
   <dd>Returns a non-negative value if successful; otherwise returns a negative 
@@ -1266,7 +1346,7 @@ END SUBROUTINE h5lmove_f
   <dt><strong>Name:</strong> <a name="Link-Register">H5Lregister</a>
   <dt><strong>Signature:</strong>
     <dd><em>herr_t </em><code>H5Lregister</code>(
-            <em>const H5L_link_class_t *</em> <code>link_cls</code>
+            <em>const H5L_link_class_t *</em> <code>link_class</code>
         )
       <p></p>
   <dt><strong>Purpose:</strong>
@@ -1274,27 +1354,53 @@ END SUBROUTINE h5lmove_f
       changes behavior of existing class.
       <p></p>
   <dt><strong>Description:</strong>
-    <dd><code>H5Lregister</code> ...
+    <dd><code>H5Lregister</code> registers a class of user-defined links, 
+      or changes the behavior of an existing class.
       <p>
-
-<pre>
-Registers a class of user-defined links, or changes the
-behavior of an existing class.
- 
-The link class passed in will override any existing link
-class for the specified link class ID. It must at least
-include a H5L_link_class_t version (which should be
-H5L_LINK_CLASS_T_VERS), a link class ID, and a traversal
-function.
-</pre>
-
+      The struct <code>H5L_link_class_t</code> is defined in 
+      <code>H5Lpublic.h</code> as follows:
+      <pre>
+  typedef struct H5L_link_class_t {
+      int version;                    /* Version number of this struct  */
+      H5L_type_t class_id;            /* Link class identifier          */
+      const char *comment;            /* Comment for debugging          */
+      H5L_create_func_t create_func;  /* Callback during link creation  */
+      H5L_move_func_t move_func;      /* Callback after moving link     */
+      H5L_copy_func_t copy_func;      /* Callback after copying link    */
+      H5L_func_t trav_func;           /* The main traversal function    */
+      H5L_delete_func_t del_func;     /* Callback for link deletion     */
+      H5L_query_func_t query_func;    /* Callback for queries           */
+  } H5L_link_class_t;
+      </pre>
+      <p>
+      The link class passed in will override any existing link
+      class for the specified link class identifier <code>class_id</code>. 
+      The class definition must include at least a 
+      <code>H5L_link_class_t</code> version 
+      (which should be <code>H5L_LINK_CLASS_T_VERS</code>), 
+      a link class identifier, and a traversal function.
+      <p>
+      <code>class_id</code> must be a value between 
+      <code>H5L_LINK_UD_MIN</code> and <code>H5L_LINK_UD_MAX</code>,
+      which are defined in <code>H5Lpublic.h</code>.
+      Note that as distributed with the HDF5 Library, 
+      the external link class is implemented as an example user-defined link 
+      class and <code>H5L_LINK_EXTERNAL</code> equals 
+      <code>H5L_LINK_UD_MIN</code>.  Therefore, <code>class_id</code> 
+      should not equal <code>H5L_LINK_UD_MIN</code> unless you intend to 
+      overwrite or modify the behavior of external links.
+      <p></p>
+  <dt><strong>Note:</strong>
+    <dd>If you plan to distribute files with a new user-defined link class,
+      please contact the Help Desk at The HDF Group to help prevent collisions
+      between <code>class_id</code> values.
       <p></p>
   <dt><strong>Parameters:</strong>
     <dd><table>
       <tr>
-        <td valign="top"><em>const&nbsp;H5L_link_class_t&nbsp;*</em> <code>link_cls&nbsp;&nbsp;&nbsp;&nbsp;</code>
+        <td valign="top"><em>const&nbsp;H5L_link_class_t&nbsp;*</em> <code>link_class&nbsp;&nbsp;&nbsp;&nbsp;</code>
         </td>
-        <td valign="top">IN: User-defined link class
+        <td valign="top">IN: Struct describing user-defined link class
         </td></tr>
     </table>
       <p></p>
@@ -1350,12 +1456,13 @@ function.
   <p></p>
   <dt><strong>Description:</strong>
     <dd><code>H5Lunlink</code> removes the link specified by 
-        <code>name</code> from the location <code>loc_id</code> 
-	and decrements the link count for the object to which 
-        <code>name</code> pointed.
-        Unless there was a duplicate link, this action removes the object 
-	to which <code>name</code> pointed from the group that previously 
-	contained <code>name</code>.
+        <code>name</code> from the location <code>loc_id</code>.
+        <p>
+	If the link being removed is a hard ink, <code>H5Lunlink</code> 
+        also decrements the link count for the object to which 
+        <code>name</code> points.  Unless there is a duplicate hard link
+        in that group, this action removes the object to which 
+        <code>name</code> points from the group that previously contained it.
         <p>
         Object headers keep track of how many hard links refer to an object;
         when the hard link count, also referred to as the link count, 
@@ -1379,10 +1486,14 @@ function.
         <p> 
         The HDF5 library keeps a count of all hard links pointing to an 
         object; if the hard link count reaches zero (<code>0</code>),
-        <font color="red"><i> &lt; something else might happen &gt; </i></font>.
-        The library keeps no similar count for soft links.
+        the object will be deleted from the file.  Creating new hard links
+        to an object will prevent it from being deleted if other links 
+        are removed.
+        The library maintains no similar count for soft links and they 
+        can dangle.
+        <p> 
   <dt><strong>Parameters:</strong>
-    <ul><table>      
+    <dd><table>      
 	  <tr>
 	    <td valign="top"><em>hid_t</em> <code>loc_id</code></td>
         <td valign="top">IN: Identifier of the file or group containing  
@@ -1393,7 +1504,7 @@ function.
 	  <tr>
 	    <td valign="top"><em>hid_t</em> <code>lapl_id</code></td>
         <td valign="top">IN: Link access property list identifier.</td></tr>
-    </table></ul>
+    </table>
   </p>
   <dt><strong>Returns:</strong>
     <dd>Returns a non-negative value if successful;
@@ -1456,30 +1567,21 @@ END SUBROUTINE h5lunlink_f
       information returned by <code>H5Lget_linkval</code> in 
       the <code>linkval_buff</code> buffer.
       <p>
-
-<pre>
-Makes sense of the value that H5Lget_linkval retrieves
-from an external link.  linkval_buff should be the buffer set by
-H5Lget_linkval; filename and obj_path are set to pointers pointing
-to the beginning of the file name and path within the buffer.
-	  
-Given a buffer holding the "link value" from an external link,
-gets pointers to the filename and object path within the
-link value buffer. 
- 
-External link linkvalues are two NULL-terminated strings 
-one after the other.
- 
-FILENAME and OBJ_PATH will be set to pointers within
-ext_linkval unless they are NULL.
- 
-Using this function on strings that aren't external link
-udata buffers can result in segmentation faults. 
-</pre>
-
+      <code>linkval_buff</code> should be the buffer set by
+      <a href="#Link-GetLinkVal"><code>H5Lget_linkval</code></a>
+      and will consist of two <small>NULL</small>-terminated strings, 
+      the filename and object path, one after the other.
+      <p>
+      Given this buffer, <code>H5Lunpack_elink_val</code> creates
+      pointers to the filename and object path within the buffer 
+      and returns them in <code>filename</code> and <code>obj_path</code>,
+      unless they are passed in as <small>NULL</small>.
+      <p>
+      Use of this function on strings that are not external link 
+      <code>udata</code> buffers may result in a segmentation fault. 
       <p></p>
   <dt><strong>Parameters:</strong>
-    <ul><table>
+    <dd><table>
       <tr>
       <tr>
         <td valign="top"><em>const&nbsp;char&nbsp;*</em><code>linkval_buff&nbsp;&nbsp;&nbsp;&nbsp;</code>
@@ -1495,9 +1597,10 @@ udata buffers can result in segmentation faults.
       <tr>
         <td valign="top"><em>const char *</em><code>obj_path</code>
         </td>
-        <td valign="top">OUT :Returned object path, relative to <code>filename</code>
+        <td valign="top">OUT: Returned object path, relative to 
+            <code>filename</code>
         </td></tr>
-    </table></ul>
+    </table>
       <p></p>
   <dt><strong>Returns:</strong>
     <dd>Returns a non-negative value if successful;
@@ -1548,16 +1651,10 @@ udata buffers can result in segmentation faults.
     <dd>Unregisters a class of user-defined links.
       <p></p>
   <dt><strong>Description:</strong>
-    <dd><code>H5Lunregister</code> ...
+    <dd><code>H5Lunregister</code> unregisters a class of user-defined links, 
+      preventing them from being traversed, queried, moved, etc.
       <p>
-
-<pre>
-Unregisters a class of user-defined links, preventing them
-from being traversed, queried, moved, etc.
-
-A link class can be re-registered using H5Lregister().
-</pre>
-
+      A link class can be re-registered using <code>H5Lregister</code>.
       <p></p>
   <dt><strong>Parameters:</strong>
     <dd><table>
@@ -1656,7 +1753,7 @@ Describes HDF5 Release 1.8.0-alpha.
 
 <!-- #EndLibraryItem --><SCRIPT LANGUAGE="JAVASCRIPT">
 <!--
-document.writeln("Last modified: 19 September 2006");
+document.writeln("Last modified: 9 October 2006");
 -->
 </SCRIPT>
  
