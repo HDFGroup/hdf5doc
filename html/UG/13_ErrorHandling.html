@@ -605,10 +605,14 @@ typedef struct {
   the HDF5 Library source code, and <em>desc</em> points to a description 
   of the error.
   
-<p>Example: H5Ewalk_cb
-
-<p>This is the implementation of the library&rsquo;s default error stack 
-  traversal callback function.
+<p><b>Example of callback function:</b><br>
+  The following callback function serves as an example for a user-defined 
+  callback function.
+  Note that this example overrides the HDF5 Library&rsquo;s default 
+  error stack traversal callback function, <code>H5E_walk_cb</code>,
+  and is a clone of that internal function, but presented using only
+  public HDF5 function calls 
+  (the internal version uses internal library calls).
   
 <pre>
 herr_t
@@ -631,8 +635,8 @@ H5E_walk_cb(unsigned n, const H5E_error_t *err_desc, void *client_data)
     else stream = eprint->stream;
     
     /* Get descriptions for the major and minor error numbers */
-    maj_ptr = H5I_object_verify(err_desc->maj_num, H5I_ERROR_MSG);
-    min_ptr = H5I_object_verify(err_desc->min_num, H5I_ERROR_MSG);
+    maj_ptr = H5Iobject_verify(err_desc->maj_num, H5I_ERROR_MSG);
+    min_ptr = H5Iobject_verify(err_desc->min_num, H5I_ERROR_MSG);
     assert(maj_ptr &amp;&amp; min_ptr);
     if(maj_ptr->msg)
         maj_str = maj_ptr->msg;
