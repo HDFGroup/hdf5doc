@@ -74,8 +74,9 @@ And in this document, the
 
 <h2>Object API Functions</h2>
 
-The Object interface, H5O, functions manipulate objects and reference counts
-in an HDF5 file.
+The Object interface, H5O, functions manipulate objects in an HDF5 file.
+This interface is designed to be used in conjunction with the 
+Links interface (H5L).
 <p>
 <strong>The C Interfaces:</strong>
 
@@ -177,20 +178,19 @@ as the corresponding C function.
         )
   <p></p>
   <dt><strong>Purpose:</strong>
-    <dd>Closes an object.
+    <dd>Closes a group, dataset, or named datatype object.
   <p></p>
   <dt><strong>Description:</strong>
     <dd><code>H5Oclose</code> closes an object in an HDF5 file.
       <p>
       This function is the companion to <code>H5Oopen</code>. 
-      It is used to close open file object in an HDF5 file, 
-      including groups, datasets, and named datatypes.  
+      It is used to close the following open objects in an HDF5 file: 
+      groups, datasets, and named datatypes.  
       It has the same effect as calling <code>H5Gclose</code>, 
       <code>H5Dclose</code>, or <code>H5Tclose</code>.
       <p>
-      <code>H5Oclose</code> is <i>not</i> used to close identifiers 
-      of objects that are not file objects, such as property lists 
-      and dataspaces. 
+      <code>H5Oclose</code> is <i>not</i> used to close a
+      dataspace, attribute, property list, or file. 
   </p>
   <dt><strong>Parameters:</strong>
     <ul><table>
@@ -251,22 +251,38 @@ as the corresponding C function.
   <p></p>
   <dt><strong>Description:</strong>
     <dd>
+      <code>H5Odecr_refcount</code> decrements the hard link reference count
+      for an object. It should be used any time a user-defined link 
+      that references an object by address is deleted.
+      In general, <code>H5Oincr_refcount</code> will have been used
+      previously, when the link was created.
 
-      <table border=2 bordercolor=red><tr><td valign=top align=left>
+      <p>
+      An object&rsquo;s <i>reference count</i> is the number of hard links 
+      in the file that point to that object.  See the 
+          &ldquo;Programming Model&rdquo; section of the 
+          &ldquo;<a href="../UG/UG_frame09Groups.html" 
+          target="UGwindow">HDF5 Groups</a>&rdquo; chapter in the 
+          <cite>HDF5 User&rsquo;s Guide</cite> 
+      for a more complete discussion of reference counts.
+
+      <p>
+      If a user application needs to determine an object&rsquo;s 
+      reference count, an 
+      <a href="RM_H5G.html#Group-GetObjinfo"><code>H5Gget_objinfo</code></a>
+      call is required; the reference count is returned in the
+      <code>nlink</code> field of the <code>H5G_stat_t</code> struct.
+
+      <p>
+      <table border=2 bordercolor=red width=98%><tr><td valign=top align=left>
         <font color=red>
-        Warning! This function is <i><b>extremely dangerous</b></i>!
+        Warning: This function must be used with care!
         <br>
-        Improper use can lead to <i><b>file corruption</b></i>, 
-        <i><b>inaccessible data</b></i>, 
-        and other <i><b>very bad things</b></i>!
+        Improper use can lead to inaccessible data, 
+        wasted space in the file, or <i><b>file corruption</b></i>.
         </font>
       </td></tr></table>
 
-      <p>
-      <code>H5Odecr_refcount</code> decrements the hard link reference count
-      for an object. It should be used any time a user-defined link 
-      that reference an object by address is deleted, and only
-      after <code>H5Oincr_refcount</code> has already been used.
   </p>
   <dt><strong>Parameters:</strong>
     <ul><table>
@@ -277,7 +293,7 @@ as the corresponding C function.
         </td></tr>
     </table></ul>
   <dt><strong>Returns:</strong>
-    <dd>Returns the object's new reference count if successful;
+    <dd>Returns a non-negative value if successful;
         otherwise returns a negative value.
   <p></p>
   <dt><strong>Fortran90 Interface:</strong> <!--h5gclose_f-->
@@ -328,22 +344,37 @@ as the corresponding C function.
   <p></p>
   <dt><strong>Description:</strong>
     <dd>
-
-      <table border=2 bordercolor=red><tr><td valign=top align=left>
-        <font color=red>
-        Warning! This function is <i><b>extremely dangerous</b></i>!
-        <br>
-        Improper use can lead to <i><b>file corruption</b></i>, 
-        <i><b>inaccessible data</b></i>, 
-        and other <i><b>very bad things</b></i>!
-        </font>
-      </td></tr></table>
-
-      <p>
       <code>H5Oincr_refcount</code> increments the hard link reference count
       for an object. It should be used any time a user-defined link
       that references an object by address is added. When the
       link is deleted, <code>H5Odecr_refcount</code> should be used.
+
+      <p>
+      An object&rsquo;s <i>reference count</i> is the number of hard links 
+      in the file that point to that object.  See the 
+          &ldquo;Programming Model&rdquo; section of the 
+          &ldquo;<a href="../UG/UG_frame09Groups.html" 
+          target="UGwindow">HDF5 Groups</a>&rdquo; chapter in the 
+          <cite>HDF5 User&rsquo;s Guide</cite> 
+      for a more complete discussion of reference counts.
+
+      <p>
+      If a user application needs to determine an object&rsquo;s 
+      reference count, an 
+      <a href="RM_H5G.html#Group-GetObjinfo"><code>H5Gget_objinfo</code></a>
+      call is required; the reference count is returned in the
+      <code>nlink</code> field of the <code>H5G_stat_t</code> struct.
+
+      <p>
+      <table border=2 bordercolor=red width=98%><tr><td valign=top align=left>
+        <font color=red>
+        Warning: This function must be used with care!
+        <br>
+        Improper use can lead to inaccessible data, 
+        wasted space in the file, or <i><b>file corruption</b></i>.
+        </font>
+      </td></tr></table>
+
   </p>
   <dt><strong>Parameters:</strong>
     <ul><table>
@@ -354,7 +385,7 @@ as the corresponding C function.
         </td></tr>
     </table></ul>
   <dt><strong>Returns:</strong>
-    <dd>Returns the object's new reference count if successful;
+    <dd>Returns a non-negative value if successful;
         otherwise returns a negative value.
   <p></p>
   <dt><strong>Fortran90 Interface:</strong> <!--h5gclose_f-->
@@ -405,18 +436,29 @@ as the corresponding C function.
     <dd>Opens an object using its location identifier and name.
   <p></p>
   <dt><strong>Description:</strong>
-    <dd><code>H5Oopen</code> opens an object in an HDF5 file.
+    <dd><code>H5Oopen</code> opens an object by path name in an HDF5 file.
       <p>
       This function opens an object in the same manner as 
       <code>H5Gopen</code>, <code>H5Topen</code>, and <code>H5Dopen</code>. 
       However, <code>H5Oopen</code> does not require the type of object 
       to be known beforehand.  This can be useful with user-defined links, 
-      for instance, when only a path may be known.
+      for instance, if only a path may be known.
+      <code>H5Oopen</code> cannot be used to open a
+      dataspace, attribute, or file.
       <p>
       When an object of unknown type is opened (or is to be opened) 
       with <code>H5Oopen</code>, the type of that object can be determined 
       by means of an <a href="#Identity-GetType"><code>H5Iget_type</code></a>
       call.
+      <p>
+      <code>loc_id</code> can be either a file or group identifier.
+      <code>name</code> must be the path to that object relative to
+      <code>loc_id</code>.
+      <p>
+      <code>lapl_id</code> is the link access property list associated
+      with the link pointing to the object.  If default link access 
+      properties are appropriate, this can be passed in as 
+      <code>H5P_DEFAULT</code>.
       <p>
       When it is no longer needed, the opened object should be closed 
       with <code>H5Oclose</code>, <code>H5Gclose</code>, 
@@ -427,12 +469,13 @@ as the corresponding C function.
       <tr>
         <td valign="top"><em>hid_t </em><code>loc_id</code>
         </td>
-        <td valign="top">IN: Object location identifier 
+        <td valign="top">IN: File or group identifier 
         </td></tr>
       <tr>
         <td valign="top"><em>const&nbsp;char&nbsp;*</em><code>name&nbsp;&nbsp;&nbsp;&nbsp;</code>
         </td>
-        <td valign="top">IN: Object name 
+        <td valign="top">IN: Path to the object,
+          relative to <code>loc_id</code>.
         </td></tr>
       <tr>
         <td valign="top"><em>hid_t </em><code>lapl_id</code>
@@ -492,50 +535,75 @@ as the corresponding C function.
   <p></p>
   <dt><strong>Description:</strong>
     <dd>
-
-      <table border=2 bordercolor=red><tr><td valign=top align=left>
-        <font color=red>
-        Warning! This function is <i><b>extremely dangerous</b></i>!
-        <br>
-        Improper use can lead to <i><b>file corruption</b></i>, 
-        <i><b>inaccessible data</b></i>, 
-        and other <i><b>very bad things</b></i>!
-        </font>
-      </td></tr></table>
-
-      <p>
       <code>H5Oopen_by_addr</code> opens an object using its address within 
-      an HDF5 file, similar to an HDF5 hard link. The open object is 
+      an HDF5 file.  The open object is 
       identical to an object opened with <code>H5Oopen</code> and 
       should be closed with <code>H5Oclose</code> or a type-specific 
       closing function (such as <code>H5Gclose</code>) when no longer 
       needed.
+
       <p>
-      This function is very dangerous if called on an invalid address. 
-      For this reason, <code>H5Oincr_refcount</code> should be used to 
-      prevent HDF5 from deleting any object that is referenced by address 
-      (e.g. by a user-defined link).  
-      <code>H5Odecr_refcount</code> should then be used when the object 
-      is no longer being referenced by address (e.g. when the user-defined 
-      link is deleted).
+      <code>loc_id</code> can be either the file identifier or a 
+      group identifier in the file.  In either case, the HDF5 Library 
+      uses the identifier only to identify the file.
+
       <p>
-      The address of the HDF5 file on disk has no effect on 
-      <code>H5Oopen_by_addr</code>, nor does the use of any unusual 
-      file driver. The address is really the offset within the HDF5 file, 
-      and HDF5&rsquo;s file drivers will transparently map this to an address 
-      on disk in the filesystem.
+      The object&rsquo;s address within the file, <code>addr</code>, is the 
+      byte offset of the first byte of the object header from the beginning 
+      of the HDF5 file space, i.e., from the beginning of the super block 
+      (see the &ldquo;HDF5 Storage Model&rdquo; section of the 
+      &ldquo;<a href="../UG/UG_frame03DataModel.html" target="UGwindow">The 
+      HDF5 Data Model and File Structure</a>&rdquo; chapter 
+      of the <cite>HDF5 User&rsquo; Guide</cote>).
+
+      <p>
+      <code>addr</code> can be obtained via either of two function calls.
+      <a href="RM_H5G.html#Group-GetObjinfo"><code>H5Gget_objinfo</code></a>
+      returns the object&rsquo;s address in the
+      <code>objno</code> field of the <code>H5G_stat_t</code> struct;
+      <a href="RM_H5L.html#Link-GetLinkInfo"><code>H5Lget_linkinfo</code></a>
+      returns the address in the <code>address</code> field of the 
+      <code>H5L_linkinfo_t</code> struct.
+
+      <p>
+      This function is dangerous if called on an invalid address. 
+      The risk can be safely overcome by retrieving the object address 
+      with <code>H5Gget_objinfo</code> or <code>H5Lget_linkinfo</code>
+      immediately before calling <code>H5Oopen_by_addr</code>.
+      The immediacy of the operation can be important; 
+      if time has elapsed and the object has been deleted from the file,
+      the address will be invalid and file corruption can result.
+      </ol>
+
+      <p>
+      The address of the HDF5 file on a physical device has no effect on 
+      <code>H5Oopen_by_addr</code>, nor does the use of any file driver. 
+      As stated above, the object address is its offset within the HDF5 file; 
+      HDF5&rsquo;s file drivers will transparently map this to an address 
+      on a storage device.
+
+      <p>
+      <table border=2 bordercolor=red width=98%><tr><td valign=top align=left>
+        <font color=red>
+        Warning: This function must be used with care!
+        <br>
+        Improper use can lead to inaccessible data, 
+        wasted space in the file, or <i><b>file corruption</b></i>.
+        </font>
+      </td></tr></table>
+
   </p>
   <dt><strong>Parameters:</strong>
     <ul><table>
       <tr>
         <td valign="top"><em>hid_t </em><code>loc_id</code>
         </td>
-        <td valign="top">IN: Object location identifier 
+        <td valign="top">IN: File or group identifier 
         </td></tr>
       <tr>
         <td valign="top"><em>haddr_t&nbsp;</em><code>addr&nbsp;&nbsp;&nbsp;&nbsp;</code>
         </td>
-        <td valign="top">IN: Object's address in the file
+        <td valign="top">IN: Object&rsquo;s address in the file
         </td></tr>
     </table></ul>
   <dt><strong>Returns:</strong>
@@ -628,7 +696,7 @@ Describes HDF5 Release 1.8.0-alpha.
 
 <!-- #EndLibraryItem --><SCRIPT LANGUAGE="JAVASCRIPT">
 <!--
-document.writeln("Last modified: 4 October 2006");
+document.writeln("Last modified: 2 November 2006");
 -->
 </SCRIPT>
  
