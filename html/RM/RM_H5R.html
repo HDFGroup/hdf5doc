@@ -92,7 +92,7 @@ to specific objects and data regions in an HDF5 file.
 </ul>
 </td><td valign=top width=20%>
 <ul>
-    &nbsp;
+    <li><a href="#Reference-GetName">H5Rget_name</a>
 </ul>
 </td></tr>
 </table>
@@ -114,6 +114,7 @@ to specific objects and data regions in an HDF5 file.
     
     <td valign="top">
 	<ul>
+      <li><a href="#Reference-GetName">H5Rget_name</a>
       <li><a href="#Reference-GetObjType">H5Rget_obj_type</a>
 	</ul>
     </td>
@@ -148,7 +149,9 @@ as the corresponding C function.
 </ul>
 </td><td valign=top width=20%>
 <ul>
-
+<!--
+    <li><a href="#Reference-GetName">h5rget_name_f</a>
+-->
 </ul>
 </td></tr>
 </table>
@@ -366,7 +369,7 @@ END SUBROUTINE h5rdereference_f
         <code>H5Rget_obj_type</code> 
         returns the type of the referenced object.
 	<p>
-	Valid object reference types, to pass in as <code>ref_type</code>, 
+	Valid reference types, to pass in as <code>ref_type</code>, 
 	include the following:
 	<table border="0">
 	<tr align=left valign=top><td>&nbsp;&nbsp;&nbsp;&nbsp;</td><td>
@@ -448,6 +451,126 @@ END SUBROUTINE h5rget_object_type_f
 		    <strong>C</strong></td></tr>
         <tr>
 		  <td valign="top">1.6.0</td>
+          <td valign="top">
+		    Function introduced in this release.</td></tr>
+    </table></ul>
+</dl>
+ 
+
+<!-- NEW PAGE -->
+<!-- HEADER RIGHT "H5Rget_name" -->
+<hr>
+<dl>
+<dt><strong>Name:</strong> <a name="Reference-GetName">H5Rget_name</a>
+<dt><strong>Signature:</strong>
+    <dd><em>ssize_t</em> <code>H5Rget_name</code>(
+                     <em>hid_t</em> <code>loc_id</code>,
+                     <em>H5R_type_t</em> <code>ref_type</code>,
+                     <em>void *</em><code>ref</code>,
+		     <em>char *</em><code>name</code>,
+		     <em>size_t</em> <code>size</code>
+                     )
+<dt><strong>Purpose:</strong> </dt>
+    <dd>Retrieves a name of a referenced object.
+<dt><strong>Description:</strong>
+    <dd><code>H5Rget_name</code> retrieves a name for the object identified 
+        by <code>ref</code>.
+        <p>
+        <code>loc_id</code> is the identifier for the dataset containing the 
+        reference or for the group containing that dataset.
+        <p>
+        <code>H5R_type_t</code> is the reference type of <code>ref</code>.
+        Valid values include the following:
+	<table border="0">
+	  <tr align=left valign=top><td>&nbsp;&nbsp;&nbsp;&nbsp;</td><td>
+	    <code>H5R_OBJECT</code></td><td>
+	    Object reference
+	  </td></tr>
+	  <tr align=left valign=top><td>&nbsp;</td><td>
+	    <code>H5R_DATASET_REGION&nbsp;&nbsp;</code></td><td>
+	    Dataset region reference
+	  </td></tr>
+	</table>
+        <p>
+        <code>ref</code> is the reference for which the target object&rsquo;s 
+        name is sought.
+        <p>
+        If <code>ref</code> is an object reference, <code>name</code> 
+        will be returned with the name of the referenced object.
+        If <code>ref</code> is a dataset region reference, 
+        <code>name</code> will contain the name of the object containing 
+        the referenced region.
+        <p>
+        Up to <code>size</code> characters of the name are returned in 
+        <code>name</code>; additional characters, if any, are not returned
+        to the user application.
+        <p>
+	If the length of the name, which determines the required 
+	value of <code>size</code>, is unknown, a preliminary  
+	<code>H5Rget_name</code> call can be made.  
+	The return value of this call will be the size of the 
+	object name.  
+	That value can then be assigned to <code>size</code> 
+	for a second <code>H5Rget_name</code> call, 
+	which will retrieve the actual name.
+	<p>
+        If there is no name associated with the object identifier
+	or if the name is <code>NULL</code>, <code>H5Rget_name</code>
+        returns <code>0</code> (zero).
+	<p>
+	Note that an object in an HDF5 file may have multiple paths if there
+        are multiple links pointing to it.  This function may return any one 
+        of these paths.
+<dt><strong>Parameters:</strong> 
+    <ul><table>
+      <tr>
+        <td valign="top"><em>hid_t</em> <code>loc_id</code></td>
+        <td valign="top">IN: Identifier for the dataset containing the 
+            reference or for the group that dataset is in. </td></tr>
+      <tr>
+        <td valign="top"><em>H5R_type_t</em>&nbsp;<code>ref_type&nbsp;&nbsp;&nbsp;&nbsp;</code></td>
+        <td valign="top">IN: Type of reference.
+      <tr>
+        <td valign="top"><em>void *</em><code>ref</code></td> 
+        <td valign="top">IN: An object or dataset region reference.</td></tr>
+      <tr>
+        <td valign="top"><em>char *</em><code>name</code></td> 
+        <td valign="top">OUT: A name associated with the referenced object or 
+            dataset region.</td></tr>
+      <tr>
+        <td valign="top"><em>size_t</em> <code>size</code></td> 
+        <td valign="top">IN: The size of the <code>name</code> buffer.</td></tr>
+    </table></ul>
+<dt><strong>Returns:</strong> 
+    <dd>Returns the length of the name if successful, returning <code>0</code> 
+        (zero) if no name is associated with the identifier.
+        Otherwise returns a negative value.
+<dt><strong>Fortran90 Interface:</strong> <!--h5iget_name_f-->
+    <dd>None.
+<!--
+	<pre>
+SUBROUTINE h5rget_name_f( )
+
+
+END SUBROUTINE h5rget_name_f
+	</pre>		
+-->
+		
+        <!--<dt><strong>Non-C API(s):</strong>
+    	<dd>
+        
+        <img src="Graphics/Java.gif"> 
+        <img src="Graphics/C++.gif">
+        -->
+<dt><strong>History:</strong>
+    <ul><table width="90%">
+        <tr>
+          <td valign="top" align="left" width="10%">
+            <strong>Release</strong>&nbsp;&nbsp;&nbsp;&nbsp;</td>
+          <td valign="top" align="left">
+            <strong>C</strong></td></tr>
+        <tr>
+          <td valign="top">1.8.0</td>
           <td valign="top">
 		    Function introduced in this release.</td></tr>
     </table></ul>
@@ -564,7 +687,7 @@ Describes HDF5 Release 1.8.0-alpha.
 
 <!-- #EndLibraryItem --><SCRIPT LANGUAGE="JAVASCRIPT">
 <!--
-document.writeln("Last modified: 25 January 2006");
+document.writeln("Last modified: 16 November 2006");
 -->
 </SCRIPT> 
 
