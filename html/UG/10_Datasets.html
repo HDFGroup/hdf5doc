@@ -37,7 +37,7 @@
 <!-- HEADER RIGHT "HDF5 Datasets" -->
 
 <!--( TOC )=========================================================-->
-<SCRIPT language="JavaScript">
+<!--<SCRIPT language="JavaScript">-->
 <!--
 document.writeln ('\
 <table x-use-null-cells\
@@ -45,11 +45,13 @@ document.writeln ('\
 		width=240\
 		cellspacing=0\
 		class="tocTable">\
+-->
+<!-- Table Version 3 --><!-- \ -->
+<!--
   <tr valign=top> \
     <td class="tocTableHeaderCell" colspan="2"> \
         <span class=TableHead>Chapter Contents</span></td>\
   </tr>\
-<!-- Table Version 3 -->\
   <tr valign=top> \
     <td class="tocTableContentCell2"> \
       <a href="#Intro">1.</a></td>\
@@ -74,28 +76,27 @@ document.writeln ('\
     <td class="tocTableContentCell3">\
 	  <a href="#DTransfer">Data Transfer</a></td>\
   </tr>\
-\
+  <tr valign=top> \
+    <td class="tocTableContentCell2"> \
+      <a href="#Allocation">5.</a></td>\
+    <td class="tocTableContentCell3">\
+	  <a href="#Allocation">Allocation of Space</a></td>\
+  </tr>\
   <tr valign=top> \
     <td class="tocTableContentCell"> \
-<!-- editingComment -- "tocTableContentCell" and "tocTableContentCell4" \
--->\
-<!-- are the table-closing cell class.\
-    <td class="tocTableContentCell2"> \
--->\
-      <a href="#Allocation">5.</a></td>\
+      <a href="#UseFilters">6.</a></td>\
     <td class="tocTableContentCell4">\
-	  <a href="#Allocation">Allocation of Space</a>\
-<!-- editingComment -- This section not currently complete or validated.\
-  </tr><tr valign=top> \
-    <td class="tocTableContentCell"> \
-    <a href="#Appendix">10</a></td>\
-    <td class="tocTableContentCell4"><a href="#Appendix">Appendix</a></td>\
--->\
+	  <a href="#UseFilters">Specialized Filters</a>\
+          <br>&nbsp;&nbsp;&nbsp;&nbsp;\
+	  <a href="#N-Bit">N-bit</a>\
+          <br>&nbsp;&nbsp;&nbsp;&nbsp;\
+	  <a href="#ScaleOffset">Scale-offset</a></td>\
+  </tr>\
   </td></tr>\
 </table>\
 ')
 -->
-</SCRIPT>
+<!--</SCRIPT>-->
 <!--(End TOC)=======================================================-->
 
 <!-- editingComment
@@ -363,7 +364,7 @@ document.writeln ("
 	<code>H5Dextend<br>h5dextend_f</code> 
     </td>
     <td class="functTableCell">
-	Extends a dataset with unlimited dimension.
+	Extends dataset dimensions.
     </td>
   </tr>
   <tr valign=top> 
@@ -561,7 +562,7 @@ document.writeln ("
 	<code>H5Pset_nbit<br>(none)</code> 
     </td>
     <td class="functTableCell">
-	Sets up use of the N-Bit filter.
+	Sets up use of the n-bit filter.
     </td>
   </tr>
   <tr valign=top> 
@@ -569,7 +570,7 @@ document.writeln ("
 	<code>H5Pset_scaleoffset<br>(none)</code> 
     </td>
     <td class="functTableCell">
-	Sets up use of the Scale-Offset filter.
+	Sets up use of the scale-offset filter.
     </td>
   </tr>
   <tr valign=top> 
@@ -585,7 +586,7 @@ document.writeln ("
 	<code>H5Pset_szip<br>h5pset_szip_f</code> 
     </td>
     <td class="functTableCell">
-	Sets up use of the SZIP compression filter.
+	Sets up use of the Szip compression filter.
     </td>
   </tr>
   <tr valign=top> 
@@ -977,11 +978,15 @@ document.writeln ("
   ] ] ]</span>
 -->
   The dataspace defines the number of dimensions, 
-  and the maximum dimension sizes and current size of each dimension. The maximum 
-  dimension size can be a fixed value or the constant H5D_UNLIMITED, in which case 
-  the actual dimension size can be incremented with calls to H5Dextend, up to the 
-  maximum. The maximum dimension size is set when the dataset is created and cannot 
-  be changed.
+  and the maximum dimension sizes and current size of each dimension. 
+  The maximum dimension size can be a fixed value or the constant 
+  <code>H5D_UNLIMITED</code>, in which case the actual dimension size 
+  can be incremented with calls to <code>H5Dextend</code>, up to the 
+  maximum set with the <code>maxdims</code> parameter in the 
+  <a href="../RM/RM_H5S.html#Dataspace-CreateSimple">
+  <code>H5Screate_simple</code></a> call that established the 
+  dataset&rsquo;s original dimensions. The maximum dimension size is set 
+  when the dataset is created and cannot be changed.
 
 <h4><em>Datatype</em></h4>
 
@@ -1887,21 +1892,38 @@ document.writeln ("
   </tr>
   <tr valign=top> 
     <td class="ColumnLeftHdr"> 
-        <p><span class=TableHead>Filters</span></td>
+        <p><span class=TableHead>Filter</span></td>
     <td class="ColumnRightHdr"> 
         <p><span class=TableHead>Description</span></td>
   <tr valign=top> 
-    <td class="ColumnLeftCell"> <p>Compression</td>
-    <td class="ColumnRightCell"> <p>GZIP compression.</td>
+    <td class="ColumnLeftCell"> <p>gzip compression</td>
+    <td class="ColumnRightCell"> <p>Data compression using 
+      <code>zlib</code>.</td>
+  </tr>
+  <tr valign=top> 
+    <td class="ColumnLeftCell"> <p>Szip&nbsp;compression&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
+    <td class="ColumnRightCell"> <p>Data compression using Szip library.</td>
+  </tr>
+  <tr valign=top> 
+    <td class="ColumnLeftCell"> <p>N-bit compression</td>
+    <td class="ColumnRightCell"> <p>Data compression using an algorithm 
+      specialized for n-bit datatypes.</td>
+  </tr>
+  <tr valign=top> 
+    <td class="ColumnLeftCell"> <p>Scale-offset compression</td>
+    <td class="ColumnRightCell"> <p>Data compression using using a 
+      &ldquo;scale and offset&rdquo; algorithm.</td>
   </tr>
   <tr valign=top> 
     <td class="ColumnLeftCell"> <p>Shuffling</td>
     <td class="ColumnRightCell"> 
-        <p>To improve compression performance, data is regrouped by its byte position 
-	in the data unit.  I.e. 1<sup><font size="-1">st</font></sup>, 
-	2<sup><font size="-1">nd</font></sup>, 3<sup><font size="-1">rd</font></sup>, 
-	4<sup><font size="-1">th</font></sup> bytes of integers are stored together 
-	respectively.</td>
+        <p>To improve compression performance, data is regrouped by 
+	its byte position in the data unit.  
+	I.e. 1<sup><font size="-1">st</font></sup>, 
+	2<sup><font size="-1">nd</font></sup>, 
+	3<sup><font size="-1">rd</font></sup>, 
+	4<sup><font size="-1">th</font></sup> bytes of integers are 
+	stored together respectively.</td>
   </tr>
   <tr valign=top> 
     <td class="ColumnLeftBottom"> <p>Fletcher32</td>
@@ -1918,12 +1940,22 @@ document.writeln ("
   <p>Filters are selected by dataset creation properties, and some behavior may 
   be controlled by data transfer properties. The library determines what 
   filters must be applied and in what order.
+  
+  <p>Information regarding the Szip filter can be found at 
+  <a href="http://hdf.ncsa.uiuc.edu/doc_resource/SZIP/" target="Ext1">
+  <code>http://hdf.ncsa.uiuc.edu/doc_resource/SZIP/</code></a>.
+
+  <p>Information regarding the n-bit and scale-offset filters 
+  can be found in <a href="#N-Bit">Using the N-bit Filter</a> 
+  and <a href="#ScaleOffset">Using the Scale-offset Filter</a>,
+  respectively.
 
 <h4>4.3 File drivers</h4>
 
   <p>I/O is performed by the HDF5 virtual file layer. The file driver interface 
   writes and reads blocks of data, each driver module implements the interface 
-  using different I/O mechanisms. Table 7 lists the file drivers currently supported. 
+  using different I/O mechanisms. 
+  Table 7 lists the file drivers currently supported. 
   Note that the I/O mechanisms are separated from the pipeline processing: 
   the pipeline and filter operations are identical no matter what 
   data access mechanism is used.</p>
@@ -2337,6 +2369,14 @@ document.writeln ("
 ");
 -->
 </SCRIPT>
+
+
+
+
+
+
+
+
 
 <!-- NEW PAGE -->
 <a name="Allocation">
@@ -3152,6 +3192,1679 @@ document.writeln ("
   directly by the application, or indirectly through some other library. However, 
   if the file is transferred from its original context, care must be taken to assure 
   that all the external files are accessible in the new location.</p>
+
+
+
+
+
+<a name="UseFilters">
+<h3 class=pagebefore>6. Using HDF5 Filters</h3>
+</a>
+
+<a name="N-Bit">
+<h3>6.1. N-bit Filter</h3>
+</a>
+
+<p>N-bit data has <i>n</i> significant bits,  
+  where <i>n</i> may not correspond to a precise number of bytes.
+  On the other hand, computing systems and applications universally, 
+  or nearly so, run most efficiently when manipulating data as 
+  whole bytes or multiple bytes.
+  This can easily lead to a situation where requirements to facilitate
+  high-speed operation
+
+<p>Consider the case of 12-bit integer data.  
+  In memory, that data will be handled in at least 2 bytes, or 16 bits, 
+  and on some platforms in 4 or even 8 bytes.
+  The size of such a dataset can be significantly reduced when written 
+  to disk if the unused bits are stripped out.
+  
+<p>The <i>n-bit filter</i> is provided for this purpose,  
+  <i>packing</i> n-bit data on output by stripping off all unused bits 
+  and <i>unpacking</i> on input, restoring the extra bits required
+  by the computational processor.
+  
+<h4><em>N-bit Datatype</em></h4>
+
+<p>An <i>n-bit datatype</i> is a datatype of <i>n</i> significant bits.
+  Unless it is packed, an <i>n</i>-bit datatype is presented as an 
+  <i>n</i>-bit bitfield within a larger-sized value.  
+  For example, a 12-bit datatype might be presented as a 12-bit field 
+  in a 16-bit, or 2-byte, value.
+
+<p>Currently, the datatype classes of n-bit datatype or n-bit field of a 
+  compound datatype or an array datatype are limited to integer or 
+  floating-point.
+  
+<p>The HDF5 user can create an n-bit datatype through a series of
+  of function calls.
+  For example, the following calls create a 16-bit datatype 
+  that is stored in a 32-bit value with a 4-bit offset:
+<dir><pre>
+hid_t nbit_datatype = H5Tcopy(H5T_STD_I32LE);
+H5Tset_precision(nbit_datatype, 16);
+H5Tset_offset(nbit_datatype, 4);
+</pre></dir>
+  
+<p>In memory, one value of above example n-bit datatype would be stored on 
+  a little-endian machine as follows:
+  
+<dl>
+      <dt>
+        <table border="1" width="80%" align="center">
+          <tr>
+            <td width="25%" align="center">byte 3</td>
+            <td width="25%" align="center">byte 2</td>
+            <td width="25%" align="center">byte 1</td>
+            <td width="25%" align="center">byte 0</td>
+          </tr>
+          <tr>
+            <td width="25%" align="center"><code>????????</code></td>
+            <td width="25%" align="center"><code>????SPPP</code></td>
+            <td width="25%" align="center"><code>PPPPPPPP</code></td>
+            <td width="25%" align="center"><code>PPPP????</code></td>
+          </tr>
+        </table>
+        <table width="80%" border="0" align="center">
+          <tr>
+            <td colspan="4"><font size=-1>
+              Key: 
+                  <code>S</code> - sign bit, 
+                  <code>P</code> - significant bit, 
+                  <code>?</code> - padding bit 
+              <br>
+              Sign bit is included in signed integer datatype precision.
+	    </font></td>
+          </tr>
+        </table>
+        <br>
+        
+      </dt>
+</dl>
+
+<h4><em>N-bit Filter</em></h4>
+
+<p>When data of an n-bit datatype is stored on disk using the 
+  n-bit filter, the filter <i>packs</i> the data by stripping off the 
+  padding bits; only the significant bits are retained and stored.  
+  The values on disk will appear as follows:
+  
+<dl>
+      <dt>
+        <table border="1" width="80%" align="center">
+          <tr>
+            <td width="45%" align="center">1st value</td>
+            <td width="45%" align="center">2nd value</td>
+            <td width="10%" align="center">&nbsp;</td>
+          </tr>
+          <tr>
+            <td width="45%" align="center"><code>SPPPPPPP&nbsp;PPPPPPPP</code></td>
+            <td width="45%" align="center"><code>SPPPPPPP&nbsp;PPPPPPPP</code></td>
+            <td width="10%" align="center">...</td>
+          </tr>
+        </table>
+        <table width="80%" border="0" align="center">
+          <tr>
+            <td colspan="4"><font size=-1>
+              Key: 
+                  <code>S</code> - sign bit, 
+                  <code>P</code> - significant bit, 
+                  <code>?</code> - padding bit 
+              <br>
+              Sign bit is included in signed integer datatype precision.
+	    </font></td>
+          </tr>
+        </table>
+      </dt>
+</dl>
+
+<p>The n-bit filter can used effectively for compressing data of an n-bit
+  datatype, including arrays and the n-bit fields of compound datatypes. 
+  The filter supports complex situations where a compound datatype 
+  contains member(s) of compound datatype or an array datatype has
+  a compound datatype as the base type.
+
+<p>At present, the n-bit filter supports all datatypes. 
+  For datatypes of class time, string,
+  bitfield, opaque, reference, <small>ENUM</small>, and 
+  variable length, the n-bit filter acts as a no-op. 
+  For convenience, the rest of this section refers to such datatypes 
+  as <i>no-op datatypes</i>.
+
+<p>As is the case with all HDF5 filters, an application using 
+  the n-bit filter must store data with chunked storage.
+  
+<h4><em>How does the n-bit filter work?</em></h4>
+
+<p>The n-bit filter always compresses and decompresses according to
+  dataset properties supplied by the HDF5 library in the 
+  datatype, dataspace or dataset creation property list.
+
+<p>The dataset datatype refers to how data is stored in an HDF5 file while 
+  the memory datatype refers to how data is stored in memory.
+  The HDF5 library will do datatype conversion when writing data 
+  in memory to the dataset or reading data from the dataset to memory if 
+  the memory datatype differs from the dataset datatype. 
+  Datatype conversion is performed by HDF5 Library before n-bit compression 
+  and after n-bit decompression.
+  
+<p>The following subsections examine the common cases:
+  <ul>
+    <li>N-bit integer conversions
+    <li>N-bit floating point conversions
+  </ul>
+
+<h5><em>Integer/n-bit conversions</em></h5>
+
+<p>Integer data, with a dataset of integer datatype of less than 
+  full precision and a memory datatype of <code>H5T_NATIVE_INT</code>,
+  provides the simplest application of the n-bit filter.
+
+<p>The precision of <code>H5T_NATIVE_INT</code> is 8 muliplied by 
+  <code>sizeof(int)</code>. 
+  This value, the size of an <code>int</code> in bytes, differs from 
+  platform to platform; we assume a value of <code>4</code> 
+  for the following illustration.
+  We further assume the memory byte order to be little-endian.
+
+<p>In memory, therefore, the precision of <code>H5T_NATIVE_INT</code> 
+  is 32 and the offset is 0. 
+  One value of <code>H5T_NATIVE_INT</code> is layed out in memory 
+  as follows:
+ 
+<table border="0" width="80%" align="center">
+  <tr>
+    <td>
+<pre>
+| byte 3 | byte 2 | byte 1 | byte 0 |
+                                
+|SPPPPPPP|PPPPPPPP|PPPPPPPP|PPPPPPPP|
+
+</pre>
+    </td>
+  </tr>
+  <tr>
+    <td colspan="4"><font size=-1>
+      Key: 
+        <code>S</code> - sign bit, 
+        <code>P</code> - significant bit, 
+        <code>?</code> - padding bit 
+      <br>
+      Sign bit is included in signed integer datatype precision.
+      </font></td>
+  </tr>
+</table>
+  
+<p>Suppose the dataset datatype has a precision of 16 and an offset of 4. 
+  After HDF5 converts values from the memory datatype to the dataset datatype, 
+  it passes something like the following to the n-bit filter for compression:
+
+<table border="0" width="80%" align="center">
+  <tr>
+    <td>
+<pre>
+| byte 3 |  byte 2 | byte 1 |  byte 0 |
+               |                 |
+|????????|????S|PPP|PPPPPPPP|PPPP|????|
+               |_________________|
+                 truncated bits
+</pre>
+    </td>
+  </tr>
+  <tr>
+    <td colspan="4"><font size=-1>
+      Key: 
+        <code>S</code> - sign bit, 
+        <code>P</code> - significant bit, 
+        <code>?</code> - padding bit 
+      <br>
+      Sign bit is included in signed integer datatype precision.
+      </font></td>
+  </tr>
+</table>
+  
+<p>Notice that only the specified 16 bits (15 significant bits and the 
+  sign bit) are retained in the conversion.  All other significant bits 
+  of the memory datatype are discarded because the dataset datatype 
+  calls for only 16 bits of precision. 
+  After n-bit compression, none of these discarded bits, known as 
+  <i>padding bits</i> will be stored on disk.
+  
+<h5><em>Floating-point/n-bit conversions</em></h5>
+
+<p>Things get more complicated in the case of a floating-point dataset 
+  datatype class.  This subsection provides such an example, 
+  illustrating the conversion from a memory datatype of 
+  <code>H5T_NATIVE_FLOAT</code> to a dataset datatype of class 
+  floating-point.
+
+<!-- NEW PAGE --> 
+<p>As before, let the <code>H5T_NATIVE_FLOAT</code> be 4 bytes long, 
+  and let the memory byte order be little-endian. 
+  Per the IEEE standard [4], one value of <code>H5T_NATIVE_FLOAT</code> 
+  is layed out in memory as follows:
+  
+<table border="0" width="80%" align="center">
+  <tr>
+    <td>
+<pre>
+| byte 3 | byte 2 | byte 1 | byte 0 |
+                         
+|SEEEEEEE|EMMMMMMM|MMMMMMMM|MMMMMMMM|
+
+</pre>
+  </td></tr>
+  <tr>
+    <td colspan="4"><font size=-1>
+      Key: 
+        <code>S</code> - sign bit, 
+        <code>E</code> - exponent bit, 
+        <code>M</code> - mantissa bit, 
+        <code>?</code> - padding bit 
+      <br>
+      Sign bit is included in floating point datatype precision.
+      </font></td>
+  </tr>
+</table>
+ 
+  <br>
+  
+<p>Suppose the dataset datatype has a precision of 20, offset of 7, 
+  mantissa size of 13, mantissa position of 7, 
+  exponent size of 6, exponent position of 20, 
+  and sign position of 26. 
+  (Refer to [3] for details of how to create a user-defined 
+  floating-point datatype.)
+  
+<p>After HDF5 converts values from the memory datatype to the dataset datatype, 
+  it passes something like the following to the n-bit filter for compression:
+  
+<table border="0" width="80%" align="center">
+  <tr>
+    <td>
+<pre>
+| byte 3 | byte 2  | byte 1 | byte 0  |
+              |               |
+|?????SEE|EEEE|MMMM|MMMMMMMM|M|???????|
+              |_______________|
+              truncated mantissa
+</pre>
+  </td></tr>
+  <tr>
+    <td colspan="4"><font size=-1>
+      Key: 
+        <code>S</code> - sign bit, 
+        <code>E</code> - exponent bit, 
+        <code>M</code> - mantissa bit, 
+        <code>?</code> - padding bit 
+      <br>
+      Sign bit is included in floating point datatype precision.
+      </font></td>
+  </tr>
+</table>
+  
+<p>The sign bit and truncated mantissa bits are not changed during 
+  datatype conversion by the HDF5 Library. On the other hand,
+  the conversion of the 8-bit exponent to a 6-bit exponent
+  is a little tricky:
+  
+<dir>
+  The bias for the new exponent in the n-bit datatype is: 
+<!--      <br>
+      &nbsp;&nbsp;&nbsp;&nbsp;2&#094;(n-1)-1 
+-->      <br>
+      &nbsp;&nbsp;&nbsp;&nbsp;<code>2<sup>(n-1)</sup>-1</code> 
+      <br>
+  <p>The following formula is used for this exponent conversion:
+  
+<!--      <br>
+      &nbsp;&nbsp;&nbsp;&nbsp;exp8 - (2&#094;(8-1)-1) = exp6 - (2&#094;(6-1)-1) = actual exponent value 
+-->
+      <br>
+      &nbsp;&nbsp;&nbsp;&nbsp;
+      <code>exp8 - (2<sup>(8-1)</sup>-1)</code> = 
+      <code>exp6 - (2<sup>(6-1)</sup>-1)</code> = 
+      <i>actual exponent value</i> 
+
+      <br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+      where <code>exp8</code> is the stored decimal value 
+      as represented by the 8-bit exponent
+      <br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+      and <code>exp6</code> is the stored decimal value 
+      as represented by the 6-bit exponent
+</dir>
+
+<p>In this example, caution must be taken to ensure that, 
+  after conversion, the actual exponent value is 
+  within the range that can be represented by a 6-bit exponent. 
+  For example, 
+  an 8-bit exponent can represent values  from -127 to 128 while 
+  a 6-bit exponent can represent values only from -31 to 32.
+  
+<a name="Design">
+<h4><em>N-bit filter behavior</em></h4>
+</a>
+
+<p>The n-bit filter was designed to treat the incoming data byte by byte at 
+  the lowest level. The purpose was to make the n-bit filter as generic as 
+  possible so that no pointer cast related to the datatype is needed.
+
+<p>Bitwise operations are employed for packing and unpacking at the byte level.
+
+<p>Recursive function calls are used to treat compound and array datatypes.
+
+<h5><em>N-bit compression</em></h5>
+
+  The main idea of n-bit compression is to use a loop to compress each  
+  data element in a chunk. Depending on the datatype of each element, 
+  the n-bit filter will call one of four functions.  Each of these functions
+  performs one of the following tasks:  
+
+    <ul>
+      <li>Compress a data element of a no-op datatype.
+      <li>Compress a data element of an atomic datatype.
+      <li>Compress a data element of a compound datatype.
+      <li>Compress a data element of an array datatype.
+    </ul> 
+
+
+<p><b>No-op datatypes:</b>
+  The n-bit filter does not actually compress no-op datatypes.  
+  Rather, it copies the data buffer of the no-op datatype from the 
+  noncompressed buffer to proper location in the compressed buffer; 
+  the compressed buffer has no holes. 
+  The term "compress" is used here simply to distinguish this function  
+  from the function that performs the reverse operation during decompression.
+  
+
+<p><b>Atomic datatypes:</b>
+  The n-bit filter will find the bytes where significant bits are 
+  located and try to compress these bytes, one byte at a time, using a loop. 
+  At this level, the filter needs the following information:
+  <ul>
+    <li>The byte offset of the beginning of the current data element with 
+        respect to the beginning of the input data buffer
+    <li>Datatype size, precision, offset, and byte order  
+  </ul>
+
+<p>The n-bit filter compresses from the most significant byte containing 
+  significant bits to the least significant byte.  
+  For big-endian data, therefore, the loop index progresses from smaller
+  to larger while for little-endian, the loop index progresses from larger
+  to smaller.
+
+<p>In the extreme case, i.e., when the n-bit datatype has full precision,
+  this function copies the content of the entire noncompressed datatype 
+  to the compressed output buffer.
+
+
+<p><b>Compound datatypes:</b>
+  The n-bit filter will compress each data member of the compound datatype. 
+  If the member datatype is of an integer or floating-point datatype, 
+  the n-bit filter will call the function described above in section 2.1.2. 
+  If the member datatype is of a no-op datatype, 
+  the filter will call the function described above in section 2.1.1. 
+  If the member datatype is of a compound datatype, the filter will make a 
+  recursive call to itself 
+  (i.e., to the function described in this section, 2.1.3). 
+  If the member datatype is of an array datatype, the filter will call the 
+  function described below in section 2.1.4.
+
+
+<p><b>Array datatypes:</b>
+  The n-bit filter will use a loop to compress each array element in 
+  the array. If the base datatype of array element is of an integer or 
+  floating-point datatype, the n-bit filter will call the function described 
+  above in section 2.1.2. 
+  If the base datatype is of a no-op datatype, the filter will call the
+  function described above in section 2.1.1. 
+  If the base datatype is of a compound datatype, the filter will call the
+  function described above in section 2.1.3. 
+  If the member datatype is of an array datatype, the filter will make a 
+  recursive call of itself 
+  (i.e., to the function described in this section, 2.1.4).
+  
+<h5><em>N-bit decompression</em></h5>
+
+<p>The n-bit decompression algorithm is very similar to n-bit compression. 
+  The only difference is that at the byte level, compression packs out all 
+  padding bits and stores only significant bits into a continous buffer 
+  (unsigned char) while decompression unpacks significant bits and inserts 
+  padding bits (zeros) at the proper positions to recover the data bytes 
+  as they existed before compression.
+  
+<h5><em>Storing n-bit parameters to array</em> <code>cd_value[]</code></h5>
+
+<p>All of the information, or parameters, required by the n-bit filter 
+  are gathered and stored in the array <code>cd_values[]</code> by the 
+  private function <code>H5Z_set_local_nbit</code> and are passed 
+  to another private function, 
+  <code>H5Z_filter_nbit</code>, by the HDF5 Library. 
+  
+<p>These parameters ar as follows:
+  <ol>
+    <li>Parameters related to the datatype
+    <li>The number of elements within the chunk
+    <li>A flag indicating whether compression is needed
+  </ol>
+
+<p>The first and second parameters can be obtained using the HDF5 dataspace
+  and datatype interface calls. 
+  The third parameter is set during the storing process as described 
+  in section 3.2.
+
+<p>A compound datatype can have members of array or compound datatype. 
+  An array datatype's base datatype can be a complex compound datatype. 
+  Recursive calls are required to set parameters for these complex situations.
+
+<p>Before setting the parameters, the number of parameters should be 
+  calculated to dynamically allocate the array <code>cd_values[]</code>,
+  which will be passed to the HDF5 Library. 
+  This also requires recursive calls.
+  
+<p>For an atomic datatype (integer or floating-point), parameters to store 
+  include the datatype's size, endianness, precision, and offset. 
+  
+<p>For a no-op datatype, only the size is required.
+
+<p>For a compound datatype, parameters to store include the datatype's
+  total size and number of members. 
+  For each member, its member offset needs to be stored. 
+  Other paramters for members will depends on the respective datatype class.
+
+<p>For an array datatype, parameters to store include total size. 
+  Other paramters for the array's base type depend on the base type's 
+  datatype class. 
+  
+<p>Further, to correctly retrieve the parameter for use of n-bit 
+  compression or decompression later, parameters for distinguishing  
+  between datatype classes should be stored.
+  
+<a name="implementation">
+<h4><em>Implementation</em></h4>
+</a>
+
+<p>Three filter call-back functions were written for the n-bit filter:
+  <br><code>&nbsp;&nbsp;&nbsp;&nbsp;H5Z_can_apply_nbit</code>
+  <br><code>&nbsp;&nbsp;&nbsp;&nbsp;H5Z_set_local_nbit</code>
+  <br><code>&nbsp;&nbsp;&nbsp;&nbsp;H5Z_filter_nbit</code> 
+  <br>These functions are called internally by the HDF5 library. 
+  A number of utility functions were written for the function 
+  <code>H5Z_set_local_nbit</code>. Compression and decompression functions 
+  were written and are called by function <code>H5Z_filter_nbit</code>. 
+  All these functions are included in the file <code>H5Znbit.c</code>.
+
+<p>The public function<code>H5Pset_nbit</code> is called by 
+  the application to sett up the use of the n-bit filter [2]. 
+  This function is included in the file <code>H5Pdcpl.c</code>. 
+  The application does not need to supply any parameters.
+  
+<h5><em>How n-bit parameters are stored</em></h5>
+
+<p>A scheme of storing parameters required by the n-bit filter in the 
+  array <code>cd_values[]</code> was developed utilizing recursive 
+  function calls.
+
+
+<p>Four private utility functions were written for storing the paramters 
+  associated with atomic (integer or floating-point), no-op, array, and 
+  compound datatypes:
+  <br><code>&nbsp;&nbsp;&nbsp;&nbsp;H5Z_set_parms_atomic</code>
+  <br><code>&nbsp;&nbsp;&nbsp;&nbsp;H5Z_set_parms_array</code>
+  <br><code>&nbsp;&nbsp;&nbsp;&nbsp;H5Z_set_parms_nooptype</code>
+  <br><code>&nbsp;&nbsp;&nbsp;&nbsp;H5Z_set_parms_compound</code> 
+
+<!-- NEW PAGE -->
+<p>The scheme is briefly described below.
+
+<dir>
+
+  First assign a numeric code for datatype class atomic (integer or float), 
+  no-op, array, and compound datatype. The code is stored before other 
+  datatype related parameters are stored.
+  
+<dl>
+  <dd>
+  <dt>The first three parameters of <code>cd_values[]</code> are reserved for:
+    <ol>
+      <li>Number of valid entries in the array <code>cd_values[]</code>
+      <li>A flag indicating whether compression is needed
+      <li>The number of elements in the chunk
+    </ol>
+  
+    
+  <dt>Throughout the balance of this explanation, 
+    <code>i</code> represents the index of <code>cd_values[]</code>.
+    <br>&nbsp;
+
+  <dt>In the function <code>H5Z_set_local_nbit</code>:
+  <dd>
+      <ol>
+        <li><code>i</code> = 2
+        <li>Get number of elements in the chunk and store in
+          <code>cd_value[i]</code>; increment <code>i</code>.
+        <li>Get class of datatype:
+          <br>&nbsp;&nbsp;If integer or floating-point datatype, call 
+          <code>H5Z_set_parms_atomic</code>.
+          <br>&nbsp;&nbsp;If array datatype, call 
+            <code>H5Z_set_parms_array</code>.
+          <br>&nbsp;&nbsp;If compound datatype, call 
+            <code>H5Z_set_parms_compound</code>.
+          <br>&nbsp;&nbsp;If none of the above, call 
+            <code>H5Z_set_parms_noopdatatype</code>.
+        <li>Store <code>i</code> in <code>cd_value[0]</code> and 
+          flag in <code>cd_values[1]</code>.
+      </ol>
+  </dd>
+</dl>
+
+<dl>
+  <dt>In the function <code>H5Z_set_parms_atomic</code>:</dt>
+    <dd>
+      <ol>
+        <li>Store code for atomic datatype in 
+          <code>cd_value[i]</code>; increment <code>i</code>.
+        <li>Get size of atomic datatype and store in 
+          <code>cd_value[i]</code>; increment <code>i</code>.
+        <li>Get order of atomic datatype and store in 
+          <code>cd_value[i]</code>; increment <code>i</code>.
+        <li>Get precision of atomic datatype and store in 
+          <code>cd_value[i]</code>; increment <code>i</code>.
+        <li>Get offset of atomic datatype and store in 
+          <code>cd_value[i]</code>; increment <code>i</code>.
+        <li>Determine need to do compression at this point.
+      </ol>
+  </dd>
+</dl>
+
+<dl>
+  <dt>In the function <code>H5Z_set_parms_nooptype</code>:
+  <dd>
+      <ol>
+        <li>Store code for no-op datatype in 
+          <code>cd_value[i]</code>; increment <code>i</code>.
+        <li>Get size of no-op datatype and store in 
+          <code>cd_value[i]</code>; increment <code>i</code>.
+      </ol>
+  </dd>
+</dl>
+
+<dl>
+  <dt>In the function <code>H5Z_set_parms_array</code>:
+  <dd>
+      <ol>
+        <li>Store code for array datatype in 
+          <code>cd_value[i]</code>; increment <code>i</code>.
+        <li>Get size of array datatype and store in 
+          <code>cd_value[i]</code>; increment <code>i</code>.
+        <li>Get class of array's base datatype.
+          <br>&nbsp;&nbsp;If integer or floating-point datatype, 
+            call <code>H5Z_set_parms_atomic</code>.
+          <br>&nbsp;&nbsp;If array datatype, call 
+            <code>H5Z_set_parms_array</code>.
+          <br>&nbsp;&nbsp;If compound datatype, call 
+            <code>H5Z_set_parms_compound</code>.
+          <br>&nbsp;&nbsp;If none of the above, 
+            call <code>H5Z_set_parms_noopdatatype</code>.
+      </ol>
+  </dd>
+</dl>
+
+<dl>
+  <dt>In the function <code>H5Z_set_parms_compound</code>:
+  <dd>
+      <ol>
+        <li>Store code for compound datatype in 
+          <code>cd_value[i]</code>; increment <code>i</code>.
+        <li>Get size of compound datatype and store in 
+          <code>cd_value[i]</code>; increment <code>i</code>.
+        <li>Get number of members and store in 
+          <code>cd_values[i]</code>; increment <code>i</code>.
+        <li>For each member
+          <br>&nbsp;&nbsp;Get member offset and store in 
+            <code>cd_values[i]</code>; increment <code>i</code>.
+          <br>&nbsp;&nbsp;Get class of member datatype.
+          <br>&nbsp;&nbsp;If integer or floating-point datatype, 
+            call <code>H5Z_set_parms_atomic</code>.
+          <br>&nbsp;&nbsp;If array datatype, 
+            call <code>H5Z_set_parms_array</code>.
+          <br>&nbsp;&nbsp;If compound datatype, 
+            call <code>H5Z_set_parms_compound</code>.
+          <br>&nbsp;&nbsp;If none of the above, 
+            call <code>H5Z_set_parms_noopdatatype</code>.
+      </ol>
+  </dd>
+</dl>
+
+</dir>
+
+<h5><em>N-bit compression and decompression functions</em></h5>
+
+<p>The n-bit compression and decompression functions above are called 
+  by the private HDF5 function <code>H5Z_filter_nbit</code>. 
+  The compress and decompress functions retrieve the n-bit parameters
+  from <code>cd_values[]</code> as it was passed by
+  <code>H5Z_filter_nbit</code>. Parameters are retrieved in exactly the 
+  same order in which they are stored and lower-level compression and 
+  decompression functions for different datatype classes are called. 
+  These functions are implementated according to the descriptions 
+  in sections 2.1 and 2.2.
+  
+<p>N-bit compression is not implemented in place. Due to the 
+  difficulty of calculating actual output buffer size after compression, 
+  the same space as that of the input buffer is allocated for the output 
+  buffer as passed to the compression function. However, the size of the 
+  output buffer passed by reference to the compression function will 
+  be changed (smaller) after the compression is complete.
+  
+<a name="examples">
+<h4><em>Usage Examples</em></h4>
+</a>
+
+<p>The following code example illustrates the use of the n-bit filter 
+  for writing and reading n-bit integer data.</p>
+
+<table x-use-null-cells
+		width=600
+		cellspacing=0
+                class="fullImgTable"
+		align="center">
+  <tr valign=top> 
+    <td class="fullImgTableImgCell">
+
+<pre>
+#include "hdf5.h"
+#include &lt;stdlib.h&gt;
+#include &lt;math.h&gt;
+#define H5FILE_NAME  "nbit_test_int.h5"
+#define DATASET_NAME "nbit_int"
+#define NX 200
+#define NY 300
+#define CH_NX 10
+#define CH_NY 15
+
+int main(void)
+{
+   hid_t   file, dataspace, dataset, datatype, mem_datatype, properties;
+   hsize_t dims[2], chunk_size[2];
+   int     orig_data[NX][NY];
+   int     new_data[NX][NY];
+   int     i, j;
+   size_t  precision, offset;
+
+
+   /* Define dataset datatype (integer), and set precision, offset */
+   datatype = H5Tcopy(H5T_NATIVE_INT);
+   precision = 17; /* precision includes sign bit */
+   if(H5Tset_precision(datatype,precision)&lt;0) {
+      printf("Error: fail to set precision\n");
+      return -1;
+   }
+   offset = 4;
+   if(H5Tset_offset(datatype,offset)&lt;0) {
+      printf("Error: fail to set offset\n");
+      return -1;
+   }
+
+
+   /* Copy to memory datatype */
+   mem_datatype = H5Tcopy(datatype);
+
+
+   /* Set order of dataset datatype */
+   if(H5Tset_order(datatype, H5T_ORDER_BE)&lt;0) {
+      printf("Error: fail to set endianness\n");
+      return -1;
+   }
+
+
+  /* Initiliaze data buffer with random data within correct range
+   * corresponding to the memory datatype's precision and offset.
+   */
+   for (i=0; i &lt; NX; i++)
+       for (j=0; j &lt; NY; j++)
+           orig_data[i][j] = rand() % (int)pow(2, precision-1) &lt;&lt;offset;
+
+
+   /* Describe the size of the array. */
+   dims[0] = NX;
+   dims[1] = NY;
+   if((dataspace = H5Screate_simple (2, dims, NULL))&lt;0) {
+      printf("Error: fail to create data space\n");
+      return -1;
+   }
+
+
+  /*
+   * Create a new file using read/write access, default file
+   * creation properties, and default file access properties.
+   */
+   if((file = H5Fcreate (H5FILE_NAME, H5F_ACC_TRUNC,
+                         H5P_DEFAULT, H5P_DEFAULT))&lt;0) {
+      printf("Error: fail to create file\n");
+      return -1;
+   }
+
+
+  /*
+   * Set the dataset creation property list to specify that
+   * the raw data is to be partitioned into 10x15 element
+   * chunks and that each chunk is to be compressed.
+   */
+   chunk_size[0] = CH_NX;
+   chunk_size[1] = CH_NY;
+   if((properties = H5Pcreate (H5P_DATASET_CREATE))&lt;0) {
+      printf("Error: fail to create dataset property\n");
+      return -1;
+   }
+   if(H5Pset_chunk (properties, 2, chunk_size)&lt;0) {
+      printf("Error: fail to set chunk\n");
+      return -1;
+   }
+
+
+</pre><!-- NEW PAGE -->
+<pre>
+  /*
+   * Set parameters for n-bit compression; check the description of
+   * the H5Pset_nbit function in the HDF5 Reference Manual for more
+   * information.
+   */
+   if(H5Pset_nbit (properties)&lt;0) {
+      printf("Error: fail to set nbit filter\n");
+      return -1;
+   }
+
+
+  /*
+   * Create a new dataset within the file.  The datatype
+   * and data space describe the data on disk, which may
+   * be different from the format used in the application's
+   * memory.
+   */
+   if((dataset = H5Dcreate (file, DATASET_NAME, datatype,
+                            dataspace, properties))&lt;0) {
+      printf("Error: fail to create dataset\n");
+      return -1;
+   }
+
+
+  /*
+   * Write the array to the file. The datatype and dataspace
+   * describe the format of the data in the 'orig_data' buffer.
+   * The raw data is translated to the format required on disk,
+   * as defined above. We use default raw data transfer properties.
+   */
+   if(H5Dwrite (dataset, mem_datatype, H5S_ALL, H5S_ALL,
+                H5P_DEFAULT, orig_data)&lt;0) {
+      printf("Error: fail to write to dataset\n");
+      return -1;
+   }
+
+
+   H5Dclose (dataset);
+
+
+   if((dataset = H5Dopen(file, DATASET_NAME))&lt;0) {
+      printf("Error: fail to open dataset\n");
+      return -1;
+   }
+
+
+  /*
+   * Read the array. This is similar to writing data,
+   * except the data flows in the opposite direction.
+   * Note: Decompression is automatic.
+   */
+   if(H5Dread (dataset, mem_datatype, H5S_ALL, H5S_ALL,
+               H5P_DEFAULT, new_data)&lt;0) {
+      printf("Error: fail to read from dataset\n");
+      return -1;
+   }
+
+
+</pre><!-- NEW PAGE -->
+<pre>
+   H5Tclose (datatype);
+   H5Tclose (mem_datatype);
+   H5Dclose (dataset);
+   H5Sclose (dataspace);
+   H5Pclose (properties);
+   H5Fclose (file);
+
+
+   return 0;
+}
+</pre>
+    </td>
+  </tr>
+  <tr> 
+    <td align=center class="fullImgTableCapCell"> 
+    <span class=figurenumber>Example 1, n-bit compression:</span> 
+         illustrating use of the n-bit filter for writing and reading 
+         n-bit integer data.</td>
+  </tr>
+</table>
+
+
+<br><!-- NEW PAGE -->
+<p>The following code example illustrates the use of the n-bit filter 
+  for writing and reading n-bit floating-point data.</p>
+
+<table x-use-null-cells
+		width=600
+		cellspacing=0
+                class="fullImgTable"
+		align="center">
+  <tr valign=top> 
+    <td class="fullImgTableImgCell">
+<pre>
+#include "hdf5.h"
+#define H5FILE_NAME  "nbit_test_float.h5"
+#define DATASET_NAME "nbit_float"
+#define NX 2
+#define NY 5
+#define CH_NX 2
+#define CH_NY 5
+
+
+int main(void)
+{
+   hid_t   file, dataspace, dataset, datatype, properties;
+   hsize_t dims[2], chunk_size[2];
+  /* orig_data[] are initialized to be within the range that can be
+   * represented by dataset datatype (no precision loss during
+   * datatype conversion)
+   */
+   float   orig_data[NX][NY] = {{188384.00, 19.103516, -1.0831790e9,
+   -84.242188, 5.2045898}, {-49140.000, 2350.2500, -3.2110596e-1,
+   6.4998865e-5, -0.0000000}};
+   float   new_data[NX][NY];
+   size_t  precision, offset;
+
+
+  /* Define single-precision floating-point type for dataset
+   *-------------------------------------------------------------------
+   * size=4 byte, precision=20 bits, offset=7 bits,
+   * mantissa size=13 bits, mantissa position=7,
+   * exponent size=6 bits, exponent position=20,
+   * exponent bias=31.
+   * It can be illustrated in little-endian order as:
+   * (S - sign bit, E - exponent bit, M - mantissa bit,
+   *  ? - padding bit)
+   *
+   *           3        2        1        0
+   *       ?????SEE EEEEMMMM MMMMMMMM M???????
+   *
+   * To create a new floating-point type, the following
+   * properties must be set in the order of
+   *     set fields -> set offset -> set precision -> set size.
+   * All these properties must be set before the type can function.
+   * Other properties can be set anytime. Derived type size cannot
+   * be expanded bigger than original size but can be decreased.
+   * There should be no holes among the significant bits. Exponent
+   * bias usually is set 2^(n-1)-1, where n is the exponent size [3].
+
+
+*-------------------------------------------------------------------*/
+   datatype = H5Tcopy(H5T_IEEE_F32BE);
+   if(H5Tset_fields(datatype, 26, 20, 6, 7, 13)&lt;0) {
+      printf("Error: fail to set fields\n");
+      return -1;
+   }
+   offset = 7;
+   if(H5Tset_offset(datatype,offset)&lt;0) {
+      printf("Error: fail to set offset\n");
+      return -1;
+   }
+   precision = 20;
+   if(H5Tset_precision(datatype,precision)&lt;0) {
+      printf("Error: fail to set precision\n");
+      return -1;
+   }
+   if(H5Tset_size(datatype, 4)&lt;0) {
+      printf("Error: fail to set size\n");
+      return -1;
+   }
+   if(H5Tset_ebias(datatype, 31)&lt;0) {
+      printf("Error: fail to set exponent bias\n");
+      return -1;
+   }
+
+
+   /* Describe the size of the array. */
+   dims[0] = NX;
+   dims[1] = NY;
+   if((dataspace = H5Screate_simple (2, dims, NULL))&lt;0) {
+      printf("Error: fail to create data space\n");
+      return -1;
+   }
+
+
+  /*
+   * Create a new file using read/write access, default file
+   * creation properties, and default file access properties.
+   */
+   if((file = H5Fcreate (H5FILE_NAME, H5F_ACC_TRUNC,
+                         H5P_DEFAULT, H5P_DEFAULT))&lt;0) {
+      printf("Error: fail to create file\n");
+      return -1;
+   }
+
+
+  /*
+   * Set the dataset creation property list to specify that
+   * the raw data is to be partitioned into 2x5 element
+   * chunks and that each chunk is to be compressed.
+   */
+   chunk_size[0] = CH_NX;
+   chunk_size[1] = CH_NY;
+   if((properties = H5Pcreate (H5P_DATASET_CREATE))&lt;0) {
+      printf("Error: fail to create dataset property\n");
+      return -1;
+   }
+   if(H5Pset_chunk (properties, 2, chunk_size)&lt;0) {
+      printf("Error: fail to set chunk\n");
+      return -1;
+   }
+
+
+  /*
+   * Set parameters for n-bit compression; check the description
+   * of the H5Pset_nbit function in the HDF5 Reference Manual
+   * for more information.
+   */
+   if(H5Pset_nbit (properties)&lt;0) {
+      printf("Error: fail to set nbit filter\n");
+      return -1;
+   }
+
+
+  /*
+   * Create a new dataset within the file.  The datatype
+   * and data space describe the data on disk, which may
+   * be different from the format used in the application's
+   * memory.
+   */
+   if((dataset = H5Dcreate (file, DATASET_NAME, datatype,
+                            dataspace, properties))&lt;0) {
+      printf("Error: fail to create dataset\n");
+      return -1;
+   }
+
+
+  /*
+   * Write the array to the file. The datatype and dataspace
+   * describe the format of the data in the 'orig_data' buffer.
+   * The raw data is translated to the format required on disk,
+   * as defined above. We use default raw data transfer properties.
+   */
+   if(H5Dwrite (dataset, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL,
+                H5P_DEFAULT, orig_data)&lt;0) {
+      printf("Error: fail to write to dataset\n");
+      return -1;
+   }
+
+
+   H5Dclose (dataset);
+
+
+   if((dataset = H5Dopen(file, DATASET_NAME))&lt;0) {
+      printf("Error: fail to open dataset\n");
+      return -1;
+   }
+
+
+  /*
+   * Read the array. This is similar to writing data,
+   * except the data flows in the opposite direction.
+   * Note: Decompression is automatic.
+   */
+   if(H5Dread (dataset, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL,
+               H5P_DEFAULT, new_data)&lt;0) {
+      printf("Error: fail to read from dataset\n");
+      return -1;
+   }
+
+
+   H5Tclose (datatype);
+   H5Dclose (dataset);
+   H5Sclose (dataspace);
+   H5Pclose (properties);
+   H5Fclose (file);
+
+
+   return 0;
+}
+</pre>
+    </td>
+  </tr>
+  <tr> 
+    <td align=center class="fullImgTableCapCell"> 
+    <span class=figurenumber>Example 2, n-bit compression:</span> 
+          illustrating the use of the n-bit filter for writing and reading 
+          n-bit floating-point data.</td>
+  </tr>
+</table>
+
+<a name="limitations">
+<h4><em>Limitations</em></h4>
+</a>
+
+<p>Because the array <code>cd_values[]</code> has to fit into an object 
+  header message of 64K, the n-bit filter has an uppper limit on the number 
+  of n-bit paramters that can be stored in it. To be conservative, a maximum 
+  of 4K is allowed for the number of parameters.
+
+<p>The n-bit filter currently only compresses n-bit dataypes or fields derived 
+  from integer or floating-point datatypes. The n-bit filter assumes padding 
+  bits of zero. This may not be true since the HDF5 user can set padding bit 
+  to be zero, one, or leave the background alone. However, it is expected 
+  the n-bit filter will be modified to adjust to such situations.
+
+<p>The n-bit filter does not have a way to handle the situation where the  
+  fill value of a dataset is defined and the fill value is not of an n-bit 
+  datatype although the dataset datatype is.
+
+
+
+
+
+<!-- NEW PAGE -->
+<a name="ScaleOffset">
+<h3>6.2. Scale-offset Filter</h3>
+</a> 
+
+<p>Generally speaking, scale-offset compression performs a scale and/or 
+  offset operation on each data value and truncates the resulting value 
+  to a minimum number of bits (minimum-bits) before storing it [1]. 
+
+<p>The current scale-offset filter supports integer and floating-point 
+  datatype only. For floating-point datatype, float and double are supported 
+  while long double is not supported.
+
+<p>Integer data compression uses a straight-forward algorithm. Floating-point 
+  data compression adopts the GRiB data packing mechanism [2], which offers 
+  two alternate methods: a fixed minimum-bits method, and a variable 
+  minimum-bits method. Currently, only the variable minimum-bits method 
+  is implemented.
+
+<p>Like other I/O filters supported by the HDF5 library, application 
+  using the scale-offset filter must store data with chunked storage.
+  
+<p>
+<b><i>Integer type:</i></b>
+  The minimum-bits of integer data can be determined by the filter. 
+  For example, if the maximum value of data to be compressed is 7065 
+  and the minimum value is 2970. Then the "span" of dataset values is 
+  equal to(max-min+1),which is 4676. If no fill value is defined for the 
+  dataset, the minimum-bits is: ceiling(log2(span)) = 12. With fill 
+  value set, the minimum-bits is: ceiling(log2(span+1)) = 13[1].
+
+<p>HDF5 user can also set the minimum-bits. However, if the user gives 
+  a minimum-bits that is less than that calculated by the filter, 
+  the compression will be lossy.
+
+<p>
+<b><i>Floating-point type</i></b>
+  The basic idea of scaleoffset filter for floating-point type is 
+  to transform the data by some kind of scaling to integer data and 
+  then follow the procedure of scaleoffset filter for integer type to 
+  do the data compression. Due to the data transformation from 
+  floating-point to integer, the scaleoffset filter is 
+  lossy in nature. 
+
+<p>Two methods of scaling the floating-point data are used, the so-called 
+  D-scaling and E-scaling. D-scaling is more straightforward and easy to 
+  understand. For HDF5 1.8 release, only D-scaling method is implemented. 
+  More information about D-scaling and E-scaling can be found from [2].
+  
+<h4><em>Design</em></h4>
+
+<p>Before the filter does any real work, it needs to gather some information 
+  from the HDF5 library through API calls. The parameters the filter needs 
+  are: Minimum-bits of the data value, number of data elements in the chunk, 
+  datatype class, size, sign (only for integer type), byte order, fill value 
+  if defined. Size and sign are needed to determine what kind of pointer cast 
+  to use when retrieving values from data buffer.
+
+<p>The pipeline of filter can be divided into four parts: (1)pre-compression; 
+  (2)compression; (3)decompression; (4)post-decompression.
+
+<p>Depending on whether fill value is defined or not, the filter will handle 
+  pre-compression and post-decompression differently. 
+
+<p>The scaleoffset filter only needs the memory byte order, size of datatype, 
+  and minimum-bits for compression and decompression.
+
+<p>Since decompression has no access to the original data, the minimum-bits 
+  and the minimum value need to be stored with the compressed data for 
+  decompression and post-decompression.
+  
+<h5><em>Integer type</em></h5>
+
+<h6><em>Pre-compression</em></h6>
+
+<p>During pre-compression Minimum-bits is calculated if it is not 
+  set by the user. Calculation of Minimum-bits has already been 
+  illustrated in section 1. 
+ 
+<p>If fill value is defined, finding of maximum and minimum value 
+  should ignore the data element whose value is equal to the fill value. 
+
+<p>If no fill value is defined, value of each data element is subtracted 
+  by minimum value during this stage.
+
+<p>If fill value is defined, fill value is assigned to the maximum value. 
+  In this way minimum-bits can represent data element whose value is equal 
+  to the fill value and subtracts the minimum value from data element whose 
+  value is not equal to the fill value.
+
+<p>Fill value, if defined, number of elements inside the chunk, class of 
+  datatype, size of datatype, memory order of the datatype etc. should be 
+  stored into HDF5 object header for the usage of post-decompression.
+
+<p>After pre-compression, all values are non-negative and are within the range 
+  that can be store by Minimum-bits.
+  
+<h6><em>Compression</em></h6>
+
+<p>All modified data values after pre-compression are packed together 
+  into the compressed data buffer. The number of bit for each data value 
+  decreases from the number of bit of integer (32 for most platforms) to 
+  minimum-bits. The value of minimum-bits and minimum-value are added to 
+  the data buffer and the whole buffer is sent back to the library. In this 
+  way, number of bit for each modified value is no more than 
+  the size of minimum-bits.
+  
+<h6><em>Decompression</em></h6>
+
+<p>In this stage, the number of bit for each data value is resumed from 
+  minimum-bits to the number of bit of integer.
+
+<h6><em>Post-decompression</em></h6>
+
+<p>For the stage of the post-decompression the filter does the opposite 
+  of what it does during pre-compression except that it does not calculate 
+  the minimum-bits or the minimum value. 
+ 
+<p>They have been saved during compression and can be retrieved through 
+  the resumed data buffer. If no fill value is defined, the filter adds 
+  the minimum value back to each data element.
+
+<p>If fill value is defined, the filter assigns the fill value to data 
+  element whose value is equal to the maximum value that minimum-bits can 
+  represent and adds the minimum value back to each data element whose value 
+  is not equal to the maximum value  that minimum-bits can represent.
+  
+<h5><em>Floating-point type</em></h5>
+
+<p>The filter will do data transformation from floating-point type to 
+  integer type and then handle the data by using the procedure for handling 
+  the integer data inside the filter.  
+  Since insignificant bits of floating-point data will be cut off 
+  during data transformation, so this filter is a lossy compression method.
+
+<p>Two scaling methods are introduced by[2]; namely D-scaling and E-scaling. 
+  HDF5 1.8 release only supports D-scaling. In this document, we only 
+  introduce D-scaling. E-scaling should be similar conceptually. D-scaling 
+  means decimal scaling. In order to transform data from floating-point to 
+  integer, a scale factor is introduced. The minimum value will be calculated. 
+  Each data element value will subtract the minimum value. The modified data 
+  will be multiplied by 10(Decimal) to the power of <code>scale_factor</code> 
+  and only the integer part will be kept and manipulated through the routines 
+  for integer type of the filter during the pre-compression and compression. 
+  The integer data will be divided by 10 to the power of 
+  <code>scale_factor</code> to transform back to the floating-point data 
+  during the decompression and post-decompression.  
+  Each data element value will then add the minimum value and the 
+  floating-data are resumed. However, the resumed data will lose some 
+  insignificant bits compared with the original value.
+
+<p>For example, the following floating point data are manipulated by the 
+  filter, the D-scaling factor is 2.
+  
+<p>{104.561, 99.459, 100.545, 105.644}
+
+<p>The minimum value is 99.459, each data element subtracts 99.459, the 
+  modified data is {5.102, 0, 1.086, 6.185}
+
+<p>Since D-scaling factor is 2, all floating-point data will be 
+  multiplied by 10^2,
+
+<p>{510.2, 0, 108.6, 618.5}
+
+<p>The digit after decimal point will be rounded off. The set looks like: 
+  {510 , 0, 109, 619}
+
+<p>After decompression, each value will be divided by 10^2 and add 
+  the offset 99.459,
+
+<p>The floating point data becomes {104.559, 99.459, 100.549, 105.649}
+
+<p>The relative error for each value should be no more than 
+  5* (10^(D-scaling factor +1)). D-scaling sometimes is also refered 
+  as variable Minimum-bits method since for different datasets the 
+  minimum-bits to represent the same decimal precision will vary. The 
+  Data value is modified to 2 to power <code>scale_factor</code> of for 
+  E-scaling. E-scaling is also called fixed-bits method since for different 
+  datasets the minimum-bits will always be fixed to the scale factor of 
+  E-scaling. 
+  Currently HDF5 ONLY supports D-scaling(variable Minimum-bits) method.
+  
+<h4><em>Implementation</em></h4>
+
+<p>The scale-offset filter implementation was written and included in the file 
+  <code>H5Zscaleoffset.c</code>. Function <code>H5Pset_scaleoffset</code> was 
+  written and included in the file "<code>H5Pdcpl.c</code>". The HDF5 user can 
+  supply minimum-bits by calling function <code>H5Pset_scaleoffset</code> [3].
+
+<!-- NEW PAGE -->
+<p>The scale-offset filter was implemented based on the design outlined in 
+  section 2. However, the following factors need to be considered:
+  
+<dl>
+  <dd>
+    <ol>
+      <li>The filter needs the appropriate cast pointer whenever it needs 
+        to retrieve data values.
+      <li>The HDF5 library passes to the filter the to-be-compressed data 
+        in format of dataset datatype and the filter passes back the 
+        decompressed data in the same format. If fill value is defined, 
+        it is also in dataset datatype format. 
+        For example, if byte order of dataset datatype is different 
+        from that of the memory datatype of the platform compression or 
+        decompression performs, endianness conversion of data buffer is needed. 
+        Moreover, it should be aware that memory byte order can be different 
+        during compression and decompression.
+      <li>The difference of endianness and datatype between file and memory 
+        should be considered when saving and retrieval of minimum-bits, 
+        minimum value, and fill value.
+      <li>If the user sets the minimum-bits to full precision of the datatype, 
+        no operation is needed at the filter side. If the full precision is 
+        a result of calculation by the filter, then the minimum-bits needs 
+        to be saved for decompression but no compression or decompression 
+        is needed (only copy of the input buffer is needed).
+      <li>If by calculation of the filter, the minimum-bits is equal to zero, 
+        special handling is needed. Since it means all values are the same, 
+        no compression or decompression is needed. But the minimum-bits 
+        and minimum value still need to be saved during compression.
+      <li>For floating-point data, the minimum value of the dataset should 
+        be calculated at first. Each data element value will then subtract 
+        the minimum value to obtain the "offset" data. 
+        The offset data will then follow 2.2 <strong>(3.1.2??)</strong> 
+        to do data transformation to integer and rounding.
+    </ol>
+  </dd>
+</dl>
+
+<h4><em>Usage Examples</em></h4>
+
+<p>The following code example illustrates the use of the scale-offset filter 
+  for writing and reading integer data.</p>
+
+<table x-use-null-cells
+		width=600
+		cellspacing=0
+                class="fullImgTable"
+		align="center">
+  <tr valign=top> 
+    <td class="fullImgTableImgCell">
+<pre>
+#include "hdf5.h"
+#include &lt;stdlib.h&gt;
+#define H5FILE_NAME  "scaleoffset_test_int.h5"
+#define DATASET_NAME "scaleoffset_int"
+#define NX 200
+#define NY 300
+#define CH_NX 10
+#define CH_NY 15
+</pre>
+
+<pre>
+int main(void)
+{
+   hid_t   file, dataspace, dataset, datatype, properties;
+   hsize_t dims[2], chunk_size[2];
+   int     orig_data[NX][NY];
+   int     new_data[NX][NY];   
+   int     i, j, fill_val;   
+
+   /* Define dataset datatype */
+   datatype = H5Tcopy(H5T_NATIVE_INT);   
+   
+   /* Initiliaze data buffer */
+   for (i=0; i &lt; NX; i++) 
+       for (j=0; j &lt; NY; j++)
+           orig_data[i][j] = rand() % 10000;
+
+   /* Describe the size of the array. */
+   dims[0] = NX;
+   dims[1] = NY;
+   if((dataspace = H5Screate_simple (2, dims, NULL))&lt;0) {
+      printf("Error: fail to create data space\n");
+      return -1;
+   }
+
+  /*
+   * Create a new file using read/write access, default file
+   * creation properties, and default file access properties.
+   */
+   if((file = H5Fcreate (H5FILE_NAME, H5F_ACC_TRUNC, 
+                         H5P_DEFAULT, H5P_DEFAULT))&lt;0) {
+      printf("Error: fail to create file\n");
+      return -1;
+   }
+
+  /*
+   * Set the dataset creation property list to specify that
+   * the raw data is to be partitioned into 10x15 element
+   * chunks and that each chunk is to be compressed.
+   */
+   chunk_size[0] = CH_NX;
+   chunk_size[1] = CH_NY;
+   if((properties = H5Pcreate (H5P_DATASET_CREATE))&lt;0) {
+      printf("Error: fail to create dataset property\n");
+      return -1;
+   }
+   if(H5Pset_chunk (properties, 2, chunk_size)&lt;0) {
+      printf("Error: fail to set chunk\n");
+      return -1;
+   }
+
+   /* Set the fill value of dataset */
+   fill_val = 10000;
+   if (H5Pset_fill_value(properties, H5T_NATIVE_INT, 
+       &fill_val)&lt;0) {
+      printf("Error: can not set fill value for dataset\n");
+      return -1;
+   }
+
+  /*
+   * Set parameters for scale-offset compression. Check the 
+   * description of the H5Pset_scaleoffset function in the 
+   * HDF5 Reference Manual for more information [3].
+   */
+   if(H5Pset_scaleoffset (properties, H5_SO_INT_MINIMUMBITS_DEFAULT, 
+                          H5_SO_INT)&lt;0) {
+      printf("Error: fail to set scaleoffset filter\n");
+      return -1;
+   }
+
+  /*
+   * Create a new dataset within the file. The datatype
+   * and data space describe the data on disk, which may
+   * or may not be different from the format used in the 
+   * application's memory.
+   */
+   if((dataset = H5Dcreate (file, DATASET_NAME, datatype,
+                            dataspace, properties))&lt;0) {
+      printf("Error: fail to create dataset\n");
+      return -1;
+   }
+
+  /*
+   * Write the array to the file. The datatype and dataspace
+   * describe the format of the data in the 'orig_data' buffer.
+   * We use default raw data transfer properties.
+   */
+   if(H5Dwrite (dataset, H5T_NATIVE_INT, H5S_ALL, H5S_ALL,
+                H5P_DEFAULT, orig_data)&lt;0) {
+      printf("Error: fail to write to dataset\n");
+      return -1;
+   }
+
+   H5Dclose (dataset);
+
+   if((dataset = H5Dopen(file, DATASET_NAME))&lt;0) {
+      printf("Error: fail to open dataset\n");
+      return -1;
+   }   
+
+  /*
+   * Read the array. This is similar to writing data,
+   * except the data flows in the opposite direction.
+   * Note: Decompression is automatic.
+   */
+   if(H5Dread (dataset, H5T_NATIVE_INT, H5S_ALL, H5S_ALL,
+               H5P_DEFAULT, new_data)&lt;0) {
+      printf("Error: fail to read from dataset\n");
+      return -1;
+   }
+
+   H5Tclose (datatype);
+   H5Dclose (dataset);
+   H5Sclose (dataspace);
+   H5Pclose (properties);
+   H5Fclose (file);
+
+   return 0;
+}
+</pre>
+    </td>
+  </tr>
+  <tr> 
+    <td align=center class="fullImgTableCapCell"> 
+    <span class=figurenumber>Example 3, scale-offset compression:</span>
+          illustrating the use of the scale-offset filter for writing 
+          and reading integer data</td>
+  </tr>
+</table>
+
+<br><!-- NEW PAGE -->
+<p>The following code example illustrates the use of the scale-offset filter 
+  (set for variable minimum-bits method) 
+  for writing and reading floating-point data.</p>
+  
+<table x-use-null-cells
+		width=600
+		cellspacing=0
+                class="fullImgTable"
+		align="center">
+  <tr valign=top> 
+    <td class="fullImgTableImgCell">
+<pre>
+#include "hdf5.h"
+#include &lt;stdlib.h&gt;
+#define H5FILE_NAME  "scaleoffset_test_float_Dscale.h5"
+#define DATASET_NAME "scaleoffset_float_Dscale"
+#define NX 200
+#define NY 300
+#define CH_NX 10
+#define CH_NY 15
+</pre>
+
+<pre>
+int main(void)
+{
+   hid_t   file, dataspace, dataset, datatype, properties;
+   hsize_t dims[2], chunk_size[2];
+   float   orig_data[NX][NY];
+   float   new_data[NX][NY];
+   float   fill_val;   
+   int     i, j;   
+
+   /* Define dataset datatype */
+   datatype = H5Tcopy(H5T_NATIVE_FLOAT);   
+   
+   /* Initiliaze data buffer */
+   for (i=0; i < NX; i++) 
+       for (j=0; j < NY; j++)
+           orig_data[i][j] = (rand() % 10000) / 1000.0;
+
+   /* Describe the size of the array. */
+   dims[0] = NX;
+   dims[1] = NY;
+   if((dataspace = H5Screate_simple (2, dims, NULL))&lt;0) {
+      printf("Error: fail to create data space\n");
+      return -1;
+   }
+
+  /*
+   * Create a new file using read/write access, default file
+   * creation properties, and default file access properties.
+   */
+   if((file = H5Fcreate (H5FILE_NAME, H5F_ACC_TRUNC, 
+                         H5P_DEFAULT, H5P_DEFAULT))&lt;0) {
+      printf("Error: fail to create file\n");
+      return -1;
+   }
+
+  /*
+   * Set the dataset creation property list to specify that
+   * the raw data is to be partitioned into 10x15 element
+   * chunks and that each chunk is to be compressed.
+   */
+   chunk_size[0] = CH_NX;
+   chunk_size[1] = CH_NY;
+   if((properties = H5Pcreate (H5P_DATASET_CREATE))&lt;0) {
+      printf("Error: fail to create dataset property\n");
+      return -1;
+   }
+   if(H5Pset_chunk (properties, 2, chunk_size)&lt;0) {
+      printf("Error: fail to set chunk\n");
+      return -1;
+   }
+
+   /* Set the fill value of dataset */
+   fill_val = 10000.0;
+   if (H5Pset_fill_value(properties, H5T_NATIVE_FLOAT, 
+       &fill_val)<0) {
+      printf("Error: can not set fill value for dataset\n");
+      return -1;
+   }
+
+  /*
+   * Set parameters for scale-offset compression; use varialbe
+   * minimum-bits method, set decimal scale factor to 3. Check the 
+   * description of the H5Pset_scaleoffset function in the HDF5 
+   * Reference Manual for more information [3].
+   */
+   if(H5Pset_scaleoffset (properties, 3, H5_SO_FLOAT_DSCALE)&lt;0) {
+      printf("Error: fail to set scaleoffset filter\n");
+      return -1;
+   }
+
+  /*
+   * Create a new dataset within the file. The datatype
+   * and data space describe the data on disk, which may
+   * or may not be different from the format used in the 
+   * application's memory.
+   */
+   if((dataset = H5Dcreate (file, DATASET_NAME, datatype,
+                            dataspace, properties))&lt;0) {
+      printf("Error: fail to create dataset\n");
+      return -1;
+   }
+
+  /*
+   * Write the array to the file. The datatype and dataspace
+   * describe the format of the data in the 'orig_data' buffer.
+   * We use default raw data transfer properties.
+   */
+   if(H5Dwrite (dataset, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL,
+                H5P_DEFAULT, orig_data)&lt;0) {
+      printf("Error: fail to write to dataset\n");
+      return -1;
+   }
+
+   H5Dclose (dataset);
+
+   if((dataset = H5Dopen(file, DATASET_NAME))&lt;0) {
+      printf("Error: fail to open dataset\n");
+      return -1;
+   }   
+
+  /*
+   * Read the array. This is similar to writing data,
+   * except the data flows in the opposite direction.
+   * Note: Decompression is automatic.
+   */
+   if(H5Dread (dataset, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL,
+               H5P_DEFAULT, new_data)&lt;0) {
+      printf("Error: fail to read from dataset\n");
+      return -1;
+   }
+
+   H5Tclose (datatype);
+   H5Dclose (dataset);
+   H5Sclose (dataspace);
+   H5Pclose (properties);
+   H5Fclose (file);
+
+   return 0;
+}
+</pre>
+    </td>
+  </tr>
+  <tr> 
+    <td align=center class="fullImgTableCapCell"> 
+    <span class=figurenumber>Example 4, scale-offset compression:</span>
+          illustrating the use of the scale-offset filter for writing 
+          and reading floating-point data</td>
+  </tr>
+</table>
+
+<h4><em>Limitations</em></h4>
+
+<p>For floating-point data handling, there are some algorithmic 
+  limitations to the GRiB data packing mechanism:
+
+<dl>
+  <dd>
+    <ol>
+      <li>Both E-scaling and D-scaling method are lossy compression.
+      <li>For D-scaling method, since data values have been rounded to 
+        integer values (positive) before truncating to the minimum-bits, 
+        their range is limited by the maximum value that can be represented 
+        by the corresponding unsigned integer type (same size with that of 
+        floating-point type).
+    </ol>
+  </dd>
+</dl>
+
+<h4><em>Suggestions</em></h4>
+
+<p>Some suggestions for using the filter for floating-point data:
+
+<dl>
+  <dd>
+    <ol>
+      <li>It is better to convert the units of data so that it is 
+        within certain common range (e.g. 1200m to 1.2km).
+      <li>If data values to be compressed are very near to zero, it 
+        is strongly recommended that the user sets the fill value away 
+        from zero (e.g. a large positive number) because if the user does 
+        nothing the HDF5 library will set the fill value to zero, which 
+        may cause the compression not as desirable.
+      <li>Users are not encouraged to use a very large decimal scale 
+        factor (e.g. 100) for the D-scaling method. This can cause the 
+        filter not to ignore fill value when finding maximum and minimum 
+        values, and get a much larger minimum-bits (poor compression).
+    </ol>
+  </dd>
+</dl>
+
+
+
+  
+
+<a name="Szip">
+<h3>6.3. Using the Szip Filter</h3>
+</a>
+
+  Information regarding the Szip filter can be found at 
+  <a href="http://hdf.ncsa.uiuc.edu/doc_resource/SZIP/" target="Ext1">
+  <code>http://hdf.ncsa.uiuc.edu/doc_resource/SZIP/</code></a>.
+
+<p>&nbsp;
+<p>&nbsp;
+
+
+
+
 
 <!-- HEADER RIGHT " " -->
 
