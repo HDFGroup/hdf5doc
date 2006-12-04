@@ -2500,7 +2500,9 @@ Posix-compliant. Default.</td></tr>
 <p>Memory for the file will always be allocated in units of the 
  specified <code><em>block_size</em></code>. 
 
-<p><code><em>backing_store</em></code> is a boolean flag indicating
+<p>While using <code><em>H5Fcreate</em></code> to create a 
+ <span class=smallcaps>CORE</span> file,
+ <code><em>backing_store</em></code> is a boolean flag indicating
  whether to write the file contents to disk when the file is closed.
  If <code><em>backing_store</em></code> is set to 
  <code>1</code> (<code>TRUE</code>), the file contents are flushed 
@@ -2508,6 +2510,19 @@ Posix-compliant. Default.</td></tr>
  file when the file is closed or access to the file is terminated in memory. 
  If <code><em>backing_store</em></code> is set to 
  <code>0</code> (<code>FALSE</code>), the file is not saved.
+
+<p>The application is allowed to open an existing file with 
+ <code><em>H5FD_CORE</em></code> driver.  While using <code><em>H5Fopen</em></code>
+ to open an existing file, if the <code><em>backing_store</em></code> is set to 
+ <code><em>1</em></code> and the <code><em>flags</em></code> for <code><em>H5Fopen</em></code>
+ is set to <code><em>H5F_ACC_RDWR</em></code>, any change to the file contents
+ are saved to the file when the file is closed.  If <code><em>backing_store</em></code>
+ is set to <code><em>0</em></code> and the <code><em>flags</em></code> for 
+ <code><em>H5Fopen</em></code> is set to <code><em>H5F_ACC_RDWR</em></code>, 
+ any change to the file contents will be lost when the file is closed.  If 
+ the <code><em>flags</em></code> for <code><em>H5Fopen</em></code> is set to 
+ <code><em>H5F_ACC_RDONLY</em></code>, no change to the file is allowed 
+ either in memory or on file.
 
 <p>If the file access property list is set to use the 
  <span class=smallcaps>CORE</span> driver, <code>H5Pget_fapl_core</code>
@@ -2521,13 +2536,8 @@ Posix-compliant. Default.</td></tr>
         from memory without ever being written to disk. 
     <li>Total file size must not exceed the available virtual memory.
     <li>Only one HDF5 file identifier can be opened for the file, the 
-        identifier returned by <code>H5Fcreate</code>.
-        The name assigned in <code>H5Fcreate</code> is used 
-        <span class=termemphasis>only</span> if 
-        <code><em>backing_store</em></code> is set and cannot be used 
-        with <code>H5Fopen</code> to obtain a new file identifier.  
-        <code>H5Fopen</code> will always fail.
-    <li>The file will be discarded when access is terminated unless
+        identifier returned by <code>H5Fcreate</code> or <code>H5Fopen</code>.
+    <li>The changes to the file will be discarded when access is terminated unless
         <code><em>backing_store</em></code> is set to <code>1</code>.
     </ul>
 	
