@@ -85,16 +85,20 @@ Links interface (H5L).
 <ul>
     <li><a href="#Object-Open">H5Oopen</a>
     <li><a href="#Object-Close">H5Oclose</a>
+    <li><a href="#Object-Copy">H5Ocopy</a>
 </ul>
 </td><td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
 <td valign=top> 
 <ul>
-    <li><a href="#Object-OpenByAddr">H5Oopen_by_addr</a>
+    <li><a href="#Object-GetInfo">H5Oget_info</a>
+    <li><a href="#Object-IncrRefCount">H5Oincr_refcount</a>
+    <li><a href="#Object-DecrRefCount">H5Odecr_refcount</a>
 </ul>
 </td><td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td><td valign=top>
 <ul>
-    <li><a href="#Object-IncrRefCount">H5Oincr_refcount</a>
-    <li><a href="#Object-DecrRefCount">H5Odecr_refcount</a>
+    <li><a href="#Object-GetInfoByIdx">H5Oget_info_by_idx</a>
+    <li><a href="#Object-OpenByIdx">H5Oopen_by_idx</a>
+    <li><a href="#Object-OpenByAddr">H5Oopen_by_addr</a>
 </ul>
 </td></tr>
 </table>
@@ -108,6 +112,8 @@ Links interface (H5L).
     <td valign="top">
       <ul>
       <li><a href="#Object-Close">H5Oclose</a>
+      <li><a href="#Object-Copy">H5Ocopy</a>
+      <li><a href="#Object-DecrRefCount">H5Odecr_refcount</a>
       </ul>     
     </utd>
     
@@ -115,7 +121,8 @@ Links interface (H5L).
     
     <td valign="top">
       <ul>
-      <li><a href="#Object-DecrRefCount">H5Odecr_refcount</a>
+      <li><a href="#Object-GetInfo">H5Oget_info</a>
+      <li><a href="#Object-GetInfoByIdx">H5Oget_info_by_idx</a>
       <li><a href="#Object-IncrRefCount">H5Oincr_refcount</a>
       </ul>
     </td>
@@ -126,6 +133,7 @@ Links interface (H5L).
       <ul>
       <li><a href="#Object-Open">H5Oopen</a>
       <li><a href="#Object-OpenByAddr">H5Oopen_by_addr</a>
+      <li><a href="#Object-OpenByIdx">H5Oopen_by_idx</a>
       </ul>
     </td>
   </tr>
@@ -145,16 +153,20 @@ as the corresponding C function.
 <ul>
     <li><a href="#Object-Open">h5oopen_f</a>
     <li><a href="#Object-Close">h5oclose_f</a>
+    <li><a href="#Object-Copy">h5ocopy_f</a>
 </ul>
 </td><td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
 <td valign=top> 
 <ul>
-    <li><a href="#Object-OpenByAddr">h5oopen_by_addr_f</a>
+    <li><a href="#Object-GetInfo">h5oget_info_f</a>
+    <li><a href="#Object-IncrRefCount">h5oincr_refcount_f</a>
+    <li><a href="#Object-DecrRefCount">h5odecr_refcount_f</a>
 </ul>
 </td><td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td><td valign=top>
 <ul>
-    <li><a href="#Object-IncrRefCount">h5oincr_refcount_f</a>
-    <li><a href="#Object-DecrRefCount">h5odecr_refcount_f</a>
+    <li><a href="#Object-GetInfoByIdx">h5oget_info_by_idx_f</a>
+    <li><a href="#Object-OpenByIdx">h5oopen_by_idx_f</a>
+    <li><a href="#Object-OpenByAddr">h5oopen_by_addr_f</a>
 </ul>
 </td></tr>
 </table>
@@ -200,6 +212,7 @@ as the corresponding C function.
         <td valign="top">IN: Object identifier 
         </td></tr>
     </table></ul>
+  <p>
   <dt><strong>Returns:</strong>
     <dd>Returns a non-negative value if successful;
         otherwise returns a negative value.
@@ -235,8 +248,120 @@ as the corresponding C function.
 </dl>
 
 
+<!-- NEW PAGE -->
+<!-- HEADER RIGHT "H5Ocopy" -->
+<hr>
+<dl>
+  <dt><strong>Name:</strong> <a name="Object-Copy">H5Ocopy</a>
+  <dt><strong>Signature:</strong>
+    <dd><em>herr_t </em><code>H5Ocopy</code>(
+            <em>hid_t </em><code>src_loc_id</code>,
+            <em>const char *</em><code>src_name</code>,
+            <em>hid_t </em><code>dst_loc_id</code>,
+            <em>const char *</em><code>dst_name</code>,
+            <em>hid_t </em><code>ocp_plist_id</code>,
+            <em>hid_t </em><code>lcpl_id</code>
+        )
+  <dt><strong>Purpose:</strong>
+    <dd>Copies a group, dataset, or named datatype.
+  <dt><strong>Description:</strong>
+    <dd><code>H5Ocopy</code> copies the object 
+      specified by <code>src_name</code> 
+      from the file or group specified by <code>src_loc_id</code> 
+      to the destination location <code>dst_loc_id</code>.
+      <p>
+      The object being copied can be a group, dataset or named datatype.
+      <p>
+      The destination location, as specified in <code>dst_loc_id</code>,
+      may be a group in the current file or a location in a different file.
+      If <code>dst_loc_id</code> is a file identifier, the copy will
+      be placed in that file&rsquo;s root group.
+      <p>
+      The new copy will be created with the name <code>dst_name</code>. 
+      <code>dst_name</code> must not pre-exist in the destination location;
+      if <code>dst_name</code> already exists at the location
+      <code>dst_loc_id</code>, <code>H5Ocopy</code> will fail.
+      <p>
+      The new copy of the object is created with the creation property lists
+      specified by <code>ocp_plist_id</code> and <code>lcpl_id</code>.
+      <p>
+      Several flags are available to govern the behavior of 
+      <code>H5Ocopy</code>.
+      These flags are set in the creation property list 
+      <code>cplist_id</code> with 
+      <a href="RM_H5P.html#Property-SetCopyObject"><code>H5Pset_copy_object</code></a> and
+      <a href="RM_H5P.html#Property-SetCreateIntermediateGroup"><code>H5Pset_create_intermediate_group</code></a>.
+      All of the available flags are described at 
+      <a href="RM_H5P.html#Property-SetCopyObject"><code>H5Pset_copy_object</code></a>.
+  <dt><strong>Parameters:</strong>
+    <ul><table>
+      <tr>
+        <td valign="top"><em>hid_t </em><code>src_loc_id</code>
+        </td>
+        <td valign="top">Object identifier indicating the
+            location of the source object to be copied
+        </td></tr>
+      <tr>
+        <td valign="top"><em>const char *</em><code>src_name</code>
+        </td>
+        <td valign="top">Name of the source object to be copied
+        </td></tr>
+      <tr>
+        <td valign="top"><em>hid_t </em><code>dst_loc_id</code>
+        </td>
+        <td valign="top">Location identifier specifying the destination
+        </td></tr>
+      <tr>
+        <td valign="top"><em>const&nbsp;char&nbsp;*</em><code>dst_name&nbsp;&nbsp;&nbsp;&nbsp;</code>
+        </td>
+        <td valign="top">Name to be assigned to the new copy
+        </td></tr>
+      <tr>
+        <td valign="top"><em>hid_t </em><code>ocp_plist_id</code>
+        </td>
+        <td valign="top">Object copy property list
+        </td></tr>
+      <tr>
+        <td valign="top"><em>hid_t </em><code>lcpl_id</code>
+        </td>
+        <td valign="top">Link creation property list for the new hard link 
+        </td></tr>
+    </table></ul>
+  <p>
+  <dt><strong>Returns:</strong>
+    <dd>Returns a non-negative value if successful;
+        otherwise returns a negative value.
+  <dt><strong>Fortran90 Interface:</strong> <!--h5ocopy_f-->
+    <dd>
+      None.
+<!--
+	<pre>
+
+	</pre>		
+-->
+		
+ <!--<dt><strong>Non-C API(s):</strong>
+    	<dd>
+        
+        <img src="Graphics/Java.gif"> 
+        <img src="Graphics/C++.gif">
+        -->
+<dt><strong>History:</strong>
+    <ul><table width="90%">
+        <tr>
+          <td valign="top" align="left" width="10%">
+            <strong>Release</strong>&nbsp;&nbsp;&nbsp;&nbsp;</td>
+          <td valign="top" align="left">
+            <strong>C</strong></td></tr>
+        <tr>
+          <td valign="top">1.8.0</td>
+          <td valign="top">
+	    Function introduced in this release.</td></tr>
+    </table></ul>
+</dl>
 
 <!-- NEW PAGE -->
+
 <!-- HEADER RIGHT "H5Odecr_refcount" -->
 <hr>
 <dl>
@@ -292,6 +417,7 @@ as the corresponding C function.
         <td valign="top">IN: Object identifier 
         </td></tr>
     </table></ul>
+  <p>
   <dt><strong>Returns:</strong>
     <dd>Returns a non-negative value if successful;
         otherwise returns a negative value.
@@ -327,6 +453,208 @@ as the corresponding C function.
 </dl>
 
 
+<!-- NEW PAGE -->
+<!-- HEADER RIGHT "H5Oget_info" -->
+<hr>
+<dl>
+  <dt><strong>Name:</strong> <a name="Object-GetInfo">H5Oget_info</a>
+  <dt><strong>Signature:</strong>
+    <dd><em>herr_t</em> <code>H5Oget_info</code>(
+        <em>hid_t</em> <code>loc_id</code>,
+        <em>const char *</em><code>obj_name</code>,
+        <em>H5O_info_t</em> *<code>obj_info</code>,
+        <em>hid_t</em> <code>lapl_id</code>
+    )
+  <p>
+  <dt><strong>Purpose:</strong>
+    <dd>Retrieves the metadata for an object by name.
+  <p>
+  <dt><strong>Description:</strong>
+    <dd><code>H5Oget_info</code> description...
+    <p>
+    <code>obj_info</code>, in which the object information is returned,
+    is a struct of type <em>H5O_info_t</em>.  This struct type is defined 
+    as follows (or see <code>H5Opublic.h</code>):
+    <pre>
+    unsigned long    fileno;      /* File number that object is located in   */
+    haddr_t          addr;        /* Object address in file                  */
+    H5O_type_t       type;        /* Basic object type (group, dataset,      */
+                                  /*     or named datatype)                  */
+    unsigned         rc;          /* Reference count of object               */
+    time_t           atime;       /* Access time                             */
+    time_t           mtime;       /* Modification time                       */
+    time_t           ctime;       /* Change time                             */
+    time_t           btime;       /* Birth time                              */
+    hsize_t          num_attrs;   /* Number of attributes attached to object */
+    struct {
+        unsigned   version;       /* Version number of header format in file */
+        unsigned   nmesgs;        /* Number of object header messages        */
+        unsigned   nchunks;       /* Number of object header chunks          */
+        hsize_t    hdr_size;      /* Total size of object header in file     */
+        hsize_t    meta_space;    /* Space within header for object header   */
+                                  /*     metadata information                */
+        hsize_t    mesg_space;    /* Space within header for actual message  */
+                                  /*     information                         */
+        hsize_t    free_space;    /* Free space within object header         */
+        uint64_t   msg_present;   /* Flags to indicate presence of message   */
+                                  /*     type in header                      */
+        uint64_t   msg_shared;    /* Flags to indicate message type is       */
+                                  /*     shared in header                    */
+    } hdr;      
+    hsize_t          meta_size;   /* Size of additional metadata for an      */
+                                  /*     object (B-tree & heap for groups,   */
+                                  /*     B-tree for chunked dataset, etc.)   */
+    </pre>
+  <p>
+  <dt><strong>Parameters:</strong>
+    <dd><table>
+      <tr>
+        <td valign="top"><em>hid_t</em> <code>loc_id</code></td>
+        <td valign="top">IN: File or group identifier specifying location 
+            of group in which object is located</td></tr>
+      <tr>
+        <td valign="top"><em>const&nbsp;char&nbsp;*</em><code>group_name&nbsp;&nbsp;&nbsp;&nbsp;</code></td>
+        <td valign="top">IN: Name of group in which object is located</td></tr>
+      <tr>
+        <td valign="top"><em>H5_index_t</em> <code>index_field</code></td>
+        <td valign="top">IN: Index or field that determines the order</td></tr>
+      <tr>
+        <td valign="top"><em>H5_iter_order_t</em> <code>order</code></td>
+        <td valign="top">IN: Order within field or index</td></tr>
+      <tr>
+        <td valign="top"><em>hsize_t</em> <code>n</code></td>
+        <td valign="top">IN: Object for which information is to be 
+            returned</td></tr>
+      <tr>
+        <td valign="top"><em>H5O_info_t *</em><code>obj_info</code></td>
+        <td valign="top">OUT: Buffer in which to return object
+            information</td></tr>
+      <tr>
+        <td valign="top"><em>hid_t</em> <code>lapl_id</code></td>
+        <td valign="top">IN: Link access property list</td></tr>
+    </table>
+  <p>
+  <dt><strong>Returns:</strong>
+    <dd>Returns a non-negative value if successful;
+        otherwise returns a negative value.
+  <p>
+  <dt><strong>Fortran90 Interface:</strong> <!-- h5lfunc_f -->
+    <dd>None.
+<!--
+    <pre>
+  
+    </pre>
+-->
+        <!--<dt><strong>Non-C API(s):</strong>
+    	<dd>
+        
+        <img src="Graphics/Java.gif"> 
+        <img src="Graphics/C++.gif">
+        -->
+  <p>
+  <dt><strong>History:</strong>
+    <dd><table width="90%">
+        <tr>
+          <td valign="top" align="left" width="10%">
+            <strong>Release</strong>&nbsp;&nbsp;&nbsp;&nbsp;</td>
+          <td valign="top" align="left">
+            <strong>C</strong></td></tr>
+        <tr>
+          <td valign="top">1.8.0</td>
+          <td valign="top">
+            Function introduced in this release.</td></tr>
+    </table>
+</dl>
+
+
+<!-- NEW PAGE -->
+<!-- HEADER RIGHT "H5Oget_info_by_idx" -->
+<hr>
+<dl>
+  <dt><strong>Name:</strong> <a name="Object-GetInfoByIdx">H5Oget_info_by_idx</a>
+  <dt><strong>Signature:</strong>
+    <dd><em>herr_t</em> <code>H5Oget_info_by_idx</code>(
+        <em>hid_t</em> <code>loc_id</code>,
+        <em>const char *</em><code>group_name</code>,
+        <em>H5_index_t</em> <code>index_field</code>,
+        <em>H5_iter_order_t</em> <code>order</code>,
+        <em>hsize_t</em> <code>n</code>,
+        <em>H5O_info_t</em> *<code>obj_info</code>,
+        <em>hid_t</em> <code>lapl_id</code>
+    )
+  <p>
+  <dt><strong>Purpose:</strong>
+    <dd>Retrieves the metadata for an object by index.
+  <p>
+  <dt><strong>Description:</strong>
+    <dd><code>H5Oget_info_by_idx</code> description...
+      <p>
+      <code>obj_info</code>, in which the object information is returned,
+      is a struct of type <em>H5O_info_t</em>.  This struct type is described 
+      in the <a href="#Object-GetInfo">H5Oget_info</a> function entry.
+      <p>
+      If <code>loc_id</code> fully specifies the group in which the object
+      resides, <code>group_name</code> can be a dot (.).
+  <p>
+  <dt><strong>Parameters:</strong>
+    <dd><table>
+      <tr>
+        <td valign="top"><em>hid_t</em> <code>loc_id</code></td>
+        <td valign="top">IN: File or group identifier specifying location 
+            of group in which object is located</td></tr>
+      <tr>
+        <td valign="top"><em>const&nbsp;char&nbsp;*</em><code>group_name&nbsp;&nbsp;&nbsp;&nbsp;</code></td>
+        <td valign="top">IN: Name of group in which object is located</td></tr>
+      <tr>
+        <td valign="top"><em>H5_index_t</em> <code>index_field</code></td>
+        <td valign="top">IN: Index or field that determines the order</td></tr>
+      <tr>
+        <td valign="top"><em>H5_iter_order_t</em> <code>order</code></td>
+        <td valign="top">IN: Order within field or index</td></tr>
+      <tr>
+        <td valign="top"><em>hsize_t</em> <code>n</code></td>
+        <td valign="top">IN: Object for which information is to be 
+            returned</td></tr>
+      <tr>
+        <td valign="top"><em>H5O_info_t *</em><code>obj_info</code></td>
+        <td valign="top">OUT: Buffer in which to return object
+            information</td></tr>
+      <tr>
+        <td valign="top"><em>hid_t</em> <code>lapl_id</code></td>
+        <td valign="top">IN: Link access property list</td></tr>
+    </table>
+  <p>
+  <dt><strong>Returns:</strong>
+    <dd>Returns a non-negative value if successful;
+        otherwise returns a negative value.
+  <p>
+  <dt><strong>Fortran90 Interface:</strong> <!-- h5lfunc_f -->
+    <dd>None.
+<!--
+    <pre>
+  
+    </pre>
+-->
+        <!--<dt><strong>Non-C API(s):</strong>
+    	<dd>
+        
+        <img src="Graphics/Java.gif"> 
+        <img src="Graphics/C++.gif">
+        -->
+  <p>
+  <dt><strong>History:</strong>
+    <dd><table width="90%">
+        <tr>
+          <td valign="top" align="left" width="10%">
+            <strong>Release</strong>&nbsp;&nbsp;&nbsp;&nbsp;</td>
+          <td valign="top" align="left">
+            <strong>C</strong></td></tr>
+        <tr>
+          <td valign="top">1.8.0</td>
+          <td valign="top">
+            Function introduced in this release.</td></tr>
+    </table>
+</dl>
 
 
 <!-- NEW PAGE -->
@@ -384,6 +712,7 @@ as the corresponding C function.
         <td valign="top">IN: Object identifier 
         </td></tr>
     </table></ul>
+  <p>
   <dt><strong>Returns:</strong>
     <dd>Returns a non-negative value if successful;
         otherwise returns a negative value.
@@ -484,6 +813,7 @@ as the corresponding C function.
           for the link pointing to the object
         </td></tr>
     </table></ul>
+  <p>
   <dt><strong>Returns:</strong>
     <dd>Returns an object identifier for the opened object if successful;
         otherwise returns a negative value.
@@ -606,6 +936,7 @@ as the corresponding C function.
         <td valign="top">IN: Object&rsquo;s address in the file
         </td></tr>
     </table></ul>
+  <p>
   <dt><strong>Returns:</strong>
     <dd>Returns an object identifier for the opened object if successful;
         otherwise returns a negative value.
@@ -637,6 +968,88 @@ as the corresponding C function.
 		  <td valign="top">1.8.0</td>
           <td valign="top">
 		    Function introduced in this release.</td></tr>
+    </table>
+</dl>
+
+
+
+
+<!-- NEW PAGE -->
+<!-- HEADER RIGHT "H5Oopen_by_idx" -->
+<hr>
+<dl>
+  <dt><strong>Name:</strong> <a name="Object-OpenByIdx">H5Oopen_by_idx</a>
+  <dt><strong>Signature:</strong>
+    <dd><em>herr_t</em> <code>H5Oopen_by_idx</code>(
+        <em>hid_t</em> <code>loc_id</code>,
+        <em>const char *</em><code>group_name</code>,
+        <em>H5_index_t</em> <code>index_field</code>,
+        <em>H5_iter_order_t</em> <code>order</code>,
+        <em>hsize_t</em> <code>n</code>,
+        <em>hid_t</em> <code>lapl_id</code>
+    )
+  <p>
+  <dt><strong>Purpose:</strong>
+    <dd>Open the n'th object in a group.
+  <p>
+  <dt><strong>Description:</strong>
+    <dd><code>H5Oopen_by_idx</code> description...
+      <p>
+      If <code>loc_id</code> fully specifies the group in which the object
+      resides, <code>group_name</code> can be a dot (.).
+  <p>
+  <dt><strong>Parameters:</strong>
+    <dd><table>
+      <tr>
+        <td valign="top"><em>hid_t</em> <code>loc_id</code></td>
+        <td valign="top">IN: File or group identifier specifying location 
+            of group in which object is located</td></tr>
+      <tr>
+        <td valign="top"><em>const&nbsp;char&nbsp;*</em><code>group_name&nbsp;&nbsp;&nbsp;&nbsp;</code></td>
+        <td valign="top">IN: Name of group in which object is located</td></tr>
+      <tr>
+        <td valign="top"><em>H5_index_t</em> <code>index_field</code></td>
+        <td valign="top">IN: Index or field that determines the order</td></tr>
+      <tr>
+        <td valign="top"><em>H5_iter_order_t</em> <code>order</code></td>
+        <td valign="top">IN: Order within field or index</td></tr>
+      <tr>
+        <td valign="top"><em>hsize_t</em> <code>n</code></td>
+        <td valign="top">IN: Object to open</td></tr>
+      <tr>
+        <td valign="top"><em>hid_t</em> <code>lapl_id</code></td>
+        <td valign="top">IN: Link access property list</td></tr>
+    </table>
+  <p>
+  <dt><strong>Returns:</strong>
+    <dd>Returns a non-negative value if successful;
+        otherwise returns a negative value.
+  <p>
+  <dt><strong>Fortran90 Interface:</strong> <!-- h5lfunc_f -->
+    <dd>None.
+<!--
+    <pre>
+  
+    </pre>
+-->
+        <!--<dt><strong>Non-C API(s):</strong>
+    	<dd>
+        
+        <img src="Graphics/Java.gif"> 
+        <img src="Graphics/C++.gif">
+        -->
+  <p>
+  <dt><strong>History:</strong>
+    <dd><table width="90%">
+        <tr>
+          <td valign="top" align="left" width="10%">
+            <strong>Release</strong>&nbsp;&nbsp;&nbsp;&nbsp;</td>
+          <td valign="top" align="left">
+            <strong>C</strong></td></tr>
+        <tr>
+          <td valign="top">1.8.0</td>
+          <td valign="top">
+            Function introduced in this release.</td></tr>
     </table>
 </dl>
 
@@ -696,7 +1109,7 @@ Describes HDF5 Release 1.8.0-alpha.
 
 <!-- #EndLibraryItem --><SCRIPT LANGUAGE="JAVASCRIPT">
 <!--
-document.writeln("Last modified: 2 November 2006");
+document.writeln("Last modified: 28 December 2006");
 -->
 </SCRIPT>
  
