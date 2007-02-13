@@ -1,5 +1,17 @@
-HDF5 version 1.8.0-alpha3 currently under development
+HDF5 version 1.8.0-alpha6snap2 currently under development
 ================================================================================
+
+===========================================================================
+WARNING!!  WARNING!!  WARNING!!  WARNING!!  WARNING!!  WARNING!!  WARNING!!
+
+This code is currently using interim file format changes that will
+certainly change before the final 1.8.0 release.  Please feel free to
+test everything out (in fact, we'd welcome that!), but do _NOT_ keep any
+of the files produced as they will not be readable by later versions of
+the HDF5 software.
+
+WARNING!!  WARNING!!  WARNING!!  WARNING!!  WARNING!!  WARNING!!  WARNING!!
+===========================================================================
 
 INTRODUCTION
 
@@ -45,24 +57,24 @@ New Features
 
     Configuration:
     --------------
+        - 'make check-vfd' can now be run from the top level directory. Not all
+          tests that 'make check' invokes work with certain Virtual File Drivers,
+          so those tests have been skipped. - MAM 2006/7/17  
+        - Added the variable HDF5TestExpress to control how long tests run.
+          Setting it to a value between 0 and 3 controls how thoroughly the
+          library is tested, with 0 being an "exhaustive run" and 3 being a
+          very quick "smoke test."  1 (a "full run") is the default.
+          -JML 2006/6/21
+        - If both shared and static libraries are installed, now both will be
+          tested during 'make install'. -MAM 2006/06/21
+        - Added support to explicity enable stream_vfd or shared libraries
+          when using parallel via the '--enable-stream_vfd' and
+          '--enable-shared' options, respectively. If not explicity defined, 
+          These settings default to enabled when parallel is not used, 
+          and disabled when parallel is used. -MAM 2006/06/17
         - Remove the flexible parallel code and the --enable-fphdf5
           configure option, it was never up to production standards
           anyway.  -QAK 2006/4/20
-        - Added a --enable-group-revision option to configure, to enable
-          segregating the ongoing work on changing the file format.  DO
-          NOT ENABLE THIS OPTION!  It is strictly for internal library
-          development! -QAK 2006/4/14
-
-                           .-"""""-.
-                          /         \
-                 .-.      |  _   _  |      .-.
-                (_. '._   | |_\ /_| |   _.' ._)
-                   '-._'-.(_   A   _).-'_.-'
-                       '-._| _____ |_.-'
-              jgs     _.-'_\`"""""`/_'-._
-                 .-.-'_.-'  `-----'  '-._'-.-.
-                (,_.'`                   `'._,)
-
         - Added a macro hdf5_mpi_special_collective_io_works to filter out
           some mpi-io packages that don't support collective IO for no IO
           contributions in some processes. -KY 2006/2/16
@@ -160,6 +172,99 @@ New Features
 
     Library:
     --------
+       - Relaxed restrictions on attribute operations to allow a file ID to
+            be used as the "location ID".  If a file ID is used, the attribute
+            operation will occur on the root group of the file.
+            - QAK - 2007/02/09
+       - Enabled the CORE driver to read an existing file depending on 
+            the setting of the backing_store for H5Pset_fapl_core and file 
+            open flags. - SLU - 2006/11/30
+       - Added new H5Gget_info_by_idx() routine to query the information about
+            a group according to the order within an index.
+            - QAK - 2006/11/27
+       - Added new H5Gget_info() routine to query the information about a
+            group by name.
+            - QAK - 2006/11/27
+       - Added new H5Oget_info_by_idx() routine to query the information about
+            an object in a group according to the order within an index.
+            - QAK - 2006/11/26
+       - Added new H5Oget_info() routine to query the information about an
+            object in a group by name.
+            - QAK - 2006/11/26
+       - Added new H5Oopen_by_idx() routine to open an object in a group
+            according to the order within an index.
+            - QAK - 2006/11/20
+       - Added new H5Literate() routine to iterate over links in a group
+            according to the order within an index.
+            - QAK - 2006/11/20
+       - Added new H5Ldelete_by_idx() routine to delete a link according to
+            the order within an index.
+            - QAK - 2006/11/13
+       - Added new H5Lget_val_by_idx() routine to query the value of a soft link
+            according to the order within an index.
+            - QAK - 2006/11/13
+       - Added new H5Lget_name_by_idx() routine to query the name of a link
+            according to the order within an index.
+            - QAK - 2006/11/12
+       - Added new H5Rget_name() routine to determine the name of the object
+            that a reference points to, as long as the object is still
+            reachable in the group hierarchy.
+            - QAK - 2006/11/10
+       - Added new H5Lget_info_by_idx() routine to query the link information
+            according to the order within an index.
+            - QAK - 2006/11/10
+       - Added feature to H5Iget_name to allow retrieving the name of any
+            object's ID, as long as the object is still reachable in the
+            group hierarchy.
+            - LA - 2006/11/01
+       - Added External and User-defined links.
+            External links are links from one HDF5 file to another; they
+            require both the name of the file and a path within that file.
+            User-defined links allow users to supply callback functions
+            for link traversals, allowing links to exhibit essentially
+            any behavior.
+            External links are a kind of user-defined link, so their default
+            behavior can be overridden by the user.
+            -JML 2006/8/23
+       - Added H5Oopen and H5Oclose for opening objects of unknown type
+            (as link callback functions do).
+            -JML 2006/8/23
+       - Added H5Oopen_by_addr, H5Oincr_refcount, and H5Odecr_refcount for
+            opening objects by address.  Be very careful with these!
+            -JML 2006/8/23
+       - Added H5Fget_intent to get the "intent" of a file (whether it
+            was opened with read-write access or read-only.
+            -JML 2006/8/23
+       - Added Link Access Property Lists. They currently contain two
+            properties, nlinks (H5Pget/set_nlinks) and elink_prefix
+            (H5Pget/set_elink_prefix). nlinks controls how many soft and
+            user-defined traversals are allowed before HDF5 assumes it has
+            found a cycle (previously this defaulted to 16).
+            The elink_prefix is a filesystem path that is prefixed to the
+            names of any external link files opened using this LAPL.
+            -JML 2006/8/23
+       - Add H5L link APIs.  Old APIs (H5Glink, H5Gmove, etc.) are still
+         supported but deprecated.
+         New APIs are:
+            H5Llink - create a link to an object given its ID
+            H5Lmove - just like H5Gmove2
+            H5Lcopy - copy a link without copying the underlying object
+            H5Lcreate_hard - like H5Glink2 for hard links
+            H5Lcreate_soft - like H5Glink2 for soft links
+            H5Ldelete - just like H5Gunlink
+            H5Lget_val - just like H5Gget_linkval
+            H5Lget_info - gets link-specific info (like H5Gget_objinfo)
+
+         In addition, H5Gcreate_expand, H5Tcommit_expand, and H5Dcreate_expand
+         no longer create links to objects; objects must be manually linked
+         using H5Llink or they will be deleted when the ID is closed.
+
+         Link Creation Property Lists can be used to pass character
+         encoding (ASCII or UTF-8) for link names and to set the Intermediate
+         Group Creation Flag:
+            H5Pset_char_encoding, H5Pget_char_encoding
+            H5Pset_copy_object, H5Pget_copy_object
+         -JML 2006/7/5
        - Added managements of collective IO supports for chunking storage
          inside parallel HDF5
          1) Implemented One IO with collective mode for all chunks in the
@@ -435,6 +540,9 @@ New Features
 
 Support for new platforms, languages and compilers.
 =======================================
+        - Added suport for HPUX11.23 for both 32 and 64-bit; HDF5 C++
+          shared library is not supported with +DD64 flag.
+                                                     EIP - 2006/06/22
         - Added support for VAX floating numbers for Alpha Open VMS 7.3.2
                                                      EIP - 2006/05/05
         - Fixed broken make.com files in tools directories
@@ -463,6 +571,46 @@ Bug Fixes since HDF5-1.6.0 release
 
     Library
     -------
+        - Fixed a bug in H5Sselect_valid() that caused an incorrect value to
+            be returned (0) instead of FAIL on error conditions such as the
+            selection or extent not being defined. CMC - 2007/01/17
+        - Fixed the MULTI driver problem (Bug #731) that corruptted the data.
+            SLU - 2007/1/12
+        - Fixed file corruption bug which could write an incorrect number of
+            messages to an object's header under certain circumstances.
+            Generally, the sequence of actions to generate this bug looks
+            like this:
+                - Create an object
+                - Close the file
+                - Re-open the file
+                - Add 2 (or more) attributes to the object
+                - Close the file
+                - Re-open the file
+                - Delete one of the attributes on the object
+                - Add a smaller attribute to the object
+                - Delete the smaller atttribute on the object
+                - Add a larger attribute on the object
+
+            After this, the number of header messages stored for the object
+            will be off by one.  Other sequences of modifying attributes on an
+            object could also trigger this bug.  If you are opening an
+            object and the bottom few messages of the HDF5 error stack
+            resembles this, the object has been affected by this bug:
+
+              #007: ../../hdf5_v1.6/src/H5C.c line 3887 in H5C_load_entry(): unable to load entry
+                major(08): Meta data cache layer
+                minor(40): Unable to load metadata into cache
+              #008: ../../hdf5_v1.6/src/H5Ocache.c line 332 in H5O_load(): corrupt object header - too few messages
+                major(12): Object header layer
+                minor(40): Unable to load metadata into cache
+
+            Specifically, "corrupt object header" is the best string to search
+            for in the HDF5 error stack output.
+
+            If your files have been affected by this bug, or you are concerned
+            that your files might have been, please contact the HDF Helpdesk
+            at hdfhelp@ncsa.uiuc.edu for a tool to detect and repair files
+            affected by this problem.  QAK - 2006/6/16
         - Fixed various problems with retrieving names of objects, especially
             with mounted files.  QAK - 2005/12/25
         - Fixed core dump when closing root groups opened through two different
@@ -778,7 +926,7 @@ Platforms marked with * were not tested for hdf5-1.8.0-alpha2 release
                                   HP F90 v2.4
                                   HP ANSI C++ B3910B A.03.13
 *   HP-UX B.11.23                 HP aC++/ANSI C B3910B A.06.00
-                                  HP F90 v2.9
+                                  HP F90 v2.9.2
                                   HP aC++/ANSI C B3910B A.06.00
     IRIX64 6.5 (tesla -64)        MIPSpro cc 7.4.2m
                                   F90 MIPSpro 7.4.2m
@@ -861,7 +1009,7 @@ IRIX64_6.5 64-bit        y(2)     y      y        y     y     y
 IRIX64_6.5 32-bit        y(2)     n      n        n     y     y
 HPUX11.00                y(1)     y      y        y     y     y
 HPUX11.23-32bit          n        y      n        y     y     y
-HPUX11.23-62bit          n        n      n        y     y     y
+HPUX11.23-64bit          n        y      n        y     y     y
 OSF1 v5.1                y        y      y        y     y     y
 Cray X1                  y        y      y        y     y     n
 Cray XT3           (16)  n        y      n        y     y     n
@@ -903,7 +1051,7 @@ IRIX64_6.5 64-bit        y       y         n         y        y        y
 IRIX64_6.5 32-bit        y       dna       y         y        y        y
 HPUX11.00                y       n         y         x        n        y
 HPUX11.23-32bit          y       n         n         y        n        y
-HPUX11.23-62bit          y       dna       n         y        n        y
+HPUX11.23-64bit          y       dna       n         y        n        y
 OSF1 v5.1                y                           y        n        y
 Cray X1                  n                           y        n        y
 Cray XT3           (16)  n                           y        n        y
@@ -956,6 +1104,12 @@ Alpha OpenVMS 7.3.2      n       n         n         y        n        n
 
 Known Problems
 ==============
+* configuring with --enable-debug=all produces compiler errors on most
+  platforms.  Users who want to run HDF5 in debug mode should use
+  --enable-debug rather than --enable-debug=all to enable debugging
+  information on most modules.
+* On Mac OS 10.4, test/dt_arith.c has some errors in conversion from long
+  double to (unsigned) long long and from (unsigned)long long to long double. 
 * On Altix SGI with Intel 9.0 testmeta.c would not compile with -O3
   optimization flag.
 * On VAX, Scaleoffset filter isn't supported. The filter cannot be applied to
