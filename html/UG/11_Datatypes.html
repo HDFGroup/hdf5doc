@@ -35,7 +35,7 @@
 <!-- HEADER RIGHT "HDF5 Datatypes" -->
 
 <!--( TOC )=========================================================-->
-<SCRIPT language="JavaScript">
+<!--<SCRIPT language="JavaScript">-->
 <!--
 document.writeln ('\
 <table x-use-null-cells\
@@ -47,7 +47,9 @@ document.writeln ('\
     <td class="tocTableHeaderCell" colspan="2"> \
         <span class=TableHead>Chapter Contents</span></td>\
   </tr>\
+-->
 <!-- Table Version 3 -->\
+<!--
   <tr valign=top> \
     <td class="tocTableContentCell2"> \
       <a href="#Intro">1.</a></td>\
@@ -101,11 +103,13 @@ document.writeln ('\
 \
   <tr valign=top> \
     <td class="tocTableContentCell"> \
+-->
 <!-- editingComment -- "tocTableContentCell" and "tocTableContentCell4" \
 -->\
 <!-- are the table-closing cell class.\
     <td class="tocTableContentCell2"> \
 -->\
+<!--
       <a href="#Dtransfer">9.</a></td>\
     <td class="tocTableContentCell4">\
 	  <a href="#Dtransfer">Data Transfer: Datatype Conversion and Selection</a>\
@@ -1867,6 +1871,44 @@ document.writeln ("
     </td>
     <td class="functTableBottom">
 	Gets the tag associated with an opaque datatype.
+    </td>
+  </tr>
+</table>
+  
+<br>
+<h4>3.9 Datatype-to-text and Text-to-datatype Conversions</h4>
+
+<table x-use-null-cells
+		class="functTable"
+		width=600
+		cellspacing=0
+	        align="center">
+  <tr valign=top> 
+    <td class="functTableLeftHdr">
+        <span class=TableHead>C Function<br>F90 Function</span>
+    </td>
+    <td class="functTableRightHdr">
+        <span class=TableHead>Purpose</span>
+    </td>
+  </tr>
+  <tr valign=top> 
+    <td colspan=1
+	rowspan=1
+	class="functTableCell">
+	<code>H5LTtext_to_dtype<br>(none)</code> 
+    </td>
+    <td colspan=1
+	rowspan=1
+	class="functTableCell">
+	Creates a datatype from a text description.
+    </td>
+  </tr>
+  <tr valign=top> 
+    <td class="functTableBottom">
+	<code>H5LTdtype_to_text<br>(none)</code> 
+    </td>
+    <td class="functTableBottom">
+	Generates a text description of a datatype.
     </td>
   </tr>
 </table>
@@ -4709,7 +4751,7 @@ document.writeln ("
     <span class=figurenumber>Figure 34</span></td>
   </tr>	  
 </table>	
-  </td></tr></table>
+  
 
   <p>First, a dataset may have a dataset with datatype H5T_NATIVE_CHAR, with 
   each character of the string as an element of the dataset. This will store 
@@ -6529,7 +6571,237 @@ document.writeln ("
     <span class=figurenumber>Figure 62</span></td>
   </tr>
 </table>
-</dir>
+
+
+<!-- NEW PAGE -->
+<a name="TextDescriptions">
+<h3 class=pagebefore>10. Text Descriptions of Datatypes: Conversion to and from</h3>
+</a>
+
+  <p>HDF5 provides a means for generating a portable and human-readable 
+    text descripition of a datatype and 
+    for generating a datatype from such a text description.
+    This capability is particularly useful 
+    for creating complex datatypes in a single step,
+    for creating a text description of a datatype for debugging purposes, 
+    and for creating a portable datatype definition that can then be used
+    to recreate the datatype on many platforms or in other applications.
+  <p>These tasks are handled by two functions provided in the HDF5 high-level 
+    library (<a href="../HL/RM_H5LT.html" target="ExtWin">H5HL</a>):
+    <div align="center">
+    <table >
+      </td><tr valign="top" align="left">
+        <td><span class="codeText">H5LTtext_to_dtype</span>&nbsp;&nbsp;&nbsp;&nbsp;</td>
+	<td>Creates an HDF5 datatype in a single step.</td>
+      </tr><tr valign="top" align="left">
+        <td><span class="codeText">H5LTdtype_to_text</span></td>
+	<td>Translates an HDF5 datatype into a text description.</td>
+      </tr>
+    </table>
+    </div>
+  <p>Note that this functionality requires that the 
+    HDF5 High-Level Library (H5LT) be installed. 
+    See 
+    <span class="editingComment">&lt; &lt; Quick Start &gt; &gt;</span>.
+  <p>While <span class="codeText">H5LTtext_to_dtype</span> can be used to 
+    generate any sort of datatype, it is particularly useful for 
+    complex datatypes. 
+    
+  <p><span class="codeText">H5LTdtype_to_text</span> is most likely to be
+    used in two sorts of situations: 
+    when a datatype must be closely examined for debugging purpose 
+    or to create a portable text description of the datatype
+    that can then be used to recreate the datatype on other platforms 
+    or in other applications.
+
+   <p>These two functions work for all valid HDF5 datatypes
+     except time, bitfield, and reference datatypes.
+
+  <p>The currently supported text format used by 
+    <span class="codeText">H5LTtext_to_dtype</span> and 
+    <span class="codeText">H5LTdtype_to_text</span> is the
+    data description language (DDL) and conforms to the 
+    <a href="../ddl.html" target="ExtWin"><cite>HDF5 DDL</cite></a>.  
+    The portion of the <cite>HDF5 DDL</cite> that defines HDF5 datatypes  
+    appears below.
+  </p>
+
+<table x-use-null-cells
+		width=600
+		cellspacing=0
+                class="fullImgTable"
+		align="center">
+  <tr valign=top> 
+    <td class="fullImgTableImgCell">
+<pre>
+&lt;datatype&gt; ::= &lt;atomic_type&gt; | &lt;compound_type&gt; | &lt;array_type&gt; |
+		&lt;variable_length_type&gt;
+
+&lt;atomic_type&gt; ::= &lt;integer&gt;  | &lt;float&gt;  | &lt;time&gt;      | &lt;string&gt; |
+                  &lt;bitfield&gt; | &lt;opaque&gt; | &lt;reference&gt; | &lt;enum&gt;
+
+&lt;integer&gt; ::=  H5T_STD_I8BE     | H5T_STD_I8LE      |
+               H5T_STD_I16BE    | H5T_STD_I16LE     |
+               H5T_STD_I32BE    | H5T_STD_I32LE     |
+               H5T_STD_I64BE    | H5T_STD_I64LE     |
+               H5T_STD_U8BE     | H5T_STD_U8LE      |
+               H5T_STD_U16BE    | H5T_STD_U16LE     |
+               H5T_STD_U32BE    | H5T_STD_U32LE     |
+               H5T_STD_U64BE    | H5T_STD_U64LE     |
+               H5T_NATIVE_CHAR  | H5T_NATIVE_UCHAR  |
+               H5T_NATIVE_SHORT | H5T_NATIVE_USHORT |
+               H5T_NATIVE_INT   | H5T_NATIVE_UINT   |
+               H5T_NATIVE_LONG  | H5T_NATIVE_ULONG  |
+               H5T_NATIVE_LLONG | H5T_NATIVE_ULLONG
+
+&lt;float&gt; ::= H5T_IEEE_F32BE   | H5T_IEEE_F32LE     |
+            H5T_IEEE_F64BE   | H5T_IEEE_F64LE     |
+            H5T_NATIVE_FLOAT | H5T_NATIVE_DOUBLE  |
+            H5T_NATIVE_LDOUBLE
+
+&lt;time&gt; ::= TBD
+
+&lt;string&gt; ::= H5T_STRING { STRSIZE &lt;strsize&gt; ;
+  STRPAD &lt;strpad&gt; ;
+  CSET &lt;cset&gt; ;
+  CTYPE &lt;ctype&gt; ;}
+  
+&lt;strsize&gt; ::= &lt;int_value&gt; | H5T_VARIABLE
+&lt;strpad&gt; ::= H5T_STR_NULLTERM | H5T_STR_NULLPAD | H5T_STR_SPACEPAD
+&lt;cset&gt; ::= H5T_CSET_ASCII | H5T_CSET_UTF8
+&lt;ctype&gt; ::= H5T_C_S1 | H5T_FORTRAN_S1
+
+&lt;bitfield&gt; ::= TBD
+
+&lt;opaque&gt; ::= H5T_OPAQUE { OPQ_SIZE &lt;opq_size&gt;;
+			   OPQ_TAG &lt;opq_tag&gt;; }
+opq_size ::= &lt;int_value&gt;
+opq_tag ::= “&lt;string&gt;”
+
+&lt;reference&gt; ::= Not supported
+
+&lt;compound_type&gt; ::= H5T_COMPOUND { &lt;member_type_def&gt;+ }
+&lt;member_type_def&gt; ::= &lt;datatype&gt; &lt;field_name&gt; &lt;offset&gt;<font size=1.7>opt</font> ;
+&lt;field_name&gt; ::= “&lt;identifier&gt;”
+&lt;offset&gt; ::= : &lt;int_value&gt;
+
+&lt;variable_length_type&gt; ::= H5T_VLEN { &lt;datatype&gt; }
+
+&lt;array_type&gt; ::= H5T_ARRAY { &lt;dim_sizes&gt; &lt;datatype&gt; }
+&lt;dim_sizes&gt; ::= [&lt;dimsize&gt;] | [&lt;dimsize&gt;] &lt;dim_sizes&gt;
+&lt;dimsize&gt; ::= &lt;int_value&gt;
+
+&lt;enum&gt; ::= H5T_ENUM { &lt;enum_base_type&gt;; &lt;enum_def&gt;+ }
+&lt;enum_base_type&gt; ::= &lt;integer&gt;
+// Currently enums can only hold integer type data, but they may be 
+//expanded in the future to hold any datatype
+&lt;enum_def&gt; ::= &lt;enum_symbol&gt; &lt;enum_val&gt;;
+&lt;enum_symbol&gt; ::= “&lt;identifier&gt;”
+&lt;enum_val&gt; ::= &lt;int_value&gt;
+</pre>
+  <tr> 
+    <td align=center class="fullImgTableCapCell"> 
+    <span class=figurenumber>Figure 63:</span>
+    The definition of HDF5 datatypes from the 
+    <a href="../ddl.html" target="ExtWin"><cite>HDF5 DDL</cite></a></td>
+  </tr>
+</table>
+
+  <p>The definitions of opaque and compound datatype above are  
+    revised for HDF5 Release 1.8.  In Release 1.6.5. and earlier, 
+    they were were defined as follows:
+  </p>
+
+<table x-use-null-cells
+		width=600
+		cellspacing=0
+                class="fullImgTable"
+		align="center">
+  <tr valign=top> 
+    <td class="fullImgTableImgCell">
+<pre>
+&lt;opaque&gt; ::= H5T_OPAQUE { &lt;identifier&gt; }
+
+
+&lt;compound_type&gt; ::= H5T_COMPOUND { &lt;member_type_def&gt;+ }
+&lt;member_type_def&gt; ::= &lt;datatype&gt; &lt;field_name&gt; ;
+&lt;field_name&gt; ::= &lt;identifier&gt;
+</pre>
+  <tr> 
+    <td align=center class="fullImgTableCapCell"> 
+    <span class=figurenumber>Figure 64:</span>
+    Definitions of the opaque and compound datatypes from the 
+    Release 1.6.<i>n</i> series</td>
+  </tr>
+</table>
+
+<h4><em>Examples</em></h4>
+
+  <p>The code sample in the following figure illustrates the use of
+    <span class="codeText">H5LTtext_to_dtype</span> to generate a
+    variable-length string datatype.
+  </p>
+
+<table x-use-null-cells
+		width=600
+		cellspacing=0
+                class="fullImgTable"
+		align="center">
+  <tr valign=top> 
+    <td class="fullImgTableImgCell">
+<pre>
+hid_t   dtype;
+if((dtype = H5LTtext_to_dtype("H5T_STRING { 
+                                           STRSIZE H5T_VARIABLE; 
+                                           STRPAD H5T_STR_NULLPAD; 
+                                           CSET H5T_CSET_ASCII; 
+                                           CTYPE H5T_C_S1; 
+                                          }", H5LT_DDL))&lt;0)
+        goto out;
+</pre>
+  <tr> 
+    <td align=center class="fullImgTableCapCell"> 
+    <span class=figurenumber>Figure 65:</span>
+    Creating a variable-length string datatype from a text description</td>
+  </tr>
+</table>
+
+
+  <p>The code sample in the following figure illustrates the use of
+    <span class="codeText">H5LTtext_to_dtype</span> to generate a
+    complex array datatype.
+  </p>
+
+<table x-use-null-cells
+		width=600
+		cellspacing=0
+                class="fullImgTable"
+		align="center">
+  <tr valign=top> 
+    <td class="fullImgTableImgCell">
+<pre>
+hid_t   dtype;
+if((dtype = H5LTtext_to_dtype("H5T_ARRAY { [5][7][13] H5T_ARRAY 
+                                           { [17][19] H5T_COMPOUND
+                                             {                 
+                                                      H5T_STD_I8BE 
+                                                        \"arr_compound_1\"; 
+                                                      H5T_STD_I32BE 
+                                                        \"arr_compound_2\"; 
+                                             } 
+                                           } 
+                                         }", H5LT_DDL))<0)
+        goto out;
+</pre>
+  <tr> 
+    <td align=center class="fullImgTableCapCell"> 
+    <span class=figurenumber>Figure 66:</span>
+    Creating a complex array datatype from a text description</td>
+  </tr>
+</table>
+
+
+
 <!-- NEW PAGE -->
 </body>
 </html> 
