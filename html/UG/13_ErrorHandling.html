@@ -568,7 +568,7 @@ H5Eset_auto_stack(H5E_DEFAULT, my_hdf5_error_handler, NULL);
   
 <p><em>herr_t</em> <code>H5Ewalk_stack</code>(<em>hid_t</em> 
   <code>err_stack</code>, <em>H5E_direction_t</em> 
-  <code>direction</code>, <em>H5E_walk_t</em> <code>func</code>, 
+  <code>direction</code>, <em>H5E_walk_stack_t</em> <code>func</code>, 
   <em>void *</em><code>client_data</code>) <br>The error stack 
   <code>err_stack</code> is traversed and <code>func</code> is 
   called for each member of the stack. Its arguments are an integer 
@@ -578,8 +578,8 @@ H5Eset_auto_stack(H5E_DEFAULT, my_hdf5_error_handler, NULL);
   function that detected the error and concludes with the API function. 
   The opposite order is <code>H5E_WALK_DOWNWARD</code>.
   
-<p><em>typedef herr_t</em> (<code>*H5E_walk_t</code>)(<em>unsigned</em> 
-  <code>n</code>, <em>H5E_error_t *</em><code>eptr</code>, <em>void *</em>
+<p><em>typedef herr_t</em> (<code>*H5E_walk_stack_t</code>)(<em>unsigned</em> 
+  <code>n</code>, <em>H5E_error_stack_t *</em><code>eptr</code>, <em>void *</em>
   <code>client_data</code>)
   <br>An error stack traversal callback function takes three arguments: 
   <code>n</code> is a sequence number beginning at zero for each traversal, 
@@ -589,14 +589,14 @@ H5Eset_auto_stack(H5E_DEFAULT, my_hdf5_error_handler, NULL);
   
 <pre>
 typedef struct {
-    hid_t	 cls_id;
+    hid_t	cls_id;
     hid_t       maj_num;
     hid_t       min_num;
     const char  *func_name;
     const char  *file_name;
     unsigned    line;
     const char  *desc;
-} H5E_error_t;
+} H5E_error_stack_t;
 </pre>
 
 <p>The <em>maj_num</em> and <em>min_num</em> are major and minor error IDs, 
@@ -608,71 +608,40 @@ typedef struct {
 <p><b>Example of callback function:</b><br>
   The following callback function serves as an example for a user-defined 
   callback function.
-  Note that this example overrides the HDF5 Library&rsquo;s default 
-  error stack traversal callback function, <code>H5E_walk_cb</code>,
-  and is a clone of that internal function, but presented using only
-  public HDF5 function calls 
-  (the internal version uses internal library calls).
-  
+
 <pre>
+#define MSG_SIZE       64
+
 herr_t
-H5E_walk_cb(unsigned n, const H5E_error_t *err_desc, void *client_data)
+custom_print_cb(unsigned n, const H5E_error_stack_t *err_desc, void* client_data)
 {
-    H5E_print_t         *eprint  = (H5E_print_t *)client_data;
-    FILE                *stream;        /* I/O stream to print */
-    H5E_cls_t           *cls_ptr;       /* Pointer to error class */
-    H5E_msg_t           *maj_ptr;       /* Pointer to major error */
-    H5E_msg_t           *min_ptr;       /* Pointer to minor error */
-    const char          *maj_str = "No major description";    
-    const char          *min_str = "No minor description";    
-    unsigned            have_desc=1;
+    FILE		*stream  = (FILE *)client_data;
+    char                maj[MSG_SIZE];
+    char                min[MSG_SIZE];
+    char                cls[MSG_SIZE];
+    const int		indent = 4;
 
-    /* Check arguments */
-    assert (err_desc);
-
-    /* If no client data was passed, output to stderr */
-    if (!client_data) stream = stderr;
-    else stream = eprint->stream;
-    
     /* Get descriptions for the major and minor error numbers */
-    maj_ptr = H5Iobject_verify(err_desc->maj_num, H5I_ERROR_MSG);
-    min_ptr = H5Iobject_verify(err_desc->min_num, H5I_ERROR_MSG);
-    assert(maj_ptr &amp;&amp; min_ptr);
-    if(maj_ptr->msg)
-        maj_str = maj_ptr->msg;
-    if(min_ptr->msg)
-        min_str = min_ptr->msg;
+    if(H5Eget_class_name(err_desc->cls_id, cls, MSG_SIZE)<0)
+        TEST_ERROR;
 
-    /* Get error class info */
-    cls_ptr = maj_ptr->cls;
+    if(H5Eget_msg(err_desc->maj_num, NULL, maj, MSG_SIZE)<0)
+        TEST_ERROR;
 
-    /* Print error class header if new class */
-    if(eprint->cls.lib_name==NULL || HDstrcmp(cls_ptr->lib_name,     
-        eprint->cls.lib_name)) {
-        /* update to the new class information */
-        if(cls_ptr->cls_name) eprint->cls.cls_name = cls_ptr->cls_name;
-        if(cls_ptr->lib_name) eprint->cls.lib_name = cls_ptr->lib_name;
-        if(cls_ptr->lib_vers) eprint->cls.lib_vers = cls_ptr->lib_vers;
+    if(H5Eget_msg(err_desc->min_num, NULL, min, MSG_SIZE)<0)
+        TEST_ERROR;
 
-        fprintf (stream, "%s-DIAG: Error detected in %s (%s) ", cls_ptr->cls_name, 
-	  cls_ptr->lib_name, cls_ptr->lib_vers);
-        fprintf (stream, "thread 0");
-        fprintf (stream, ":\n");
-    }
-
-    /* Check for "real" error description - used to format output more nicely */
-    if(err_desc->desc==NULL || HDstrlen(err_desc->desc)==0)
-        have_desc=0;
-
-    /* Print error message */
-    fprintf (stream, "%*s#%03u: %s line %u in %s()%s%s\n",
-             H5E_INDENT, "", n, err_desc->file_name, err_desc->line,
-             err_desc->func_name, (have_desc ? ": " : ""),
-             (err_desc->desc ? err_desc->desc : ""));
-    fprintf (stream, "%*smajor: %s\n", H5E_INDENT*2, "", maj_str);
-    fprintf (stream, "%*sminor: %s\n", H5E_INDENT*2, "", min_str);
+    fprintf (stream, "%*serror #%03d: %s in %s(): line %u\n",
+	     indent, "", n, err_desc->file_name,
+	     err_desc->func_name, err_desc->line);
+    fprintf (stream, "%*sclass: %s\n", indent*2, "", cls);
+    fprintf (stream, "%*smajor: %s\n", indent*2, "", maj);
+    fprintf (stream, "%*sminor: %s\n", indent*2, "", min);
 
     return 0;
+
+  error:
+    return -1;
 }
 </pre>
 
