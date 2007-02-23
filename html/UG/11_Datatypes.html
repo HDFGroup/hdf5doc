@@ -3235,7 +3235,7 @@ typedef struct {
     <td class="fullImgTableImgCell"> <pre><code>
   TYPE complex_t
      DOUBLE PRECISION re   ! real part
-     DOUBLE PRESICION im;  ! imaginary part
+     DOUBLE PRECISION im;  ! imaginary part
   END TYPE complex_t
 
   CALL h5tget_size_f(H5T_NATIVE_DOUBLE, re_size, error)
@@ -3888,12 +3888,11 @@ GROUP "/" {
 </table>
 
 <!-- NEW PAGE -->
-  <p>Figure 25e shows Fortran example of creating and 
-    writing a dataset with a compound datatype. Writing 
-    and reading compound datatypes from Fortran is 
-    <em>always</em> done by fields as shown in the example 
-    below. The content of the written file is the same as 
-    shown in the Figure 25b.
+  <p>Figure 25e contains a Fortran example that creates and writes 
+    a dataset with a compound datatype. 
+    As this example illustrates, writing and reading compound datatypes 
+    in Fortran is <em>always</em> done by fields.
+    The content of the written file is the same as shown in the Figure 25b.
     
 <table x-use-null-cells
 		width=600
@@ -3902,13 +3901,23 @@ GROUP "/" {
 		align="center">
   <tr valign=top> 
     <td class="fullImgTableImgCell"> <pre><code>
+      
+     ! One cannot write an array of a derived datatype in Fortran.
      TYPE s1_t
         INTEGER          a
         REAL             b
         DOUBLE PRECISION c
      END TYPE s1_t
+     TYPE(s1_t) d(LENGTH)
 
+     ! Therefore, the following code initializes an array corresponding 
+     ! to each field in the derived datatype and writes those arrays 
+     ! to the dataset
 
+     INTEGER, DIMENSION(LENGTH)          :: a
+     REAL, DIMENSION(LENGTH)             :: b
+     DOUBLE PRECISION, DIMENSION(LENGTH) :: c
+     
      ! Initialize data
       do i = 1, LENGTH
          a(i) = i-1
