@@ -3825,26 +3825,26 @@ END SUBROUTINE h5pget_fapl_core_f
   <dt><strong>Signature:</strong>
     <dd><em>herr_t</em> <code>H5Pget_fapl_direct</code>(
             <em>hid_t</em> <code>fapl_id</code>,
-            <em>size_t</em> *<code>boundary</code>,
+            <em>size_t</em> *<code>alignment</code>,
             <em>size_t</em> *<code>block_size</code>,
             <em>size_t</em> *<code>cbuf_size</code>
     )
   <p>
   <dt><strong>Purpose:</strong>
-    <dd>Retrieves settings for use of the direct I/O driver.
+    <dd>Retrieves direct I/O driver settings. 
   <p>
   <dt><strong>Description:</strong>
-    <dd><code>H5Pget_fapl_direct</code> retrieves the file access 
-        property list settings for use of the direct I/O driver 
-        (<code>H5FD_DIRECT</code>).
+    <dd><code>H5Pget_fapl_direct</code> retrieves the 
+        required memory alignment (<code>alignment</code>), 
+        file system block size (<code>block_size</code>), and 
+        copy buffer size (<code>cbuf_size</code>) settings 
+        for the direct I/O driver, <code>H5FD_DIRECT</code>, 
+        from the file access property list <code>fapl_id</code>.
         <p>
-        <code>boundary</code> specifies ....
-        <p>
-        <code>block_size</code> specifies the file system block size.
-        <p>
-        <code>cbuf_size</code> specifies the ... buffer size.
-        <p>
-        There are no driver-specific properties.
+        See 
+        <a href="#Property-SetFaplDirect"><code>H5Pset_fapl_direct</code></a>
+        for discussion of these values, requirements, and 
+        important considerations.
   <p>
   <dt><strong>Parameters:</strong>
     <dd><table>
@@ -3854,9 +3854,9 @@ END SUBROUTINE h5pget_fapl_core_f
         <td valign="top">IN: File access property list identifier
         </td></tr>
       <tr>
-        <td valign="top"><em>size_t</em> *<code>boundary</code>
+        <td valign="top"><em>size_t</em> *<code>alignment</code>
         </td>
-        <td valign="top">OUT: Boundary
+        <td valign="top">OUT: Required memory alignment boundary
         </td></tr>
       <tr>
         <td valign="top"><em>size_t</em>&nbsp;*<code>block_size</code>&nbsp;&nbsp;&nbsp;&nbsp;
@@ -3866,7 +3866,7 @@ END SUBROUTINE h5pget_fapl_core_f
       <tr>
         <td valign="top"><em>size_t</em> *<code>cbuf_size</code>
         </td>
-        <td valign="top">OUT: Buffer size
+        <td valign="top">OUT: Copy buffer size
         </td></tr>
     </table>
   <p>
@@ -9982,25 +9982,52 @@ END SUBROUTINE h5pset_fapl_core_f
   <dt><strong>Signature:</strong>
     <dd><em>herr_t</em> <code>H5Pset_fapl_direct</code>(
             <em>hid_t</em> <code>fapl_id</code>,
-            <em>size_t</em> <code>boundary</code>,
+            <em>size_t</em> <code>alignment</code>,
             <em>size_t</em> <code>block_size</code>,
             <em>size_t</em> <code>cbuf_size</code>
     )
   <p>
   <dt><strong>Purpose:</strong>
-    <dd>Sets the use of the direct I/O driver.
+    <dd>Sets up use of the direct I/O driver.
   <p>
   <dt><strong>Description:</strong>
-    <dd><code>H5Pset_fapl_direct</code> sets the file access property list 
-        for the use of the direct I/O driver (<code>H5FD_DIRECT</code>).
+    <dd><code>H5Pset_fapl_direct</code> sets the 
+        file access property list, <code>fapl_id</code>, 
+        to use the direct I/O driver, <code>H5FD_DIRECT</code>.  
+        With this driver, data is written to or read from the file 
+        synchronously without being cached by the system.  
         <p>
-        <code>boundary</code> specifies ....
+        File systems usually require the data address in memory, 
+        the file address, and the size of the data to be aligned.  
+        The HDF5 Library&rsquo;s direct I/O driver is able to handle 
+        unaligned data, though that will consume some additional 
+        memory resources and may slow performance.  
+        To get better performance, use the system function 
+        <code>posix_memalign</code> to align the data buffer in memory 
+        and the HDF5 function <code>H5Pset_alignment</code> 
+        to align the data in the file.  
+        Be aware, however, that aligned data I/O may cause the 
+        HDF5 file to be bigger than the actual data size would otherwise
+        require because the alignment may leave some holes in the file.
+        <p>
+        <code>alignment</code> specifies the required alignment boundary 
+        in memory.
         <p>
         <code>block_size</code> specifies the file system block size.
+        A value of <code>0</code> (zero) means to use HDF5 Library&rsquo;s 
+        default value of 4KB.
         <p>
-        <code>alignment</code> specifies the ... buffer size.
-        <p>
-        There are no driver-specific properties.
+        <code>cbuf_size</code> specifies the copy buffer size.
+  <p>
+  <dt><strong>Note:</strong>
+    <dd>On an SGI Altix Linux 2.6 system, the memory alignment must be 
+        a multiple of 512 bytes, and the file system block size is 4KB.  
+        The maximum size for the copy buffer has to be a multiple of 
+        the file system block size.  The HDF5 Library&rsquo;s 
+        default maximum copy buffer size is 16MB.  This copy buffer 
+        is used by the library&rsquo;s internal algorithm to copy data 
+        in fragments between an application&rsquo;s unaligned buffer 
+        and the file.  The buffer&rsquo;s size may affect I/O performance.  
   <p>
   <dt><strong>Parameters:</strong>
     <dd><table>
@@ -10010,9 +10037,9 @@ END SUBROUTINE h5pset_fapl_core_f
         <td valign="top">IN: File access property list identifier
         </td></tr>
       <tr>
-        <td valign="top"><em>size_t</em> <code>boundary</code>
+        <td valign="top"><em>size_t</em> <code>alignment</code>
         </td>
-        <td valign="top">IN: Boundary
+        <td valign="top">IN: Required memory alignment boundary
         </td></tr>
       <tr>
         <td valign="top"><em>size_t</em>&nbsp;<code>block_size</code>&nbsp;&nbsp;&nbsp;&nbsp;
@@ -10022,7 +10049,7 @@ END SUBROUTINE h5pset_fapl_core_f
       <tr>
         <td valign="top"><em>size_t</em> <code>cbuf_size</code>
         </td>
-        <td valign="top">IN: Buffer size
+        <td valign="top">IN: Copy buffer size
         </td></tr>
     </table>
   <p>
@@ -14502,7 +14529,7 @@ Describes HDF5 Release 1.8.0-beta.
 
 <!-- #EndLibraryItem --><SCRIPT LANGUAGE="JAVASCRIPT">
 <!--
-document.writeln("Last modified: 5 April 2007");
+document.writeln("Last modified: 11 April 2007");
 -->
 </SCRIPT>
  
