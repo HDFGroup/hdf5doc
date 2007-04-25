@@ -358,14 +358,42 @@ installed with HDF5.
           <td valign="top">Output raw data into file F.</td>
         </tr>
         <tr> 
-          <td valign="top"><code>-t <em>T</em></code> &nbsp;&nbsp;or&nbsp;&nbsp; 
-            <code>--datatype=<em>T</em></code></td>
+          <td valign="top"><code>-t <em>P</em></code> &nbsp;&nbsp;or&nbsp;&nbsp; 
+            <code>--datatype=<em>P</em></code></td>
           <td valign="top">Print the specified named datatype.</td>
         </tr>
         <tr> 
           <td valign="top"><code>-w <em>N</em></code> &nbsp;&nbsp;or&nbsp;&nbsp; 
             <code>--width=<em>N</em></code></td>
           <td valign="top">Set the number of columns of output.</td>
+        </tr>
+        <tr> 
+          <td valign="top"><code>-b <em>B</em></code> &nbsp;&nbsp;or&nbsp;&nbsp; 
+            <code>--binary=<em>B</em></code></td>
+          <td valign="top">Output dataset to a binary file 
+            using the datatype specified by <code><em>B</em></code>.
+            <br>
+            <code><em>B</em></code> must have one of the following values:
+                <br>
+                &nbsp;&nbsp;&nbsp;&nbsp;
+                <code>LE &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code>
+                    Little-endian 
+                <br>
+                &nbsp;&nbsp;&nbsp;&nbsp;
+                <code>BE &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code>
+                    Big-endian 
+                <br>
+                &nbsp;&nbsp;&nbsp;&nbsp;
+                <code>MEMORY &nbsp;&nbsp;</code>
+                    Memory datatype 
+                <br>
+                &nbsp;&nbsp;&nbsp;&nbsp;
+                <code>FILE &nbsp;&nbsp;&nbsp;&nbsp;</code>
+                    File datatype 
+            <br>
+            Recommended usage is with the <code>-d</code> and <code>-o</code>
+            options.
+          </td>
         </tr>
         <tr> 
           <td valign="top"><code>-x <em></em></code> &nbsp;&nbsp;or&nbsp;&nbsp; 
@@ -833,17 +861,30 @@ installed with HDF5.
 <dl>
 <dt><strong>Tool Name:</strong>  <a name="Tools-Repack">h5repack</a>  &nbsp;&nbsp;&nbsp;
 <dt><strong>Syntax:</strong>
-    <dd><code>h5repack </code> -i <em>file1</em>-o <em>file2</em> [-h] [-v] [-f
-      '<i>filter</i>'] [-l '<i>layout</i>'][-m number][-e file]       
+    <dd><code>h5repack </code> 
+        <code>-i</code> <em>file1</em>
+        <code>-o</code> <em>file2</em> 
+        <code>[-h]</code> 
+        <code>[-v]</code> 
+        <code>[-m</code> <em>number</em><code>]</code> 
+        <code>[-n]</code> 
+        <code>[-f '</code><em>filter</em><code>']</code> 
+        <code>[-l '</code><em>layout</em><code>']</code> 
+        <code>[-e</code> <em>file</em><code>]</code> 
 <dt><strong>Purpose:</strong>
     <dd>Copies an HDF5 file to a new file with or without compression/chunking.
 <dt><strong>Description:</strong>
-    <dd><code>h5repack</code> is a command line tool that applies HDF5 filters
-      to a input file <em>file1</em>, saving the output in a new file, <em>file2</em>.<p>'<i>filter</i>'
-      is a string with the format&nbsp;<br>
-      &lt;list of objects&gt; : &lt;name of filter&gt; = &lt;filter
-      parameters&gt;.<br>
+    <dd><code>h5repack</code> is a command line tool that 
+      applies HDF5 filters to an input file <em>file1</em>, 
+      saving the output in a new output file, <em>file2</em>.
+      <p>
+      <em>filter</em> is a string with the following format:
       <br>
+      &nbsp;&nbsp;&nbsp;&nbsp;
+      &lt;list of objects&gt; : &lt;name of filter&gt; 
+      = &lt;filter parameters&gt;.
+
+      <p>
       &nbsp;&lt;list of objects&gt; is a comma separated list of object names
       meaning apply compression only to those objects. If no object names are
       specified, the filter is applied to all objects<br>
@@ -875,30 +916,28 @@ installed with HDF5.
 <dt>&nbsp;</dt>
 <dt><strong>Options and Parameters:</strong>
     <dl>
-        <dt><em>file1</em>
-        <dt><em>file2</em>
-            <dd>The input and output HDF5 files
+        <dt><code>-i</code> <em>file1</em>
+            <dd>Input HDF5 file
+        <dt><code>-o</code> <em>file2</em>
+            <dd>Output HDF5 file
         <dt><code>-h</code>
-            <dd>help message.<dt><code>-f</code> <em>filter</em>
-            <dd>Filter type<dt><code>-l</code> <em>layout</em>
-            <dd>Layout type<dt><code>-v</code>
-            <dd>Verbose mode. Print output (list of objects in the file, filters
-              and layout applied).<dt><code>-e</code> <em>file</em>
-            <dd>File with the -f and -l options (only filter and layout flags)
-        <dt><code>-d</code> <em>delta</em>
-            <dd>Print only differences that are greater than the 
-	        limit <em>delta</em>.
-                <em>delta</em> must be a positive number.
-                The comparison criterion is whether the 
-		absolute value of the difference of 
-		two corresponding values is greater than 
-		<em>delta</em> 
-		<br>(e.g., <code> |a&ndash;b|&nbsp;&gt;&nbsp;<em>delta</em></code>,
-		where <code>a</code> is a value in <em>file1</em> and
-		<code>b</code> is a value in <em>file2</em>).<dt><code>-m</code> <em>number</em>
+            <dd>Help message
+        <dt><code>-v</code>
+            <dd>Verbose output mode
+        <dt><code>-m</code> <em>number</em>
             <dd>Do not apply the filter to objects which size in bytes is
               smaller than number. If no size is specified a minimum of 1024
               bytes is assumed.
+        <dt><code>-n</code>
+            <dd>Use a native HDF5 datatype when repacking, 
+                rather than the default of the original file datatype 
+        <dt><code>-f</code> <em>filter</em>
+            <dd>Filter type
+        <dt><code>-l</code> <em>layout</em>
+            <dd>Layout type
+        <dt><code>-e</code> <em>file</em>
+            <dd>File containing the -f and -l options 
+                (only filter and layout flags)
     </dl>
 <dt><strong>Examples:</strong>
     <dd>1) h5repack -i file1 -o file2 -f GZIP=1 -v<br>
@@ -2941,7 +2980,7 @@ Describes HDF5 Release 1.8.0-beta.
 <!-- #EndLibraryItem --><dl>
   <dt><dt><SCRIPT LANGUAGE="JAVASCRIPT">
 <!--
-document.writeln("Last modified: 26 March 2007");
+document.writeln("Last modified: 25 April 2007");
 -->
 </SCRIPT>
 
