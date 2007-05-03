@@ -444,8 +444,12 @@ installed with HDF5.
         </tr>
         <tr> 
           <td valign="top"><code>--</code></td>
-          <td valign="top">Indicate that all following arguments are non-options. 
-            E.g., to dump a file called `-f', use h5dump -- -f.</td>
+          <td valign="top">Indicates that the following argument is not an option. 
+            E.g., to dump a file called `-f', use h5dump -- -f.
+            &nbsp; &nbsp;
+            <i>(This option is necessary only when the name of the file to be examined 
+            starts with a dash (<code>-</code>), which could confuse the tool&rsquo;s 
+            command-line parser.)</i></td>
         </tr>
         <tr> 
           <td valign="top"><em>file</em></td>
@@ -469,9 +473,6 @@ installed with HDF5.
           <td valign="top"><em>P</em></td>
           <td valign="top">The full path from the root group to 
             the object</td></tr>
-        <tr>
-          <td valign="top"><em>T</em></td>
-          <td valign="top">The name of the datatype</td></tr>
         <tr>
           <td valign="top"><em>F</em></td>
           <td valign="top">A filename</td></tr>
@@ -507,37 +508,38 @@ installed with HDF5.
 	 <table border="0" width="100%">
 	   <tr><td valign="top">
 	 <ol>
-	   <li>Dumping the group <code>/GroupFoo/GroupBar</code> in the file
+	   <li>Dump the group <code>/GroupFoo/GroupBar</code> in the file
           <code>quux.h5</code>:<br>
              <code>&nbsp;&nbsp;&nbsp;&nbsp; 
                    h5dump -g /GroupFoo/GroupBar quux.h5</code>
              <br>
              <br>
-       <li>Dumping the dataset <code>Fnord</code> in the group
+       <li>Dump the dataset <code>Fnord</code>, which is in the group
           <code>/GroupFoo/GroupBar</code> in the file <code>quux.h5</code>:<br>
              <code>&nbsp;&nbsp;&nbsp;&nbsp; 
                    h5dump -d /GroupFoo/GroupBar/Fnord quux.h5</code>
              <br>
              <br>
-       <li>Dumping the attribute <code>metadata</code> of the dataset
-          <code>Fnord</code> which is in group
+       <li>Dump the attribute <code>metadata</code> of the dataset
+          <code>Fnord</code>, which is in the group
           <code>/GroupFoo/GroupBar</code> in the file <code>quux.h5</code>:<br>
              <code>&nbsp;&nbsp;&nbsp;&nbsp; 
                    h5dump -a /GroupFoo/GroupBar/Fnord/metadata quux.h5</code>
              <br>
              <br>
-       <li>Dumping the attribute <code>metadata</code> which is an
+       <li>Dump the attribute <code>metadata</code> which is an
           attribute of the root group in the file <code>quux.h5</code>:<br>
               <code>&nbsp;&nbsp;&nbsp;&nbsp; 
                     h5dump -a /metadata quux.h5</code>
               <br>
               <br>
-       <li>Producing an XML listing of the file <code>bobo.h5</code>:<br>
+       <li>Produce an XML listing of the file <code>bobo.h5</code>,
+           saving the listing in the file <code>bobo.h5.xml</code>:<br>
               <code>&nbsp;&nbsp;&nbsp;&nbsp; 
                     h5dump --xml bobo.h5 > bobo.h5.xml</code>
               <br>
               <br>
-	   <li>Dumping a subset of the dataset <code>/GroupFoo/databar/</code> 
+	   <li>Dump a subset of the dataset <code>/GroupFoo/databar/</code> 
            in the file <code>quux.h5</code>:<br>
               <code>&nbsp;&nbsp;&nbsp;&nbsp; 
                     h5dump -d /GroupFoo/databar --start="1,1" --stride="2,3" 
@@ -545,10 +547,17 @@ installed with HDF5.
                     --count="3,19" --block="1,1" quux.h5</code>
               <br>
               <br>
-       <li>The same example using the short form to specify the 
+       <li>The same example, using the short form to specify the 
            subsetting parameters:<br>
               <code>&nbsp;&nbsp;&nbsp;&nbsp; 
                     h5dump -d "/GroupFoo/databar[1,1;2,3;3,19;1,1]" quux.h5</code>
+              <br>
+              <br>
+       <li>Dump a binary copy of the dataset <code>/GroupD/FreshData/</code> 
+           in the file <code>quux.h5</code>, with data written in little-endian form,
+           to the output file <code>FreshDataD.bin</code>:<br>
+              <code>&nbsp;&nbsp;&nbsp;&nbsp; 
+                    h5dump -d "/GroupD/FreshData" -b LE -o "FreshDataD.bin" quux.h5</code>
               <br>
               <br>
      </ol></td></tr>
@@ -855,6 +864,7 @@ installed with HDF5.
 -->
 </dl>
 
+
 <!-- NEW PAGE -->
 <!-- HEADER RIGHT "h5repack" -->
 <hr>
@@ -877,43 +887,8 @@ installed with HDF5.
     <dd><code>h5repack</code> is a command line tool that 
       applies HDF5 filters to an input file <em>file1</em>, 
       saving the output in a new output file, <em>file2</em>.
-      <p>
-      <em>filter</em> is a string with the following format:
-      <br>
-      &nbsp;&nbsp;&nbsp;&nbsp;
-      &lt;list of objects&gt; : &lt;name of filter&gt; 
-      = &lt;filter parameters&gt;.
 
-      <p>
-      &nbsp;&lt;list of objects&gt; is a comma separated list of object names
-      meaning apply compression only to those objects. If no object names are
-      specified, the filter is applied to all objects<br>
-      &nbsp;&lt;name of filter&gt; can be:&nbsp;<br>
-      GZIP, to apply the HDF5 GZIP filter (GZIP compression)<br>
-      SZIP, to apply the HDF5 SZIP filter (SZIP compression)<br>
-      SHUF, to apply the HDF5 shuffle filter<br>
-      FLET, to apply the HDF5 checksum filter<br>
-      NONE, to remove the filter&nbsp;<br>
-      &lt;filter parameters&gt; is optional compression info&nbsp;<br>
-      SHUF (no parameter)&nbsp;<br>
-      FLET (no parameter)&nbsp;<br>
-      GZIP=&lt;deflation level&gt; from 1-9&nbsp;<br>
-      SZIP=&lt;pixels per block,coding&gt; (pixels per block is a even number in
-      2-32 and coding method is 'EC' or 'NN')
-<dt>&nbsp;</dt>
-<dd>'<i>layout'</i> is a string with the format<br>
-  &nbsp;&lt;list of objects&gt; : &lt;layout type&gt;&nbsp;<br>
-  <br>
-  &lt;list of objects&gt; is a comma separated list of object names, meaning
-  that layout information is supplied for those objects. If no object names are
-  specified, the layout is applied to all objects&nbsp;<br>
-  &lt;layout type&gt; can be:&nbsp;<br>
-  CHUNK, to apply chunking layout&nbsp;<br>
-  COMPA, to apply compact layout&nbsp;<br>
-  CONTI, to apply continuous layout&nbsp;<br>
-  &lt;layout parameters&gt; is present for the chunk case only it is the chunk
-  size of each dimension: &lt;dim_1 x dim_2 x ... dim_n&gt;</dd>
-<dt>&nbsp;</dt>
+      <p></p>
 <dt><strong>Options and Parameters:</strong>
     <dl>
         <dt><code>-i</code> <em>file1</em>
@@ -929,29 +904,109 @@ installed with HDF5.
               smaller than number. If no size is specified a minimum of 1024
               bytes is assumed.
         <dt><code>-n</code>
-            <dd>Use a native HDF5 datatype when repacking, 
-                rather than the default of the original file datatype 
+            <dd>Use native HDF5 datatypes when repacking. 
+                <br>
+                (Default behavior is to use original file datatypes.)
+                <br>
+                <em>Note that this is a change in default behavior; 
+                    prior to Release 1.6.6, <code>h5repack</code> generated
+                    files only with native datatypes.</em>
         <dt><code>-f</code> <em>filter</em>
             <dd>Filter type
+                <p>
+                <em>filter</em> is a string with the following format:
+                <dir>
+                &lt;list of objects&gt; : &lt;name of filter&gt; 
+                    = &lt;filter parameters&gt;
+                <p>
+                &lt;list of objects&gt; is a comma separated list of object 
+                names meaning apply compression only to those objects. 
+                If no object names are specified, the filter is applied to 
+                all objects.
+                <p>
+                &lt;name of filter&gt; can be one of the following:
+                <br>&nbsp;&nbsp;&nbsp;&nbsp;
+                    <code>GZIP</code>, to apply the HDF5 GZIP filter 
+                    (GZIP compression)
+                <br>&nbsp;&nbsp;&nbsp;&nbsp;
+                    <code>SZIP</code>, to apply the HDF5 SZIP filter 
+                    (SZIP compression)
+                <br>&nbsp;&nbsp;&nbsp;&nbsp;
+                    <code>SHUF</code>, to apply the HDF5 shuffle filter
+                <br>&nbsp;&nbsp;&nbsp;&nbsp;
+                    <code>FLET</code>, to apply the HDF5 checksum filter
+                <br>&nbsp;&nbsp;&nbsp;&nbsp;
+                    <code>NONE</code>, to remove the filter
+                <p>
+                &lt;filter parameters&gt; conveys optional compression 
+                    information:
+                <br>&nbsp;&nbsp;&nbsp;&nbsp;
+                    <code>SHUF</code> (no parameter)
+                <br>&nbsp;&nbsp;&nbsp;&nbsp;
+                    <code>FLET</code> (no parameter)
+                <br>&nbsp;&nbsp;&nbsp;&nbsp;
+                    <code>GZIP=</code>&lt;deflation level&gt; from 1-9
+                <br>&nbsp;&nbsp;&nbsp;&nbsp;
+                    <code>SZIP=</code>&lt;pixels per block,coding&gt; 
+                    <br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                    Pixels per block is a even number in the range 2-32.
+                    <br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                    Coding method is <code>EC</code> or <code>NN</code>.
+                </dir>
         <dt><code>-l</code> <em>layout</em>
             <dd>Layout type
+                <p>
+                <em>layout</em> is a string with the following format:<br>
+                <dir>
+                &lt;list of objects&gt; : &lt;layout type&gt;=&lt;layout parameters&gt
+                <p>
+                &lt;list of objects&gt; is a comma separated list of object 
+                names, meaning that layout information is supplied for those 
+                objects.  If no object names are specified, the layout 
+                is applied to all objects.
+                <p>
+                &lt;layout type&gt; can be one of the following:
+                <br>&nbsp;&nbsp;&nbsp;&nbsp;
+                    <code>CHUNK</code>, to apply chunking layout
+                <br>&nbsp;&nbsp;&nbsp;&nbsp;
+                    <code>COMPA</code>, to apply compact layout
+                <br>&nbsp;&nbsp;&nbsp;&nbsp;
+                    <code>CONTI</code>, to apply continuous layout
+                <p>
+                &lt;layout parameters&gt; is present only in the 
+                <code>CHUNK</code> case and specifies the chunk size of 
+                each dimension in the  following format with no intervening 
+                spaces:
+                <br>&nbsp;&nbsp;&nbsp;&nbsp;
+                    <code><em>dim_1</em> x <em>dim_2</em> x ... 
+                    <em>dim_n</em></code>
+                </dd>
+                </dir>
         <dt><code>-e</code> <em>file</em>
             <dd>File containing the -f and -l options 
                 (only filter and layout flags)
     </dl>
+    <p></p>
 <dt><strong>Examples:</strong>
-    <dd>1) h5repack -i file1 -o file2 -f GZIP=1 -v<br>
-      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Applies GZIP compression to all
-      objects in file1 and saves the output in file2
-      <p>2) h5repack -i file1 -o file2 -f dset1:SZIP=8,NN -v<br>
-      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Applies SZIP compression only
-      to object 'dset1'</p>
-      <p>3) h5repack -i file1 -o file2 -l dset1,dset2:CHUNK=20x10 -v<br>
-      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Applies chunked layout to
-      objects 'dset1' and 'dset2'<br>
+    <dd>
+    <ol>
+        <li><code>h5repack -i file1 -o file2 -f GZIP=1 -v</code>
+            <br>
+            Applies GZIP compression to all objects in <code>file1</code> 
+            and saves the output in <code>file2</code>.
+            <br>&nbsp;
+        <li><code>h5repack -i file1 -o file2 -f dset1:SZIP=8,NN -v</code>
+            <br>
+            Applies SZIP compression only to object <code>dset1</code>.
+            <br>&nbsp;
+        <li><code>h5repack -i file1 -o file2 -l dset1,dset2:CHUNK=20x10 -v</code>
+            <br>
+            Applies chunked layout to objects <code>dset1</code> 
+            and <code>dset2</code>.
+            <br>
 </dl>
 
-<p>&nbsp;</p>
+
 <!-- NEW PAGE -->
 <!-- HEADER RIGHT "h5repart" -->
 <hr>
@@ -2980,7 +3035,7 @@ Describes HDF5 Release 1.8.0-beta.
 <!-- #EndLibraryItem --><dl>
   <dt><dt><SCRIPT LANGUAGE="JAVASCRIPT">
 <!--
-document.writeln("Last modified: 25 April 2007");
+document.writeln("Last modified: 3 May 2007");
 -->
 </SCRIPT>
 
