@@ -5420,6 +5420,35 @@ END SUBROUTINE h5pget_layout_f
 			  via stdout, it MUST be set to FALSE on Windows machines.
               <p>The report function is not supported code, and can be expected to 
 			  change between versions of the library. Use it at your own risk.</td></tr>
+
+        <tr>
+            <td valign="top"><em>hbool_t</em> <code>open_trace_file</code>
+                &nbsp;&nbsp;&nbsp;&nbsp;</td>
+            <td valign="top">OUT: Boolean field indicating whether 
+                the <code>trace_file_name</code> field should be 
+                used to open a trace file for the 
+                cache.  This field will always be 
+                set to <code>FALSE</code> in this context.
+                </td></tr>
+
+        <tr>
+            <td valign="top"><em>hbool_t</em> <code>close_trace_file</code>
+                &nbsp;&nbsp;&nbsp;&nbsp;</td>
+            <td valign="top">OUT: Boolean field indicating whether 
+                the current trace file (if any) should 
+                be closed.  This field will always
+                be set to <code>FALSE</code> in this context.
+                </td></tr>
+
+        <tr>
+            <td valign="top"><em> char *</em><code>trace_file_name</code>
+              &nbsp;&nbsp;&nbsp;&nbsp;</td>
+            <td valign="top">OUT:  Full path name of the trace file
+                to be opened if the <code>open_trace_file</code>
+                field is <code>TRUE</code>.  This field will always
+                be set to the empty string in this context.
+                </td></tr>
+
         <tr>
 		    <td valign="top"><em>hbool_t</em> <code>set_initial_size</code>
 			  &nbsp;&nbsp;&nbsp;&nbsp;</td>
@@ -12240,10 +12269,16 @@ END SUBROUTINE h5pset_layout_f
         <td valign="top">IN: Group creation property list identifier</td></tr>
       <tr>
         <td valign="top"><em>unsigned</em>&nbsp;<code>max_compact</code>&nbsp;&nbsp;&nbsp;&nbsp;</td>
-        <td valign="top">IN: Maximum number of links for compact storage</td></tr>
+        <td valign="top">IN: Maximum number of links for compact storage
+            <br>
+            <i>(Default: 8)</i>
+        </td></tr>
       <tr>
         <td valign="top"><em>unsigned</em> <code>min_dense</code></td>
-        <td valign="top">IN: Minimum number of links for dense storage</td></tr>
+        <td valign="top">IN: Minimum number of links for dense storage
+            <br>
+            <i>(Default: 6)</i>
+        </td></tr>
     </table>
   <dt><strong>Returns:</strong>
     <dd>Returns a non-negative value if successful;
@@ -12417,6 +12452,96 @@ END SUBROUTINE h5pset_layout_f
 			  reported via stdout, it MUST be set to FALSE on Windows machines.
               <p>The report function is not supported code, and can be expected 
 			  to change between versions of the library.  Use it at your own risk.</td></tr>
+
+        <tr>
+           <td valign="top"><em>hbool_t</em> <code>open_trace_File</code>
+                &nbsp;&nbsp;&nbsp;&nbsp;</td>
+            <td valign="top">IN: Boolean field indicating whether 
+                the <code>trace_file_name</code> field should be 
+                used to open a trace file for the 
+                cache.
+                <p>
+                The trace file is a debuging feature 
+                that allows the capture of top level 
+                metadata cache requests for purposes 
+                of debugging and/or optimization.  
+                This field should normally be set to 
+                <code>FALSE</code>, as trace file collection 
+                imposes considerable overhead.
+                <p>
+                This field should only be set to 
+                <code>TRUE</code> when the <code>trace_file_name</code> 
+                contains the full path of the desired trace 
+                file, and either there is no open 
+                trace file on the cache, or the 
+                <code>close_trace_file</code> field is also <code>TRUE</code>.
+                <p>
+                The trace file feature is unsupported
+                unless used at the direction of THG.
+                It is intended to allow THG to collect 
+                a trace of cache activity in cases of 
+                occult failures and/or poor performance 
+                seen in the field, so as to aid in
+                reproduction in the lab.  If you use 
+                it absent the direction of THG, you 
+                are on your own.
+                <p>
+                </td></tr>
+
+        <tr>
+           <td valign="top"><em>hbool_t</em> <code>close_trace_file</code>
+                &nbsp;&nbsp;&nbsp;&nbsp;</td>
+            <td valign="top">IN: Boolean field indicating whether 
+                the current trace file (if any) should 
+                be closed.
+                <p>
+                See the above comments on the 
+                <code>open_trace_file</code> field.  This field
+                should be set to <code>FALSE</code> unless there 
+                is an open trace file on the cache 
+                that you wish to close.
+                <p>
+                The trace file feature is unsupported
+                unless used at the direction of THG.
+                It is intended to allow THG to collect 
+                a trace of cache activity in cases of 
+                occult failures and/or poor performance 
+                seen in the field, so as to aid in
+                reproduction in the lab.  If you use 
+                it absent the direction of THG, you 
+                are on your own.
+                <p>
+                </td></tr>
+
+        <tr>
+           <td valign="top"><em>char</em> <code>trace_file_name[]</code>
+                &nbsp;&nbsp;&nbsp;&nbsp;</td>
+            <td valign="top">IN: Full path of the trace file to be 
+                opened if the <code>open_trace_file</code> field 
+                is <code>TRUE</code>.
+                <p>
+                In the parallel case, an ascii 
+                representation of the MPI rank of
+                the process will be appended to the 
+                file name to yield a unique trace 
+                file name for each process.
+                <p>
+                The length of the path must not 
+                exceed <code>H5AC__MAX_TRACE_FILE_NAME_LEN</code> 
+                characters.
+                <p>
+                The trace file feature is unsupported
+                unless used at the direction of THG.
+                It is intended to allow THG to collect 
+                a trace of cache activity in cases of 
+                occult failures and/or poor performance 
+                seen in the field, so as to aid in
+                reproduction in the lab.  If you use 
+                it absent the direction of THG, you 
+                are on your own.
+                <p>
+                </td></tr>
+
         <tr>
 		    <td valign="top"><em>hbool_t</em> <code>set_initial_size</code>
 			  &nbsp;&nbsp;&nbsp;&nbsp;</td>
@@ -12583,8 +12708,9 @@ END SUBROUTINE h5pset_layout_f
 			  serving the target file in the parallel case.
 			  <p>Synchronization occurs whenever the number of bytes of dirty 
 			  metadata created since the last synchronization exceeds this limit.
-			  <p>This field only applies to the parallel case.  It is ignored
-			  elsewhere.
+              <p>This field only applies to the parallel case.  
+              While it is ignored elsewhere, it can still
+              draw a value out of bounds error
 			  <p>It must be consistant across all caches on any given file.
 			  <p>By default, this field is set to 256 KB.  It shouldn't be more
 			  than half the current max cache size times the min clean 
@@ -14533,7 +14659,7 @@ Describes HDF5 Release 1.8.0-beta.
 
 <!-- #EndLibraryItem --><SCRIPT LANGUAGE="JAVASCRIPT">
 <!--
-document.writeln("Last modified: 12 June 2007");
+document.writeln("Last modified: 26 June 2007");
 -->
 </SCRIPT>
  
