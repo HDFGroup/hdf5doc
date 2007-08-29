@@ -288,18 +288,28 @@ positive in-degree because it is pointed to by the file super block.
 
 <p>
 <a name="Group-GroupStyles">
-<strong>Group styles in the HDF5:</strong></a>
+<strong>Group implementations in HDF5:</strong></a>
+<!--
 <br>
-HDF5 originally provided a single form of group structure,
-referred to here as the original style.
-A new style of group structure, enabling several more advanced features,
-was introduced in HDF5 Release 1.8.0.
+HDF5 originally provided a single indexed group structure,
+referred to here as the original indexed implementation.
+A new implementation of group structure, 
+enabling several more advanced features,
+-->
+<br>
+The original HDF5 group implementation provided 
+a single indexed structure for link storage.
+A new group implementation, in HDF5 Release 1.8.0,
+enables more efficient compact storage for very small groups,
+improved link indexing for large groups,
+and other advanced features.
 <ul>
-    <li>The <i>original</i> style remains the default.
+    <li>The <i>original indexed</i> format remains the default.
         Links are stored in a B-tree in the group&rsquo;s local heap.
-    <li>Groups created in the <i>new</i> style can be tuned for
-        performance with configuration settings 
-        to switch between the compact and indexed formats 
+    <li>Groups created in the new <i>compact-or-indexed</i> format, 
+        the implementation introduced with Release 1.8.0,
+        can be tuned for performance, 
+        switching between the compact and indexed formats 
         at thresholds set in the user application.
     <ul>
         <li>The <i>compact</i> format will conserve file space
@@ -313,30 +323,44 @@ was introduced in HDF5 Release 1.8.0.
             Links are stored in a fractal heap and 
             indexed with an improved B-tree.
     </ul>
-    <li>The new style also enables the use of link names consisting of 
-        non-ASCII character sets 
-       (see <a href="RM_H5P.html#Property-SetCharEncoding">
+    <li>The new implementation also enables the use of link names 
+        consisting of non-ASCII character sets 
+        (see <a href="RM_H5P.html#Property-SetCharEncoding">
         <code>H5Pset_char_encoding</code></a>) 
         and is required for all link types other that hard or soft links,
         e.g., external and user-defined links
         (see the <a href="RM_H5L.html">H5L APIs</a>).
 </ul>
 
-    
+<!--
 <p>
 The original group structure and the newer structures 
 are not directly interoperable. 
-HDF5 groups must, therefore, be created in one of the two styles. 
-Once created, a group in the original style can be changed 
-to the new style if the need arises; 
-a change in the other direction, however, is not available.
+HDF5 groups can be created in either of the two formats. 
+Once created, a group in the original indexed format can be changed 
+to a compact-or-indexed format if the need arises; 
+there is no capability to change back.
+As stated above, once in the compact-or-indexed format, 
+a group can switch between compact and indexed as needed.
 
 <p>
-By default, a group will be created in the original style.
-Groups that are configurable for 
-    compact group structures or 
-    indexed structures
-will be created under the following circumstances:  
+By default, a group will be created in the original indexed format.
+Groups will be created in the compact-or-indexed format
+under the following circumstances:  
+-->
+
+<p>
+The original group structure and the newer structures 
+are not directly interoperable. 
+By default, a group will be created in the original indexed format.
+An existing group can be changed to a compact-or-indexed format 
+if the need arises; there is no capability to change back.
+As stated above, once in the compact-or-indexed format, 
+a group can switch between compact and indexed as needed.
+
+<p>
+Groups will be initially created in the compact-or-indexed format
+only under the following circumstances:  
 <ul>
     <li>The <code>latest_format</code> property has been set  
         in the file access property list
@@ -351,8 +375,15 @@ will be created under the following circumstances:
         (see <a href="RM_H5P.html#Property-SetLinkCreationOrder">
         <code>H5Pset_link_creation_order</code></a>).
 </ul>
-A group currently existing in the original style will be converted 
-to the new style upon the occurrence of any of the following events:
+
+<p>
+<!--
+The compact-or-indexed format also enables completely new capabilities:
+user-defined and external links and non-ASCII link names.
+-->
+An existing group, currently in the original indexed format, 
+will be converted to the compact-or-indexed format 
+upon the occurrence of any of the following events:
 <ul>
     <li>An external or user-defined link is inserted into the group.
     <li>A link named with a string composed of non-ASCII characters 
@@ -374,18 +405,25 @@ to the new style upon the occurrence of any of the following events:
 </ul>
 
 <p>
-When switching between the compact and indexed formats,
-performance differences will be most notable at the extremes, 
-i.e., in groups with zero members or in groups with 
-tens of thousands of members.  
-However, measurable differences can sometimes appear when switching 
-between formats at a threshold as low as eight group members.
+The compact-or-indexed format offers performance improvements 
+that will be most notable at the extremes, 
+i.e., in groups with zero members 
+and in groups with tens of thousands of members.  
+But measurable differences may sometimes appear 
+at a threshold as low as eight group members.
+Since these performance thresholds and criteria differ from
+application to application, tunable settings are provided to 
+govern the switch between the compact and indexed formats
+(see <a href="RM_H5P.html#Property-SetLinkPhaseChange">
+<code>H5Pset_link_phase_change</code></a>).
 Optimal thresholds will depend on the application and the 
 operating environment.
 
 <p>
 Future versions of HDF5 will retain the ability to 
-create, read, write and manipulate both group styles.
+create, read, write, and manipulate 
+all groups stored in either the original indexed format or
+the compact-or-indexed format.
 
 <p>
 <a name="Group-LocatingObjects">
@@ -826,9 +864,12 @@ END SUBROUTINE h5gget_comment_f
 <dt><strong>Purpose:</strong>
     <dd>Gets a group creation property list identifier.
 <dt><strong>Description:</strong>
-    <dd><code>H5Gget_create_plist</code> retrieves an identifier 
+    <dd><code>H5Gget_create_plist</code> returns an identifier 
       for the group creation property list associated with the 
-      group <code>group_id</code>.
+      group specified by <code>group_id</code>.
+      <p>
+      The creation property list identifier should be released with 
+      <a href="RM_H5P.html#Property-Close"><code>H5Pclose</code></a>.
 <dt><strong>Parameters:</strong>
   <ul>
     <table>
@@ -1697,16 +1738,22 @@ SUBROUTINE
         since no stopping point is returned in this case, the iterator 
         cannot be restarted if one of the calls to its operator returns 
         non-zero.  
+        <code>H5Giterate</code> does not recursively follow links into 
+        subgroups of the specified group.
         <p>
         The prototype for <code>H5G_iterate_t</code> is:
         <table>
-		    <tr>
-			  <td valign="top">&nbsp;&nbsp;&nbsp;&nbsp;</td>
-			  <td valign="top"><code>typedef</code> <em>herr_t </em>(*<code>H5G_iterate_t</code>)
-			                   (<em>hid_t</em> <code>group_id</code>, <em>const char *</em>
-							   <code>member_name</code>, <em>void *</em><code>operator_data</code>);</td></tr>
+            <tr>
+                <td valign="top">&nbsp;&nbsp;&nbsp;&nbsp;</td>
+                <td valign="top"><code>typedef</code> 
+                    <em>herr_t </em>(*<code>H5G_iterate_t</code>)
+                        (<em>hid_t</em> <code>group_id</code>, 
+                        <em>const char *</em>
+                        <code>member_name</code>, 
+                        <em>void *</em><code>operator_data</code>);
+                </td>
+            </tr>
         </table>
-				
         <p>The operation receives the group identifier for the group being 
         iterated over, <code>group_id</code>, the name of the current 
         object within the group, <code>member_name</code>, and the 
@@ -1729,23 +1776,33 @@ SUBROUTINE
         identified by <code>name</code> remains unchanged through the 
         iteration.  If the membership changes during the iteration, 
         the function's behavior is undefined.
+        <p>
+        <code>H5Giterate</code> is not recursive. 
+        In particular, if a member of <code>name</code> is found to be 
+        a group, call it <code>subgroup_a</code>, <code>H5Giterate</code>
+        does not examine the members of <code>subgroup_a</code>.
+        When recursive iteration is required, the application must handle 
+        the recursion, explicitly calling <code>H5Giterate</code> 
+        on discovered subgroups.
   <dt><strong>Parameters:</strong>
     <ul><table>
       <tr>
-	    <td valign="top"><em>hid_t</em> <code>loc_id</code></td>
+        <td valign="top"><em>hid_t</em> <code>loc_id</code></td>
         <td valign="top">IN: File or group identifier.</td></tr>
       <tr>
-	    <td valign="top"><em>const char</em> <code>*name</code></td>
-        <td valign="top">IN: Group over which the iteration is performed.</td></tr>
+        <td valign="top"><em>const char</em> <code>*name</code></td>
+        <td valign="top">IN: Group over which the iteration 
+            is performed.</td></tr>
       <tr>
-	    <td valign="top"><em>int</em> <code>*idx</code></td>
-        <td valign="top">IN/OUT: Location at which to begin the iteration.</td></tr>
+        <td valign="top"><em>int</em> <code>*idx</code></td>
+        <td valign="top">IN/OUT: Location at which to begin the 
+            iteration.</td></tr>
       <tr>
-	    <td valign="top"><em>H5G_iterate_t</em>&nbsp;<code>operator&nbsp;&nbsp;&nbsp;&nbsp;</code></td>
-        <td valign="top">IN: Operation to be performed on an object at each step of 
-            the iteration.</td></tr>
+        <td valign="top"><em>H5G_iterate_t</em>&nbsp;<code>operator&nbsp;&nbsp;&nbsp;&nbsp;</code></td>
+        <td valign="top">IN: Operation to be performed on an object 
+            at each step of the iteration.</td></tr>
       <tr>
-	    <td valign="top"><em>void</em> <code>*operator_data</code></td>
+        <td valign="top"><em>void</em> <code>*operator_data</code></td>
         <td valign="top">IN/OUT: Data associated with the operation.</td></tr>
     </table></ul>
   <dt><strong>Returns:</strong>
@@ -1764,22 +1821,23 @@ SUBROUTINE
         <td>
           <code>h5gn_members_f</code>
         </td>
-		<td>&nbsp;&nbsp;</td>
-		<td>
+        <td>&nbsp;&nbsp;</td>
+        <td>
           <strong>Purpose:</strong>
           Returns the number of group members.
-        </tr>
-		<tr valign=top align=left>
-            <td>
-            <code>h5gget_obj_info_idx_f</code>
-            </td><td>&nbsp;&nbsp;</td><td>
-            <strong>Purpose:</strong>
-            Returns name and type of the group member identified by its index.
-          </td>
-		</tr>
+      </tr>
+      <tr valign=top align=left>
+        <td>
+          <code>h5gget_obj_info_idx_f</code>
+        </td><td>&nbsp;&nbsp;</td>
+        <td>
+          <strong>Purpose:</strong>
+          Returns name and type of the group member identified by its index.
+        </td>
+      </tr>
     </table>
     </center>
-				
+
 		<pre>
 SUBROUTINE h5gn_members_f(loc_id, name, nmembers, hdferr)           
   IMPLICIT NONE
@@ -2426,7 +2484,7 @@ Describes HDF5 Release 1.8.0-beta.
 
 <!-- #EndLibraryItem --><SCRIPT LANGUAGE="JAVASCRIPT">
 <!--
-document.writeln("Last modified: 20 June 2007");
+document.writeln("Last modified: 17 August 2007");
 -->
 </SCRIPT>
 
