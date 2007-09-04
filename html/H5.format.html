@@ -1,7 +1,7 @@
-<html>
+length <html>
   <head>
     <title>
-      HDF5 File Format Specification Version 1.1
+      HDF5 File Format Specification Version 2.0
     </title>
 
 <STYLE TYPE="text/css">
@@ -65,7 +65,7 @@ TABLE.list TD { border:none; }
 </table>
 </center>
 <hr>
-<!-- #EndLibraryItem --><center><h1>HDF5 File Format Specification Version 1.1</h1></center>
+<!-- #EndLibraryItem --><center><h1>HDF5 File Format Specification Version 2.0</h1></center>
 
     <center>
     <table border=0 width=90%>
@@ -78,12 +78,15 @@ TABLE.list TD { border:none; }
 	<ol type=A>
 	  <li><a href="#SuperBlock">Disk Format Level 0A - File Signature and Super Block</a>
 	  <li><a href="#DriverInfo">Disk Format Level 0B - File Driver Info</a>
+	  <li><a href="#SuperblockExt">Disk Format Level 0B - Superblock Extension</a>
+    <H3><A name="Superblock Extension">
 	</ol>
         </font>
       <li><a href="#FileInfra">Disk Format Level 1 - File Infrastructure</a>
         <font size=-2>
 	<ol type=A>
-	  <li><a href="#Btrees">Disk Format Level 1A - B-link Trees and B-tree Nodes</a>
+	  <li><a href="#V1Btrees">Disk Format Level 1A - Version 1 B-link Trees and B-tree Nodes</a>
+	  <li><a href="#V2Btrees">Disk Format Level 1A - Version 2 B-link Trees and B-tree Nodes</a>
 	  <li><a href="#SymbolTable">Disk Format Level 1B - Group</a>
 	  <li><a href="#SymbolTableEntry">Disk Format Level 1C - Group Entry</a>
 	  <li><a href="#LocalHeap">Disk Format Level 1D - Local Heaps</a>
@@ -94,12 +97,15 @@ TABLE.list TD { border:none; }
       <li><a href="#DataObject">Disk Format Level 2 - Data Objects</a>
         <font size=-2>
 	<ol type=A>
-	  <li><a href="#ObjectHeader">Disk Format Level 2a - Data Object Headers</a>
+	  <li><a href="#V1ObjectHeader">Disk Format Level 2a - Version 1 Data Object Headers</a>
+	  <li><a href="#V2ObjectHeader">Disk Format Level 2a - Version 2 Data Object Headers</a>
 	    <ol type=1>
 	      <li><a href="#NILMessage">Name: NIL</a>                                                       <!-- 0x0000 -->
 	      <li><a href="#SimpleDataSpace">Name: Simple Dataspace</a>                                     <!-- 0x0001 -->
+
+	      <li><a href="#LinfoMessage">Name: Link Info </a>                                     	    <!-- NEW0x0002 -->
+
 <!--          <li><a href="#DataSpaceMessage">Name: Complex Dataspace</a>  -->                              <!-- 0x0002 -->
-	      <li><a href="#ReservedMessage_0002">Name: Reserved - not assigned yet</a>                     <!-- 0x0002 -->
 	      <li><a href="#DataTypeMessage">Name: Datatype</a>                                             <!-- 0x0003 -->
 	      <li><a href="#OldFillValueMessage">Name: Data Storage - Fill Value (Old)</a>                  <!-- 0x0004 -->
 	      <li><a href="#FillValueMessage">Name: Data Storage - Fill Value</a>                           <!-- 0x0005 -->
@@ -114,21 +120,34 @@ TABLE.list TD { border:none; }
         <font size=-2><i>(Continued)</i>
 	<ol type=A>
 	  <li><a href="#ObjectHeader">Disk Format Level 2a - Data Object Headers</a><i>(Continued)</i>
-	    <ol type=1 start=6>
+	    <ol type=1 start=7>
 <!--          <li><a href="#CompactDataStorageMessage">Name: Data Storage - Compact</a>  -->                <!-- 0x0006 -->
-	      <li><a href="#ReservedMessage_0006">Name: Reserved - not assigned yet</a>                     <!-- 0x0006 -->
+
+	      <li><a href="#LinkMessage">Name: Link Message</a>      <!-- NEW0x0006 -->
+
 	      <li><a href="#ExternalFileListMessage">Name: Data Storage - External Data Files</a>           <!-- 0x0007 -->
 	      <li><a href="#LayoutMessage">Name: Data Storage - Layout</a>                                  <!-- 0x0008 -->
 	      <li><a href="#ReservedMessage_0009">Name: Reserved - not assigned yet</a>                     <!-- 0x0009 -->
-	      <li><a href="#ReservedMessage_000A">Name: Reserved - not assigned yet</a>                     <!-- 0x000a -->
+
+	      <li><a href="#GinfoMessage">Name: Group Info</a>      <!-- NEW0x000a -->
+
 	      <li><a href="#FilterMessage">Name: Data Storage - Filter Pipeline</a>                	    <!-- 0x000b -->
 	      <li><a href="#AttributeMessage">Name: Attribute</a>                                           <!-- 0x000c -->
-	      <li><a href="#CommentMessage">Name: Object Comment</a>                                              <!-- 0x000d -->
+	      <li><a href="#CommentMessage">Name: Object Comment</a>                                        <!-- 0x000d -->
 	      <li><a href="#OldModifiedMessage">Name: Object Modification Date and Time (Old)</a>           <!-- 0x000e -->
-              <li><a href="#SharedMessage">Name: Shared Object Message</a>                                  <!-- 0x000f -->
+
+              <li><a href="#SharedMessage">Name: Shared Object Message</a>      <!-- 0x000f -->
+              <li><a href="#SOHMMessage">Name: Shared Message Table</a>         <!-- NEW 0x000f -->
+
 	      <li><a href="#ContinuationMessage">Name: Object Header Continuation</a>                       <!-- 0x0010 -->
 	      <li><a href="#SymbolTableMessage">Name: Group Message</a>                                     <!-- 0x0011 -->
 	      <li><a href="#ModifiedMessage">Name: Object Modification Date and Time</a>                    <!-- 0x0012 -->
+	      <li><a href="#BtreeValuesMessage">Name: B-tree 'K' Values Message</a>                    	    <!-- NEW0x0013 -->
+	      <li><a href="#DrvinfoMessage">Name: Driver Info Message</a>                    		    <!-- NEW0x0014 -->
+
+	      <li><a href="#AinfoMessage">Name: Attribute Info Message</a>                    		    <!-- NEW0x0015 -->
+	      <li><a href="#RefcountMessage">Name: Object's Reference Count</a>                    		    <!-- NEW0x0016 -->
+
 	    </ol>
 	  <li><a href="#DataStorage">Disk Format: Level 2b - Data Object Data Storage</a>
 	</ol>
@@ -260,13 +279,17 @@ TABLE.list TD { border:none; }
       super block and group version numbers, information
       about the sizes of offset and length values used to describe
       items within the file, the size of each group page,
-      and a group entry for the root object in the file.
+      and a group entry for the root object in the file.  
+      There are three kinds of superblock format.  Version 0 is the default format 
+      while version 1 is basically the same as version 0 with additional information 
+      for non-default B-tree 'K' value.  Version 2 is the latest format with superblock 
+      extension and checksum.
 
     <br>
     <div align=center>
       <table class=format>
 	<caption>
-	  HDF5 Super Block Layout
+	  HDF5 Super Block Layout (Versions 0 and 1)
 	</caption>
 
 	<tr>
@@ -331,12 +354,12 @@ TABLE.list TD { border:none; }
 
       <table class=note>
         <tr><td>
-            (Items marked with an 'O' the above table are
+            (Items marked with an 'O' in the above table are
             <br>
             of the size specified in "Size of Offsets.")
         </td></tr>
         <tr><td>
-            (Items marked with an '1' the above table are
+            (Items marked with an '1' in the above table are
             <br>
             new in version 1 of the superblock)
         </td></tr>
@@ -595,7 +618,7 @@ TABLE.list TD { border:none; }
 	<tr>
 	  <td>Indexed Storage Internal Node K</td>
 	  <td>
-            <P>Each internal node of a indexed storage B-tree will have at
+            <P>Each internal node of an indexed storage B-tree will have at
 	    least this many entries but not more than twice this
 	    many.  If the group has only one internal
 	    node then it might have fewer entries.
@@ -691,6 +714,166 @@ TABLE.list TD { border:none; }
       </table>
     </div>
 
+    <br>
+    <div align=center>
+      <table class=format>
+	<caption>
+	  HDF5 Super Block Layout (Version 2)
+	</caption>
+
+	<tr>
+	  <th>byte</th>
+	  <th>byte</th>
+	  <th>byte</th>
+	  <th>byte</th>
+	</tr>  
+
+	<tr>
+	  <td colspan=4><br>HDF5 File Signature (8 bytes)<br><br></td>
+	</tr>
+
+	<tr>
+	  <td>Version # of Super Block</td>
+	  <td>Size of Offsets</td>
+	  <td>Size of Lengths</td>
+	  <td>File Consistency Flag</td>
+	</tr>
+
+	<tr>
+	  <td colspan=4>Base Address<sup>O</sup></td>
+	</tr>
+
+	<tr>
+	  <td colspan=4>Superblock Extension Address<sup>O</sup></td>
+	</tr>
+
+	<tr>
+	  <td colspan=4>End of File Address<sup>O</sup></td>
+	</tr>
+
+	<tr>
+	  <td colspan=4>Root Group Object Header Address<sup>O</sup></td>
+	</tr>
+
+	<tr>
+	  <td colspan=4>Superblock Checksum</sup></td>
+	</tr>
+      </table>
+
+      <table class=note>
+        <tr><td>
+            (Items marked with an 'O' in the above table are
+            <br>
+            of the size specified in "Size of Offsets.")
+        </td></tr>
+      </table>
+    </div>
+ 
+    <br>
+    <div align=center>
+      <table class=desc>
+	<tr>
+          <th width="30%">Field Name</th>
+          <th>Description</th>
+	</tr>
+
+	<tr>
+	  <td>HDF5 File Signature</td>
+	  <td>
+            <P>This field is the same as described for version 0 and 1.
+            </P>
+	</tr>
+
+	<tr>
+	  <td>Version Number of the Super Block</td>
+	  <td>
+            <P>Value of 2 is defined for this field and the description is the same as for version 0 and 1.
+            </P>
+          </td>
+	</tr>
+
+	<tr>
+	  <td>Size of Offsets</td>
+	  <td>
+            <P>This field is the same as described for version 0 and 1.
+            </P>
+          </td>
+	</tr>
+
+	<tr>
+	  <td>Size of Lengths</td>
+	  <td>
+            <P>This field is the same as described for version 0 and 1.
+            </P>
+          </td>
+	</tr>
+
+        <tr>
+          <td>File Consistency Flags</td>
+          <td>
+            <P>This field is the same as desribed for version 0 and 1 except the following:
+            <ul>
+            <li>Bit 0 set indicates that the file is opened for
+            write-access.
+            <li>Bit 1 set indicates that the file has
+            been verified for consistency and is guaranteed to be
+            consistent with the format defined in this document.
+            <li>Bits 2-15 are reserved for future use.
+            </ul>
+            </P>
+          </td>
+        </tr>
+
+        <tr>
+          <td>Base Address</td>
+          <td>
+            <P>This field is the same as described for version 0 and 1.
+            </P>
+          </td>
+        </tr>
+
+        <tr>
+          <td>Address of Superblock Extension</td>
+          <td>
+            <P> The field is the address of the object header for the superblock 
+		extension.
+		If there is no extension then this entry should be the
+		<A href="#UndefinedAddress">undefined address</A>.
+            </P>
+          </td>
+        </tr>
+
+        <tr>
+          <td>End of File Address</td>
+          <td>
+            <P>This field is the same as described for version 0 and 1.
+            </P>
+          </td>
+        </tr>
+
+        <tr>
+          <td>Root Group Object Header Address</td>
+          <td>
+            <P>
+            This is the address of the root group object header, which serves
+	    as the entry point into the group graph for the file.
+            </P>
+          </td>
+        </tr>
+
+        <tr>
+          <td>Superblock Checksum</td>
+          <td>
+            <P>
+            This the checksum for the superblock.
+            </P>
+          </td>
+        </tr>
+
+      </table>
+    </div>
+
+    <br>
     <H3><A name="DriverInfo">
 	Disk Format: Level 0B - File Driver Info</A></H3>
 
@@ -952,12 +1135,30 @@ TABLE.list TD { border:none; }
       </table>
     </div>
 
+    <br>
+    <H3><A name="SuperblockExt">
+	Disk Format: Level 0C - Superblock Extension</A></H3>
+
+    <p>The <em>superblock extension</em> is an optional region that only exists
+      in version 2 of the superblock.  This region contains the object header
+      which may hold the following messages:
+	<UL>
+	<LI>
+	Shared message table message that contains information to locate the 
+	master table of shared object header message indexes.
+	<LI>
+	B-tree 'K' value message that contains non-default B-tree 'K' values.
+	<LI>
+	Driver info message that contains information needed by the file driver
+	in order to reopen a file.
+	</UL>
+
     <BR>
     <HR>
 
     <h2><a name="FileInfra">
         Disk Format: Level 1 - File Infrastructure</a></h2>
-    <h3><a name="Btrees">Disk Format: Level 1A - B-link Trees and B-tree Nodes</a></h3>
+    <h3><a name="V1Btrees">Disk Format: Level 1A - Version 1 B-link Trees and B-tree Nodes</a></h3>
 
     <p>B-link trees allow flexible storage for objects which tend to grow
       in ways that cause the object to be stored discontiguously.  B-trees
@@ -1279,6 +1480,1071 @@ TABLE.list TD { border:none; }
      any other chunk offset and has a chunk byte size of zero 
      to indicate that it is not actually allocated.
 
+    <h3><a name="V2Btrees">Disk Format: Level 1A - Version 2 B-link Trees and B-tree Nodes</a></h3>
+    <P> The entry into version 2 B-link tree is the header which contains information to traverse 
+	the B-tree.  The <EM>address</EM> field in the header points to the B-tree root node which links to 
+	either a leaf or internal node. A leaf node consists of records whose layout depends on the
+	B-tree type.  An internal node consists of records plus pointers to leaf
+	or internal nodes in the tree.
+
+    <br>
+    <div align=center>
+      <table class=format>
+        <caption>
+          B-tree Header
+        </caption>
+
+        <tr>
+          <th>byte</th>
+          <th>byte</th>
+          <th>byte</th>
+          <th>byte</th>
+
+        <tr>
+          <td colspan=4>Signature</td>
+        </tr>
+        <tr>
+          <td>Version</td>
+          <td>Type</td>
+          <td colspan=2>Node Size (byte 1-2)</td>
+	</tr>
+	<tr>
+          <td colspan=2>Node Size (byte 3-4)</td>
+          <td colspan=2>Record Size</td>
+	</tr>
+	<tr>
+          <td colspan=2>Depth</td>
+          <td colspan=2>Address<sup>O</sup></td>
+	</tr>
+	<tr>
+          <td colspan=2>Number of Records N</td>
+          <td colspan=2>Total number of Records<sup>L</sup></td>
+	</tr>
+	<tr>
+          <td colspan=4>Checksum</td>
+	</tr>
+      </table>
+    </div>
+
+
+    <br>
+    <div align=center>
+      <table class=desc>
+	<tr>
+          <th width="30%">Field Name</th>
+          <th>Description</th>
+        </tr>
+
+        <tr>
+          <td>Signature</td>
+          <td>
+            <P>The ASCII character string "<code>BTHD</code>" is 
+            used to indicate the header of a version 2 B-link tree node.
+            </P>
+          </td>
+        </tr>
+
+        <tr>
+          <td>Version</td>
+          <td>
+            <P>The version number for this B-tree header.  This document describes version 0.</P>
+          </td>
+        </tr>
+
+        <tr>
+          <td>Type</td>
+          <td>
+            <P>This field indicates the type of B-tree.
+            </P>
+          </td>
+        </tr>
+
+        <tr valign=top>
+          <td>Node Size</td>
+          <td>
+            <P>This field is a 4-byte block and is the size in bytes of the B-tree node.
+            </P>
+          </td>
+        </tr>
+
+        <tr valign=top>
+          <td>Record Size</td>
+          <td>
+            <P>This field is the size in bytes of the B-tree record.
+            </P>
+          </td>
+        </tr>
+
+        <tr valign=top>
+          <td>Depth</td>
+          <td>
+            <P>This is the depth of the B-tree.
+            </P>
+          </td>
+        </tr>
+
+        <tr valign=top>
+          <td>Address</td>
+          <td>
+            <P>This is the address of the root B-tree node.
+            </P>
+          </td>
+        </tr>
+
+        <tr valign=top>
+          <td>Number of records N</td>
+          <td>
+            <P>This is the number of records in the node pointed to.
+            </P>
+          </td>
+        </tr>
+
+        <tr valign=top>
+          <td>Total number of records</td>
+          <td>
+            <P>This is the total number of records in the node pointed to
+	       and all its children.
+            </P>
+          </td>
+        </tr>
+
+        <tr valign=top>
+          <td>Checksum</td>
+          <td>
+            <P>This is the  checksum for this node.
+            </P>
+          </td>
+        </tr>
+      </table>
+    </div>
+
+    <br>
+    <div align=center>
+      <table class=format>
+        <caption>
+          B-tree Leaf Node
+        </caption>
+
+        <tr>
+          <th>byte</th>
+          <th>byte</th>
+          <th>byte</th>
+          <th>byte</th>
+
+        <tr>
+          <td colspan=4>Signature</td>
+        </tr>
+        <tr>
+          <td>Version</td>
+          <td>Type</td>
+          <td colspan=2>Record 0, 1, 2...N-1(variable size)</td>
+	</tr>
+	<tr>
+	  <td colspan=4>checksum</td>
+      </table>
+    </div>
+
+    <br>
+    <div align=center>
+      <table class=desc>
+	<tr>
+          <th width="30%">Field Name</th>
+          <th>Description</th>
+        </tr>
+
+        <tr>
+          <td>Signature</td>
+          <td>
+            <P>The ASCII character string "<code>BTLF</code>" is 
+            used to indicate the leaf node of a version 2 B-link tree.
+            </P>
+          </td>
+        </tr>
+
+        <tr>
+          <td>Version</td>
+          <td>
+            <P>The version number for this B-tree leaf node.  
+	       This document describes version 0.</P>
+          </td>
+        </tr>
+
+        <tr>
+          <td>Type</td>
+          <td>
+            <P>This field indicates the type of B-tree.</P>
+          </td>
+
+        <tr>
+          <td>Records</td>
+          <td>
+            <P>The size of this field is determined by the number of records N
+	       for this node and the B-tree type.  The layout for records depends on 
+	       the type of B-tree.
+            </P>
+          </td>
+        </tr>
+
+      </table>
+    </div>
+
+    <br>
+    <div align=center>
+      <table class=format>
+        <caption>
+          B-tree Internal Node
+        </caption>
+
+        <tr>
+          <th>byte</th>
+          <th>byte</th>
+          <th>byte</th>
+          <th>byte</th>
+
+        <tr>
+          <td colspan=4>Signature</td>
+        </tr>
+        <tr>
+          <td>Version</td>
+          <td>Type</td>
+          <td colspan=2>Record 0, 1, 2...N-1(variable size)</td>
+	</tr>
+	<tr>
+	  <td colspan=4>Node Pointer 0<sup>O</sup></td>
+	</tr>
+	  <td colspan=4><br>Number of Records N<sub>0</sub> for node 0</td>
+	</tr>
+	<tr>
+	  <td colspan=4><br>Total Number of Records for node 0</td>
+	</tr>
+	<tr>
+	  <td colspan=4>Node Pointer 1<sup>O</sup></td>
+	</tr>
+	  <td colspan=4><br>Number of Records N<sub>1</sub> for node 1</td>
+	</tr>
+	<tr>
+	  <td colspan=4><br>Total Number of Records for node 1</td>
+	</tr>
+	<tr>
+	  <td colspan=4>...</td>
+	</tr>
+	<tr>
+	  <td colspan=4>Node Pointer N<sup>O</sup></td>
+	</tr>
+	</tr>
+	  <td colspan=4><br>Number of Records N<sub>n</sub>for node N</td>
+	</tr>
+	<tr>
+	  <td colspan=4><br>Total Number of Records for node N</td>
+	</tr>
+	<tr>
+	  <td colspan=4>Checksum</td>
+      </table>
+    </div>
+
+
+    <br>
+    <div align=center>
+      <table class=desc>
+	<tr>
+          <th width="30%">Field Name</th>
+          <th>Description</th>
+        </tr>
+
+        <tr>
+          <td>Signature</td>
+          <td>
+            <P>The ASCII character string "<code>BTIN</code>" is 
+            used to indicate the internal node of a B-link tree.
+            </P>
+          </td>
+        </tr>
+
+        <tr>
+          <td>Version</td>
+          <td>
+            <P>The version number for this B-tree internal node.  
+	       This document describes version 0.</P>
+          </td>
+        </tr>
+
+        <tr>
+          <td>Type</td>
+          <td>
+            <P>This field is the type of the B-tree node.</P>
+          </td>
+        </tr>
+
+        <tr>
+          <td>Record</td>
+          <td>
+            <P>The size of this field is determined by the number of records
+	       for this node and the B-tree type.  The layout for records depends on 
+	       the type of B-tree.
+            </P>
+          </td>
+        </tr>
+
+        <tr>
+          <td>Node Pointer</td>
+          <td>
+            <P>This field is the address of the node pointed to by the internal node.</P>
+          </td>
+        </tr>
+
+        <tr>
+          <td>Number of Records</td>
+          <td>
+            <P>This is the number of records for the node pointed to by <em>Node Pointer</em>.</P>
+          </td>
+        </tr>
+
+        <tr>
+          <td>Total Number of Records</td>
+          <td>
+            <P>This is the total number of records for the node pointed to by
+	       <em>Node Pointer</em> and all its children.   This field exists only
+	       if the depth of the B-tree node is greater than 1.</P>
+          </td>
+        </tr>
+
+        <tr>
+          <td>Checksum</td>
+          <td>
+            <P>This is the checksum for this node.</P>
+          </td>
+        </tr>
+
+      </table>
+    </div>
+
+    <br>
+    <p>There are 4 types of B-link trees in version 2:
+    <OL>
+    <LI>B-tree for indexing name or creation order of dense link storage in groups
+    <LI>B-tree for indexing name or creation order of dense attribute storage
+    <LI>B-tree for fractal heap with filtered or non-filtered huge objects.
+	The object can be accessed directly where the object's retrieval information (address and length 
+	etc.) is stored in the heap ID.  It can also be accessed indirectly where the 
+	object's retrieval information is stored in the B-tree.
+    <LI>B-tree for shared object header message indices consisting of information to locate the actual shared 
+	messages from either the heap or object header.
+    </OL>
+    <p>The record layout for each tree type is as follows:
+
+    <br>
+    <div align=center>
+      <table class=format>
+        <caption>
+          Record layout for B-tree type 1 (name index)
+        </caption>
+
+        <tr>
+          <th>byte</th>
+          <th>byte</th>
+          <th>byte</th>
+          <th>byte</th>
+	</tr>
+
+        <tr>
+          <td colspan=4>Hash</td>
+        </tr>
+        <tr>
+          <td colspan=4>ID (bytes 1-4)</td>
+	</tr>
+
+        <tr>
+          <td colspan=3>ID (bytes 5-7)</td>
+	</tr>
+
+      </table>
+    </div>
+
+    <br>
+    <div align=center>
+      <table class=desc>
+	<tr>
+          <th width="30%">Field Name</th>
+          <th>Description</th>
+        </tr>
+
+        <tr>
+          <td>Hash</td>
+          <td>
+            <P>This field is the hash value of the name for the link.
+            </P>
+          </td>
+        </tr>
+
+        <tr>
+          <td>ID</td>
+          <td>
+            <P>This is a 7-byte block and is the heap ID for the link.
+          </td>
+        </tr>
+
+      </table>
+    </div>
+
+    <br>
+    <div align=center>
+      <table class=format>
+        <caption>
+          Record layout for B-tree type 1 (creation order index)
+        </caption>
+
+        <tr>
+          <th>byte</th>
+          <th>byte</th>
+          <th>byte</th>
+          <th>byte</th>
+	</tr>
+
+        <tr>
+          <td colspan=4><br>Creation Order</td>
+        </tr>
+        <tr>
+          <td colspan=4>ID (bytes 1-4)</td>
+	</tr>
+	<tr>
+          <td colspan=3>ID (bytes 5-7)</td>
+	</tr>
+      </table>
+    </div>
+
+    <br>
+    <div align=center>
+      <table class=desc>
+	<tr>
+          <th width="30%">Field Name</th>
+          <th>Description</th>
+        </tr>
+
+        <tr>
+          <td>Creation Order</td>
+          <td>
+            <P>This field is the creation order value for the link.
+            </P>
+          </td>
+        </tr>
+
+        <tr>
+          <td>ID</td>
+          <td>
+            <P>This is 7-byte block and is the heap ID for the link.
+          </td>
+        </tr>
+
+      </table>
+    </div>
+
+    <br>
+    <div align=center>
+      <table class=format>
+        <caption>
+          Record layout for B-tree type 2 (name index)
+        </caption>
+
+        <tr>
+          <th>byte</th>
+          <th>byte</th>
+          <th>byte</th>
+          <th>byte</th>
+	</tr>
+
+        <tr>
+          <td colspan=4><br>ID</td>
+        </tr>
+
+        <tr>
+          <td>Flags</td>
+	  <td colspan=3>Creation order (bytes 1-3)</td>
+        </tr>
+
+        <tr>
+          <td>Creation order (byte 4)</td>
+          <td colspan=3>Hash (bytes 1-3)</td>
+	</tr>
+
+        <tr>
+          <td>Hash (byte 4)</td>
+	  <td colspan=3></td>
+	</tr>
+      </table>
+    </div>
+
+    <br>
+    <div align=center>
+      <table class=desc>
+	<tr>
+          <th width="30%">Field Name</th>
+          <th>Description</th>
+        </tr>
+
+        <tr>
+          <td>ID</td>
+          <td>
+            <P>This field is the heap ID for the attribute.
+            </P>
+          </td>
+        </tr>
+
+        <tr>
+          <td>Flags</td>
+          <td>
+            <P>This field is the message flag for the attribute with
+            the following definition:</P>
+            <table class=list>
+                <tr>
+                  <th width="30%">Bit</th>
+                  <th align=left>Description</th>
+                </tr>
+
+                <tr>
+                  <td align=center><code>0</code></td>
+                  <td>If set, the data type for the attribute is shared.
+                  </td>
+                </tr>
+                <tr>
+                  <td align=center><code>1</code></td>
+                  <td>If set, the data space for the attribute is shared.
+                  </td>
+                </tr>
+                <tr>
+                  <td align=center><code>2-7</code></td>
+                  <td>Reserved</td>
+                </tr>
+	    </table>
+            </P>
+          </td>
+        </tr>
+
+        <tr>
+          <td>Creation order</td>
+          <td>
+            <P>This is a 4-byte block and is the creation order value for the attribute.
+          </td>
+        </tr>
+
+        <tr>
+          <td>Hash</td>
+          <td>
+            <P>This is a 4-byte block and is the hash value of the name for the attribute.
+          </td>
+        </tr>
+
+      </table>
+    </div>
+
+    <br>
+    <div align=center>
+      <table class=format>
+        <caption>
+          Record layout for B-tree type 2 (creation order index)
+        </caption>
+
+        <tr>
+          <th>byte</th>
+          <th>byte</th>
+          <th>byte</th>
+          <th>byte</th>
+	</tr>
+
+        <tr>
+          <td colspan=4><br>ID</td>
+        </tr>
+
+        <tr>
+          <td>Flags</td>
+	  <td colspan=3>Creation order (bytes 1-3)</td>
+        </tr>
+
+        <tr>
+          <td>Creation order (byte 4)</td>
+          <td colspan=3></td>
+	</tr>
+      </table>
+    </div>
+
+    <br>
+    <div align=center>
+      <table class=desc>
+	<tr>
+          <th width="30%">Field Name</th>
+          <th>Description</th>
+        </tr>
+
+        <tr>
+          <td>ID</td>
+          <td>
+            <P>This field is the heap ID for the attribute.
+            </P>
+          </td>
+        </tr>
+
+        <tr>
+          <td>Flags</td>
+          <td>
+            <P>This field is the message flag for the attribute
+            with the following definition:</P>
+            <table class=list>
+                <tr>
+                  <th width="30%">Bit</th>
+                  <th align=left>Description</th>
+                </tr>
+
+                <tr>
+                  <td align=center><code>0</code></td>
+                  <td>If set, the data type for the attribute is shared.
+                  </td>
+                </tr>
+                <tr>
+                  <td align=center><code>1</code></td>
+                  <td>If set, the data space for the attribute is shared.
+                  </td>
+                </tr>
+                <tr>
+                  <td align=center><code>2-7</code></td>
+                  <td>Reserved</td>
+                </tr>
+	    </table>
+            </P>
+          </td>
+        </tr>
+
+        <tr>
+          <td>Creation order</td>
+          <td>
+            <P>This is a 4-byte block and is the creation order value for the attribute.
+          </td>
+        </tr>
+
+      </table>
+    </div>
+
+    <br>
+    <div align=center>
+      <table class=format>
+        <caption>
+          Record layout for B-tree type 3 (directly accessed)
+        </caption>
+
+        <tr>
+          <th>byte</th>
+          <th>byte</th>
+          <th>byte</th>
+          <th>byte</th>
+
+        <tr>
+          <td colspan=4>Address<sup>O</sup></td>
+        </tr>
+        <tr>
+          <td colspan=4>Length<sup>L</sup></td>
+	</tr>
+      </table>
+    </div>
+
+    <br>
+    <div align=center>
+      <table class=desc>
+	<tr>
+          <th width="30%">Field Name</th>
+          <th>Description</th>
+        </tr>
+
+        <tr>
+          <td>Address</td>
+          <td>
+            <P>This field is the address of the object in the file.
+            </P>
+          </td>
+        </tr>
+
+        <tr>
+          <td>Length</td>
+          <td>
+            <P>This field is the length of the object in the file.
+          </td>
+        </tr>
+      </table>
+    </div>
+
+    <br>
+    <div align=center>
+      <table class=format>
+        <caption>
+          Record layout for B-tree type 3 (directly accessed filtered)
+        </caption>
+
+        <tr>
+          <th>byte</th>
+          <th>byte</th>
+          <th>byte</th>
+          <th>byte</th>
+
+        <tr>
+          <td colspan=4>Address<sup>O</sup></td>
+        </tr>
+        <tr>
+          <td colspan=4>Length<sup>L</sup></td>
+	</tr>
+        <tr>
+          <td colspan=4>Filter Mask</td>
+	</tr>
+        <tr>
+          <td colspan=4>Object Size<sup>L</sup></td>
+	</tr>
+      </table>
+    </div>
+
+    <br>
+    <div align=center>
+      <table class=desc>
+	<tr>
+          <th width="30%">Field Name</th>
+          <th>Description</th>
+        </tr>
+
+        <tr>
+          <td>Address</td>
+          <td>
+            <P>This field is the address of the filtered object in the file.
+            </P>
+          </td>
+        </tr>
+
+        <tr>
+          <td>Length</td>
+          <td>
+            <P>This field is the length of the filtered object in the file.
+          </td>
+        </tr>
+
+        <tr>
+          <td>Filter Mask</td>
+          <td>
+            <P>This field is the filter mask for the filtered object in the file.
+          </td>
+        </tr>
+
+        <tr>
+          <td>Object Size</td>
+          <td>
+            <P>This field is the size of the de-filtered object in the file.
+          </td>
+        </tr>
+
+      </table>
+    </div>
+
+    <br>
+    <div align=center>
+      <table class=format>
+        <caption>
+          Record layout for B-tree type 3 (indirectly accessed)
+        </caption>
+
+        <tr>
+          <th>byte</th>
+          <th>byte</th>
+          <th>byte</th>
+          <th>byte</th>
+
+        <tr>
+          <td colspan=4>Address<sup>O</sup></td>
+        </tr>
+        <tr>
+          <td colspan=4>Length<sup>L</sup></td>
+	</tr>
+        <tr>
+          <td colspan=4>ID<sup>L</sup></td>
+	</tr>
+      </table>
+    </div>
+
+    <br>
+    <div align=center>
+      <table class=desc>
+	<tr>
+          <th width="30%">Field Name</th>
+          <th>Description</th>
+        </tr>
+
+        <tr>
+          <td>Address</td>
+          <td>
+            <P>This field is the address of the object in the file.
+            </P>
+          </td>
+        </tr>
+
+        <tr>
+          <td>Length</td>
+          <td>
+            <P>This field is the length of the object in the file.
+          </td>
+        </tr>
+
+        <tr>
+          <td>ID</td>
+          <td>
+            <P>This field is the ID used to locate the object in the B-tree.
+          </td>
+        </tr>
+      </table>
+    </div>
+
+    <br>
+    <div align=center>
+      <table class=format>
+        <caption>
+          Record layout for B-tree type 3 (indirectly accessed filtered)
+        </caption>
+
+        <tr>
+          <th>byte</th>
+          <th>byte</th>
+          <th>byte</th>
+          <th>byte</th>
+
+        <tr>
+          <td colspan=4>Address<sup>O</sup></td>
+        </tr>
+        <tr>
+          <td colspan=4>Length<sup>L</sup></td>
+	</tr>
+        <tr>
+          <td colspan=4>Filter Mask</sup></td>
+	</tr>
+        <tr>
+          <td colspan=4>Object Size<sup>L</sup></td>
+	</tr>
+        <tr>
+          <td colspan=4>ID<sup>L</sup></td>
+	</tr>
+      </table>
+    </div>
+
+    <br>
+    <div align=center>
+      <table class=desc>
+	<tr>
+          <th width="30%">Field Name</th>
+          <th>Description</th>
+        </tr>
+
+        <tr>
+          <td>Address</td>
+          <td>
+            <P>This field is the address of the filtered object in the file.
+            </P>
+          </td>
+        </tr>
+
+        <tr>
+          <td>Length</td>
+          <td>
+            <P>This field is the length of the filtered object in the file.
+          </td>
+        </tr>
+
+        <tr>
+          <td>Filter Mask</td>
+          <td>
+            <P>This field is the filter mask for the filtered object in the file.
+          </td>
+        </tr>
+
+        <tr>
+          <td>Object Size</td>
+          <td>
+            <P>This field is the size of the de-filtered object in the file.
+          </td>
+        </tr>
+
+        <tr>
+          <td>ID</td>
+          <td>
+            <P>This field is the ID used to locate the filtered object in the B-tree.
+          </td>
+        </tr>
+
+      </table>
+    </div>
+
+    <br>
+    <div align=center>
+      <table class=format>
+        <caption>
+          Record layout for B-tree type 4 (in heap)
+        </caption>
+
+        <tr>
+          <th>byte</th>
+          <th>byte</th>
+          <th>byte</th>
+          <th>byte</th>
+
+        <tr>
+          <td>Location</td>
+	  <td colspan=3>hash (bytes 1-3)</td>
+        </tr>
+        <tr>
+          <td>Hash (bytes 4)</td>
+	  <td colspan=3>reference count (bytes 1-3)</td>
+        </tr>
+
+        <tr>
+          <td>Reference count (byte 4)</td>
+          <td colspan=3>heap ID (bytes 1-3)</td>
+	</tr>
+
+        <tr>
+          <td colspan=4>Heap ID (bytes 4-7)</td>
+	</tr>
+
+        <tr>
+          <td>Heap ID (byte 8)</td>
+	  <td colspan=3></td>
+	</tr>
+
+      </table>
+
+    <br>
+    <div align=center>
+      <table class=desc>
+	<tr>
+          <th width="30%">Field Name</th>
+          <th>Description</th>
+        </tr>
+
+        <tr>
+          <td>Location</td>
+          <td>
+            <P>This field indicates whether the message is located
+	       in the heap or object header.
+            </P>
+          </td>
+        </tr>
+
+        <tr>
+          <td>Hash</td>
+          <td>
+            <P>This field is a 4-byte block and is the hash value for the shared message.
+          </td>
+        </tr>
+
+        <tr>
+          <td>Reference count</td>
+          <td>
+            <P>This field is a 4-byte block and is the number of times the message is used in the file.</P>
+          </td>
+        </tr>
+
+        <tr>
+          <td>Heap ID</td>
+          <td>
+            <P>This field is an 8-byte block and is the heap ID of the shared message.</P>
+          </td>
+        </tr>
+
+      </table>
+    </div>
+
+    <br>
+    <div align=center>
+      <table class=format>
+        <caption>
+          Record layout for B-tree type 4 (in object header)
+        </caption>
+
+        <tr>
+          <th>byte</th>
+          <th>byte</th>
+          <th>byte</th>
+          <th>byte</th>
+
+        <tr>
+          <td>Location</td>
+	  <td colspan=3>Hash (bytes 1-3)</td>
+        </tr>
+        <tr>
+          <td>Hash (bytes 4)</td>
+	  <td>Reserved</td>
+	  <td>Type</td>
+	  <td colspan=2>Index</td>
+        </tr>
+
+        <tr>
+          <td colspan=4>Address<sup>O</sup></td>
+	</tr>
+
+      </table>
+    </div>
+
+    <br>
+    <div align=center>
+      <table class=desc>
+	<tr>
+          <th width="30%">Field Name</th>
+          <th>Description</th>
+        </tr>
+
+        <tr>
+          <td>Location</td>
+          <td>
+            <P>This field indicates whether the message is located
+	       in the heap or object header.
+            </P>
+          </td>
+        </tr>
+
+        <tr>
+          <td>Hash</td>
+          <td>
+            <P>This is a 4-byte block and is the hash value for the shared message.
+          </td>
+        </tr>
+
+        <tr>
+          <td>Type</td>
+          <td>
+            <P>This field is the message type.</P>
+          </td>
+        </tr>
+
+        <tr>
+          <td>Index</td>
+          <td>
+            <P>This field is the index used to locate the message in the specified object header.</P>
+          </td>
+        </tr>
+
+        <tr>
+          <td>Address</td>
+          <td>
+            <P>This is the address of the object header where the message resides.
+            </P>
+          </td>
+        </tr>
+
+      </table>
+    </div>
+
+      <table class=note>
+        <tr><td>
+            (The field marked with an 'O' in the above tables is
+            <br>
+            of the size specified in "Size of Offsets.")
+        </td></tr>
+        <tr><td>
+            (The field marked with an 'L' in the above tables is
+            <br>
+            of the size specified in "Size of Lengths.")
+        </td></tr>
+      </table>
+
+    </div>
 
     <h3><a name="SymbolTable">Disk Format: Level 1B - Group and Symbol Nodes</a></h3>
 
@@ -2186,8 +3452,8 @@ TABLE.list TD { border:none; }
       "metadata" used to describe or annotate each data object.
     </P>
 
-    <h3><a name="ObjectHeader">
-	Disk Format: Level 2A - Data Object Headers</a></h3>
+    <h3><a name="V1ObjectHeader">
+	Disk Format: Level 2A - Version 1 Data Object Headers</a></h3>
 
     <P>The header information of an object is designed to encompass
       all the information about an object, except for the data itself.
@@ -2210,7 +3476,7 @@ TABLE.list TD { border:none; }
     <div align=center>
       <table class=format>
 	<caption>
-	  Object Headers
+	  Version 1 Object Headers
 	</caption>
 
 	<tr>
@@ -2284,8 +3550,7 @@ TABLE.list TD { border:none; }
 	    information in the object header is changed, the version number
 	    is incremented and can be used to determine how the
 	    information in the object header is formatted.  This
-            document describes version one (1) (there was no version
-            zero (0)).
+            is version one (1) (there was no version zero (0)) of the object header.
             </P>
           </td>
 	</tr>
@@ -2401,6 +3666,293 @@ TABLE.list TD { border:none; }
       of times allowed in the header will be noted in each header
       message description below.
     </P>
+
+    <h3><a name="V2ObjectHeader">
+	Disk Format: Level 2A - Version 2 Data Object Headers</a></h3>
+    <P>
+    </P>
+
+    <br>
+    <div align=center>
+      <table class=format>
+	<caption>
+	  Version 2 Object Headers
+	</caption>
+
+	<tr>
+	  <th>byte</th>
+	  <th>byte</th>
+	  <th>byte</th>
+	  <th>byte</th>
+	</tr>
+
+	<tr>
+	  <td colspan=4>Signature</td>
+	</tr>
+	<tr>
+	  <td>Version</td>
+	  <td>Flags</td>
+	  <td colspan=2>Access time (bytes 1-2)</td>
+	</tr>
+
+	<tr>
+	  <td colspan=2>Access Time (bytes 3-4)</td>
+	  <td colspan=2>Modification Time (bytes 1-2)</td>
+	</tr>
+
+	<tr>
+	  <td colspan=2>Modification Time (bytes 3-4)</td>
+	  <td colspan=2>Change Time (bytes 1-2)</td>
+	</tr>
+
+	<tr>
+	  <td colspan=2>Change Time (bytes 3-4)</td>
+	  <td colspan=2>Birth Time (bytes 1-2)</td>
+	</tr>
+
+	<tr>
+	  <td colspan=2>Birth Time (bytes 3-4)</td>
+	  <td colspan=2>Maximum # of compact attributes</td>
+	</tr>
+
+	<tr>
+	  <td colspan=2>Minimum # of dense attributes</td>
+	  <td colspan=2>Size of chunk 0 (variable size)</td>
+	</tr>
+
+	<tr>
+	  <td colspan=2>Header Message Type #1</td>
+	  <td colspan=2>Size of Header Message Data #1</td>
+	</tr>
+
+	<tr>
+	  <td>Header Message #1 Flags</td>
+	  <td colspan=3>Reserved (zero)</td>
+	</tr>
+
+	<tr>
+	  <td colspan=4><br>Header Message Data #1<br><br></td>
+	</tr>
+
+	<tr>
+	  <td colspan=4>.<br>.<br>.<br></td>
+	</tr>
+
+	<tr>
+	  <td colspan=2>Header Message Type #n</td>
+	  <td colspan=2>Size of Header Message Data #n</td>
+	</tr>
+
+	<tr>
+	  <td>Header Message #n Flags</td>
+	  <td colspan=3>Reserved (zero)</td>
+	</tr>
+
+	<tr>
+	  <td colspan=4><br>Header Message Data #n<br><br></td>
+	</tr>
+      </table>
+    </div>
+
+    <br>
+    <div align=center>
+      <table class=desc>
+	<tr>
+          <th width="30%">Field Name</th>
+          <th>Description</th>
+	</tr>
+
+	<tr>
+	  <td>Signature</td>
+	  <td>
+	    <P>
+	    The ASCII character string "<code>OHDR</code>" is used to indicate chunk 0 of
+	    object headers while "<code>OCHK</code>" is used to indicate the continuation 
+	    chunk(s) of object headers.
+	    </P>
+	    <P>
+	    The following fields from <em>Version</em> through <em>Size of chunk 0</em> only exist 
+	    for chunk 0.
+	    </P>
+	  </td>
+	</tr>
+	
+	<tr>
+	  <td>Version</td>
+	  <td>
+            <P>This field has a value of 2 indicating version 2 of the object header.</P>
+          </td>
+	</tr>
+
+	<tr>
+	  <td>Flags</td>
+	  <td>
+            <P>This is the object header status flag and is described below.</P>
+          </td>
+	</tr>
+
+	<tr>
+	  <td>Access Time</td>
+	  <td>
+            <P>This is a 4-byte block and is the access time of the object.</P>
+	    <P>This field exists if bit 5 of <em>flags</em> is set.</P>
+          </td>
+	</tr>
+
+	<tr>
+	  <td>Modification Time</td>
+	  <td>
+            <P>This is a 4-byte block and is the modification time of the object.</P>
+	    <P>This field exists if bit 5 of <em>flags</em> is set.</P>
+          </td>
+	</tr>
+
+	<tr>
+	  <td>Change Time</td>
+	  <td>
+            <P>This is a 4-byte block and is the change time of the object.</P>
+	    <P>This field exists if bit 5 of <em>flags</em> is set.</P>
+          </td>
+	</tr>
+
+	<tr>
+	  <td>Birth Time</td>
+	  <td>
+            <P>This is a 4-byte block and is the birth time of the object.</P>
+	    <P>This field exists if bit 5 of <em>flags</em> is set.</P>
+          </td>
+	</tr>
+
+	<tr>
+	  <td>Maximum # of compact attributes</td>
+	  <td>
+            <P>This is the maximum number of attributes to store in the compact format
+		before switching to the indexed format. </P>
+	    <P>This field exists if bit 4 of <em>flags</em> is set.</P>
+          </td>
+	</tr>
+
+	<tr>
+	  <td>Minimum # of dense attributes</td>
+	  <td>
+            <P>This is the minimum number of attributes to store in the indexed format
+	    before switching to the compact format.</P>
+	    <P>This field exists if bit 4 of <em>flags</em> is set.</P>
+          </td>
+	</tr>
+
+	<tr>
+	  <td>Size of chunk 0</td>
+	  <td>
+            <P>This is the size of the first chunk of object headers.
+	       The length of this field varies depending on bits 0 and 1 of
+	       <em>flags</em>.
+          </td>
+	</tr>
+
+	<tr>
+	  <td>Header Message Type</td>
+	  <td>
+            <P>This is the same as version 1.</P>
+          </td>
+	</tr>
+
+	<tr>
+	  <td>Size of Header Message Data</td>
+	  <td>
+            <P>This is the same as version 1.</P>
+          </td>
+	</tr>
+
+	<tr>
+	  <td>Header Message Flags</td>
+	  <td>
+            <P>This is the same as version 1.  </P>
+          </td>
+        </tr>
+
+	<tr>
+	  <td>Header Message Data</td>
+	  <td>
+            <P>This is the same as version 1.</P>
+          </td>
+	</tr>
+      </table>
+    </div>
+
+    <br>
+    <div align=center>
+      <table class=desc>
+	<caption>
+	  <em>Flags</em> Field Description
+	</caption>
+
+	<tr>
+	  <th width="10%">Bits</th>
+	  <th>Meaning</th>
+	</tr>
+
+	<tr>
+	  <td>0-1</td>
+	  <td>This two-bit value determines the field size of <em>Size of chunk 0</em>.  
+	      The values are:
+
+            <table width=100% class=list>
+                <tr>
+                  <th width="30%">Value</th>
+                  <th align=left>Description</th>
+                </tr>
+
+                <tr>
+                  <td align=center><code>0</code></td>
+                  <td>The size is 1 byte.</td>
+                </tr>
+
+                <tr>
+                  <td align=center><code>1</code></td>
+                  <td>The size is 2 bytes.  </td>
+                </tr>
+
+                <tr>
+                  <td align=center><code>2</code></td>
+                  <td>The size is 4 bytes.</td>
+                </tr>
+
+                <tr>
+                  <td align=center><code>3</code></td>
+                  <td>The size is 8 bytes.</td>
+                </tr>
+            </table>
+	</tr>
+
+	<tr>
+	  <td>2</td>
+	  <td>If set, attribute creation order is tracked.</td>
+	</tr>
+
+	<tr>
+	  <td>3</td>
+	  <td>If set, attribute creation order has index.</td>
+	</tr>
+
+	<tr>
+	  <td>4</td>
+	  <td>If set, non-default attribute storage phase change
+	      values are stored.</td>
+	</tr>
+
+	<tr>
+	  <td>5</td>
+	  <td>If set, access, modification, change and birth times
+	      are stored.</td>
+	</tr>
+
+	<tr>
+	  <td>6-7</td>
+	  <td>Reserved (zero).</td>
+	</tr>
+      </table>
+    </div>
 
     <P>The following is a list of currently defined header messages:
     </P>
@@ -2876,15 +4428,122 @@ TABLE.list TD { border:none; }
 -->
 
     <hr>
-    <h4><a name="ReservedMessage_0002">Name: Reserved - Not Assigned Yet</a></h4>
-    <b>Header Message Type:</b> 0x0002<BR>
-    <b>Length:</b> N/A<BR>
-    <b>Status:</b> N/A<BR>
-    <b>Format of Data:</b> N/A<BR>
+    <h4><a name="LinfoMessage">Name: Link Info</a></h4>
 
-    <p><b>Purpose and Description:</b> This message type was skipped during
-      the initial specification of the file format and may be used in a
-      future expansion to the format.
+    <P class=item><B>Header Message Type:</B> 0x002 </P>
+    <P class=item><B>Length:</B> varies </P>
+    <P class=item><B>Status:</B> Optional, may not be repeated. </P>
+
+    <P class=item><B>Description:</B>This message retrieves information for links.
+    </P>
+
+    <P class=item><B>Format of Data:</B>
+    <div align=center>
+      <table class=format>
+	<caption>
+	  Link Info
+	</caption>
+
+	<tr>
+	  <th width="25%">byte</th>
+	  <th width="25%">byte</th>
+	  <th width="25%">byte</th>
+	  <th width="25%">byte</th>
+	</tr>
+
+	<tr>
+	  <td>Version</td>
+	  <td>flags</td>
+	  <td colspan=2>Maximum creation index (bytes 1-2)</td>
+	</tr>
+
+	<tr>
+	<td colspan=4>Creation order value (bytes 3-6)</td>
+	</tr>
+
+	<tr>
+	<td colspan=2>Creation order value (bytes 7-8)</td>
+	  <td colspan=2>Fractal heap address<sup>O</sup></td>
+	<tr>
+	  <td colspan=2>B-tree address<sup>O</sup></td>
+	  <td colspan=2>B-tree address<sup>O</sup></td>
+	</tr>
+	
+      </table>
+    </div>
+
+    <br>
+    <div align=center>
+      <table class=desc>
+	<tr>
+          <th width="30%">Field Name</th>
+          <th>Description</th>
+	</tr>
+
+	<tr>
+	  <td>Version</td>
+	  <td><P>The version number for this message. This document describes version 0.</P>
+	  </td>
+	</tr>
+
+	<tr>
+	<td>flags</td>
+	  <td><P>This is the link index information flag with the following definition:
+	      </P>
+            <table class=list>
+                <tr>
+                  <th width="30%">Bit</th>
+                  <th align=left>Description</th>
+                </tr>
+
+                <tr>
+                  <td align=center><code>0</code></td>
+                  <td>If set, creation order for the link is tracked.
+                  </td>
+                </tr>
+                <tr>
+                  <td align=center><code>1</code></td>
+                  <td>If set, creation order for the link has index.
+                  </td>
+                </tr>
+                <tr>
+                  <td align=center><code>2-7</code></td>
+                  <td>Reserved</td>
+                </tr>
+	    </table>
+            </P>
+          </td>
+	</tr>
+
+	<tr>
+	  <td>Maximum creation index</td>
+	  <td><P>This is an 8-byte block and is the maximum creation order index value for 
+		the link.</P>
+	    <P>This field exists if bit 0 of <em>flags</em> is set.</P>
+	  </td>
+	</tr>
+
+	<tr>
+	  <td>Fractal heap address</td>
+	  <td><P>This is the address of the fractal heap to store dense links.</P>
+	  </td>
+	</tr>
+
+	<tr>
+	  <td>B-tree address</td>
+	  <td><P>This is the address of the version 2 B-tree to index names of links.</P>
+	  </td>
+	</tr>
+
+	<tr>
+	  <td>B-tree address</td>
+	  <td><P>This is the address of the version 2 B-tree to index creation order of links.</P>
+	    <P>This field exists if bit 1 of <em>flags</em> is set.
+	  </td>
+	</tr>
+
+      </table>
+    </div>
 
 
     <hr>
@@ -4659,15 +6318,333 @@ TABLE.list TD { border:none; }
 -->
 
     <hr>
-    <h4><a name="ReservedMessage_0006">Name: Reserved - Not Assigned Yet</a></h4>
+    <h4><a name="LinkMessage">Name: Link Message</a></h4>
     <P class=item><B>Header Message Type:</B> 0x0006</P>
-    <P class=item><B>Length:</B> N/A</P>
-    <P class=item><B>Status:</B> N/A</P>
-    <P class=item><B>Format of Data:</B> N/A</P>
+    <P class=item><B>Length:</B> varies </P>
+    <P class=item><B>Status:</B> Optional, may not be repeated. </P>
 
-    <P class=item><B>Purpose and Description:</B> This message type was skipped during
-      the initial specification of the file format and may be used in a
-      future expansion to the format.</P>
+    <P class=item><B>Description:</B>This message retrieves information for links.
+    </P>
+
+    <P class=item><B>Format of Data:</B>
+    <div align=center>
+      <table class=format>
+	<caption>
+	  Link Message
+	</caption>
+
+	<tr>
+	  <th width="25%">byte</th>
+	  <th width="25%">byte</th>
+	  <th width="25%">byte</th>
+	  <th width="25%">byte</th>
+	</tr>
+
+	<tr>
+	  <td>Version</td>
+	  <td>Flags</td>
+	  <td>Link type</td>
+	  <td>Creation time (byte 1)</td>
+	</tr>
+	<tr>
+	  <td colspan=4>Creation time (bytes 2-5)</td>
+	</tr>
+	<tr>
+	  <td colspan=3>Creation time (bytes 6-8)</td>
+	  <td>Character set</td>
+	</tr>
+	<tr>
+	  <td colspan=4>Length of link name (variable size)</td>
+	</tr>
+	<tr>
+	  <td colspan=4>Link name (variable size)</td>
+	</tr>
+	<tr>
+	  <td colspan=4><br>Link information (variable size)<br><br></td>
+	</tr>
+    </table>
+    </div>
+
+    <br>
+    <div align=center>
+      <table class=desc>
+	<tr>
+          <th width="30%">Field Name</th>
+          <th>Description</th>
+	</tr>
+
+	<tr>
+	  <td>Version</td>
+	  <td><P>The version number for this message. This document describes version 1.</P>
+	  </td>
+	</tr>
+
+	<tr>
+	<td>Flags</td>
+	  <td><P>This is the link flag value and is described below.</P>
+	</tr>
+
+	<tr>
+	  <td>Link type</td>
+	  <td><P>This is the link class type and can be either hard, soft, external
+		or user-defined.  ?????The default value is hard-link.</P>
+	    <P>This field exists if bit 3 of <em>flags</em> is set.</P>
+	  </td>
+	</tr>
+
+	<tr>
+	  <td>Creation time</td>
+	  <td><P>This is an 8-byte block and is the creation time of the link.</P>
+	    <P>This field exists if bit 2 of <em>flags</em> is set.</P>
+	  </td>
+	</tr>
+
+	<tr>
+	  <td>Character set</td>
+	  <td><P>This is the character set for the link's name.
+		The default value is US ASCII.</P>
+	    <P>This field exists if bit 4 of <em>flags</em> is set.</P>
+	  </td>
+	</tr>
+
+	<tr>
+	  <td>Length of link name</td>
+	  <td><P>This is the length of the link's name.  The size of this field 
+	    varies depending on bits 0 and 1 of <em>flags</em>.</P>
+	  </td>
+	</tr>
+
+	<tr>
+	  <td>Link name</td>
+	  <td><P>This is the name of the link.</P>
+	  </td>
+	</tr>
+
+	<tr>
+	  <td>Link information</td>
+	  <td><P>The format of this field depends on the <em>link type</em>.</P>
+            <P>For hard link, the field is formatted as follows:
+            <center>
+            <table class=list>
+            <tr>
+              <td width=30%><i>Size of Offsets</i> bytes:</td>
+              <td>Indicates the address of the object the link points to??
+		  <br>address of object header???
+              </td>
+            </tr>
+            </table>
+            </center>
+            </P>
+
+            <P>
+            For soft link, the field is formatted as follows:
+            <center>
+            <table class=list>
+            <tr>
+              <td width=30%>Bytes 1-2:</td>
+              <td>Length of link.</td>
+            </tr>
+            <tr>
+              <td><em>Length of link</em> bytes:</td>
+              <td>The name of the soft link.</td>
+            </tr>
+	    </table>
+	    </center>
+
+            <P>
+            For user-defined link, the field is formatted as follows:
+            <center>
+            <table class=list>
+            <tr>
+              <td width=30%>Bytes 1-2:</td>
+              <td>Length of user-defined data.</td>
+            </tr>
+            <tr>
+              <td>Bytes <em>Length of link</em>:</td>
+              <td>The data supplied by the user.</td>
+            </tr>
+            </table>
+            </center>
+
+          </td>
+        </tr>
+      </table>
+    </div>
+
+    <br>
+    <div align=center>
+      <table class=desc>
+	<caption>
+	  <em>Flags</em> Field Description
+	</caption>
+
+	<tr>
+	  <th width="10%">Bits</th>
+	  <th>Meaning</th>
+	</tr>
+
+	<tr>
+	  <td>0-1</td>
+	  <td>This two-bit value determines the field size of <em>Length of link name</em>.  
+	      The values are:
+
+            <table width=100% class=list>
+                <tr>
+                  <th width="30%">Value</th>
+                  <th align=left>Description</th>
+                </tr>
+
+                <tr>
+                  <td align=center><code>0</code></td>
+                  <td>The size is 1 byte.</td>
+                </tr>
+
+                <tr>
+                  <td align=center><code>1</code></td>
+                  <td>The size is 2 bytes.  </td>
+                </tr>
+
+                <tr>
+                  <td align=center><code>2</code></td>
+                  <td>The size is 4 bytes.</td>
+                </tr>
+
+                <tr>
+                  <td align=center><code>3</code></td>
+                  <td>The size is 8 bytes.</td>
+                </tr>
+            </table>
+	</tr>
+
+	<tr>
+	  <td>2</td>
+	  <td>If set, creation index is stored.</td>
+	</tr>
+
+	<tr>
+	  <td>3</td>
+	  <td>If set, non-default link type is stored.</td>
+	</tr>
+
+	<tr>
+	  <td>4</td>
+	  <td>If set, non-default name character set is stored.</td>
+	</tr>
+
+	<tr>
+	  <td>5-7</td>
+	  <td>Reserved (zero).</td>
+	</tr>
+
+      </table>
+    </div>
+<!--
+***************
+	<tr>
+	  <td>Version</td>
+	  <td>Flags</td>
+	  <td>Link type</td>
+	  <td>Creation time</td>
+	  <td>Character set</td>
+	<td>length of the link's name (variable size)
+	<td>name of the link (variable size)</td>
+	<td>link information</td>
+
+
+Depending on the field:link type
+<td>Address<sup>O</sup></td>
+hard link:Address of the object the link points to 
+The object header address??
+
+soft link:
+	<td colspan=2>Length</td>
+2-byte block for length of link
+	<td>Name (variable size)</td>
+depends on field:Length, soft link's name
+
+user-defined:
+	<td colspan=2>Length</td>
+	<td>User-defined data (variable size)</td>
+length of the user-defined data
+opaque data supplied by the user
+
+      </table>
+    </div>
+
+    <br>
+    <div align=center>
+      <table class=desc>
+	<tr>
+          <th width="30%">Field Name</th>
+          <th>Description</th>
+	</tr>
+
+	<tr>
+	  <td>Version</td>
+	  <td><P>The version number for this message. This document describes version 0.</P>
+	  </td>
+	</tr>
+
+	<tr>
+	<td>flags</td>
+	  <td><P>This is the link index information flag with the following definition:
+	      </P>
+            <table class=list>
+                <tr>
+                  <th width="30%">Bit</th>
+                  <th align=left>Description</th>
+                </tr>
+
+                <tr>
+                  <td align=center><code>0</code></td>
+                  <td>If set, creation order for the link is tracked.
+                  </td>
+                </tr>
+                <tr>
+                  <td align=center><code>1</code></td>
+                  <td>If set, creation order for the link has index.
+                  </td>
+                </tr>
+                <tr>
+                  <td align=center><code>2-7</code></td>
+                  <td>Reserved</td>
+                </tr>
+	    </table>
+            </P>
+          </td>
+	</tr>
+
+	<tr>
+	  <td>Maximum creation index</td>
+	  <td><P>This is an 8-byte block and is the maximum creation order index value for 
+		the link.</P>
+	    <P>This field exists if bit 0 of <em>flags</em> is set.</P>
+	  </td>
+	</tr>
+
+	<tr>
+	  <td>Fractal heap address</td>
+	  <td><P>This is the address of the fractal heap to store dense links.</P>
+	  </td>
+	</tr>
+
+	<tr>
+	  <td>B-tree address</td>
+	  <td><P>This is the address of the version 2 B-tree to index names of links.</P>
+	  </td>
+	</tr>
+
+	<tr>
+	  <td>B-tree address</td>
+	  <td><P>This is the address of the version 2 B-tree to index creation order of links.</P>
+	    <P>This field exists if bit 1 of <em>flags</em> is set.
+	  </td>
+	</tr>
+
+      </table>
+    </div>
+*********************
+-->
 
     <hr>
     <h4><a name="ExternalFileListMessage">Name: Data Storage -
@@ -5304,6 +7281,118 @@ TABLE.list TD { border:none; }
 
     <P class=item><B>Purpose and Description:</B> This message type was skipped during the initial 
 	specification of the file format and may be used in a future expansion to the format.
+
+
+    <hr>
+    <h4><a name="GinfoMessage">Name: Group Info</a></h4>
+    <P class=item><B>Header Message Type:</B> 0x000A</P>
+    <P class=item><B>Length:</B> varies</P>
+    <P class=item><B>Status:</B> Optional, may not be repeated.</P>
+    <P class=item><B>Description:</B> This message retrieves information for the group.</P>
+
+    <P class=item><B>Format of Data:</B></P>
+    <div align=center>
+      <table class=format>
+	<caption>
+	  Group Info Message
+	</caption>
+
+	<tr>
+	  <th width="25%">byte</th>
+	  <th width="25%">byte</th>
+	  <th width="25%">byte</th>
+	  <th width="25%">byte</th>
+	</tr>
+
+	<tr>
+	  <td>Version</td>
+	  <td>Flags</td>
+	  <td colspan=2>Maximum compact</td>
+	</tr>
+	<tr>
+	  <td colspan=2>Minimum dense</td>
+	  <td colspan=2>Number of entries</td>
+	</tr>
+	<tr>
+	  <td colspan=2>Length of entry</td>
+	  <td colspan=2></td>
+	</tr>
+
+      </table>
+    </div>
+
+    <br>
+    <div align=center>
+      <table class=desc>
+	<tr>
+          <th width="30%">Field Name</th>
+          <th>Description</th>
+	</tr>
+
+	<tr>
+	  <td>Version</td>
+	  <td><P>The version number for this message. This document describes version 0.</P>
+	  </td>
+	</tr>
+
+	<tr>
+	<td>Flags</td>
+	  <td><P>This is the group information flag with the following definition:
+	      </P>
+            <table class=list>
+                <tr>
+                  <th width="30%">Bit</th>
+                  <th align=left>Description</th>
+                </tr>
+
+                <tr>
+                  <td align=center><code>0</code></td>
+                  <td>If set, link phase change values are stored.
+                  </td>
+                </tr>
+                <tr>
+                  <td align=center><code>1</code></td>
+                  <td>If set, the estimated entry information is stored.
+                  </td>
+                </tr>
+                <tr>
+                  <td align=center><code>2-7</code></td>
+                  <td>Reserved</td>
+                </tr>
+	    </table>
+          </td>
+	</tr>
+
+	<tr>
+	  <td>Maximum compact</td>
+	  <td><P>The is the maximum number of compact links</P>
+	      <P>This field exists if bit 0 of <em>flags</em> is set.</P>
+	  </td>
+	</tr>
+
+	<tr>
+	  <td>Minimum dense</td>
+	  <td><P>This is the minimum number of dense links.</P>
+	      <P>This field exists if bit 0 of <em>flags</em> is set.</P>
+	  </td>
+	</tr>
+
+	<tr>
+	  <td>Number of entries</td>
+	  <td><P>This is the estimated number of entries in groups.</P>
+	      <P>This field exists if bit 1 of <em>flags</em> is set.</P>
+	  </td>
+	</tr>
+
+	<tr>
+	  <td>Length of entry</td>
+	  <td><P>This is the estimated length of entry name.</P>
+	      <P>This field exists if bit 1 of <em>flags</em> is set.</P>
+	  </td>
+	</tr>
+
+      </table>
+    </div>
 
     <hr>
     <h4><a name="FilterMessage">Name: Data Storage - Filter Pipeline</a></h4>
@@ -6053,7 +8142,7 @@ TABLE.list TD { border:none; }
 	      <tr>
 		<td align=center><code>1</code></td>
 		<td>Used by the library before version 1.6.1.  In this version, 
-		  the Flags field is used to indicate whether the actual message is
+		  the <em>Flags</em> field is used to indicate whether the actual message is
 		  stored in the global heap (never implemented).  The Pointer field 
 		  either contains the the header message address in the global heap 
 		  (never implemented) or the address of the shared object header.</td>
@@ -6143,7 +8232,7 @@ TABLE.list TD { border:none; }
 	      <tr>
 		<td align=center><code>2</code></td>
 		<td>Used by the library of version 1.6.1 and after.  In this version, 
-		  The Flags field is not used and the Pointer field contains the address
+		  the <em>Flags</tm> field is not used and the Pointer field contains the address
 		  of the object header containing the message to be shared. </td>
 	      </tr>
 	    </table>
@@ -6162,6 +8251,144 @@ TABLE.list TD { border:none; }
       </table>
     </div>
 
+    <br>
+    <div align=center>
+      <table class=format>
+	<caption>
+	  Shared Object Message (Version 3)
+	</caption>
+
+	<tr>
+	  <th width="25%">byte</td>
+	  <th width="25%">byte</td>
+	  <th width="25%">byte</td>
+	  <th width="25%">byte</td>
+	</tr>
+
+	<tr>
+	  <td>Version</td>
+	  <td>Flags</td>
+	  <td colspan=2>ID (bytes 1-2)</td>
+	</tr>
+
+	<tr>
+	  <td colspan=4>ID (bytes 3-6)</td>
+	</tr>
+
+	<tr>
+	  <td colspan=2>ID (bytes 7-8)</td>
+	  <td colspan=2></td>
+	</tr>
+      </table>
+    </div>
+
+    <br>
+    <div align=center>
+      <table class=desc>
+	<tr>
+          <th width="30%">Field Name</th>
+          <th>Description</th>
+	</tr>
+
+	<tr>
+	  <td>Version</td>
+	  <td><P>The version number indicates changes in the format of shared 
+	    object message and is described here:</P>
+	    <table class=list>
+	      <tr>
+		<th width="30%">Version</th>
+		<th align=left>Description</th>
+	      </tr>
+
+	      <tr>
+		<td align=center><code>3</code></td>
+		<td>Used by the library of version 1.8 and after.  In this version, 
+		  the <em>Flags</em> field is used to indicate that the message
+		  is stored in the fractal heap. </td>
+	      </tr>
+	    </table>
+	</tr>
+
+	<tr>
+	  <td>Flags</td>
+	  <td><P>This field has a value of 1 indicating that the message
+		is stored in the fractal heap.</P></td>
+	</tr>
+
+	<tr>
+	  <td>ID</td>
+	  <td><P>This field is the ID of the shared message in the fractal heap.
+	    </P></td>
+	</tr>
+      </table>
+    </div>
+
+    <hr>
+    <h4><a name="SOHMMessage">Name: Shared Message Table</a></h4>
+    <P class=item><B>Header Message Type:</B> 0x000F</P>
+    <P class=item><B>Length:</B> varies </P>
+    <P class=item><B>Status:</B> Optional, may be repeated.</P>
+
+    <P class=item><B>Description:</B>This message is used to locate the master table of
+		shared object header message (SOHM) indexes.  Each index consists of information to
+		find the shared messages from either the heap or object header.
+		This message is found in the superblock extension.
+    </P>
+
+    <P class=item><B>Format of Data:</B>
+    <br>
+    <div align=center>
+      <table class=format>
+	<caption>
+	  Shared Message Table Message
+	</caption>
+
+	<tr>
+	  <th width="25%">byte</td>
+	  <th width="25%">byte</td>
+	  <th width="25%">byte</td>
+	  <th width="25%">byte</td>
+	</tr>
+
+	<tr>
+	  <td>Version</td>
+	  <td colspan=3>Address<sup>O</sup></td>
+	</tr>
+
+	<tr>
+	  <td>Indexes</td>
+	  <td colspan=3></td>
+	</tr>
+
+      </table>
+    </div>
+
+    <br>
+    <div align=center>
+      <table class=desc>
+	<tr>
+          <th width="30%">Field Name</th>
+          <th>Description</th>
+	</tr>
+
+	<tr>
+	  <td>Version</td>
+	  <td><P>The version number for this message.  This document describes version 0.</td>
+	</tr>
+
+	<tr>
+	  <td>Address</td>
+	  <td><P>This field is the address of the master table for shared object header message indexes.</P>
+	  </td>
+	</tr>
+
+	<tr>
+	  <td>Indexes</td>
+	  <td><P>This field is the number of indexes in the master table.</P>
+	</tr>
+
+      </table>
+    </div>
 
     <hr>
     <h4><a name="ContinuationMessage">Name: Object Header Continuation</a></h4>
@@ -6354,6 +8581,349 @@ TABLE.list TD { border:none; }
 	  <td><P>The number of seconds since 0 hours, 0 minutes, 0 seconds, 
 	    January 1, 1970, Coordinated Universal Time.</P></td>
 	</tr>
+      </table>
+    </div>
+
+    <hr>
+    <h4><a name="BtreeValuesMessage">Name: B-tree 'K' Values Message</a></h4>
+
+    <P class=item><B>Header Message Type:</B> 0x0013 </P>
+    <P class=item><B>Length:</B> Fixed </P>
+    <P class=item><B>Status:</B> Optional, may not be repeated. </P>
+
+    <P class=item><B>Description:</B>This message retrieves non-default 'K' values for 
+	internal and leaf nodes of a group or indexed storage B-tree.
+    </P>
+
+    <P class=item><B>Format of Data:</B>
+    <div align=center>
+      <table class=format>
+	<caption>
+	  B-tree 'K' Values Message
+	</caption>
+
+	<tr>
+	  <th width="25%">byte</th>
+	  <th width="25%">byte</th>
+	  <th width="25%">byte</th>
+	  <th width="25%">byte</th>
+	</tr>
+
+	<tr>
+	  <td>Version</td>
+	  <td colspan=2>Indexed Internal Node K</td>
+	  <td>Internal Node K (byte 1)</td>
+	</tr>
+	<tr>
+	  <td>Internal Node K (byte 2)</td>
+	  <td colspan=2>Group Leaf Node K</td>
+	</tr>
+      </table>
+    </div>
+
+    <br>
+    <div align=center>
+      <table class=desc>
+	<tr>
+          <th width="30%">Field Name</th>
+          <th>Description</th>
+	</tr>
+
+	<tr>
+	  <td>Version</td>
+	  <td><P>The version number for this message. This document describes version 0.</P>
+	  </td>
+	</tr>
+
+	<tr>
+	  <td>Indexed Internal Node K</td>
+	  <td><P>This is the node 'K' value for each internal node of an indexed storage B-tree.
+		 See the description of this field in version 0 and 1 of the superblock 
+		 as well the section on B-trees.
+	      <P><EM>The full name for this field is the Indexed Storage Internal Node K.</EM>
+	      </P>
+	      </P>
+	  </td>
+	</tr>
+
+	<tr>
+	  <td>Internal Node K</td>
+	  <td><P>This is the node 'K' value for each internal node of a group B-tree.
+		 See the description of this field in version 0 and 1 of the superblock
+		 as well as the section on B-trees.
+	      <P><EM>The full name for this field is the Group Internal Node K and 
+		     is on a 2-byte block.</EM>
+	      </P>
+	      </P>
+	  </td>
+	</tr>
+
+	<tr>
+	  <td>Group Leaf Node K</td>
+	  <td><P>This is the node 'K' value for each leaf node of a group B-tree.
+		 See the description of this field in version 0 and 1 of the superblock
+		 as well as the section on B-trees.
+	      </P>
+	  </td>
+	</tr>
+
+      </table>
+    </div>
+
+    <hr>
+    <h4><a name="DrvinfoMessage">Name: Driver Info Message</a></h4>
+
+    <P class=item><B>Header Message Type:</B> 0x0014 </P>
+    <P class=item><B>Length:</B> varies </P>
+    <P class=item><B>Status:</B> Optional, may not be repeated. </P>
+
+    <P class=item><B>Description:</B>This message retrieves driver info settings 
+		    found in the superblock extension.
+    </P>
+
+    <P class=item><B>Format of Data:</B>
+    <div align=center>
+      <table class=format>
+	<caption>
+	  Driver Info Message
+	</caption>
+
+	<tr>
+	  <th width="25%">byte</th>
+	  <th width="25%">byte</th>
+	  <th width="25%">byte</th>
+	  <th width="25%">byte</th>
+	</tr>
+
+	<tr>
+	  <td>Version</td>
+	  <td colspan=3>Driver Name (byte 1-3)</td>
+	</tr>
+	<tr>
+	  <td colspan=4>Driver Name (byte 4-7)</td>
+	</tr>
+	<tr>
+	  <td colspan=2>Driver Name (byte 8-9)</td>
+	  <td colspan=2>Driver Information Size</td>
+	</tr>
+	<tr>
+	  <td colspan=4><br><br>Driver Information (n bytes)<br><br><br></td>
+	</tr>
+	
+      </table>
+    </div>
+
+    <br>
+    <div align=center>
+      <table class=desc>
+	<tr>
+          <th width="30%">Field Name</th>
+          <th>Description</th>
+	</tr>
+
+	<tr>
+	  <td>Version</td>
+	  <td><P>The version number for this message. This document describes version 0.</P>
+	  </td>
+	</tr>
+
+	<tr>
+	<td>Driver Name</td>
+	  <td><P>This is an eight-byte ASCII string with null termination which identifies
+		 the driver.
+	      </P>
+	  </td>
+	</tr>
+
+	<tr>
+	  <td>Driver Information Size</td>
+	  <td><P>The size in bytes of the Driver Information part of this message.</P>
+	  </td>
+	</tr>
+
+	<tr>
+	  <td>Driver Information</td>
+	  <td><P>Driver information is stored in a format defined by the file driver
+		 and encoded/decoded by the driver callbacks invoked from the 
+		 <em>H5FD_sb_encode</em> and H5FD_sb_decode functions.
+	      </P>
+	  </td>
+	</tr>
+
+      </table>
+    </div>
+
+    <hr>
+    <h4><a name="AinfoMessage">Name: Attribute Info Message</a></h4>
+
+    <P class=item><B>Header Message Type:</B> 0x0015</P>
+    <P class=item><B>Length:</B> varies </P>
+    <P class=item><B>Status:</B> Optional, may not be repeated. </P>
+
+    <P class=item><B>Description:</B>This message retrieves information for an attribute.
+    </P>
+
+    <P class=item><B>Format of Data:</B>
+    <div align=center>
+      <table class=format>
+	<caption>
+	  Attribute Info Message
+	</caption>
+
+	<tr>
+	  <th width="25%">byte</th>
+	  <th width="25%">byte</th>
+	  <th width="25%">byte</th>
+	  <th width="25%">byte</th>
+	</tr>
+
+	<tr>
+	  <td>Version</td>
+	  <td>flags</td>
+	  <td colspan=2>Maximum creation index</td>
+	</tr>
+	<tr>
+	  <td colspan=4>Fractal heap address<sup>O</sup></td>
+	</tr>
+	<tr>
+	  <td colspan=4>B-tree address<sup>O</sup></td>
+	</tr>
+	<tr>
+	  <td colspan=4>B-tree address<sup>O</sup></td>
+	</tr>
+	
+      </table>
+    </div>
+
+    <br>
+    <div align=center>
+      <table class=desc>
+	<tr>
+          <th width="30%">Field Name</th>
+          <th>Description</th>
+	</tr>
+
+	<tr>
+	  <td>Version</td>
+	  <td><P>The version number for this message. This document describes version 0.</P>
+	  </td>
+	</tr>
+
+	<tr>
+	<td>flags</td>
+	  <td><P>This is the attribute index information flag with the following definition:
+	      </P>
+            <table class=list>
+                <tr>
+                  <th width="30%">Bit</th>
+                  <th align=left>Description</th>
+                </tr>
+
+                <tr>
+                  <td align=center><code>0</code></td>
+                  <td>If set, creation order for attribute is tracked.
+                  </td>
+                </tr>
+                <tr>
+                  <td align=center><code>1</code></td>
+                  <td>If set, creation order for attribute has index.
+                  </td>
+                </tr>
+                <tr>
+                  <td align=center><code>2-7</code></td>
+                  <td>Reserved</td>
+                </tr>
+	    </table>
+            </P>
+          </td>
+	</tr>
+
+	<tr>
+	  <td>Maximum creation index</td>
+	  <td><P>The is the maximum creation order index value for the attribute.</P>
+	      <P>This field exists if bit 0 of <em>flags</em> is set.</P>
+	  </td>
+	</tr>
+
+	<tr>
+	  <td>Fractal heap address</td>
+	  <td><P>This is the address of the fractal heap to store dense attributes.</P>
+	  </td>
+	</tr>
+
+	<tr>
+	  <td>B-tree address</td>
+	  <td><P>This is the address of the version 2 B-tree to index names of attributes.</P>
+	  </td>
+	</tr>
+
+	<tr>
+	  <td>B-tree address</td>
+	  <td><P>This is the address of the version 2 B-tree to index creation
+		 order of attributes.</P>
+	      <P>This field exists if bit 1 of <em>flags</em> is set.</P>
+	  </td>
+	</tr>
+
+      </table>
+    </div>
+
+    <hr>
+    <h4><a name="RefcountMessage">Name: Object's Reference Count</a></h4>
+
+    <P class=item><B>Header Message Type:</B> 0x0016 </P>
+    <P class=item><B>Length:</B> fixed </P>
+    <P class=item><B>Status:</B> Optional, may not be repeated. </P>
+
+    <P class=item><B>Description:</B>This message retrieves the reference count for 
+				an object.</P>
+
+    <P class=item><B>Format of Data:</B>
+    <div align=center>
+      <table class=format>
+	<caption>
+	  Object's Reference Count
+	</caption>
+
+	<tr>
+	  <th width="25%">byte</th>
+	  <th width="25%">byte</th>
+	  <th width="25%">byte</th>
+	  <th width="25%">byte</th>
+	</tr>
+
+	<tr>
+	  <td>Version</td>
+	  <td colspan=3>Reference count (bytes 1-3)</td>
+	</tr>
+	<tr>
+	  <td>Reference count (byte 4)</td>
+	  <td colspan=3></td>
+	</tr>
+
+      </table>
+    </div>
+
+    <br>
+    <div align=center>
+      <table class=desc>
+	<tr>
+          <th width="30%">Field Name</th>
+          <th>Description</th>
+	</tr>
+
+	<tr>
+	  <td>Version</td>
+	  <td><P>The version number for this message. This document describes version 0.</P>
+	  </td>
+	</tr>
+
+	<tr>
+	  <td>Reference count</td>
+	  <td><P>The is a 4-byte block and is the reference count for the object.
+	  </td>
+	</tr>
+
       </table>
     </div>
 
