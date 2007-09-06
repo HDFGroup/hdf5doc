@@ -191,15 +191,14 @@ as the corresponding C function.
         )
   <p></p>
   <dt><strong>Purpose:</strong>
-    <dd>Closes a group, dataset, or named datatype.
+    <dd>Closes an object in an HDF5 file.
   <p></p>
   <dt><strong>Description:</strong>
-    <dd><code>H5Oclose</code> closes an object in an HDF5 file.
+    <dd><code>H5Oclose</code> closes the group, dataset, or named datatype
+      specified by <code>object_id</code>.
       <p>
-      This function is the companion to <code>H5Oopen</code>. 
-      It is used to close the following open objects in an HDF5 file: 
-      groups, datasets, and named datatypes.  
-      It has the same effect as calling <code>H5Gclose</code>, 
+      This function is the companion to <code>H5Oopen</code>,
+      and  has the same effect as calling <code>H5Gclose</code>, 
       <code>H5Dclose</code>, or <code>H5Tclose</code>.
       <p>
       <code>H5Oclose</code> is <i>not</i> used to close a
@@ -264,14 +263,12 @@ as the corresponding C function.
             <em>hid_t </em><code>lcpl_id</code>
         )
   <dt><strong>Purpose:</strong>
-    <dd>Copies a group, dataset, or named datatype.
+    <dd>Copies an object in an HDF5 file.
   <dt><strong>Description:</strong>
-    <dd><code>H5Ocopy</code> copies the object 
+    <dd><code>H5Ocopy</code> copies the group, dataset or named datatype
       specified by <code>src_name</code> 
       from the file or group specified by <code>src_loc_id</code> 
       to the destination location <code>dst_loc_id</code>.
-      <p>
-      The object being copied can be a group, dataset or named datatype.
       <p>
       The destination location, as specified in <code>dst_loc_id</code>,
       may be a group in the current file or a location in a different file.
@@ -784,22 +781,25 @@ as the corresponding C function.
         )
   <p></p>
   <dt><strong>Purpose:</strong>
-    <dd>Opens an object using its location identifier and path name.
+    <dd>Opens an object in an HDF5 file by location identifier and path name.
   <p></p>
   <dt><strong>Description:</strong>
-    <dd><code>H5Oopen</code> opens an object by path name in an HDF5 file.
+    <dd><code>H5Oopen</code> opens a group, dataset, or named datatype 
+      specified by a location, <code>loc_id</code>, and a path name, 
+      <code>name</code>, in an HDF5 file.  
       <p>
-      This function opens an object in the same manner as 
+      This function opens the object in the same manner as 
       <code>H5Gopen</code>, <code>H5Topen</code>, and <code>H5Dopen</code>. 
       However, <code>H5Oopen</code> does not require the type of object 
       to be known beforehand.  This can be useful with user-defined links, 
-      for instance, if only a path may be known.
+      for instance, when only a path may be known.
       <code>H5Oopen</code> cannot be used to open a
-      dataspace, attribute, or file.
+      dataspace, attribute, property list, or file.
       <p>
-      When an object of unknown type is opened (or is to be opened) 
-      with <code>H5Oopen</code>, the type of that object can be determined 
-      by means of an <a href="#Identity-GetType"><code>H5Iget_type</code></a>
+      Once an object of unknown type has been opened with 
+      <code>H5Oopen</code>, the type of that object can be determined 
+      by means of an 
+      <a href="RM_H5I.html#Identify-GetType"><code>H5Iget_type</code></a>
       call.
       <p>
       <code>loc_id</code> can be either a file or group identifier.
@@ -883,16 +883,16 @@ as the corresponding C function.
         )
   <p></p>
   <dt><strong>Purpose:</strong>
-    <dd>Opens an object using its file address.
+    <dd>Opens an object using its address within an HDF5 file.
   <p></p>
   <dt><strong>Description:</strong>
     <dd>
-      <code>H5Oopen_by_addr</code> opens an object using its address within 
-      an HDF5 file.  The open object is 
-      identical to an object opened with <code>H5Oopen</code> and 
-      should be closed with <code>H5Oclose</code> or a type-specific 
-      closing function (such as <code>H5Gclose</code>) when no longer 
-      needed.
+      <code>H5Oopen_by_addr</code> opens a group, dataset, or named datatype
+      using its address within an HDF5 file, <code>addr</code>.  
+      The resulting opened object is identical to an object opened with 
+      <code>H5Oopen</code> and should be closed with <code>H5Oclose</code> 
+      or an object-type-specific closing function 
+      (such as <code>H5Gclose</code>) when no longer needed.
 
       <p>
       <code>loc_id</code> can be either the file identifier or a 
@@ -918,22 +918,6 @@ as the corresponding C function.
       <code>H5L_linkinfo_t</code> struct.
 
       <p>
-      This function is dangerous if called on an invalid address. 
-      The risk can be safely overcome by retrieving the object address 
-      with <code>H5Gget_objinfo</code> or <code>H5Lget_linkinfo</code>
-      immediately before calling <code>H5Oopen_by_addr</code>.
-      The immediacy of the operation can be important; 
-      if time has elapsed and the object has been deleted from the file,
-      the address will be invalid and file corruption can result.
-      
-      <p>
-      The address of the HDF5 file on a physical device has no effect on 
-      <code>H5Oopen_by_addr</code>, nor does the use of any file driver. 
-      As stated above, the object address is its offset within the HDF5 file; 
-      HDF5&rsquo;s file drivers will transparently map this to an address 
-      on a storage device.
-
-      <p>
       <table border=2 bordercolor=red width=98%><tr><td valign=top align=left>
         <font color=red>
         Warning: This function must be used with care!
@@ -941,7 +925,24 @@ as the corresponding C function.
         Improper use can lead to inaccessible data, 
         wasted space in the file, or <i><b>file corruption</b></i>.
         </font>
+
+      <p>
+      This function is dangerous if called on an invalid address. 
+      The risk can be safely overcome by retrieving the object address 
+      with <code>H5Gget_objinfo</code> or <code>H5Lget_linkinfo</code>
+      immediately before calling <code>H5Oopen_by_addr</code>.
+      The immediacy of the operation can be important; 
+      if time has elapsed and the object has been deleted from the file,
+      the address will be invalid and file corruption can result.
+
       </td></tr></table>
+      
+      <p>
+      The address of the HDF5 file on a physical device has no effect on 
+      <code>H5Oopen_by_addr</code>, nor does the use of any file driver. 
+      As stated above, the object address is its offset within the HDF5 file; 
+      HDF5&rsquo;s file drivers will transparently map this to an address 
+      on a storage device.
 
   <p></p>
   <dt><strong>Parameters:</strong>
@@ -1011,7 +1012,7 @@ as the corresponding C function.
     )
   <p>
   <dt><strong>Purpose:</strong>
-    <dd>Open the n'th object in a group.
+    <dd>Open the n&rsquo;th object in a group.
   <p>
   <dt><strong>Description:</strong>
     <dd><code>H5Oopen_by_idx</code> description...
@@ -1130,7 +1131,7 @@ Describes HDF5 Release 1.8.0-beta.
 
 <!-- #EndLibraryItem --><SCRIPT LANGUAGE="JAVASCRIPT">
 <!--
-document.writeln("Last modified: 30 May 2007");
+document.writeln("Last modified: 21 June 2007");
 -->
 </SCRIPT>
 
