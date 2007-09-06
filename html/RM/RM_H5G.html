@@ -7,29 +7,6 @@ HDF5/H5G API Specification
 
 <body bgcolor="#FFFFFF">
 
-<!--
-<pre>
-
-DEPRECATED FUNCTIONS IN 1.8 
-	H5Glink
-	H5Glink2
-	H5Gunlink
-	H5Gmove
-	H5Gmove2
-
-	H5Gget_objinfo
-	H5Gget_num_objs
-	H5Gget_linkval
-	H5Gset_comment
-	H5Gget_comment
-
-	H5Giterate
-	H5Gget_objtype_by_idx
-	H5Gget_objname_by_idx
-
-</pre>
--->
-
 <!-- #BeginLibraryItem "/ed_libs/styles_RM.lbi" -->
 <!--
   * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -100,16 +77,21 @@ And in this document, the
 
 The Group interface functions create and manipulate groups
 of objects in an HDF5 file.
+Italic type indicates a configurable macro.
 <p>
 <strong>The C Interfaces:</strong>
 
 <table border=0>
 <tr><td valign=top>
 <ul>
-    <li><a href="#Group-Create">H5Gcreate</a>
+    <li><a href="#Group-Create"><i>H5Gcreate</i></a>
+    <li><a href="#Group-Create1">H5Gcreate1</a>
+          &nbsp;*
     <li><a href="#Group-Create2">H5Gcreate2</a>
     <li><a href="#Group-CreateAnon">H5Gcreate_anon</a>
-    <li><a href="#Group-Open">H5Gopen</a>
+    <li><a href="#Group-Open"><i>H5Gopen</i></a>
+    <li><a href="#Group-Open1">H5Gopen1</a>
+          &nbsp;*
     <li><a href="#Group-Open2">H5Gopen2</a>
     <li><a href="#Group-Close">H5Gclose</a>
     <li><a href="#Group-Move">H5Gmove</a>
@@ -162,7 +144,9 @@ of objects in an HDF5 file.
     <td valign="top">
 	<ul>
       <li><a href="#Group-Close">H5Gclose</a>
-      <li><a href="#Group-Create">H5Gcreate</a>
+      <li><a href="#Group-Create"><i>H5Gcreate</i></a>
+      <li><a href="#Group-Create1">H5Gcreate1</a>
+          &nbsp;*
       <li><a href="#Group-Create2">H5Gcreate2</a>
       <li><a href="#Group-CreateAnon">H5Gcreate_anon</a>
       <li><a href="#Group-GetComment">H5Gget_comment</a>
@@ -204,7 +188,9 @@ of objects in an HDF5 file.
           &nbsp;*
       <li><a href="#Group-Move2">H5Gmove2</a>
           &nbsp;*
-      <li><a href="#Group-Open">H5Gopen</a>
+      <li><a href="#Group-Open"><i>H5Gopen</i></a>
+      <li><a href="#Group-Open1">H5Gopen1</a>
+          &nbsp;*
       <li><a href="#Group-Open2">H5Gopen2</a>
       <li><a href="#Group-SetComment">H5Gset_comment</a>
           &nbsp;*
@@ -225,9 +211,12 @@ as the corresponding C function.
 <table border=0>
 <tr><td valign=top>
 <ul>
-    <li><a href="#Group-Create">h5gcreate_f</a>
+    <li><a href="#Group-Create">h5gcreate</a>
+    <li><a href="#Group-Create1">h5gcreate1_f</a>
+          &nbsp;*
 <!--<li><a href="#Group-Create2">h5gcreate2_f</a>              -->
-    <li><a href="#Group-Open">h5gopen_f</a>
+    <li><a href="#Group-Open1">h5gopen_f</a>
+<!--<li><a href="#Group-Open2">h5gopen2_f</a>                  -->
     <li><a href="#Group-Close">h5gclose_f</a>
 <!--<li><a href="#Group-Copy">h5gcopy_f</a>                     -->
     <li><a href="#Group-SetComment">h5gset_comment_f</a>
@@ -447,12 +436,12 @@ create or access function.
 <dl>
   <dt><strong>Name:</strong> <a name="Group-Close">H5Gclose</a>
   <dt><strong>Signature:</strong>
-    <dd><em>herr_t </em><code>H5Gclose</code>(<em>hid_t </em><code>group_id</code>)
+    <dd><em>herr_t </em><code>H5Gclose</code>(<em>hid_t </em><code>group_id</em>)
   <dt><strong>Purpose:</strong>
     <dd>Closes the specified group.
   <dt><strong>Description:</strong>
     <dd><code>H5Gclose</code> releases resources used by a group which was
-        opened by <code>H5Gcreate</code> or <code>H5Gopen</code>. 
+        opened by <code>H5Gcreate*</code> or <code>H5Gopen*</code>. 
         After closing a group, the <code>group_id</code> cannot be used again.  
         <p>
         Failure to release a group with this call will result in resource leaks.
@@ -491,14 +480,184 @@ END SUBROUTINE h5gclose_f
 <dl>
   <dt><strong>Name:</strong> <a name="Group-Create">H5Gcreate</a>
   <dt><strong>Signature:</strong>
-    <dd><em>hid_t </em><code>H5Gcreate</code>(<em>hid_t</em> <code>loc_id</code>, 
+    <dd>Generic:<br>
+        <em>return_type</em> <code>H5Gcreate</code>(
+            <em>&lt;parameters&gt;</em>
+    )
+    <p>
+    <dd>In <i>most recent version</i> mode:<br>
+        <em>hid_t</em> <code>H5Gcreate</code>(
+            <em>hid_t</em> <code>loc_id</code>, 
+            <em>const char *</em><code>name</code>, 
+            <em>hid_t</em> <code>lcpl_id</code>, 
+            <em>hid_t</em> <code>gcpl_id</code>,
+            <em>hid_t</em> <code>gapl_id</code>
+    )
+    <p>
+    <dd>In 1.6-compatibility mode:<br>
+        <em>hid_t </em><code>H5Gcreate</code>(
+            <em>hid_t</em> <code>loc_id</code>, 
+            <em>const char *</em><code>name</code>,
+            <em>size_t</em> <code>size_hint</code>
+    )
+  <p>
+  <dt><strong>Purpose:</strong>
+    <dd>Creates a new empty group and links it to a location in the file.
+  <p>
+  <dt><strong>Description:</strong>
+    <dd><code>H5Gcreate</code> is a macro used to tune 
+      HDF5 Library compatibility; HDF5 and application compile-time 
+      definitions will determine the mapping.
+      <p>
+      See 
+      <font color=red><i>&lt;link to API Compatibility; 
+      appendix to RM?&gt;</i></font>
+      for a complete discussion. 
+      Global settings, 
+      calling for the entire HDF5 Library to behave in one way or the other, 
+      can be used when either the HDF5 Library is compiled 
+      or at application compile time.
+      Function-by-function settings, 
+      calling for a specific function to behave in one way or the other, 
+      can be used only at application compile time.
+      <p>
+      Normally, <code>H5Gopen</code> will be mapped to the most recent
+      <code>H5Gopen</code><i>n</i> function, 
+      which is currently <code>H5Gopen2</code>.
+      If the library and/or application were compiled for Release 1.6
+      emulation, <code>H5Gopen</code> will be mapped to <code>H5Gopen1</code>.
+      <p>
+      For a discussion of the underlying function&rsquo;s behavior, see 
+      <a href="#Group-Create1"><code>H5Gcreate1</code></a> if emulating
+      Release 1.6.x behavior or
+      <a href="#Group-Create2"><code>H5Gcreate2</code></a> for
+      <i>most current</i> behavior.
+  
+      <p>
+      Normally, <code>H5Gcreate</code> will be mapped to the most recent
+      <code>H5Gcreate</code><i>n</i> function, 
+      which is currently <code>H5Gcreate2</code>.
+      If the library and/or the application were compiled for Release 1.6.x
+      emulation, <code>H5Gcreate</code> will be mapped to 
+      <code>H5Gcreate1</code>.
+      <p>
+      <dir>
+      <table border=0>
+        <tr align=left> 
+          <th>If <u>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;</u> is set</th>
+          <th><code>H5Gcreate</code> maps to</th>
+        </tr><tr>
+          <td>No setting</td>
+          <td><code>H5Gcreate2</code></td>
+        </tr><tr>
+          <td><code>H5_NO_DEPRECATED_SYMBOLS</code>&nbsp;&nbsp;&nbsp;&nbsp;</td>
+          <td><code>H5Gcreate2</code></td>
+        </tr><tr>
+          <td><code>H5Gcreate_vers = 2</code></td>
+          <td><code>H5Gcreate2</code></td>
+        </tr><tr>
+          <td><code>H5_USE_16_API</code></td>
+          <td><code>H5Gcreate1</code></td>
+        </tr><tr>
+          <td><code>H5Gcreate_vers = 1</code></td>
+          <td><code>H5Gcreate1</code></td>
+        </tr>
+      </table>
+      </dir>
+      The first three options are used when the library is to operate
+      as the most recent version.  
+      The last two options are used when behavior comparable to 
+      an older version of the library is desired, most often when
+      an application has not been updated to use the current release.
+      <p>
+      The return type and parameters used with this macro 
+      and the values passed in or out in each
+      will correspond to those of function version 
+      to which the macro is mapped. 
+
+  <p>
+<!--
+  <dt><strong>Parameters:</strong>
+    <dd><table>
+      <tr>
+        <td valign="top">
+        </td>
+        <td valign="top">IN: 
+        </td></tr>
+      <tr>
+        <td valign="top">
+        </td>
+        <td valign="top">IN: 
+        </td></tr>
+      <tr>
+        <td valign="top">
+        &nbsp;    &nbsp;&nbsp;&nbsp;&nbsp;
+        </td>
+        <td valign="top">IN: 
+        </td></tr>
+    </table>
+-->
+  <p>
+  <dt><strong>Parameters and Return Value:</strong>
+    <dd>Parameters and return value will depend on macro mapping; 
+      see the appropriate
+      <a href="#Group-Create1"><code>H5Gcreate1</code></a> or
+      <a href="#Group-Create2"><code>H5Gcreate2</code></a> description. 
+  <p>
+  <dt><strong>Fortran90 Interface:</strong>  h5gcreate_f
+    <dd><i><font color=red>
+      How does Fortran play in the compatibility situation?
+      <br>
+      Will Fortran subroutine names do anything with the 1s and 2s 
+      of the C functions?
+      </font></i>
+<!--
+    <pre>
+  
+    </pre>
+-->
+  <p>
+  <dt><strong>History:</strong>
+    <dd><table width="90%">
+        <tr>
+          <td valign="top" align="left" width="10%">
+            <strong>Release</strong>&nbsp;&nbsp;&nbsp;&nbsp;</td>
+          <td valign="top" align="left">
+            <strong>C</strong></td></tr>
+        <tr>
+          <td valign="top">1.8.0</td>
+          <td valign="top">
+            The function <code>H5Gcreate</code> renamed to 
+            <code>H5Gcreate1</code> and deprecated in this release.
+            <br>
+            The macro <code>H5Gcreate</code> 
+            and the function <code>H5Gcreate2</code>
+            introduced in this release.</td></tr>
+    </table>
+</dl>
+
+
+<!-- NEW PAGE -->
+<!-- HEADER RIGHT "H5Gcreate1" -->
+<hr>
+<dl>
+  <dt><strong>Name:</strong> <a name="Group-Create1">H5Gcreate1</a>
+  <dt><strong>Signature:</strong>
+    <dd><em>hid_t </em><code>H5Gcreate1</code>(
+        <em>hid_t</em> <code>loc_id</code>, 
         <em>const char *</em><code>name</code>,
         <em>size_t</em> <code>size_hint</code>
     )
   <dt><strong>Purpose:</strong>
-    <dd>Creates a new empty group and gives it a name.
+    <dd>Creates a new empty group and links it to a location in the file.
+  <dt><strong>Notice:</strong>
+    <dd><i>This function is deprecated in favor of the functions 
+        <a href="#Group-Create2"><code>H5Gcreate2</code></a> and
+        <a href="#Group-CreateAnon"><code>H5Gcreate_anon</code></a>,
+        or the macro 
+        <a href="#Group-Create"><code>H5Gcreate</code></a>.</i>
   <dt><strong>Description:</strong>
-    <dd><code>H5Gcreate</code> creates a new group with the specified
+    <dd><code>H5Gcreate1</code> creates a new group with the specified
         name at the specified location, <code>loc_id</code>.  
         The location is identified by a file or group identifier.  
         The name, <code>name</code>, must not already be taken by some 
@@ -529,7 +688,7 @@ END SUBROUTINE h5gclose_f
         <code>H5Gclose</code> when it is no longer needed. 
         <p>
         See <a href="#Group-CreateAnon"><code>H5Gcreate_anon</code></a> 
-        for a discussion of the differences between <code>H5Gcreate</code> 
+        for a discussion of the differences between <code>H5Gcreate1</code> 
         and <code>H5Gcreate_anon</code>.
   <dt><strong>Parameters:</strong>
     <ul><table>
@@ -578,6 +737,21 @@ END SUBROUTINE h5gcreate_f
         <img src="Graphics/Java.gif"> 
         <img src="Graphics/C++.gif">
         -->
+  <p>
+  <dt><strong>History:</strong>
+    <dd><table width="90%">
+        <tr>
+          <td valign="top" align="left" width="10%">
+            <strong>Release</strong>&nbsp;&nbsp;&nbsp;&nbsp;</td>
+          <td valign="top" align="left">
+            <strong>C</strong></td></tr>
+        <tr>
+          <td valign="top">1.8.0</td>
+          <td valign="top">
+            The function <code>H5Gcreate</code> renamed to 
+            <code>H5Gcreate1</code> and deprecated
+            in this release.</td></tr>
+    </table>
 </dl>
 
 <!-- NEW PAGE -->
@@ -702,12 +876,12 @@ END SUBROUTINE h5gcreate_f
       with <a href="RM_H5L.html#Link-Link"><code>H5Llink</code></a>
       or it will be deleted from the file when the file is closed.
       <p>
-      The differences between this function and <code>H5Greate</code> 
+      The differences between this function and <code>H5Gcreate1</code> 
       are as follows:
       <ul>
-        <li><code>H5Gcreate</code> does not provide for the use of 
+        <li><code>H5Gcreate1</code> does not provide for the use of 
           custom property lists;
-          <code>H5Gcreate</code> always uses default properties.
+          <code>H5Gcreate1</code> always uses default properties.
         <li><code>H5Gcreate_anon</code> neither provides the new 
           group&rsquo;s name nor links it into the HDF5 file structure; 
           those actions must be performed separately through a call to
@@ -788,6 +962,9 @@ END SUBROUTINE h5gcreate_f
     )
   <dt><strong>Purpose:</strong>
     <dd>Retrieves comment for specified object.
+  <dt><strong>Notice:</strong>
+    <dd><i>This function is deprecated in favor of the function 
+        <a href="RM_H5L.html#Link-GetComment"><code>H5Lget_comment</code></a>.</i>
   <dt><strong>Description:</strong>
     <dd><code>H5Gget_comment</code> retrieves the comment for the the
         object specified by <code>loc_id</code> and <code>name</code>.  
@@ -851,6 +1028,18 @@ END SUBROUTINE h5gget_comment_f
         <img src="Graphics/Java.gif"> 
         <img src="Graphics/C++.gif">
         -->
+  <dt><strong>History:</strong>
+    <dd><table width="90%">
+        <tr>
+          <td valign="top" align="left" width="10%">
+            <strong>Release</strong>&nbsp;&nbsp;&nbsp;&nbsp;</td>
+          <td valign="top" align="left">
+            <strong>C</strong></td></tr>
+        <tr>
+          <td valign="top">1.8.0</td>
+          <td valign="top">
+            Function deprecated in this release.</td></tr>
+    </table>
 </dl>
 
 
@@ -1191,6 +1380,9 @@ END SUBROUTINE h5gget_comment_f
     )
   <dt><strong>Purpose:</strong>
     <dd>Returns the name of the object that the symbolic link points to.
+  <dt><strong>Notice:</strong>
+    <dd><i>This function is deprecated in favor of the function 
+        <a href="RM_H5L.html#Link-GetVal"><code>H5Lget_val</code></a>.</i>
   <dt><strong>Description:</strong>
     <dd><code>H5Gget_linkval</code> returns <code>size</code> 
         characters of the name of the object that the symbolic link 
@@ -1254,6 +1446,18 @@ END SUBROUTINE h5gget_linkval_f
         <img src="Graphics/Java.gif"> 
         <img src="Graphics/C++.gif">
         -->
+  <dt><strong>History:</strong>
+    <dd><table width="90%">
+        <tr>
+          <td valign="top" align="left" width="10%">
+            <strong>Release</strong>&nbsp;&nbsp;&nbsp;&nbsp;</td>
+          <td valign="top" align="left">
+            <strong>C</strong></td></tr>
+        <tr>
+          <td valign="top">1.8.0</td>
+          <td valign="top">
+            Function deprecated in this release.</td></tr>
+    </table>
 </dl>
 
 <!-- NEW PAGE -->
@@ -1267,6 +1471,9 @@ END SUBROUTINE h5gget_linkval_f
       <em>hsize_t* </em> <code>num_obj</code>)
 <dt><strong>Purpose:</strong>
   <dd>Returns number of objects in the group specified by its identifier
+  <dt><strong>Notice:</strong>
+    <dd><i>This function is deprecated in favor of the function 
+        <a href="#Group-GetInfo"><code>H5Gget_info</code></a>.</i>
 <dt><strong>Description:</strong>
   <dd><code>H5Gget_num_objs</code> returns number of objects in a group.
       Group is specified by its identifier <code>loc_id</code>. 
@@ -1310,6 +1517,10 @@ SUBROUTINE
 		  <td valign="top">1.6.0</td>
           <td valign="top">
 		    Function introduced in this release.</td></tr>
+        <tr>
+          <td valign="top">1.8.0</td>
+          <td valign="top">
+            Function deprecated in this release.</td></tr>
     </table></ul>
 </dl>
 
@@ -1327,6 +1538,9 @@ SUBROUTINE
     )
   <dt><strong>Purpose:</strong>
     <dd>Returns information about an object.  
+  <dt><strong>Notice:</strong>
+    <dd><i>This function is deprecated in favor of the function 
+        <a href="RM_H5O.html#Object-GetInfo"><code>H5Oget_info</code></a>.</i>
   <dt><strong>Description:</strong>
     <dd><code>H5Gget_objinfo</code> returns information about the 
         specified object through the <code>statbuf</code> argument. 
@@ -1501,6 +1715,10 @@ SUBROUTINE
           <td valign="top">
             Two new fields were added to the 
             <code>H5G_stat_t</code> struct in this release.</td></tr>
+        <tr>
+          <td valign="top">1.8.0</td>
+          <td valign="top">
+            Function deprecated in this release.</td></tr>
     </table></ul>
 </dl>
 
@@ -1517,6 +1735,9 @@ SUBROUTINE
                       <em>size_t</em> <code>size</code> )
 <dt><strong>Purpose:</strong>
   <dd>Returns a name of an object specified by an index.
+<dt><strong>Notice:</strong>
+  <dd><i>This function is deprecated in favor of the function 
+      <a href="RM_H5L.html#Link-GetNameByIdx"><code>H5Lget_name_by_idx</code></a>.</i>
 <dt><strong>Description:</strong>
   <dd><code>H5Gget_objname_by_idx</code> returns a name of the object 
       specified by the index <code>idx</code> in the group <code>loc_id</code>.
@@ -1589,6 +1810,10 @@ SUBROUTINE
 		  <td valign="top">1.6.0</td>
           <td valign="top">
 		    Function introduced in this release.</td></tr>
+        <tr>
+          <td valign="top">1.8.0</td>
+          <td valign="top">
+            Function deprecated in this release.</td></tr>
     </table></ul>
 </dl>
 
@@ -1598,10 +1823,14 @@ SUBROUTINE
 <dl>
 <dt><strong>Name:</strong> <a name="Group-GetObjTypeByIdx">H5Gget_objtype_by_idx</a>
 <dt><strong>Signature:</strong>
-  <dd><em>int</em> <code>H5Gget_objtype_by_idx</code>(<em>hid_t</em> <code>loc_id</code>, 
+  <dd><em>int</em> <code>H5Gget_objtype_by_idx</code>(
+                      <em>hid_t</em> <code>loc_id</code>, 
                       <em>hsize_t</em> <code>idx</code> )
 <dt><strong>Purpose:</strong>
   <dd>Returns the type of an object specified by an index.
+<dt><strong>Notice:</strong>
+  <dd><i>This function is deprecated in favor of the function 
+      <a href="RM_H5O.html#Object-GetInfo"><code>H5Oget_info</code></a>.</i>
 <dt><strong>Description:</strong>
   <dd><code>H5Gget_objtype_by_idx</code> returns the type of the object 
       specified by the index <code>idx</code> in the group <code>loc_id</code>.
@@ -1707,6 +1936,10 @@ SUBROUTINE
 		    The function return type changed from 
 			<em>int</em> to the enumerated type 
 			<em>H5G_obj_t</em>.</td></tr>
+        <tr>
+          <td valign="top">1.8.0</td>
+          <td valign="top">
+            Function deprecated in this release.</td></tr>
     </table></ul>
 </dl>
 
@@ -1724,6 +1957,9 @@ SUBROUTINE
     )
   <dt><strong>Purpose:</strong>
     <dd>Iterates an operation over the entries of a group.
+  <dt><strong>Notice:</strong>
+    <dd><i>This function is deprecated in favor of the function 
+        <a href="RM_H5L.html#Link-Iterate"><code>H5Literate</code></a>.</i>
   <dt><strong>Description:</strong>
     <dd><code>H5Giterate</code> iterates over the members of 
         <code>name</code> in the file or group specified with 
@@ -1866,6 +2102,18 @@ SUBROUTINE h5gget_obj_info_idx_f(loc_id, name, idx, &amp;
                                               ! 0 on success and -1 on failure
 END SUBROUTINE h5gget_obj_info_idx_f
 		</pre>
+  <dt><strong>History:</strong>
+    <dd><table width="90%">
+        <tr>
+          <td valign="top" align="left" width="10%">
+            <strong>Release</strong>&nbsp;&nbsp;&nbsp;&nbsp;</td>
+          <td valign="top" align="left">
+            <strong>C</strong></td></tr>
+        <tr>
+          <td valign="top">1.8.0</td>
+          <td valign="top">
+            Function deprecated in this release.</td></tr>
+    </table>
 </dl>
 
 <!-- NEW PAGE -->
@@ -1882,6 +2130,9 @@ END SUBROUTINE h5gget_obj_info_idx_f
   <dt><strong>Purpose:</strong>
     <dd>Creates a link of the specified type from <code>new_name</code> 
         to <code>current_name</code>.
+  <dt><strong>Notice:</strong>
+    <dd><i>This function is deprecated in favor of the function 
+        <a href="RM_H5L.html#Link-Link"><code>H5Llink</code></a>.</i>
   <dt><strong>Description:</strong>
     <dd><code>H5Glink</code> creates a new name for an object that has some current 
 	  name, possibly one of many names it currently has.  
@@ -1945,6 +2196,18 @@ END SUBROUTINE h5glink_f
         <img src="Graphics/Java.gif"> 
         <img src="Graphics/C++.gif">
         -->
+  <dt><strong>History:</strong>
+    <dd><table width="90%">
+        <tr>
+          <td valign="top" align="left" width="10%">
+            <strong>Release</strong>&nbsp;&nbsp;&nbsp;&nbsp;</td>
+          <td valign="top" align="left">
+            <strong>C</strong></td></tr>
+        <tr>
+          <td valign="top">1.8.0</td>
+          <td valign="top">
+            Function deprecated in this release.</td></tr>
+    </table>
 </dl>
 
 <!-- NEW PAGE -->
@@ -1958,6 +2221,9 @@ END SUBROUTINE h5glink_f
     <em>hid_t</em> <code>curr_loc_id</code>, <em>const char *</em><code>current_name</code>,
     <em>H5G_link_t</em> <code>link_type</code>, 
 	<em>hid_t</em> <code>new_loc_id</code>, <em>const char *</em><code>new_name</code> ) 
+  <dt><strong>Notice:</strong>
+    <dd><i>This function is deprecated in favor of the function 
+        <a href="RM_H5L.html#Link-Link"><code>H5Llink</code></a>.</i>
   <dt><strong>Purpose:</strong>
     <dd>Creates a link of the specified type from <code>new_name</code> 
         to <code>current_name</code>.
@@ -2028,6 +2294,18 @@ END SUBROUTINE h5glink2_f
         <img src="Graphics/Java.gif"> 
         <img src="Graphics/C++.gif">
         -->
+  <dt><strong>History:</strong>
+    <dd><table width="90%">
+        <tr>
+          <td valign="top" align="left" width="10%">
+            <strong>Release</strong>&nbsp;&nbsp;&nbsp;&nbsp;</td>
+          <td valign="top" align="left">
+            <strong>C</strong></td></tr>
+        <tr>
+          <td valign="top">1.8.0</td>
+          <td valign="top">
+            Function deprecated in this release.</td></tr>
+    </table>
 </dl>
 
 <!-- NEW PAGE -->
@@ -2042,6 +2320,9 @@ END SUBROUTINE h5glink2_f
     )
   <dt><strong>Purpose:</strong>
     <dd>Renames an object within an HDF5 file.  
+  <dt><strong>Notice:</strong>
+    <dd><i>This function is deprecated in favor of the function 
+        <a href="RM_H5L.html#Link-Move"><code>H5Lmove</code></a>.</i>
   <dt><strong>Description:</strong>
     <dd><code>H5Gmove</code> renames an object within an HDF5 file.  
         The original name, <code>src_name</code>, is unlinked from the 
@@ -2088,6 +2369,19 @@ END SUBROUTINE h5gmove_f
         <img src="Graphics/Java.gif"> 
         <img src="Graphics/C++.gif">
         -->
+  <p>
+  <dt><strong>History:</strong>
+    <dd><table width="90%">
+        <tr>
+          <td valign="top" align="left" width="10%">
+            <strong>Release</strong>&nbsp;&nbsp;&nbsp;&nbsp;</td>
+          <td valign="top" align="left">
+            <strong>C</strong></td></tr>
+        <tr>
+          <td valign="top">1.8.0</td>
+          <td valign="top">
+            Function deprecated in this release.</td></tr>
+    </table>
 </dl>
 
 <!-- NEW PAGE -->
@@ -2101,6 +2395,9 @@ END SUBROUTINE h5gmove_f
     <em>const char</em> <code>*dst_name</code> ) 
   <dt><strong>Purpose:</strong> 
   <dd>Renames an object within an HDF5 file. 
+  <dt><strong>Notice:</strong>
+    <dd><i>This function is deprecated in favor of the function 
+        <a href="RM_H5L.html#Link-Move"><code>H5Lmove</code></a>.</i>
   <dt><strong>Description:</strong> 
   <dd><code>H5Gmove2</code> renames an object within an HDF5 file. The original 
     name, <code>src_name</code>, is unlinked from the group graph and the new 
@@ -2154,7 +2451,20 @@ END SUBROUTINE h5gmove2_f
         <img src="Graphics/Java.gif"> 
         <img src="Graphics/C++.gif">
         -->
+  <dt><strong>History:</strong>
+    <dd><table width="90%">
+        <tr>
+          <td valign="top" align="left" width="10%">
+            <strong>Release</strong>&nbsp;&nbsp;&nbsp;&nbsp;</td>
+          <td valign="top" align="left">
+            <strong>C</strong></td></tr>
+        <tr>
+          <td valign="top">1.8.0</td>
+          <td valign="top">
+            Function deprecated in this release.</td></tr>
+    </table>
 </dl>
+
 
 <!-- NEW PAGE -->
 <!-- HEADER RIGHT "H5Gopen" -->
@@ -2162,19 +2472,157 @@ END SUBROUTINE h5gmove2_f
 <dl>
   <dt><strong>Name:</strong> <a name="Group-Open">H5Gopen</a>
   <dt><strong>Signature:</strong>
-    <dd><em>hid_t </em><code>H5Gopen</code>(<em>hid_t</em> <code>loc_id</code>,
+    <dd>In 1.6-compatibility mode:<br>
+        <em>hid_t </em><code>H5Gopen</code>(
+            <em>hid_t</em> <code>loc_id</code>,
+            <em>const char *</em><code>name</code>
+    )
+    <p>
+    <dd>In <i>most recent version</i> mode:<br>
+        <em>hid_t </em><code>H5Gopen</code>(
+            <em>hid_t </em><code>loc_id</code>,
+            <em>const char * </em><code>name</code>,
+            <em>hid_t </em><code>gapl_id</code>
+    )
+  <p>
+  <dt><strong>Purpose:</strong>
+    <dd>Opens a new empty group and links it into the file.
+  <p>
+  <dt><strong>Description:</strong>
+    <dd><code>H5Gopen</code> is implemented as a macro to enhance
+      HDF5 Library compatibility. 
+      The macro&rsquo;s can be set of provide the latest capabilities
+      of HDF5 or to be compatible with an older version; this mapping
+      is set when the HDF5 Library or the user application is compiled.
+      <p>
+      See 
+      <font color=red><i>&lt;link to API Compatibility; 
+      appendix to RM?&gt;</i></font>
+      for a complete discussion. 
+      <p>
+      Normally, <code>H5Gopen</code> will be mapped to the most recent
+      <code>H5Gopen</code><i>n</i> function, 
+      which is currently <code>H5Gopen2</code>.
+      If the library and/or application were compiled for Release 1.6
+      emulation, <code>H5Gopen</code> will be mapped to <code>H5Gopen1</code>.
+      <p>
+      <dir>
+      <table border=0>
+        <tr align=left> 
+          <th>If <u>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;</u> is set</th>
+          <th><code>H5Gopen</code> maps to</th>
+        </tr><tr>
+          <td>No setting</td>
+          <td><code>H5Gopen2</code></td>
+        </tr><tr>
+          <td><code>H5_NO_DEPRECATED_SYMBOLS</code>&nbsp;&nbsp;&nbsp;&nbsp;</td>
+          <td><code>H5Gopen2</code></td>
+        </tr><tr>
+          <td><code>H5Gopen_vers = 2</code></td>
+          <td><code>H5Gopen2</code></td>
+        </tr><tr>
+          <td><code>H5_USE_16_API</code></td>
+          <td><code>H5Gopen1</code></td>
+        </tr><tr>
+          <td><code>H5Gopen_vers = 1</code></td>
+          <td><code>H5Gopen1</code></td>
+        </tr>
+      </table>
+      </dir>
+      The <code>H5Gopen2</code> mappings are used when <i>most curent</i>
+      behavior is desired.
+      The <code>H5Gopen1</code> options are used when behavior comparable to 
+      an older version of the library is desired, most often when
+      an application has not been updated to use the current release.
+      <p>
+      The return type and parameters used with this macro 
+      and the values passed in or out in each
+      will correspond to those of the function version 
+      to which the macro is mapped. 
+
+  <p>
+<!--
+  <dt><strong>Parameters:</strong>
+    <dd><table>
+      <tr>
+        <td valign="top">
+        </td>
+        <td valign="top">IN: 
+        </td></tr>
+      <tr>
+        <td valign="top">
+        </td>
+        <td valign="top">IN: 
+        </td></tr>
+      <tr>
+        <td valign="top">
+        &nbsp;    &nbsp;&nbsp;&nbsp;&nbsp;
+        </td>
+        <td valign="top">IN: 
+        </td></tr>
+    </table>
+-->
+  <p>
+  <dt><strong>Parameters and Return Value:</strong>
+    <dd>Parameters and return value will depend on macro mapping.
+  <p>
+  <dt><strong>Fortran90 Interface:</strong>  h5gopen_f
+    <dd><i><font color=red>
+      How does Fortran play in the compatibility situation?
+      <br>
+      Will Fortran subroutine names do anything with the 1s and 2s 
+      of the C functions?
+      </font></i>
+<!--
+    <pre>
+  
+    </pre>
+-->
+  <p>
+  <dt><strong>History:</strong>
+    <dd><table width="90%">
+        <tr>
+          <td valign="top" align="left" width="10%">
+            <strong>Release</strong>&nbsp;&nbsp;&nbsp;&nbsp;</td>
+          <td valign="top" align="left">
+            <strong>C</strong></td></tr>
+        <tr>
+          <td valign="top">1.8.0</td>
+          <td valign="top">
+            The function <code>H5Gopen</code> renamed to 
+            <code>H5Gopen1</code> and deprecated in this release.
+            <br>
+            The macro <code>H5Gopen</code> 
+            and the function <code>H5Gopen2</code>
+            introduced in this release.</td></tr>
+    </table>
+</dl>
+
+
+<!-- NEW PAGE -->
+<!-- HEADER RIGHT "H5Gopen1" -->
+<hr>
+<dl>
+  <dt><strong>Name:</strong> <a name="Group-Open1">H5Gopen1</a>
+  <dt><strong>Signature:</strong>
+    <dd><em>hid_t </em><code>H5Gopen1</code>(<em>hid_t</em> <code>loc_id</code>,
         <em>const char *</em><code>name</code>
     )
+  <dt><strong>Notice:</strong>
+    <dd><i>This function is deprecated in favor of the function 
+        <a href="#Group-Open2"><code>H5GOpen2</code></a> 
+        or the macro 
+        <a href="#Group-Open"><code>H5GOpen</code></a>.</i>
   <dt><strong>Purpose:</strong>
     <dd>Opens an existing group for modification and returns a group 
         identifier for that group.
   <dt><strong>Description:</strong>
-    <dd><code>H5Gopen</code> opens an existing group with the specified 
+    <dd><code>H5Gopen1</code> opens an existing group with the specified 
         name at the specified location, <code>loc_id</code>.
         <p>
         The location is identified by a file or group identifier
         <p>
-        <code>H5Gopen</code> returns a group identifier for the group
+        <code>H5Gopen1</code> returns a group identifier for the group
         that was opened.  This group identifier should be released by 
         calling <code>H5Gclose</code> when it is no longer needed.  
   <dt><strong>Parameters:</strong>
@@ -2208,6 +2656,20 @@ END SUBROUTINE h5gopen_f
         <img src="Graphics/Java.gif"> 
         <img src="Graphics/C++.gif">
         -->
+  <dt><strong>History:</strong>
+    <dd><table width="90%">
+        <tr>
+          <td valign="top" align="left" width="10%">
+            <strong>Release</strong>&nbsp;&nbsp;&nbsp;&nbsp;</td>
+          <td valign="top" align="left">
+            <strong>C</strong></td></tr>
+        <tr>
+          <td valign="top">1.8.0</td>
+          <td valign="top">
+            The function <code>H5Gopen</code> renamed to 
+            <code>H5Gopen1</code> and deprecated
+            in this release.</td></tr>
+    </table>
 </dl>
 
 
@@ -2229,7 +2691,7 @@ END SUBROUTINE h5gopen_f
       <code>name</code>, at the location specified by <code>loc_id</code>.
       <p>
       With default settings, <code>H5Gopen2</code> provides
-      similar functionality to that provided by <code>H5Gopen</code>. 
+      similar functionality to that provided by <code>H5Gopen1</code>. 
       The only difference is that <code>H5Gopen2</code> 
       can provide a group access property list, <code>gapl_id</code>.
       <p>
@@ -2303,6 +2765,9 @@ END SUBROUTINE h5gopen_f
     )
   <dt><strong>Purpose:</strong>
     <dd>Sets comment for specified object.
+  <dt><strong>Notice:</strong>
+    <dd><i>This function is deprecated in favor of the function 
+        <a href="RM_H5L.html#Link-SetComment"><code>H5Lset_comment</code></a>.</i>
   <dt><strong>Description:</strong>
     <dd><code>H5Gset_comment</code> sets the comment for the 
         object specified by <code>loc_id</code> and <code>name</code> 
@@ -2362,6 +2827,19 @@ END SUBROUTINE h5gset_comment_f
         <img src="Graphics/Java.gif"> 
         <img src="Graphics/C++.gif">
         -->
+  <p>
+  <dt><strong>History:</strong>
+    <dd><table width="90%">
+        <tr>
+          <td valign="top" align="left" width="10%">
+            <strong>Release</strong>&nbsp;&nbsp;&nbsp;&nbsp;</td>
+          <td valign="top" align="left">
+            <strong>C</strong></td></tr>
+        <tr>
+          <td valign="top">1.8.0</td>
+          <td valign="top">
+            Function deprecated in this release.</td></tr>
+    </table>
 </dl>
 
 <!-- NEW PAGE -->
@@ -2375,6 +2853,9 @@ END SUBROUTINE h5gset_comment_f
     )
   <dt><strong>Purpose:</strong>
     <dd>Removes the link to an object from a group. 
+  <dt><strong>Notice:</strong>
+    <dd><i>This function is deprecated in favor of the function 
+        <a href="RM_H5L.html#Link-Delete"><code>H5Ldelete</code></a>.</i>
   <dt><strong>Description:</strong>
     <dd><code>H5Gunlink</code> removes the object specified by 
         <code>name</code> from the group graph and decrements the 
@@ -2432,6 +2913,18 @@ END SUBROUTINE h5gunlink_f
         <img src="Graphics/Java.gif"> 
         <img src="Graphics/C++.gif">
         -->
+  <dt><strong>History:</strong>
+    <dd><table width="90%">
+        <tr>
+          <td valign="top" align="left" width="10%">
+            <strong>Release</strong>&nbsp;&nbsp;&nbsp;&nbsp;</td>
+          <td valign="top" align="left">
+            <strong>C</strong></td></tr>
+        <tr>
+          <td valign="top">1.8.0</td>
+          <td valign="top">
+            Function deprecated in this release.</td></tr>
+    </table>
 </dl>
 
 <!-- #BeginLibraryItem "/ed_libs/NavBar_RM.lbi" --><hr>
@@ -2484,7 +2977,7 @@ Describes HDF5 Release 1.8.0-beta.
 
 <!-- #EndLibraryItem --><SCRIPT LANGUAGE="JAVASCRIPT">
 <!--
-document.writeln("Last modified: 17 August 2007");
+document.writeln("Last modified: 6 September 2007");
 -->
 </SCRIPT>
 
