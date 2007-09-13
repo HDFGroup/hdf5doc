@@ -1,0 +1,538 @@
+<html>
+<head>
+<title>API compatibility macros in HDF5</title>
+</head>
+
+<body>
+
+<div align=center>
+<h1>API Compatibility Macros in HDF5</h1>
+</div>
+
+
+<h3>Audience</h3>
+If you have existing applications that use HDF5 and
+you are debating whether to upgrade to a new release of HDF5, 
+this document is for you!
+<p>
+HDF5 includes a macro-based API compatibility feature that
+may save you hours to days in maintaining these applications
+while still being able to adopt new releases of the HDF5 software.
+
+<p>
+<h3>Summary and motivation</h3>
+Several basic HDF5 functions have changed over the years 
+as requirements on the library and data format have evolved.
+To enable existing applications to run properly, 
+all versions of these functions have been retained;
+for flexibility and ease-of-use, macros have been created 
+that can be mapped either globally to broad sets of function versions
+or on a function-by-function basis to specific versions.
+If desired, a global setting can be set 
+then over-ridden for specific functions.
+<p>
+While the HDF5 team generally (and strongly) encourages users 
+to update applications to work with the latest HDF5 release, 
+we realize that there are common circumstances 
+where that can take substantial resources or,
+for other reasons, may not a realistic goal.
+Use of the API-compatibility macros feature can be particularly valuable 
+in situations such as the following: 
+<ul>
+    <li>You have binaries with no access to the original source code, 
+        so updating the application is not feasible. 
+    <li>You have the source code, but lack the resources to update it.
+    <li>You have the source code and the resources, but the old version
+        works quite satisfactorily.
+        On the other hand, while you do not need new features, 
+        you would like to take advantage of certain efficiencies 
+        in the newer HDF5 release.
+    <li>You have the resources, but the applications are large or complex
+        and you must continue to run the old versions while the update
+        is carried out.
+</ul>
+
+<p>
+This document discusses only API compatibility issues.
+<i>Data format compatibility</i> issues, the ability of one HDF5 Library 
+to read data written by a different release of the HDF5 Library, 
+are a different matter and are discussed in 
+                                          <font color=red><b><i>
+                      [ [ [ link to the C/Format document ] ] ].
+                                                 </i></b></font>
+By default, HDF5 will write data in the oldest format that can represent 
+the data, so that as much data as possible can be read by older libraries.
+Use of the function 
+<a href="http://RM_H5P.html#Property-SetLatestFormat">
+<code>H5Pset_latest_format</code></a>
+forces the library in the other direction, 
+to write all data only in the latest available format.
+More specific control is possible and is described in the 
+above-mentioned document.
+
+<h3>Understanding and using the macros</h3>
+
+<strong>Scope of selection:</strong>
+<br>
+HDF5 can be globally configured in the following ways:
+<ul>
+    <li>To present strictly the interface of HDF5 Release 1.6.x
+    <li>To make no compatibility allowance, presenting strictly the 
+        interface of HDF5 Release 1.8.x
+    <li>Default behavior:
+                                          <font color=red><b><i>
+                                [ [ [ Describe default behavior.
+                                 Default data is written "in the 
+                          oldest format that will represent it." 
+                     Macros are generally mapped to the original 
+                      API version, but all versions are directly 
+                                callable through numbered names.
+                                                        Correct? 
+                               And is an explicit flag available
+                                to positively force this? ] ] ].
+                                                 </i></b></font>
+</ul>
+
+
+<p>
+Function-level settings are available for situations where 
+it is necessary to have access to more complex combinations
+of newer and older function versions.
+<ul>
+    <li>Specified macro is mapped to selected version of function.
+    <li>If <code>H5Gcreate_vers</code> is set to <code>2</code>,
+        the macro <code>H5Gcreate</code> will be mapped to 
+        <code>H5Gcreate2</code>.
+</ul>
+
+<p>
+Global settings can be selected either 
+when the HDF5 Library is built and installed or 
+when the application is built and installed.
+Function-level settings can be selected only 
+when the application is built and installed
+and only if the library was built with 
+                                          <font color=red><b><i>
+                                   [ [ [ the right flag ] ] ].
+                                                 </i></b></font>
+Function-level settings override the current global setting.
+<pre>
+    global setting at library build       always OK
+
+    global setting at application         requires compatible global setting 
+        build                                 at library build     (List?)
+
+    function-level setting at library     not available
+        build
+
+    function-level setting at             requires compatible global setting 
+        application build                     at both library build and
+                                              application build     (List?)
+</pre>
+
+<strong>Huh?</strong>
+<br>
+OK, you're right.  A bit more detail will make this clearer.
+<p>
+
+<strong>Global settings</strong>
+<br>
+Global settings are determined when either the HDF5 Library 
+or the user application is built and installed.
+<p>
+When building HDF5, the following <code>configure</code> 
+flags control API-compatibility mode:<br>
+<table width=90% border=0 align=center>
+    <tr align=left valign=top>
+      <td><code>&nbsp;&nbsp;&nbsp;&nbsp;</code></td><td>
+        <code>--enable-deprecated-symbols</code>
+      </td><td>
+        All current and deprecated APIs are available.
+        <p>
+        Macros are mapped to the original version of each API. 
+        For example, the macro <code>H5Gcreate</code> is mapped 
+        to the function <code>H5Gcreate1</code>.
+        <p>
+        All API versions are available by version number
+        For example, an application can call either  
+        <code>H5Gcreate1</code> or <code>H5Gcreate2</code>, 
+        depending on requirements.
+        <p>
+        Usage:
+        <br>
+        <code>./configure ... --enable-deprecated-symbols ...</code>
+        <p>
+      </td></tr>
+    <tr align=left valign=top><td>&nbsp;&nbsp;&nbsp;&nbsp;</td><td>
+        <code>--disable-deprecated-symbols&nbsp;&nbsp;</code>
+      </td><td>
+        Only current APIs are available. 
+        <p>
+        Macros are mapped to the current version of each API. 
+        For example, in Release 1.8.0,
+        the macro <code>H5Gcreate</code> is mapped 
+        to the function <code>H5Gcreate2</code>.
+        <p>
+        No deprecated APIs or symbols are included in the binary.
+        In Release 1.8.0, for example, 
+        <code>H5Gcreate1</code> will be unavailable and
+                                          <font color=red><b><i>
+                     [ [ [ . . . Will <code>H5Gcreate2</code> be
+                            callable as <code>H5Gcreate2</code>?
+                      Or only as <code>H5Gcreate</code>?  ] ] ].
+                                                 </i></b></font>
+        <p>
+        Usage:
+        <br>
+        <code>./configure ... --disable-deprecated-symbols ...</code>
+        <p>
+      </td></tr>
+    <tr align=left valign=top>
+      <td>&nbsp;&nbsp;&nbsp;&nbsp;</td><td>
+        <code>--enable-hdf5v1_6</code>
+      </td><td>
+        Only HDF5 Release 1.6 APIs are available. 
+        <p>
+        Macros are mapped to the Release 1.6 version of each API. 
+        For example, the macro <code>H5Gcreate</code> is mapped 
+        to the function <code>H5Gcreate1</code>.
+        <p>
+        Only APIs, symbols, or functionality that were available 
+        in the Release 1.6 series will be included in the binary.
+        For example, <code>H5Gcreate2</code> will be unavailable and
+                                          <font color=red><b><i>
+                     [ [ [ . . . Will <code>H5Gcreate1</code> be
+                            callable as <code>H5Gcreate1</code>?
+                      Or only as <code>H5Gcreate</code>?  ] ] ].
+                                                 </i></b></font>
+        <p>
+        Usage:
+        <br>
+        <code>./configure ... --enable-hdf5v1_6 ...</code>
+        <p>
+      </td></tr>
+</table>
+
+When building an HDF5 application, the following <code>h5cc</code> 
+options control API-compatibility mode:<br>
+<table width=90% border=0 align=center>
+    <tr align=left valign=top>
+      <td><code>&nbsp;&nbsp;&nbsp;&nbsp;</code></td><td>
+        <i>Default</i> (no API-compatibility flags)
+                                          <font color=red><b><i>
+                                                            <br>
+                             [ [ [ <code>&lt; max compatibility,
+                      with all deprecated APIs &gt;</code> ] ] ]
+                                                 </i></b></font>
+      </td><td>
+        All current <i>and</i> deprecated HDF5 APIs are available 
+        in the application.
+        <p>
+        Macros are mapped to the original version of each API. 
+        For example, the macro <code>H5Gcreate</code> is mapped 
+        to the function <code>H5Gcreate1</code>.
+        <p>
+        All API versions are available by version number
+        For example, an application can call either  
+        <code>H5Gcreate1</code> or <code>H5Gcreate2</code>, 
+        depending on requirements.
+        <p>
+        Requires that HDF5 Library was built 
+        with no compatibility flags or
+        with <code>--enable-deprecated-symbols</code>.
+        <p>
+        Usage:
+        <br>
+        <code>h5cc ... &lt;with no API-compatibility flag&gt;</code>
+        <br>
+        <code>gcc ... &lt;with no API-compatibility flag&gt;</code>
+        <p>
+      </td></tr>
+    <tr align=left valign=top>
+      <td>&nbsp;&nbsp;&nbsp;&nbsp;</td><td>
+        <code>-D H5_NO_DEPRECATED_SYMBOLS&nbsp;&nbsp;</code>
+      </td><td>
+        Current release-only mode;
+        only current HDF5 APIs are available to the application. 
+        <p>
+        Macros are mapped to the current version of each API. 
+        For example, in Release 1.8.0,
+        the macro <code>H5Gcreate</code> is mapped 
+        to the function <code>H5Gcreate2</code>.
+        <p>
+        No deprecated APIs or symbols are included in the binary.
+        In Release 1.8.0, for example, 
+        <code>H5Gcreate1</code> will be unavailable and
+                                          <font color=red><b><i>
+                     [ [ [ . . . Will <code>H5Gcreate2</code> be
+                            callable as <code>H5Gcreate2</code>?
+                      Or only as <code>H5Gcreate</code>?  ] ] ].
+                                                 </i></b></font>
+        <p>
+        Requires that HDF5 Library was built 
+        with no compatibility flags, 
+        with <code>--enable-deprecated-symbols</code>, or
+        with <code>--disable-deprecated-symbols</code>.
+        <p>
+        Usage:
+        <br>
+        <code>h5cc ... -D H5_NO_DEPRECATED_SYMBOLS ...</code>
+        <br>
+        <code>gcc ... -D H5_NO_DEPRECATED_SYMBOLS ...</code>
+        <p>
+      </td></tr>
+    <tr align=left valign=top>
+      <td>&nbsp;&nbsp;&nbsp;&nbsp;</td><td>
+        <code>-D H5_USE_16_API</code>
+      </td><td>
+        Release 1.6 emulation mode; only HDF5 Release 1.6 APIs are available. 
+        <p>
+        Macros are mapped to the Release 1.6 version of each API. 
+        For example, the macro <code>H5Gcreate</code> is mapped 
+        to the function <code>H5Gcreate1</code>.
+        <p>
+        Only APIs, symbols, or functionality that were available 
+        in the Release 1.6 series will be included in the binary.
+        For example, <code>H5Gcreate2</code> will be unavailable and
+                                          <font color=red><b><i>
+                     [ [ [ . . . Will <code>H5Gcreate1</code> be
+                            callable as <code>H5Gcreate1</code>?
+                      Or only as <code>H5Gcreate</code>?  ] ] ].
+                                                 </i></b></font>
+        <p>
+        Requires that HDF5 Library was built 
+        with no compatibility flags, 
+        with <code>--enable-deprecated-symbols</code>, or
+        with <code>--enable-hdf5v1_6</code>.
+        <p>
+        Usage:
+        <br>
+        <code>h5cc ... -D H5_USE_16_API ...</code>
+        <br>
+        <code>gcc ... -D H5_USE_16_API ...</code>
+        <p>
+      </td></tr>
+</table>
+        
+<strong>Function-level settings</strong>
+<br>
+Function-level settings are determined only when the user application 
+is built and installed.
+
+<p>
+In the cases where there are multiple versions of a function available, 
+a high-level function macro can be selectively defined to point to 
+any version of the function.  For example, the macro <code>H5Gcreate</code>
+can be mapped to either of the functions <code>H5Gcreate1</code> or
+<code>H5Gcreate2</code>.
+This is accomplished through a set of compilation flags that can be
+used when the application is compiled.  For example:
+<ul>
+    <li>If the flag <code>H5Gcreate_vers</code> is set to <code>1</code>,
+        the macro <code>H5Gcreate</code> will be mapped to
+        <code>H5Gcreate1</code>. 
+        <br>
+        <code>&nbsp;&nbsp;&nbsp;&nbsp; 
+        h5cc ... -D H5Gcreate_vers=1 ...</code>
+        <br>
+        <code>&nbsp;&nbsp;&nbsp;&nbsp; 
+        gcc ... -D H5Gcreate_vers=1 ...</code>
+        <p>
+    <li>If the flag <code>H5Gcreate_vers</code> is set to <code>2</code>,
+        the macro <code>H5Gcreate</code> will be mapped to
+        <code>H5Gcreate2</code>. 
+        <br>
+        <code>&nbsp;&nbsp;&nbsp;&nbsp; 
+        h5cc ... -D H5Gcreate_vers=2 ...</code>
+        <br>
+        <code>&nbsp;&nbsp;&nbsp;&nbsp; 
+        gcc ... -D H5Gcreate_vers=2 ...</code>
+        <p>
+</ul>
+        
+<p>
+As of Release 1.8.0, the following function macros are defined 
+and can be mapped to the corresponding function versions
+by defining the version flags as indicated:
+<dir>
+<table border=0 cellpadding=4>
+    <tr align=left valign=top>
+        <th>Macro</th>
+        <th>Underlying functions</th>
+        <th>Version flags</th>
+    </tr><tr align=left valign=top>
+        <td><code>H5Gcreate</code></td>
+        <td><code>H5Gcreate1</code>
+            <br>
+            <code>H5Gcreate2</code></td>
+        <td><code>H5Gcreate_vers=1</code>
+            <br>
+            <code>H5Gcreate_vers=2</code></td>
+    </tr><tr align=left valign=top>
+        <td><code>H5Gopen</code></td>
+        <td><code>H5Gopen1</code>
+            <br>
+            <code>H5Gopen2</code></td>
+        <td><code>H5Gopen_vers=1</code>
+            <br>
+            <code>H5Gopen_vers=2</code></td>
+    </tr><tr align=left valign=top>
+        <td><code>H5Eclear</code></td>
+        <td><code>H5Eclear1</code>
+            <br>
+            <code>H5Eclear2</code></td>
+        <td><code>H5Eclear_vers=1</code>
+            <br>
+            <code>H5Eclear_vers=2</code></td>
+    </tr><tr align=left valign=top>
+        <td><code>H5Eprint</code></td>
+        <td><code>H5Eprint1</code>
+            <br>
+            <code>H5Eprint2</code></td>
+        <td><code>H5Eprint_vers=1</code>
+            <br>
+            <code>H5Eprint_vers=2</code></td>
+    </tr><tr align=left valign=top>
+        <td><code>H5Epush</code></td>
+        <td><code>H5Epush1</code>
+            <br>
+            <code>H5Epush2</code></td>
+        <td><code>H5Epush_vers=1</code>
+            <br>
+            <code>H5Epush_vers=2</code></td>
+    </tr><tr align=left valign=top>
+        <td><code>H5Eset_auto&nbsp;&nbsp;</code></td>
+        <td><code>H5Eset_auto1</code>
+            <br>
+            <code>H5Eset_auto2</code></td>
+        <td><code>H5Eset_auto_vers=1</code>
+            <br>
+            <code>H5Eset_auto_vers=2</code></td>
+    </tr><tr align=left valign=top>
+        <td><code>H5Eget_auto</code></td>
+        <td><code>H5Eget_auto1</code>
+            <br>
+            <code>H5Eget_auto2</code></td>
+        <td><code>H5Eget_auto_vers=1</code>
+            <br>
+            <code>H5Eget_auto_vers=2</code></td>
+    </tr><tr align=left valign=top>
+        <td><code>H5Ewalk</code></td>
+        <td><code>H5Ewalk1</code>
+            <br>
+            <code>H5Ewalk2</code></td>
+        <td><code>H5Ewalk_vers=1</code>
+            <br>
+            <code>H5Ewalk_vers=2</code></td>
+</table>
+</dir>
+
+<p>
+When building an HDF5 application, the following <code>h5cc</code> 
+options control function-level API-compatibility:<br>
+<table width=90% border=0 align=center>
+    <tr align=left valign=top>
+      <td><code>&nbsp;&nbsp;&nbsp;&nbsp;</code></td><td>
+        <code>-D&nbsp;H5Gcreate_vers=2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code>
+      </td><td>
+        The macro <code>H5Gcreate</code> will be mapped 
+        to the function <code>H5Gcreate2</code>.
+        <p>
+        
+        <p>
+      </td></tr>
+</table>
+
+<p>
+Note that the function-level settings require that HDF5 Library was built 
+with an appropriate API-compatibility flag.
+
+<p>
+Note that the function-level settings do not negate any available functions;
+if <code>H5Gcreate1</code> in the installed version of the
+HDF5 Library, it will remain available to the application
+as <code>H5Gcreate1</code>.
+Similarly, <code>H5Gcreate2</code>will remain available to the 
+application as <code>H5Gcreate2</code>.
+
+<p>
+<strong>Use of settings file instead of command-line options</strong>
+<br>
+Any of the above global or function-level settings can also be defined
+in a compilation settings file, as in: 
+<br>
+<code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+gcc ... -include settings_file ...</code>
+
+<p>
+                                          <font color=red><b><i>
+   <code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code>
+                       [ [ [ Settings file syntax examples ] ] ]
+                                                 </i></b></font>
+
+<pre>
+<font color=red>
+
+
+Notes:  Add 'Determine installed HDF5 settings:' section. 
+        Make sure it's clear when the underlying functions (eg, H5Gcreate1
+            and H5Gcreate2) are available, and which ones are available 
+            under what circumstances.  E.g., H5Gcreate1 is not available
+            when HDF5 is built with --disable-deprecated-symbols.
+        Make sure the use and management of global and function-level 
+            settings are clear and easily accessible.
+        Make sure that it is clear that a macro's actual signature is 
+            determined by the mapping. 
+            And that it's clear where to look for that signature.
+        Is it meaningful to write in terms of 'global flags' 
+            (H5_NO_DEPRECATED_SYMBOLS, --disable-deprecated-symbols,
+            H5_USE_16_API, --enable-deprecated-symbols) and
+            function-level macros (e.g., H5Gcreate_vers).
+        Or 'compile-time library flags' (--disable-deprecated-symbols,
+            --enable-deprecated-symbols) and 
+            build-time application macros (H5_NO_DEPRECATED_SYMBOLS, 
+            H5_USE_16_API, and e.g., H5Gcreate_vers).
+</font>
+</pre>
+
+
+<!--
+<h3>Unintegrated text</h3>
+    <dd><code>H5Gcreate</code> is a macro used to tune 
+      HDF5 Library compatibility; HDF5 and application compile-time 
+      definitions will determine the mapping.
+      <p>
+      Global settings, 
+      calling for the entire HDF5 Library to behave in one way or the other, 
+      can be used when either the HDF5 Library is compiled 
+      or at application compile time.
+      Function-by-function settings, 
+      calling for a specific function to behave in one way or the other, 
+      can be used only at application compile time.
+      <p>
+      Normally, <code>H5Gopen</code> will be mapped to the most recent
+      <code>H5Gopen</code><i>n</i> function, 
+      which is currently <code>H5Gopen2</code>.
+      If the library and/or application were compiled for Release 1.6
+      emulation, <code>H5Gopen</code> will be mapped to <code>H5Gopen1</code>.
+      <p>
+      For a discussion of the underlying function&rsquo;s behavior, see 
+      <a href="#Group-Create1"><code>H5Gcreate1</code></a> if emulating
+      Release 1.6.x behavior or
+      <a href="#Group-Create2"><code>H5Gcreate2</code></a> for
+      <i>most current</i> behavior.
+      <p>
+      Normally, <code>H5Gcreate</code> will be mapped to the most recent
+      <code>H5Gcreate</code><i>n</i> function, 
+      which is currently <code>H5Gcreate2</code>.
+      If the library and/or the application were compiled for Release 1.6.x
+      emulation, <code>H5Gcreate</code> will be mapped to 
+      <code>H5Gcreate1</code>.
+      <p>
+      The return type and parameters used with this macro 
+      and the values passed in or out in each
+      will correspond to those of function version 
+      to which the macro is mapped. 
+-->
+
+</body></html>
