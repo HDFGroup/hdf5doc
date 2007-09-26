@@ -93,6 +93,7 @@ TABLE.list TD { border:none; }
 	  <li><a href="#SymbolTableEntry">Disk Format Level 1C - Group Symbol Table Entry</a>
 	  <li><a href="#LocalHeap">Disk Format Level 1D - Local Heaps</a>
 	  <li><a href="#GlobalHeap">Disk Format Level 1E - Global Heap</a>
+	  <li><a href="#FractalHeap">Disk Format Level 1E - Fractal Heap</a>
 	  <li><a href="#FreeSpaceIndex">Disk Format Level 1F - Free-space Index</a>
 	</ol>
         </font>
@@ -2717,7 +2718,6 @@ TABLE.list TD { border:none; }
         </td></tr>
       </table>
 
-    </div>
 
     <h3><a name="SymbolTable">Disk Format: Level 1B - Group Symbol Table Nodes</a></h3>
 
@@ -3494,6 +3494,673 @@ TABLE.list TD { border:none; }
       </table>
     </div>
 
+    <h3><a name="FractalHeap">Disk Format: Level 1E - Fractal Heap</a></h3>
+
+	<P>The fractal heap replaces the local heap as well as the global heap. 
+	    It consists of the header, direct and indirect blocks.
+	    The header contains general heap information as well as initialization parameters for 
+	    the doubling table.  The table address in the header points to either a root direct 
+	    or indirect block.  An indirect block contains a list of child direct block addresses 
+	    and/or further indirect block addresses.
+	 <P>The management of the fractal heap is based on a data structure called 
+	    the <em>doubling table</em>.
+	    A doubling table provides a mechanism for quickly extending an array data structure that 
+	    minimizes the number of empty elements in the array, while retaining very fast search of any 
+	    element within the array. (Just copied this from Quincey's paper)
+	    The table is of certain width and rows. 
+	    Each entry in the table represents a block in the fractal heap and
+	    the width is the number of blocks added of the same size before doubling to the next size.
+	    The IDs of objects in the heap are the linear offset of the entry in the heap as if it were
+	    an array. Thus, an ID can be easily converted to a certain row and column 
+	    in the doubling table. </P>
+
+    <div align=center>
+      <table class=format>
+        <caption>
+          A Fractal Heap Header
+        </caption>
+
+        <tr>
+          <th>byte</th>
+          <th>byte</th>
+          <th>byte</th>
+          <th>byte</th>
+        </tr>
+
+        <tr>
+          <td colspan=4>Signature</td>
+        </tr>
+          
+        <tr>
+          <td>Version</td>
+          <td colspan=3 bgcolor=#DDDDDD><em>This space inserted only to align table nicely</em></td>
+        </tr>
+
+        <tr>
+          <td colspan=2>Heap ID Length</td>
+          <td colspan=2>I/O Filters' Encoded Length</td>
+        </tr>
+          
+        <tr>
+          <td>Flags</td>
+          <td colspan=3 bgcolor=#DDDDDD><em>This space inserted only to align table nicely</em></td>
+        </tr>
+
+        <tr>
+          <td colspan=4>Maximum Size of Managed Objects</td>
+        </tr>
+
+        <tr>
+          <td colspan=4>Next ID for Huge Object<sup>L</sup></td>
+        </tr>
+
+        <tr>
+          <td colspan=4>B-tree Address of Huge Objects<sup>O</sup></td>
+        </tr>
+
+        <tr>
+          <td colspan=4>Amount of Free Space in Managed Blocks<sup>L</sup></td>
+        </tr>
+
+        <tr>
+          <td colspan=4>Address of Free Space Section Header<sup>O</sup></td>
+        </tr>
+
+        <tr>
+          <td colspan=4>Amount of Managed Space in Heap<sup>L</sup></td>
+        </tr>
+
+        <tr>
+          <td colspan=4>Amount of Allocated Managed Space in Heap<sup>L</sup></td>
+        </tr>
+
+        <tr>
+          <td colspan=4>Offset of Iterator in Managed Space<sup>L</sup></td>
+        </tr>
+
+        <tr>
+          <td colspan=4>Number of Managed Objects in Heap<sup>L</sup></td>
+        </tr>
+
+        <tr>
+          <td colspan=4>Size of Huge Objects in Heap<sup>L</sup></td>
+        </tr>
+
+        <tr>
+          <td colspan=4>Number of Huge Objects in Heap<sup>L</sup></td>
+        </tr>
+
+        <tr>
+          <td colspan=4>Size of Tiny Objects in Heap<sup>L</sup></td>
+        </tr>
+
+        <tr>
+          <td colspan=4>Number of Tiny Objects in Heap<sup>L</sup></td>
+        </tr>
+
+        <tr>
+          <td colspan=2>Table Width</td>
+          <td colspan=2>Starting Block Size<sup>L</sup></td>
+        </tr>
+
+        <tr>
+          <td colspan=4>Maximum Direct Block Size<sup>L</sup></td>
+        </tr>
+
+        <tr>
+          <td colspan=2>Maximum Heap Size</td>
+          <td colspan=2>Starting # of Rows in Root Indirect Block</td>
+        </tr>
+
+        <tr>
+          <td colspan=4>Address of Table<sup>O</sup></td>
+        </tr>
+
+        <tr>
+          <td colspan=2>Current # of Rows in Root Indirect Block</td>
+          <td colspan=2>Size of Filtered Root Direct Block <em>(optional)</em><sup>L</sup></td>
+        </tr>
+
+        <tr>
+          <td colspan=4>I/O Filter Mask<em> (optional)</em></td>
+        </tr>
+
+        <tr>
+          <td colspan=4>I/O Filter Information<em> (optional, variable size)</em></td>
+        </tr>
+
+        <tr>
+          <td colspan=4>Checksum</td>
+        </tr>
+
+      </table>
+    </div>
+
+    <br>
+    <div align=center>
+      <table class=desc>
+	<tr>
+          <th width="40%">Field Name</th>
+          <th>Description</th>
+        </tr>
+
+        <tr>
+          <td>Signature</td>
+          <td>
+            <P>The ASCII character string "<code>FRHP</code>"
+            is used to indicate the
+            beginning of a fractal heap header.  This gives file consistency
+            checking utilities a better chance of reconstructing a
+            damaged file.
+            </P>
+          </td>
+        </tr>
+          
+        <tr>
+          <td>Version</td>
+          <td>
+            <P>This document describes version 0.</P>
+          </td>
+        </tr>
+
+	<tr>
+          <td>Heap ID Length</td>
+          <td>
+            <P>This is the length of ID to use for a heap object.</P>
+          </td>
+        </tr>
+        <tr>
+          <td>I/O Filters' Encoded Length</td>
+	  <td>
+	    <P>This is the size in bytes of the encoded I/O filter information.</P>
+	  </td>
+        </tr>
+
+	<tr>
+	  <td>Flags</td>
+	  <td>
+            <P>This field is the heap status flag and is a bit-field indicating additional 
+	    information about the fractal heap.
+            <table class=list>
+                <tr>
+                  <th width="30%">Bit(s)</th>
+                  <th align=left>Description</th>
+                </tr>
+
+                <tr>
+                  <td align=center><code>0</code></td>
+                  <td>If set, the ID to use for huge object has wrapped around.</td>
+                </tr>
+                <tr>
+                  <td align=center><code>1</code></td>
+                  <td>If set, the direct blocks in the heap should be checksummed.</td>
+                </tr>
+                <tr>
+                  <td align=center><code>2-7</code></td>
+                  <td>Reserved</td>
+                </tr>
+	    </table>
+            </P>
+          </td>
+	</tr>
+	
+	<tr>
+	  <td>Maximum Size of Managed Objects</td>
+	  <td>
+	    <P>This is the maximum size of managed objects allowed in the heap.
+	    </P>
+	  </td>
+	</tr>
+	<tr>
+	  <td>Next ID for Huge Object</td>
+	  <td>
+	    <P>This is the next ID to use for a huge object in the heap.
+	    </P>
+	  </td>
+
+	<tr>
+	  <td>B-tree Address of Huge Objects</td>
+	  <td>
+	    <P>This is the address of the B-tree used to track huge objects in the heap.
+	    </P>
+	  </td>
+	</tr>
+
+	<tr>
+	  <td>Amount of Free Space in Managed Blocks</td>
+	  <td>
+	    <P>This is the total amount of free space in managed direct blocks.
+	    </P>
+	  </td>
+	</tr>
+
+	<tr>
+          <td>Address of Free Space Section Header</td>
+	  <td>
+	    <P>This is the address of the free space section header for managed blocks.
+	    </P>
+	  </td>
+	</tr>
+
+	<tr>
+          <td>Amount of Managed Space in Heap</td>
+	  <td>
+	    <P>This is the total amount of managed space in the heap.
+	    </P>
+	  </td>
+	</tr>
+
+	<tr>
+          <td>Amount of Allocated Managed Space in Heap</td>
+	  <td>
+	    <P>This is the total amount of managed space actually used in the heap.
+	    </P>
+	  </td>
+	</tr>
+
+	<tr>
+          <td>Offset of Iterator in Managed Space</td>
+	  <td>
+	    <P>This is the offset location where the iterator points in the managed blocks.
+	    </P>
+	  </td>
+	</tr>
+
+	<tr>
+          <td>Number of Managed Objects in Heap</td>
+	  <td>
+	    <P>This is the number of managed objects in the heap.
+	    </P>
+	  </td>
+	</tr>
+
+	<tr>
+          <td>Size of Huge Objects in Heap</td>
+	  <td>
+	    <P>This is the total size of huge objects in the heap.
+	    </P>
+	  </td>
+	</tr>
+
+	<tr>
+          <td>Number of Huge Objects in Heap</td>
+	  <td>
+	    <P>This is the number of huge objects in the heap.
+	    </P>
+	  </td>
+	</tr>
+
+	<tr>
+          <td>Size of Tiny Objects in Heap</td>
+	  <td>
+	    <P>This is the total size of tiny objects that are packed in heap IDs.
+	    </P>
+	  </td>
+	</tr>
+
+	<tr>
+          <td>Number of Tiny Objects in Heap</td>
+	  <td>
+	    <P>This is the number of tiny objects that are packed in heap IDs.
+	    </P>
+	  </td>
+	</tr>
+
+	<tr>
+          <td>Table Width</td>
+	  <td>
+	    <P>This is the number of columns in the doubling table for managed blocks.
+	    </P>
+	    <P>This field and the following six fields contain setup information for the
+	    doubling table.
+	  </td>
+	</tr>
+
+	<tr>
+          <td>Starting Block Size</td>
+	  <td>
+	    <P>This is the starting block size to use in the doubling table for 
+	       managed blocks.
+	    </P>
+	  </td>
+	</tr>
+
+	<tr>
+          <td>Maximum Direct Block Size</td>
+	  <td>
+	    <P>This is the maximum size allowed for a managed direct block.
+	    </P>
+	  </td>
+	</tr>
+
+	<tr>
+          <td>Maximum Heap Size</td>
+	  <td>
+	    <P>This ....NOT SURE ABOUT THIS ONE???
+	       The maximum ID/offset for table (log2 of actual value, # of bits required.)
+	    </P>
+	  </td>
+	</tr>
+
+	<tr>
+          <td>Starting # of Rows in Root Indirect Block</td>
+	  <td>
+	    <P>This is the starting number of rows for the root indirect block.
+	       A value of 0 indicates that full indirect block will be created for the root
+	       right from the start.
+	    </P>
+	  </td>
+	</tr>
+
+	<tr>
+          <td>Address of Table</td>
+	  <td>
+	    <P>This is the address of the doubling table for managed blocks.
+	    </P>
+	  </td>
+	</tr>
+
+	<tr>
+          <td>Current # of Rows in Root Indirect Block</td>
+	  <td>
+	    <P>This is the current number of rows in the root indirect block.
+		A value of 0 indicates that <em>Address of Table</em> points to direct 
+		block instead of indirect block.
+	    </P>
+	  </td>
+	</tr>
+
+	<tr>
+          <td>Size of Filtered Root Direct Block</td>
+	  <td>
+	    <P>This is the compressed size of the root direct block.
+	    </P>
+	  </td>
+	</tr>
+
+	<tr>
+          <td>I/O Filter Mask</td>
+	  <td>
+	    <P>This is the filter mask for the filtered root direct block.
+	    </P>
+	  </td>
+	</tr>
+
+        <tr>
+          <td>I/O Filter Information</td>
+	  <td>
+	    <P>This is the filter pipline message.  
+	    The size of this field is determined by <em>I/O Filters' Encoded Length</em>.
+	    </P>
+	  </td>
+        </tr>
+
+        <tr>
+          <td>Checksum</td>
+          <td>
+            <P>This is the checksum for the header.</P>
+          </td>
+        </tr>
+
+      </table>
+    </div>
+
+    <br>
+    <div align=center>
+      <table class=format>
+        <caption>
+          A Fractal Heap Direct Block
+        </caption>
+
+        <tr>
+          <th>byte</th>
+          <th>byte</th>
+          <th>byte</th>
+          <th>byte</th>
+        </tr>
+
+        <tr>
+          <td colspan=4>Signature</td>
+        </tr>
+          
+        <tr>
+          <td>Version</td>
+          <td colspan=3>Heap Address<sup>O</sup></td>
+        </tr>
+
+        <tr>
+          <td colspan=4>Block Offset <em>(variable size)</em></td>
+        </tr>
+          
+        <tr>
+          <td colspan=4>Checksum<em> (optional)</em></td>
+        </tr>
+      </table>
+    </div>
+
+    <br>
+    <div align=center>
+      <table class=desc>
+	<tr>
+          <th width="30%">Field Name</th>
+          <th>Description</th>
+        </tr>
+
+        <tr>
+          <td>Signature</td>
+          <td>
+            <P>The ASCII character string "<code>FRDB</code>"
+            is used to indicate the
+            beginning of a fractal heap direct block.  This gives file consistency
+            checking utilities a better chance of reconstructing a
+            damaged file.
+            </P>
+          </td>
+        </tr>
+          
+        <tr>
+          <td>Version</td>
+          <td>
+            <P>This document describes version 0.</P>
+          </td>
+        </tr>
+
+        <tr>
+          <td>Heap Address</td>
+          <td>
+            <P>This is the fractal heap address for the block and is used 
+		for file integrity check.</P> </td>
+        </tr>
+
+        <tr>
+          <td>Block Offset</td>
+          <td>
+            <P>This is the offset of the block within the fractal heap's address space.
+		The size of this field is derived from <em>Maximum Heap Size</em> in 
+		<em>Fractal Heap Header</em>.</P>
+          </td>
+          </td>
+        </tr>
+
+        <tr>
+          <td>Checksum</td>
+          <td>
+            <P>This is the checksum for the direct block.</P>
+	    <P>This field is present if bit 1 of <em>Flags</em> in the fractal 
+	       heap header is set.</P>
+          </td>
+        </tr>
+
+      </table>
+    </div>
+
+    <br>
+    <div align=center>
+      <table class=format>
+        <caption>
+          A Fractal Heap Indirect Block
+        </caption>
+
+        <tr>
+          <th>byte</th>
+          <th>byte</th>
+          <th>byte</th>
+          <th>byte</th>
+        </tr>
+
+        <tr>
+          <td colspan=4>Signature</td>
+        </tr>
+          
+        <tr>
+          <td>Version</td>
+          <td colspan=3>Heap Address<sup>O</sup></td>
+        </tr>
+
+        <tr>
+          <td colspan=4>Block Offset <em>(variable size)</em></td>
+        </tr>
+
+        <tr>
+          <td colspan=4>Child Block Address 0<sup>O</sup></td>
+	</tr>
+	<tr>
+	  <td colspan=4>Size of Filtered Direct Block 0 <em>(optional)</em> <sup>L</sup></td>
+	</tr>
+	<tr>
+	  <td colspan=4>Filter Mask for Direct Block 0 <em>(optional)</em></td>
+	</tr>
+        <tr>
+          <td colspan=4>Child Block Address 1<sup>O</sup></td>
+	</tr>
+	<tr>
+	  <td colspan=4>Size of Filtered Direct Block 1 <em>(optional)</em><sup>L</sup></td>
+	</tr>
+	<tr>
+	  <td colspan=4>Filter Mask for Direct Block 1 <em>(optional)</em></td>
+	</tr>
+	<tr>
+	    <td colspan=4>...</td>
+	</tr>
+        <tr>
+          <td colspan=4>Child Block Address K-1<sup>O</sup></td>
+	</tr>
+	<tr>
+	  <td colspan=4>Size of Filtered Direct Block K-1 <em>(optional)</em><sup>L</sup></td>
+	</tr>
+	<tr>
+	  <td colspan=4>Filter Mask for Direct Block K-1 <em>(optional)</em></td>
+	</tr>
+        <tr>
+          <td colspan=4>Child Block Address K<sup>O</sup></td>
+	</tr>
+        <tr>
+          <td colspan=4>Child Block Address K+1<sup>O</sup></td>
+	</tr>
+	<tr>
+	    <td colspan=4>...</td>
+	</tr>
+        <tr>
+          <td colspan=4>Child Block Address N-1<sup>O</sup></td>
+	</tr>
+          
+        <tr>
+	    <td colspan=4>Checksum</td>
+        </tr>
+      </table>
+    </div>
+
+    <br>
+    <div align=center>
+      <table class=desc>
+	<tr>
+          <th width="30%">Field Name</th>
+          <th>Description</th>
+        </tr>
+
+        <tr>
+          <td>Signature</td>
+          <td>
+            <P>The ASCII character string "<code>FRIB</code>"
+            is used to indicate the
+            beginning of a fractal heap indirect block.  This gives file consistency
+            checking utilities a better chance of reconstructing a
+            damaged file.
+            </P>
+          </td>
+        </tr>
+          
+        <tr>
+          <td>Version</td>
+          <td>
+            <P>This document describes version 0.</P>
+          </td>
+        </tr>
+
+        <tr>
+          <td>Heap Address</td>
+          <td>
+            <P>This is the fractal heap address for this block and is used 
+		for file integrity check.</P>
+          </td>
+        </tr>
+
+        <tr>
+          <td>Block Offset</td>
+          <td>
+            <P>This is the offset of the block within the fractal heap's address space.
+		The size of this field is derived from <em>Maximum Heap Size</em> in 
+		<em>Fractal Heap Header</em>.</P>
+          </td>
+        </tr>
+
+        <tr>
+          <td>Child Block Address N</td>
+          <td>
+	    <P>This field is the address of the child block.
+		N is the number of child blocks in the indirect block.</P>
+          </td>
+        </tr>
+
+	<tr>
+	  <td>Size of Filtered Direct Block K</td>
+	  <td>
+	    <P>This is the size of the child direct block after passing through I/O filters.
+		K is the number of child direct blocks not exceeding the maximum 
+		number of direct blocks allowed in an indirect block.</P>
+	  </td>
+	</tr>
+	<tr>
+	  <td>Filter Mask for Direct Block K</td>
+	  <td>
+	    <P>This is the I/O filter mask for the filtered direct block.</P>
+	  </td>
+        </tr>
+
+        <tr>
+          <td>Checksum</td>
+          <td>
+            <P>This is the checksum for the indirect block.</P>
+          </td>
+        </tr>
+
+      </table>
+    </div>
+
+      <table class=note>
+        <tr><td>
+            (Items marked with an 'O' in the above tables are
+            <br>
+            of the size specified in "Size of Offsets.")
+        </td></tr>
+        <tr><td>
+            (Items marked with an 'L' the above table are
+            <br>
+            of the size specified in "Size of Lengths.")
+        </td></tr>
+      </table>
+
+    <br>
     <h3><a name="FreeSpaceIndex">Disk Format: Level 1F - Free-space Index</a></h3>
 
     <p>The free-space index is a collection of blocks of data,
