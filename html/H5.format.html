@@ -2705,19 +2705,6 @@ TABLE.list TD { border:none; }
       </table>
     </div>
 
-      <table class=note>
-        <tr><td>
-            (The field marked with an 'O' in the above tables is
-            <br>
-            of the size specified in "Size of Offsets.")
-        </td></tr>
-        <tr><td>
-            (The field marked with an 'L' in the above tables is
-            <br>
-            of the size specified in "Size of Lengths.")
-        </td></tr>
-      </table>
-
 
     <h3><a name="SymbolTable">Disk Format: Level 1B - Group Symbol Table Nodes</a></h3>
 
@@ -3496,28 +3483,36 @@ TABLE.list TD { border:none; }
 
     <h3><a name="FractalHeap">Disk Format: Level 1E - Fractal Heap</a></h3>
 
-	<P>The fractal heap replaces the local heap as well as the global heap. 
-	    It consists of the header, direct and indirect blocks.
-	    The header contains general heap information as well as initialization parameters for 
-	    the doubling table.  The table address in the header points to either a root direct 
-	    or indirect block.  An indirect block contains a list of child direct block addresses 
-	    and/or further indirect block addresses.
-	 <P>The management of the fractal heap is based on a data structure called 
-	    the <em>doubling table</em>.
-	    A doubling table provides a mechanism for quickly extending an array data structure that 
-	    minimizes the number of empty elements in the array, while retaining very fast search of any 
-	    element within the array. (Just copied this from Quincey's paper)
-	    The table is of certain width and rows. 
-	    Each entry in the table represents a block in the fractal heap and
-	    the width is the number of blocks added of the same size before doubling to the next size.
-	    The IDs of objects in the heap are the linear offset of the entry in the heap as if it were
-	    an array. Thus, an ID can be easily converted to a certain row and column 
-	    in the doubling table. </P>
+        <P>Fractal heaps can replace local heaps as well as global heaps in a
+            file.
+	    Each heap consists of a header and zero or more direct and indirect
+            blocks.  The header contains general information as well as
+            initialization parameters for the doubling table.  The table
+            address in the header points to either a root direct or indirect
+            block.  An indirect block contains a list of child direct block
+            addresses and/or further indirect block addresses.
+        </P>
 
+        <P>The management of the fractal heap is based on a data structure
+            called a <em>doubling table</em>.
+	    A doubling table provides a mechanism for quickly extending an
+            array data structure that minimizes the number of empty elements in
+            the array, while retaining very fast search of any element within
+            the array.  [XXX: Need link to RFC about doubling table]
+	    Each table has a certain width and rows (stored in the header). 
+	    Each entry in the table represents a block in the fractal heap and
+	    the width is the number of blocks added of the same size before
+            doubling to the next size.  The IDs of objects in the heap are the
+            linear offset of the entry in the heap as if it were an array.
+            Thus, an ID can be easily converted to a certain row and column 
+	    in the doubling table.
+        </P>
+
+    <br>
     <div align=center>
       <table class=format>
         <caption>
-          A Fractal Heap Header
+          Fractal Heap Header
         </caption>
 
         <tr>
@@ -3551,11 +3546,11 @@ TABLE.list TD { border:none; }
         </tr>
 
         <tr>
-          <td colspan=4>Next ID for Huge Object<sup>L</sup></td>
+          <td colspan=4>Next Huge Object ID<sup>L</sup></td>
         </tr>
 
         <tr>
-          <td colspan=4>B-tree Address of Huge Objects<sup>O</sup></td>
+          <td colspan=4>v2 B-tree Address of Huge Objects<sup>O</sup></td>
         </tr>
 
         <tr>
@@ -3575,7 +3570,7 @@ TABLE.list TD { border:none; }
         </tr>
 
         <tr>
-          <td colspan=4>Offset of Iterator in Managed Space<sup>L</sup></td>
+          <td colspan=4>Offset of Direct Block Allocation Iterator in Managed Space<sup>L</sup></td>
         </tr>
 
         <tr>
@@ -3600,7 +3595,11 @@ TABLE.list TD { border:none; }
 
         <tr>
           <td colspan=2>Table Width</td>
-          <td colspan=2>Starting Block Size<sup>L</sup></td>
+          <td colspan=2 bgcolor=#DDDDDD><em>This space inserted only to align table nicely</em></td>
+        </tr>
+
+        <tr>
+          <td colspan=4>Starting Block Size<sup>L</sup></td>
         </tr>
 
         <tr>
@@ -3613,12 +3612,16 @@ TABLE.list TD { border:none; }
         </tr>
 
         <tr>
-          <td colspan=4>Address of Table<sup>O</sup></td>
+          <td colspan=4>Address of Root Block<sup>O</sup></td>
         </tr>
 
         <tr>
           <td colspan=2>Current # of Rows in Root Indirect Block</td>
-          <td colspan=2>Size of Filtered Root Direct Block <em>(optional)</em><sup>L</sup></td>
+          <td colspan=2 bgcolor=#DDDDDD><em>This space inserted only to align table nicely</em></td>
+        </tr>
+
+        <tr>
+          <td colspan=4>Size of Filtered Root Direct Block <em>(optional)</em><sup>L</sup></td>
         </tr>
 
         <tr>
@@ -3666,13 +3669,15 @@ TABLE.list TD { border:none; }
 	<tr>
           <td>Heap ID Length</td>
           <td>
-            <P>This is the length of ID to use for a heap object.</P>
+            <P>This is the length in bytes of heap object IDs for this heap.</P>
           </td>
         </tr>
+
         <tr>
           <td>I/O Filters' Encoded Length</td>
 	  <td>
-	    <P>This is the size in bytes of the encoded I/O filter information.</P>
+	    <P>This is the size in bytes of the encoded <em>I/O Filter Information</em>.
+            </P>
 	  </td>
         </tr>
 
@@ -3689,11 +3694,16 @@ TABLE.list TD { border:none; }
 
                 <tr>
                   <td align=center><code>0</code></td>
-                  <td>If set, the ID to use for huge object has wrapped around.</td>
+                  <td>If set, the ID value to use for huge object has wrapped
+                    around.  If the value for the <em>Next Huge Object ID</em>
+                    has wrapped around, each new huge object inserted into the
+                    heap will require a search for an ID value.
+                  </td>
                 </tr>
                 <tr>
                   <td align=center><code>1</code></td>
-                  <td>If set, the direct blocks in the heap should be checksummed.</td>
+                  <td>If set, the direct blocks in the heap are checksummed.
+                  </td>
                 </tr>
                 <tr>
                   <td align=center><code>2-7</code></td>
@@ -3708,20 +3718,30 @@ TABLE.list TD { border:none; }
 	  <td>Maximum Size of Managed Objects</td>
 	  <td>
 	    <P>This is the maximum size of managed objects allowed in the heap.
+                Objects greater than this this are 'huge' objects and will be
+                stored in the file directly, rather than in a direct block for
+                the heap.
 	    </P>
 	  </td>
 	</tr>
+
 	<tr>
-	  <td>Next ID for Huge Object</td>
+	  <td>Next Huge Object ID</td>
 	  <td>
-	    <P>This is the next ID to use for a huge object in the heap.
+	    <P>This is the next ID value to use for a huge object in the heap.
 	    </P>
 	  </td>
 
 	<tr>
-	  <td>B-tree Address of Huge Objects</td>
+	  <td>v2 B-tree Address of Huge Objects</td>
 	  <td>
-	    <P>This is the address of the B-tree used to track huge objects in the heap.
+	    <P>This is the address of the <a href="#V2Btrees">v2 B-tree</a>
+                used to track huge objects in the heap.  The type of records
+                stored in the <em>v2 B-tree</em> will
+                be determined by whether the address & length of a huge object
+                can fit into a heap ID (if yes, it's a "directly" accessed
+                huge object) and whether there is a filter used on objects
+                in the heap.
 	    </P>
 	  </td>
 	</tr>
@@ -3729,15 +3749,18 @@ TABLE.list TD { border:none; }
 	<tr>
 	  <td>Amount of Free Space in Managed Blocks</td>
 	  <td>
-	    <P>This is the total amount of free space in managed direct blocks.
+	    <P>This is the total amount of free space in managed direct blocks
+                (in bytes).
 	    </P>
 	  </td>
 	</tr>
 
 	<tr>
-          <td>Address of Free Space Section Header</td>
+          <td>Address of Free Space Tracker</td>
 	  <td>
-	    <P>This is the address of the free space section header for managed blocks.
+	    <P>This is the address of the <em>Free Space Tracker</em> for managed
+                blocks.  [XXX: Needs link to <em>Free Space Tracker</em> format
+                information (which is not defined as of 9/27/2007)]
 	    </P>
 	  </td>
 	</tr>
@@ -3745,7 +3768,8 @@ TABLE.list TD { border:none; }
 	<tr>
           <td>Amount of Managed Space in Heap</td>
 	  <td>
-	    <P>This is the total amount of managed space in the heap.
+	    <P>This is the total amount of managed space in the heap (in bytes),
+                essentially the upper bound of the heap's linear address space.
 	    </P>
 	  </td>
 	</tr>
@@ -3753,15 +3777,23 @@ TABLE.list TD { border:none; }
 	<tr>
           <td>Amount of Allocated Managed Space in Heap</td>
 	  <td>
-	    <P>This is the total amount of managed space actually used in the heap.
+	    <P>This is the total amount of managed space (in bytes) actually
+                allocated in
+                the heap.  This can be less than the <em>Amount of Managed Space
+                in Heap</em> field, if some direct blocks in the heap's linear
+                address space are not allocated.
 	    </P>
 	  </td>
 	</tr>
 
 	<tr>
-          <td>Offset of Iterator in Managed Space</td>
+          <td>Offset of Direct Block Allocation Iterator in Managed Space</td>
 	  <td>
-	    <P>This is the offset location where the iterator points in the managed blocks.
+	    <P>This is the linear heap offset where the next direct
+                block should be allocated at (in bytes).  This may be less than
+                the <em>Amount of Managed Space in Heap</em> value because the
+                heap's address space is increased by a "row" of direct blocks
+                at a time, rather than by single direct block increments.
 	    </P>
 	  </td>
 	</tr>
@@ -3777,7 +3809,7 @@ TABLE.list TD { border:none; }
 	<tr>
           <td>Size of Huge Objects in Heap</td>
 	  <td>
-	    <P>This is the total size of huge objects in the heap.
+	    <P>This is the total size of huge objects in the heap (in bytes).
 	    </P>
 	  </td>
 	</tr>
@@ -3793,7 +3825,8 @@ TABLE.list TD { border:none; }
 	<tr>
           <td>Size of Tiny Objects in Heap</td>
 	  <td>
-	    <P>This is the total size of tiny objects that are packed in heap IDs.
+	    <P>This is the total size of tiny objects that are packed in heap
+                IDs (in bytes).
 	    </P>
 	  </td>
 	</tr>
@@ -3809,10 +3842,9 @@ TABLE.list TD { border:none; }
 	<tr>
           <td>Table Width</td>
 	  <td>
-	    <P>This is the number of columns in the doubling table for managed blocks.
+	    <P>This is the number of columns in the doubling table for managed
+                blocks.  This value must be a power of two.
 	    </P>
-	    <P>This field and the following six fields contain setup information for the
-	    doubling table.
 	  </td>
 	</tr>
 
@@ -3820,7 +3852,7 @@ TABLE.list TD { border:none; }
           <td>Starting Block Size</td>
 	  <td>
 	    <P>This is the starting block size to use in the doubling table for 
-	       managed blocks.
+	       managed blocks (in bytes).  This value must be a power of two.
 	    </P>
 	  </td>
 	</tr>
@@ -3829,6 +3861,10 @@ TABLE.list TD { border:none; }
           <td>Maximum Direct Block Size</td>
 	  <td>
 	    <P>This is the maximum size allowed for a managed direct block.
+                Objects inserted into the heap that are larger than this value
+                (less the # of bytes of direct block prefix/suffix)
+                are stored as 'huge' objects.  This value must be a power of
+                two.
 	    </P>
 	  </td>
 	</tr>
@@ -3836,8 +3872,12 @@ TABLE.list TD { border:none; }
 	<tr>
           <td>Maximum Heap Size</td>
 	  <td>
-	    <P>This ....NOT SURE ABOUT THIS ONE???
-	       The maximum ID/offset for table (log2 of actual value, # of bits required.)
+	    <P>This is the maximum size of the heap's linear address space for
+                managed objects (in bytes).  The value stored is the log2 of
+                the actual value, that is: the # of bits of the address space.
+                'Huge' and 'tiny' objects aren't counted in this value, since
+                they don't store objects in the linear address space of the
+                heap.
 	    </P>
 	  </td>
 	</tr>
@@ -3846,16 +3886,21 @@ TABLE.list TD { border:none; }
           <td>Starting # of Rows in Root Indirect Block</td>
 	  <td>
 	    <P>This is the starting number of rows for the root indirect block.
-	       A value of 0 indicates that full indirect block will be created for the root
-	       right from the start.
+	       A value of 0 indicates that the root indirect block will have
+               the maximum number of rows needed to address the heap's <em>Maximum
+               Heap Size</em>.
 	    </P>
 	  </td>
 	</tr>
 
 	<tr>
-          <td>Address of Table</td>
+          <td>Address of Root Block</td>
 	  <td>
-	    <P>This is the address of the doubling table for managed blocks.
+	    <P>This is the address of the root block for the heap.  It can
+                be the <A href="#UndefinedAddress">undefined address</A> if
+                there is no data in the heap.  It either points to a direct
+                block (if the <em>Current # of Rows in the Root Indirect Block</em>
+                value is 0), or an indirect block.
 	    </P>
 	  </td>
 	</tr>
@@ -3864,8 +3909,8 @@ TABLE.list TD { border:none; }
           <td>Current # of Rows in Root Indirect Block</td>
 	  <td>
 	    <P>This is the current number of rows in the root indirect block.
-		A value of 0 indicates that <em>Address of Table</em> points to direct 
-		block instead of indirect block.
+		A value of 0 indicates that <em>Address of Root Block</em>
+                points to direct block instead of indirect block.
 	    </P>
 	  </td>
 	</tr>
@@ -3873,7 +3918,10 @@ TABLE.list TD { border:none; }
 	<tr>
           <td>Size of Filtered Root Direct Block</td>
 	  <td>
-	    <P>This is the compressed size of the root direct block.
+	    <P>This is the size of the root direct block, if filters are
+                applied to heap objects (in bytes).  This field is only
+                stored in the header if the <em>I/O Filters' Encoded Length</em>
+                is greater than 0.
 	    </P>
 	  </td>
 	</tr>
@@ -3881,7 +3929,13 @@ TABLE.list TD { border:none; }
 	<tr>
           <td>I/O Filter Mask</td>
 	  <td>
-	    <P>This is the filter mask for the filtered root direct block.
+	    <P>This is the filter mask for the root direct block, if filters
+                are applied to heap objects.  This mask has the same format as
+                that used for the filter mask in chunked raw data records in a
+                <a href="#V1Btrees">v1 B-tree</a>.
+                This field is only
+                stored in the header if the <em>I/O Filters' Encoded Length</em>
+                is greater than 0.
 	    </P>
 	  </td>
 	</tr>
@@ -3889,8 +3943,12 @@ TABLE.list TD { border:none; }
         <tr>
           <td>I/O Filter Information</td>
 	  <td>
-	    <P>This is the filter pipline message.  
-	    The size of this field is determined by <em>I/O Filters' Encoded Length</em>.
+	    <P>This is the I/O filter information encoding direct blocks and
+                huge objects, if filters are applied to heap objects.  This
+                field is encoded as a <a href="#FilterMessage">Filter Pipeline</a>
+                message.
+                The size of this field is determined by <em>I/O Filters'
+                Encoded Length</em>.
 	    </P>
 	  </td>
         </tr>
@@ -3909,7 +3967,7 @@ TABLE.list TD { border:none; }
     <div align=center>
       <table class=format>
         <caption>
-          A Fractal Heap Direct Block
+          Fractal Heap Direct Block
         </caption>
 
         <tr>
@@ -3925,7 +3983,11 @@ TABLE.list TD { border:none; }
           
         <tr>
           <td>Version</td>
-          <td colspan=3>Heap Address<sup>O</sup></td>
+          <td colspan=3 bgcolor=#DDDDDD><em>This space inserted only to align table nicely</em></td>
+        </tr>
+
+        <tr>
+          <td colspan=4>Heap Header Address<sup>O</sup></td>
         </tr>
 
         <tr>
@@ -3933,7 +3995,7 @@ TABLE.list TD { border:none; }
         </tr>
           
         <tr>
-          <td colspan=4>Checksum<em> (optional)</em></td>
+          <td colspan=4>Checksum <em>(optional)</em></td>
         </tr>
       </table>
     </div>
@@ -3966,19 +4028,25 @@ TABLE.list TD { border:none; }
         </tr>
 
         <tr>
-          <td>Heap Address</td>
+          <td>Heap Header Address</td>
           <td>
-            <P>This is the fractal heap address for the block and is used 
-		for file integrity check.</P> </td>
+            <P>This is the address for the fractal heap header that this
+                block belongs to.  This field is principally used for file
+                integrity checking.
+            </P>
+          </td>
         </tr>
 
         <tr>
           <td>Block Offset</td>
           <td>
-            <P>This is the offset of the block within the fractal heap's address space.
-		The size of this field is derived from <em>Maximum Heap Size</em> in 
-		<em>Fractal Heap Header</em>.</P>
-          </td>
+            <P>This is the offset of the block within the fractal heap's
+                address space (in bytes).  The number of bytes used to encode
+                this field is the <em>Maximum Heap Size</em> (in the heap's
+                header) divided by 8 and rounded up to the next highest integer,
+                for values that aren't a multiple of 8.  This value is
+                principally used for file integrity checking.
+            </P>
           </td>
         </tr>
 
@@ -3986,8 +4054,8 @@ TABLE.list TD { border:none; }
           <td>Checksum</td>
           <td>
             <P>This is the checksum for the direct block.</P>
-	    <P>This field is present if bit 1 of <em>Flags</em> in the fractal 
-	       heap header is set.</P>
+	    <P>This field is only present if bit 1 of <em>Flags</em> in the
+                heap's header is set.</P>
           </td>
         </tr>
 
@@ -3998,7 +4066,7 @@ TABLE.list TD { border:none; }
     <div align=center>
       <table class=format>
         <caption>
-          A Fractal Heap Indirect Block
+          Fractal Heap Indirect Block
         </caption>
 
         <tr>
@@ -4014,7 +4082,11 @@ TABLE.list TD { border:none; }
           
         <tr>
           <td>Version</td>
-          <td colspan=3>Heap Address<sup>O</sup></td>
+          <td colspan=3 bgcolor=#DDDDDD><em>This space inserted only to align table nicely</em></td>
+        </tr>
+
+        <tr>
+          <td colspan=4>Heap Header Address<sup>O</sup></td>
         </tr>
 
         <tr>
@@ -4022,50 +4094,57 @@ TABLE.list TD { border:none; }
         </tr>
 
         <tr>
-          <td colspan=4>Child Block Address 0<sup>O</sup></td>
+          <td colspan=4>Child Direct Block #0 Address<sup>O</sup></td>
 	</tr>
 	<tr>
-	  <td colspan=4>Size of Filtered Direct Block 0 <em>(optional)</em> <sup>L</sup></td>
+	  <td colspan=4>Size of Filtered Direct Block #0 <em>(optional)</em> <sup>L</sup></td>
 	</tr>
 	<tr>
-	  <td colspan=4>Filter Mask for Direct Block 0 <em>(optional)</em></td>
+	  <td colspan=4>Filter Mask for Direct Block #0 <em>(optional)</em></td>
 	</tr>
+
         <tr>
-          <td colspan=4>Child Block Address 1<sup>O</sup></td>
+          <td colspan=4>Child Direct Block #1 Address<sup>O</sup></td>
 	</tr>
 	<tr>
-	  <td colspan=4>Size of Filtered Direct Block 1 <em>(optional)</em><sup>L</sup></td>
+	  <td colspan=4>Size of Filtered Direct Block #1 <em>(optional)</em><sup>L</sup></td>
 	</tr>
 	<tr>
-	  <td colspan=4>Filter Mask for Direct Block 1 <em>(optional)</em></td>
+	  <td colspan=4>Filter Mask for Direct Block #1 <em>(optional)</em></td>
 	</tr>
+
 	<tr>
 	    <td colspan=4>...</td>
 	</tr>
+
         <tr>
-          <td colspan=4>Child Block Address K-1<sup>O</sup></td>
+          <td colspan=4>Child Direct Block #K-1 Address<sup>O</sup></td>
 	</tr>
 	<tr>
-	  <td colspan=4>Size of Filtered Direct Block K-1 <em>(optional)</em><sup>L</sup></td>
+	  <td colspan=4>Size of Filtered Direct Block #K-1 <em>(optional)</em><sup>L</sup></td>
 	</tr>
 	<tr>
-	  <td colspan=4>Filter Mask for Direct Block K-1 <em>(optional)</em></td>
+	  <td colspan=4>Filter Mask for Direct Block #K-1 <em>(optional)</em></td>
 	</tr>
+
         <tr>
-          <td colspan=4>Child Block Address K<sup>O</sup></td>
+          <td colspan=4>Child Indirect Block #0 Address<sup>O</sup></td>
 	</tr>
+
         <tr>
-          <td colspan=4>Child Block Address K+1<sup>O</sup></td>
+          <td colspan=4>Child Indirect Block #1 Address<sup>O</sup></td>
 	</tr>
+
 	<tr>
-	    <td colspan=4>...</td>
+	  <td colspan=4>...</td>
 	</tr>
+
         <tr>
-          <td colspan=4>Child Block Address N-1<sup>O</sup></td>
+          <td colspan=4>Child Indirect Block #N-1 Address<sup>O</sup></td>
 	</tr>
           
         <tr>
-	    <td colspan=4>Checksum</td>
+	  <td colspan=4>Checksum</td>
         </tr>
       </table>
     </div>
@@ -4081,11 +4160,10 @@ TABLE.list TD { border:none; }
         <tr>
           <td>Signature</td>
           <td>
-            <P>The ASCII character string "<code>FRIB</code>"
-            is used to indicate the
-            beginning of a fractal heap indirect block.  This gives file consistency
-            checking utilities a better chance of reconstructing a
-            damaged file.
+            <P>The ASCII character string "<code>FRIB</code>" is used to
+                indicate the beginning of a fractal heap indirect block.  This
+                gives file consistency checking utilities a better chance of
+                reconstructing a damaged file.
             </P>
           </td>
         </tr>
@@ -4098,43 +4176,67 @@ TABLE.list TD { border:none; }
         </tr>
 
         <tr>
-          <td>Heap Address</td>
+          <td>Heap Header Address</td>
           <td>
-            <P>This is the fractal heap address for this block and is used 
-		for file integrity check.</P>
+            <P>This is the address for the fractal heap header that this
+                block belongs to.  This field is principally used for file
+                integrity checking.
+            </P>
           </td>
         </tr>
 
         <tr>
           <td>Block Offset</td>
           <td>
-            <P>This is the offset of the block within the fractal heap's address space.
-		The size of this field is derived from <em>Maximum Heap Size</em> in 
-		<em>Fractal Heap Header</em>.</P>
+            <P>This is the offset of the block within the fractal heap's
+                address space (in bytes).  The number of bytes used to encode
+                this field is the <em>Maximum Heap Size</em> (in the heap's
+                header) divided by 8 and rounded up to the next highest integer,
+                for values that aren't a multiple of 8.  This value is
+                principally used for file integrity checking.
+            </P>
           </td>
         </tr>
 
         <tr>
-          <td>Child Block Address N</td>
+          <td>Child Direct Block #K Address</td>
           <td>
-	    <P>This field is the address of the child block.
-		N is the number of child blocks in the indirect block.</P>
+	    <P>This field is the address of the child direct block.
+                The size of the [uncompressed] direct block can be computed by
+                its offset in the heap's linear address space.  
+            </P>
           </td>
         </tr>
 
 	<tr>
-	  <td>Size of Filtered Direct Block K</td>
+	  <td>Size of Filtered Direct Block #K</td>
 	  <td>
-	    <P>This is the size of the child direct block after passing through I/O filters.
-		K is the number of child direct blocks not exceeding the maximum 
-		number of direct blocks allowed in an indirect block.</P>
+	    <P>This is the size of the child direct block after passing through
+                the I/O filters defined for this heap (in bytes).  If no I/O
+                filters are present for this heap, this field is not present.
+            </P>
 	  </td>
 	</tr>
 	<tr>
-	  <td>Filter Mask for Direct Block K</td>
+	  <td>Filter Mask for Direct Block #K</td>
 	  <td>
-	    <P>This is the I/O filter mask for the filtered direct block.</P>
+            <P>This is the I/O filter mask for the filtered direct block.
+                This mask has the same format as that used for the filter mask
+                in chunked raw data records in a <a href="#V1Btrees">v1 B-tree</a>.
+                If no I/O filters are present for this heap, this field is not
+                present.
+            </P>
 	  </td>
+        </tr>
+
+        <tr>
+          <td>Child Indirect Block #N Address</td>
+          <td>
+	    <P>This field is the address of the child indirect block.
+                The size of the indirect block can be computed by
+                its offset in the heap's linear address space.  
+            </P>
+          </td>
         </tr>
 
         <tr>
@@ -4145,7 +4247,6 @@ TABLE.list TD { border:none; }
         </tr>
 
       </table>
-    </div>
 
       <table class=note>
         <tr><td>
@@ -4159,6 +4260,7 @@ TABLE.list TD { border:none; }
             of the size specified in "Size of Lengths.")
         </td></tr>
       </table>
+    </div>
 
     <br>
     <h3><a name="FreeSpaceIndex">Disk Format: Level 1F - Free-space Index</a></h3>
