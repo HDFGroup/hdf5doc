@@ -1792,7 +1792,7 @@ TABLE.list TD { border:none; }
 	  <td colspan=4><br>Number of Records N<sub>0</sub> for Child Node 0 <em>(variable size)</em></td>
 	</tr>
 	<tr>
-	  <td colspan=4><br>Total Number of Records for Child Node 0 <em>(variable size)</em></td>
+	  <td colspan=4><br>Total Number of Records for Child Node 0 <em>(optional, variable size)</em></td>
 	</tr>
 	<tr>
 	  <td colspan=4>Child Node Pointer 1<sup>O</sup></td>
@@ -1800,7 +1800,7 @@ TABLE.list TD { border:none; }
 	  <td colspan=4><br>Number of Records N<sub>1</sub> for Child Node 1 <em>(variable size)</em></td>
 	</tr>
 	<tr>
-	  <td colspan=4><br>Total Number of Records for Child Node 1 <em>(variable size)</em></td>
+	  <td colspan=4><br>Total Number of Records for Child Node 1 <em>(optional, variable size)</em></td>
 	</tr>
 	<tr>
 	  <td colspan=4>...</td>
@@ -1812,7 +1812,7 @@ TABLE.list TD { border:none; }
 	  <td colspan=4><br>Number of Records N<sub>n</sub>for Child Node N <em>(variable size)</em></td>
 	</tr>
 	<tr>
-	  <td colspan=4><br>Total Number of Records for Child Node N <em>(variable size)</em></td>
+	  <td colspan=4><br>Total Number of Records for Child Node N <em>(optional, variable size)</em></td>
 	</tr>
 	<tr>
 	  <td colspan=4>Checksum</td>
@@ -1877,12 +1877,53 @@ TABLE.list TD { border:none; }
         <tr>
           <td>Number of Records in Child Node</td>
           <td>
-            <P>This is the number of records of the child node pointed to by
+            <P>This is the number of records in the child node pointed to by
                 the corresponding <em>Node Pointer</em>.
             </P>
             <P>The number of bytes used to store this field is determined by
                 the maximum possible number of records able to be stored in the
                 child node.
+            </P>
+            <P>
+                The maximum number of records in a child node is computed in
+                the following way: Subtract the fixed size overhead for the
+                child node
+                (e.g. it's signature, version, checksum, etc. and <em>one</em>
+                pointer triplet of information for the child node (because there
+                is one more pointer triplet than records in each internal node))
+                from the size of nodes for the B-tree and dividing that result
+                by the size of a record plus the pointer triplet of information
+                stored to reach each child node from this node.
+            </P>
+            <P>
+                Note that leaf nodes don't encode any
+                child pointer triplets, so the maximum number of records in a
+                leaf node is just the node size minus the leaf node overhead,
+                divided by the record size.
+            </P>
+            <P>
+                Also note that the first level of internal nodes above the
+                leaf nodes don't encode the <em>Total Number of Records in Child
+                Node</em> value in the child pointer triplets (since it is the
+                same as the <em>Number of Records in Child Node</em>), so the
+                maximum number of records in these nodes is computed with the
+                equation above, but using (<em>Child Pointer</em>, <em>Number of
+                Records in Child Node</em>) pairs instead of triplets.
+            </P>
+            <P>
+                The number of
+                bytes used to encode this field is the least number of bytes
+                required to encode the maximum number of records in a child
+                node value for the child nodes below this level
+                in the B-tree.
+            </P>
+            <P>
+                For example, if the maximum number of child records is 123, one
+                byte will be used to encode these values in this node, if the
+                maximum number of child records is
+                20000, two bytes will be used to encode these values in this
+                node, etc.  The maximum number of bytes used to encode these
+                values is 8 (i.e. an unsigned 64-bit integer).
             </P>
           </td>
         </tr>
@@ -1892,13 +1933,29 @@ TABLE.list TD { border:none; }
           <td>
             <P>This is the total number of records for the node pointed to by
                the corresponding <em>Node Pointer</em> and all its children.
-               This field exists only if the depth of the B-tree node is
-               greater than 1 (i.e. "twig" internal nodes don't have this
-               field).
+               This field exists only in nodes whose depth in the B-tree node
+               is greater than 1 (i.e. the "twig" internal nodes, just above
+               leaf nodes, don't store this field in their child node pointers).
             </P>
             <P>The number of bytes used to store this field is determined by
                 the maximum possible number of records able to be stored in the
                 child node and its descendents.
+            </P>
+            <P>
+                The maximum possible number of records able to be stored in a
+                child node and its descendents is computed iteratively, in the
+                following way:  The maximum number of records in a leaf node
+                is computed, then that value is used to compute the maximum
+                possible number of records in the first level of internal nodes
+                above the leaf nodes.  Multiplying these two values together
+                determines the maximum possible number of records in child node
+                pointers for the level of nodes two levels above leaf nodes.
+                This process is continued up to any level in the B-tree.
+            </P>
+            <P>
+                The number of bytes used to encode this value is computed in
+                the same way as for the <em>Number of Records in Child Node</em>
+                field.
             </P>
           </td>
         </tr>
