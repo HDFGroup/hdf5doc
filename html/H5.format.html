@@ -3498,15 +3498,59 @@ TABLE.list TD { border:none; }
 	    A doubling table provides a mechanism for quickly extending an
             array data structure that minimizes the number of empty elements in
             the array, while retaining very fast search of any element within
-            the array.  [XXX: Need link to RFC about doubling table]
-	    Each table has a certain width and rows (stored in the header). 
-	    Each entry in the table represents a block in the fractal heap and
-	    the width is the number of blocks added of the same size before
-            doubling to the next size.  The IDs of objects in the heap are the
-            linear offset of the entry in the heap as if it were an array.
-            Thus, an ID can be easily converted to a certain row and column 
-	    in the doubling table.
+            the array.  More information on fractal heaps and doubling tables
+            can be found in their RFC: 
+            <A href="http://www.hdfgroup.uiuc.edu/RFC/HDF5/FractalHeap/PrivateHeap.pdf">
+            Private Heaps in HDF5</A>.
         </P>
+
+        <P>
+	    The doubling table represented by a fractal heap has a constant
+            width (stored in the header) and each indirect block in the heap
+            contains a constand number of rows, except for the "root" indirect
+            block, which expands its number of rows as needed. 
+        </P>
+
+        <P>
+	    Each entry in an indirect block represents a direct or indirect
+            block in the fractal heap and the blocks in each row are all the
+            same size.  Blocks in the first two rows of an indirect block are
+            <em>Starting Block Size</em> number of bytes in size, and the blocks
+            in each subsequent row are twice the size of the blocks in the
+            previous row (i.e. blocks in the third row are twice the
+            <em>Starting Block Size</em>, blocks in the fourth row are
+            four times the <em>Starting Block Size</em>, etc.).  Blocks up to
+            the <em>Maximum Direct Block Size</em> are direct blocks and
+            blocks greater than that size are indirect blocks (which have their
+            own entries for direct and indirect blocks, etc).
+        </P>
+
+        <P>
+            The number of rows of blocks, <em>nrows</em>, in an
+            indirect block of size <em>iblock_size</em> is given by the
+            following expression:
+                <em>nrows</em> = (log<sub>2</sub>(<em>iblock_size</em>) -
+                    log<sub>2</sub>(<em>&lt;Starting Block Size&gt;</em> *
+                        <em>&lt;Width&gt;</em>)) + 1
+        </P>
+
+        <P>
+            The maximum number of rows of direct blocks, <em>max_dblock_rows</em>,
+            in any indirect block of a fractal heap is given by the
+            following expression:
+                <em>max_dblock_rows</em> =
+                    (log<sub>2</sub>(<em>&lt;Max. Direct Block Size&gt;</em>) -
+                    log<sub>2</sub>(<em>&lt;Starting Block Size&gt;</em>)) + 2
+        </P>
+
+        <P>
+            Using the computed values for <em>nrows</em> and
+            <em>max_dblock_rows</em>, along with the <em>Width</em> of the
+            doubling table, the number of direct and indirect block entries
+            (<em>K</em> and <em>N</em> in the indirect block description, below)
+            in an indirect block can be computed.
+        </P>
+
 
     <br>
     <div align=center>
