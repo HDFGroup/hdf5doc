@@ -3540,52 +3540,69 @@ TABLE.list TD { border:none; }
 
     <h3><a name="FractalHeap">Disk Format: Level 1E - Fractal Heap</a></h3>
 
-        <P>Fractal heaps can replace local heaps as well as global heaps in a
-            file.
-	    Each heap consists of a header and zero or more direct and indirect
-            blocks.  The header contains general information as well as
-            initialization parameters for the doubling table.  The table
-            address in the header points to either a root direct or indirect
-            block.  An indirect block contains a list of child direct block
-            addresses and/or further indirect block addresses.
+        <P>
+	    Each fractal heap consists of a header and zero or more direct and
+            indirect blocks (described below).  The header contains general
+            information as well as
+            initialization parameters for the doubling table.  The <em>Root
+            Block Address</em> in the header points to the first direct or
+            indirect block in the heap.
         </P>
 
-        <P>The management of the fractal heap is based on a data structure
-            called a <em>doubling table</em>.
-	    A doubling table provides a mechanism for quickly extending an
-            array data structure that minimizes the number of empty elements in
-            the array, while retaining very fast search of any element within
-            the array.  More information on fractal heaps and doubling tables
-            can be found in their RFC: 
+        <P>
+            Fractal heaps are based on a data structure called a <em>doubling
+            table</em>.  A doubling table provides a mechanism for quickly
+            extending an array-like data structure that minimizes the number of
+            empty blocks in the heap, while retaining very fast lookup of any
+            element within the array.  More information on fractal heaps and
+            doubling tables can be found in this RFC: 
             <A href="http://www.hdfgroup.uiuc.edu/RFC/HDF5/FractalHeap/PrivateHeap.pdf">
             Private Heaps in HDF5</A>.
         </P>
 
         <P>
-	    The doubling table represented by a fractal heap has a constant
-            width (stored in the header) and each indirect block in the heap
-            contains a constand number of rows, except for the "root" indirect
-            block, which expands its number of rows as needed. 
+            The fractal heap implements the doubling table structure with
+            indirect and direct blocks.
+            Indirect blocks in the heap do not actually contain data for
+            objects in the heap, their "size" is abstract - 
+            they represent the indexing structure for locating the
+            direct blocks in the doubling table.
+            Direct blocks
+            contain the actual data for objects stored in the heap.
         </P>
 
         <P>
-	    Each entry in an indirect block represents a direct or indirect
-            block in the fractal heap and the blocks in each row are all the
-            same size.  Blocks in the first two rows of an indirect block are
+            All indirect blocks have a constant number of block entries in each
+            row, called the <em>width</em> of the doubling table (stored in
+            the heap header).
+
+            The number
+            of rows for each indirect block in the heap is determined by the
+            size of the block that the indirect block represents in the
+            doubling table (calculation of this is shown below) and is
+            constant, except for the "root"
+            indirect block, which expands and shrinks its number of rows as
+            needed. 
+        </P>
+
+        <P>
+            Blocks in the first <em>two</em> rows of an indirect block are
             <em>Starting Block Size</em> number of bytes in size, and the blocks
             in each subsequent row are twice the size of the blocks in the
             previous row (i.e. blocks in the third row are twice the
             <em>Starting Block Size</em>, blocks in the fourth row are
-            four times the <em>Starting Block Size</em>, etc.).  Blocks up to
-            the <em>Maximum Direct Block Size</em> are direct blocks and
-            blocks greater than that size are indirect blocks (which have their
-            own entries for direct and indirect blocks, etc).
+            four times the <em>Starting Block Size</em>, etc.).  Entries for
+            blocks up to the <em>Maximum Direct Block Size</em> point to direct
+            blocks and entries for blocks greater than that size point to
+            further indirect blocks (which have their own entries for direct
+            and indirect blocks, etc).
         </P>
 
         <P>
             The number of rows of blocks, <em>nrows</em>, in an
             indirect block of size <em>iblock_size</em> is given by the
             following expression:
+            <br> <br>
                 <em>nrows</em> = (log<sub>2</sub>(<em>iblock_size</em>) -
                     log<sub>2</sub>(<em>&lt;Starting Block Size&gt;</em> *
                         <em>&lt;Width&gt;</em>)) + 1
@@ -3595,6 +3612,7 @@ TABLE.list TD { border:none; }
             The maximum number of rows of direct blocks, <em>max_dblock_rows</em>,
             in any indirect block of a fractal heap is given by the
             following expression:
+            <br> <br>
                 <em>max_dblock_rows</em> =
                     (log<sub>2</sub>(<em>&lt;Max. Direct Block Size&gt;</em>) -
                     log<sub>2</sub>(<em>&lt;Starting Block Size&gt;</em>)) + 2
@@ -3605,7 +3623,24 @@ TABLE.list TD { border:none; }
             <em>max_dblock_rows</em>, along with the <em>Width</em> of the
             doubling table, the number of direct and indirect block entries
             (<em>K</em> and <em>N</em> in the indirect block description, below)
-            in an indirect block can be computed.
+            in an indirect block can be computed:
+            <br> <br>
+                <em>K</em> = MIN(<em>nrows</em>, <em>max_dblock_rows</em>) *
+                    <em>Width</em>
+
+            <br> <br>
+            If <em>nrows</em> is less than or equal to <em>max_dblock_rows</em>,
+            <em>N</em> is 0.  Otherwise, <em>N</em> is simply computed:
+            <br> <br>
+                <em>N</em> = <em>K</em> - (<em>max_dblock_rows</em> *
+                    <em>Width</em>)
+        </P>
+
+        <P>
+            The size indirect blocks on disk is determined by the number
+            of rows in the indirect block (computed above).  The size of direct
+            blocks on disk is exactly the size of the block in the doubling
+            table.
         </P>
 
 
@@ -4096,6 +4131,10 @@ TABLE.list TD { border:none; }
         </tr>
           
         <tr>
+          <td colspan=4><br>Object Data <em>(variable size)</em><br><br></td>
+        </tr>
+          
+        <tr>
           <td colspan=4>Checksum <em>(optional)</em></td>
         </tr>
       </table>
@@ -4147,6 +4186,19 @@ TABLE.list TD { border:none; }
                 header) divided by 8 and rounded up to the next highest integer,
                 for values that aren't a multiple of 8.  This value is
                 principally used for file integrity checking.
+            </P>
+          </td>
+        </tr>
+
+        <tr>
+          <td>Object Data</td>
+          <td>
+            <P>This section of the direct block stores the actual data for
+                objects in the heap.  The size of this section is determined by
+                the direct block's size, minus the size of the other fields
+                stored in the direct block (the <em>Signature</em>,
+                <em>Version</em>, etc., including the <em>Checksum</em> if it's
+                present).
             </P>
           </td>
         </tr>
