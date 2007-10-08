@@ -78,6 +78,8 @@ And in this document, the
 
 The Reference interface allows the user to create references 
 to specific objects and data regions in an HDF5 file.
+<br>
+In the following lists, italic type indicates a configurable macro.
 
 <p>
 <strong>The C Interfaces:</strong>
@@ -90,13 +92,19 @@ to specific objects and data regions in an HDF5 file.
 </ul>
 </td><td valign=top width=40%>
 <ul>
-    <li><a href="#Reference-GetRegion">H5Rget_region</a>
-    <li><a href="#Reference-GetObjType">H5Rget_obj_type</a>
+    <li><i><a href="#Reference-GetObjType">H5Rget_obj_type</a></i>
+    <li><a href="#Reference-GetObjType1">H5Rget_obj_type1</a>
+          &nbsp;*
+    <li><a href="#Reference-GetObjType2">H5Rget_obj_type2</a>
 </ul>
 </td><td valign=top width=20%>
 <ul>
+    <li><a href="#Reference-GetRegion">H5Rget_region</a>
     <li><a href="#Reference-GetName">H5Rget_name</a>
 </ul>
+</td></tr>
+<tr><td align=right colspan=5>
+    *&nbsp;<i>Use of this function is deprecated in Release 1.8.0.</i>
 </td></tr>
 </table>
 
@@ -110,6 +118,7 @@ to specific objects and data regions in an HDF5 file.
 	<ul>
       <li><a href="#Reference-Create">H5Rcreate</a>
       <li><a href="#Reference-Dereference">H5Rdereference</a>
+      <li><a href="#Reference-GetName">H5Rget_name</a>
 	</ul>      
     </td>
     
@@ -117,8 +126,10 @@ to specific objects and data regions in an HDF5 file.
     
     <td valign="top">
 	<ul>
-      <li><a href="#Reference-GetName">H5Rget_name</a>
-      <li><a href="#Reference-GetObjType">H5Rget_obj_type</a>
+      <li><i><a href="#Reference-GetObjType">H5Rget_obj_type</a></i>
+      <li><a href="#Reference-GetObjType1">H5Rget_obj_type1</a>
+            &nbsp;*
+      <li><a href="#Reference-GetObjType2">H5Rget_obj_type2</a>
 	</ul>
     </td>
     
@@ -366,11 +377,124 @@ END SUBROUTINE h5rdereference_f
     <em>H5R_type_t</em> <code>ref_type</code>,
     <em>void *</em><code>ref</code>
     )
+    <p>
+    <dd><em>herr_t</em> <code>H5Rget_obj_type</code>(
+    <em>hid_t</em> <code>loc_id</code>,
+    <em>H5R_type_t</em> <code>ref_type</code>,
+    <em>void *</em><code>ref</code>,
+    <em>H5O_type_t *</em><code>obj_type</code>
+    )
 <dt><strong>Purpose:</strong>
     <dd>Retrieves the type of object that an object reference points to.
 <dt><strong>Description:</strong>
+    <dd><code>H5Rget_obj_type</code> is a macro that is mapped to either
+      <a href="#Reference-GetObjType1"><code>H5Rget_obj_type1</code></a> or
+      <a href="#Reference-GetObjType2"><code>H5Rget_obj_type2</code></a>,
+      depending on the needs of the application.
+      <p>
+      Such macros are provided to facilitate application compatibility.
+      Their use and mappings are fully described in 
+      &ldquo;<a href="APICompatMacros.html">API Compatibility Macros 
+      in HDF5</a>&rdquo;; 
+      we urge you to read that document closely.
+      <p>
+      When both the HDF5 Library and the application are built and 
+      installed with no specific compatibility flags, 
+      <code>H5Rget_obj_type</code> is mapped to the most recent version of
+      the function, currently 
+      <a href="#Reference-GetObjType2"><code>H5Rget_obj_type2</code></a>.
+      If the library and/or application is compiled for Release 1.6
+      emulation, <code>H5Rget_obj_type</code> will be mapped to 
+      <a href="#Reference-GetObjType1"><code>H5Rget_obj_type1</code></a>.
+      Function-specific flags are available to override these settings 
+      on a function-by-function basis when the application is compiled. 
+      <p>
+      Specific compile-time compatibility flags and the resulting 
+      mappings are as follows:
+
+      <dir>
+      <table border=0 cellpadding=4>
+        <tr valign=top align=left> 
+          <th>Compatibility setting</th>
+          <th><code>H5Rget_obj_type</code> mapping</th>
+        </tr><tr valign=top align=left>
+          <td colspan=2><hr><u><a href="APICompatMacros.html#GlobalSettings">Global settings</a></u></td>
+        </tr><tr valign=top align=left>
+          <td>No compatibility flag</td>
+          <td><code>H5Rget_obj_type2</code>&nbsp;</td>
+        </tr><tr valign=top align=left>
+          <td>Enable deprecated symbols</td>
+          <td><code>H5Rget_obj_type2</code>&nbsp;</td>
+        </tr><tr valign=top align=left>
+          <td>Disable deprecated symbols</td>
+          <td><code>H5Rget_obj_type2</code>&nbsp;</td>
+        </tr><tr valign=top align=left>
+          <td>Emulate Release 1.6 interface<code>&nbsp;&nbsp;&nbsp;&nbsp;</code></td>
+          <td><code>H5Rget_obj_type1</code>&nbsp;</td>
+        </tr><tr valign=top align=left>
+          <td colspan=2><hr><u><a href="APICompatMacros.html#FunctionLevelSettings">Function-level macros</a></u></td>
+        </tr><tr valign=top align=left>
+          <td><code>H5Rget_obj_type_vers = 2</code></td>
+          <td><code>H5Rget_obj_type2</code></td>
+        </tr><tr valign=top align=left>
+          <td><code>H5Rget_obj_type_vers = 1</code></td>
+          <td><code>H5Rget_obj_type1</code></td>
+        </tr>
+      </table>
+      </dir>
+      
+  <p>
+<dt><strong>Fortran90 Interface:</strong>  h5gcreate_f
+    <dd><i><font color=red>
+      Holding... 
+      </font></i>
+<!--
+    <pre>
+    </pre>
+-->
+  <p>
+<dt><strong>History:</strong>
+    <dd><table width="90%">
+        <tr>
+          <td valign="top" align="left" width="10%">
+            <strong>Release</strong>&nbsp;&nbsp;&nbsp;&nbsp;</td>
+          <td valign="top" align="left">
+            <strong>C</strong></td></tr>
+        <tr>
+          <td valign="top">1.8.0</td>
+          <td valign="top">The function 
+            <code>H5Rget_obj_type</code> renamed to <code>H5Rget_obj_type1</code> 
+            and deprecated in this release.
+            <br>
+            The macro <code>H5Rget_obj_type</code> 
+            and the function <code>H5Rget_obj_type2</code>
+            introduced in this release.</td></tr>
+    </table>
+</dl>
+
+
+<!-- NEW PAGE -->
+<!-- HEADER RIGHT "H5Rget_obj_type1" -->
+<hr>
+<dl>
+<dt><strong>Name:</strong> <a name="Reference-GetObjType1">H5Rget_obj_type1</a>
+<dt><strong>Signature:</strong>
+    <dd><em>H5G_obj_t</em> <code>H5Rget_obj_type1</code>(
+    <em>hid_t</em> <code>loc_id</code>,
+    <em>H5R_type_t</em> <code>ref_type</code>,
+    <em>void *</em><code>ref</code>
+    )
+<dt><strong>Purpose:</strong>
+    <dd>Retrieves the type of object that an object reference points to.
+<dt><strong>Notice:</Strong>
+  <dd><i>This function has been renamed from <code>H5Rget_obj_type</code>
+      and is deprecated in favor of the macro
+      <a href="RM_H5R.html#Reference-GetObjType"><code>H5Rget_obj_type</code></a>
+      or the function 
+      <a href="RM_H5R.html#Reference-GetObjType2"><code>H5Rget_obj_type2</code></a>.</i>
+<dt><strong>Description:</strong>
     <dd>Given an object reference, <code>ref</code>, 
-        <code>H5Rget_obj_type</code> 
+        <code>H5Rget_obj_type1</code> 
         returns the type of the referenced object.
 	<p>
         An <i>object reference</i> is a reference that points to an object.
@@ -478,14 +602,155 @@ END SUBROUTINE h5rget_object_type_f
 <dt><strong>History:</strong>
     <ul><table width="90%">
         <tr>
-		  <td valign="top" align="left" width="10%">
-		    <strong>Release</strong>&nbsp;&nbsp;&nbsp;&nbsp;</td>
-          <td valign="top" align="left">
-		    <strong>C</strong></td></tr>
+            <td valign="top" align="left" width="10%">
+                <strong>Release</strong>&nbsp;&nbsp;&nbsp;&nbsp;</td>
+            <td valign="top" align="left">
+                <strong>C</strong></td></tr>
         <tr>
-		  <td valign="top">1.6.0</td>
-          <td valign="top">
-		    Function introduced in this release.</td></tr>
+              <td valign="top">1.6.0</td>
+              <td valign="top">
+                  Function introduced in this release.</td></tr>
+        <tr>
+          <td valign="top">1.8.0</td>
+          <td valign="top">Function <code>H5Rget_obj_type</code> renamed to 
+            <code>H5Rget_obj_type1</code> and deprecated in this release.
+    </table></ul>
+</dl>
+ 
+
+<!-- NEW PAGE -->
+<!-- HEADER RIGHT "H5Rget_obj_type2" -->
+<hr>
+<dl>
+<dt><strong>Name:</strong> <a name="Reference-GetObjType2">H5Rget_obj_type2</a>
+<dt><strong>Signature:</strong>
+    <dd><em>herr_t</em> <code>H5Rget_obj_type2</code>(
+    <em>hid_t</em> <code>loc_id</code>,
+    <em>H5R_type_t</em> <code>ref_type</code>,
+    <em>void *</em><code>ref</code>,
+    <em>H5O_type_t *</em><code>obj_type</code>
+    )
+<dt><strong>Purpose:</strong>
+    <dd>Retrieves the type of object that an object reference points to.
+<dt><strong>Description:</strong>
+    <dd>Given an object reference, <code>ref</code>, 
+        <code>H5Rget_obj_type2</code> 
+        retrieves the type of the referenced object in <code>obj_type</code>.
+	<p>
+        An <i>object reference</i> is a reference that points to an object.
+        The <i>referenced object</i> is the object the reference points to.
+	<p>
+        The location identifier, <code>loc_id</code>, is the identifier 
+        for either the dataset containing the object reference or 
+        the group containing that dataset.  
+	<p>
+	Valid reference types, to pass in as <code>ref_type</code>, 
+	include the following:
+	<table border="0">
+	    <tr align=left valign=top><td>&nbsp;&nbsp;&nbsp;&nbsp;</td><td>
+	        <code>H5R_OBJECT</code></td><td>
+	        Object reference
+	    </td></tr>
+	    <tr align=left valign=top><td>&nbsp;</td><td>
+	        <code>H5R_DATASET_REGION&nbsp;&nbsp;</code></td><td>
+	        Dataset region reference
+	    </td></tr>
+	</table>
+        <p>
+        If the application does not already know the object reference type,
+        that can be determined with three preliminary calls:
+	<ul>
+            <li><code>H5Dget_type</code> returns a datatype identifier 
+                for the dataset&rsquo;s datatype.
+            <li>Using that datatype identifier, 
+                <code>H5Tget_class</code> returns a datatype class.
+            <li>If the datatype class is <code>H5T_REFERENCE</code>,  
+                <code>H5Tequal</code> can then be used to determine whether 
+                the reference&rsquo;s datatype is 
+                <code>H5T_STD_REF_OBJ</code> or 
+                <code>H5T_STD_REF_DSETREG</code>:
+	    <ul>
+                <li>If the datatype is <code>H5T_STD_REF_OBJ</code>, 
+                    the reference object type is <code>H5R_OBJECT</code>. 
+                <li>If the datatype is <code>H5T_STD_REF_DSETREG</code>,
+                  the reference object type is 
+                    <code>H5R_DATASET_REGION</code>.
+            </ul>
+        </ul>
+	<p>
+	When the function completes successfully, it returns one of 
+        the following valid object type values
+        (defined in <code>H5Opublic.h</code>):
+	<table border="0">
+	    <tr align=left valign=top><td>&nbsp;</td><td>
+	        <code>H5O_TYPE_GROUP</code></td><td>
+	        Object is a group.
+	    </td></tr>
+	    <tr align=left valign=top><td>&nbsp;</td><td>
+	        <code>H5O_TYPE_DATASET&nbsp;&nbsp;</code></td><td>
+	        Object is a dataset.
+	    </td></tr>
+	    <tr align=left valign=top><td>&nbsp;</td><td>
+	        <code>H5O_TYPE_NAMED_DATATYPE</code></td><td>
+	        Object is a named datatype.
+	    </td></tr>
+	</table>
+<dt><strong>Parameters:</strong>
+    <ul><table>
+        <tr>
+            <td valign="top"><em>hid_t</em> <code>loc_id</code></td>
+            <td valign="top">IN: The dataset containing the reference object 
+                or the group containing that the dataset.</td></tr>
+        <tr>
+            <td valign="top"><em>H5R_type_t</em>&nbsp;<code>ref_type&nbsp;&nbsp;&nbsp;&nbsp;</code></td>
+            <td valign="top">IN: Type of reference to query.</td></tr>
+        <tr>
+            <td valign="top"><em>void *</em><code>ref</code></td>
+            <td valign="top">IN: Reference to query.</td></tr>
+        <tr>
+            <td valign="top"><em>H5O_type_t *</em><code>obj_type</code></td>
+            <td valign="top">OUT: Type of referenced object.</td></tr>
+    </table></ul>
+<dt><strong>Returns:</strong>
+    <dd>Returns a non-negative value if successful;
+        otherwise returns a negative value.
+<dt><strong>Fortran90 Interface:</strong> <!--h5rget_object_type_f-->
+    <dd> (None)
+<!--
+	<pre>
+SUBROUTINE h5rget_object_type_f(dset_id, ref, obj_type, hdferr) 
+  IMPLICIT NONE
+  INTEGER(HID_T), INTENT(IN) :: dset_id   ! Dataset identifier 
+  TYPE(hobj_ref_t_f), INTENT(IN) :: ref   ! Object reference 
+  INTEGER, INTENT(OUT) :: obj_type        ! Object type  
+                                          !     H5G_UNKNOWN_F (-1)
+                                          !     H5G_LINK_F      0
+                                          !     H5G_GROUP_F     1
+                                          !     H5G_DATASET_F   2
+                                          !     H5G_TYPE_F      3
+  INTEGER, INTENT(OUT) :: hdferr          ! Error code 
+
+END SUBROUTINE h5rget_object_type_f
+-->
+	</pre>		
+		
+		<!--<dt><strong>Non-C API(s):</strong>
+    	<dd>
+        
+        <img src="Graphics/Java.gif"> 
+        <img src="Graphics/C++.gif">
+        -->
+<dt><strong>History:</strong>
+    <ul><table width="90%">
+        <tr>
+            <td valign="top" align="left" width="10%">
+                <strong>Release</strong>&nbsp;&nbsp;&nbsp;&nbsp;</td>
+            <td valign="top" align="left">
+                <strong>C</strong></td></tr>
+        <tr>
+            <td valign="top">1.8.0</td>
+            <td valign="top">
+                Function introduced in this release.</td></tr>
     </table></ul>
 </dl>
  
@@ -722,7 +987,7 @@ Describes HDF5 Release 1.8.0-beta.
 
 <!-- #EndLibraryItem --><SCRIPT LANGUAGE="JAVASCRIPT">
 <!--
-document.writeln("Last modified: 16 November 2006");
+document.writeln("Last modified: 18 September 2007");
 -->
 </SCRIPT> 
 
