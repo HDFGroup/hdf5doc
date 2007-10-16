@@ -94,8 +94,8 @@ TABLE.list TD { border:none; }
 	  <li><a href="#LocalHeap">Disk Format Level 1D - Local Heaps</a>
 	  <li><a href="#GlobalHeap">Disk Format Level 1E - Global Heap</a>
 	  <li><a href="#FractalHeap">Disk Format Level 1E - Fractal Heap</a>
-	  <li><a href="#FreeSpaceIndex">Disk Format Level 1F - Free-space Index</a>
-	  <li><a href="#SOHM">Disk Format Level 1G - Shared Object Header Message Table</a>
+	  <li><a href="#FreeSpaceManager">Disk Format Level 1F - Free-Space Manager</a>
+	  <li><a href="#SOHMTable">Disk Format Level 1G - Shared Object Header Message Table</a>
 	</ol>
         </font>
       <li><a href="#DataObject">Disk Format Level 2 - Data Objects</a>
@@ -487,14 +487,14 @@ TABLE.list TD { border:none; }
 	</tr>
 
 	<tr>
-	  <td>Version Number of the File Free-space Information</td>
+	  <td>Version Number of the File Free-Space Information</td>
 	  <td>
             <P>This value is used to determine the format of the
-	    information in the File Free-space Information.
+	    information in the file's free-space Information.
             </P>
             <P>The only value currently valid in this field is '0', which
             indicates that the free space index is formatted as described 
-            <A href="#FreeSpaceIndex">below</A>.
+            <A href="#FreeSpaceManager">below</A>.
             </P>
 
             <P><EM>This field is present in version 0+ of the superblock.</EM>
@@ -3539,6 +3539,7 @@ TABLE.list TD { border:none; }
       </table>
     </div>
 
+    <br>
     <h3><a name="FractalHeap">Disk Format: Level 1E - Fractal Heap</a></h3>
 
         <P>
@@ -3695,7 +3696,7 @@ TABLE.list TD { border:none; }
         </tr>
 
         <tr>
-          <td colspan=4>Address of Free Space Section Header<sup>O</sup></td>
+          <td colspan=4>Address of Managed Block Free Space Manager<sup>O</sup></td>
         </tr>
 
         <tr>
@@ -3893,11 +3894,11 @@ TABLE.list TD { border:none; }
 	</tr>
 
 	<tr>
-          <td>Address of Free Space Tracker</td>
+          <td>Address of Managed Block Free Space Manager</td>
 	  <td>
-	    <P>This is the address of the <em>Free Space Tracker</em> for managed
-                blocks.  [XXX: Needs link to <em>Free Space Tracker</em> format
-                information (which is not defined as of 9/27/2007)]
+	    <P>This is the address of the
+                <em><a href="#FreeSpaceManager">Free-Space Manager</a></em> for
+                managed blocks.
 	    </P>
 	  </td>
 	</tr>
@@ -4417,115 +4418,43 @@ TABLE.list TD { border:none; }
     </div>
 
     <br>
-    <h3><a name="FreeSpaceIndex">Disk Format: Level 1F - Free-space Index</a></h3>
+    <h3><a name="FreeSpaceManager">Disk Format: Level 1F - Free-Space Manager</a></h3>
 
-    <p>The free-space index is a collection of blocks of data,
-      dispersed throughout the file, which are currently not used by
-      any file objects.  
+        <P>
+            Free-space managers are used to describe space within a heap or
+            the entire HDF5 file that is not currently used for that heap or
+            file.
+        </P>
 
-    <p>The superblock contains a pointer to root of the free-space description;
-      that pointer is currently required to be the
-      <A href="#UndefinedAddress">undefined address</A>.
-
-    <P>The <em>Free-space Manager Header</em> manages free space in the file. 
-	It records information about free-space sections being
-	tracked, creation parameters for handling free-space sections of a client, and 
-	section information used to locate the collection of free-space
-        sections.  The <em>Free Space Section Information</em> manages information used to locate 
-	the collection of free-space sections.
-	For example, the fractal heap is a client of the free space manager.
-	There are 4 types of section classes for this client,
-	each of which has its own methods in serializing, de-serializing, merging, 
-	shrinking and freeing free-space sections.
-    </P>
-
-<!--
-    <p>The Free-space Index is a collection of blocks of data,
-      dispersed throughout the file, which are currently not used by
-      any file objects.  The blocks of data are indexed by a B-tree of
-      their length within the file.
+        <P>
+            The superblock contains a pointer to a free-space managers for the
+            whole file, but that pointer is currently required to be the
+            <A href="#UndefinedAddress">undefined address</A>.
+        </P>
 
 
-    <p>Each B-tree page is composed of the following entries and
-      B-tree management information, organized as follows:
+        <P>
+            The <em>free-space manager header</em> contains metadata information
+            about the space being tracked, along with the address of the list
+            of <em>free space sections</em> which actually describes the free
+            space.
 
-    <p>
-    <center>
-      <table border cellpadding=4 width="80%">
-        <caption align=bottom>
-          <B>HDF5 Free-space Heap Page</B>
-        </caption>
+	    The header records information about free-space sections being
+            tracked, creation parameters for handling free-space sections of a
+            client, and section information used to locate the collection of
+            free-space sections.
+        </P>
+            
+        <P>
+            The <em>free-space section list</em> stores a collection of
+            free-space sections that is specific to each <em>client</em> of the
+            free-space manager.
 
-        <tr align=center>
-          <th width="25%">byte</th>
-          <th width="25%">byte</th>
-          <th width="25%">byte</th>
-          <th width="25%">byte</th>
-
-        <tr align=center>
-          <td colspan=4>Signature</td>
-        <tr align=center>
-          <td colspan=4>B-tree Left-link Offset</td>
-        <tr align=center>
-          <td colspan=4><br>Length of Free-block #1<br> <br></td>
-        <tr align=center>
-          <td colspan=4><br>Offset of Free-block #1<br> <br></td>
-        <tr align=center>
-          <td colspan=4>.<br>.<br>.<br></td>
-        <tr align=center>
-          <td colspan=4><br>Length of Free-block #n<br> <br></td>
-        <tr align=center>
-          <td colspan=4><br>Offset of Free-block #n<br> <br></td>
-        <tr align=center>
-          <td colspan=4>"High" Offset</td>
-        <tr align=center>
-          <td colspan=4>Right-link Offset</td>
-      </table>
-    </center>
-
-    <p>
-    <dl>
-      <dt> The elements of the free-space heap page are described below:
-      <dd>
-        <dl>
-          <dt>Signature: (4 bytes)
-          <dd>The ASCII character string <code>FREE</code> 
-            is used to indicate the
-            beginning of a free-space heap B-tree page.  This gives
-            file consistency checking utilities a better chance of
-            reconstructing a damaged file.
-
-          <dt>B-tree Left-link Offset: (&lt;offset&gt; bytes)
-          <dd>This value is used to indicate the offset of all offsets
-            in the B-link-tree which are smaller than the value of the
-            offset in entry #1.  This value is also used to indicate a
-            leaf node in the B-link-tree by being set to all ones.
-
-          <dt>Length of Free-block #n: (&lt;length&gt; bytes)
-          <dd>This value indicates the length of an unused block in
-            the file.
-
-          <dt>Offset of Free-block #n: (&lt;offset&gt; bytes)
-          <dd>This value indicates the offset in the file of an
-            unused block in the file.
-
-          <dt>"High" Offset: (4-bytes)
-          <dd>This offset is used as the upper bound on offsets
-            contained within a page when the page has been split.
-
-          <dt>Right-link Offset: (&lt;offset&gt; bytes)
-          <dd>This value is used to indicate the offset of the next
-            child to the right of the parent of this group
-            page.  When there is no node to the right, this value is
-            all zeros.
-        </dl>
-    </dl>
-
-    <p>The algorithms for searching and inserting objects in the
-      B-tree pages are described fully in the Lehman and Yao paper,
-      which should be read to provide a full description of the
-      B-tree's usage.
--->
+            For example, the fractal heap is a client of the free space manager
+            and uses it to track unused space within the heap.  There are 4
+            types of section records for the fractal heap, each of which has
+            its own format, listed below.
+        </P>
 
     <br>
     <div align=center>
@@ -4552,45 +4481,50 @@ TABLE.list TD { border:none; }
         </tr>
 
         <tr>
-          <td colspan=4>Total Space<sup>L</sup></td>
+          <td colspan=4><br>Total Space Tracked<sup>L</sup><br><br></td>
         </tr>
 
         <tr>
-          <td colspan=4>Total Number of Sections<sup>L</sup></td>
+          <td colspan=4><br>Total Number of Sections<sup>L</sup><br><br></td>
         </tr>
 
         <tr>
-          <td colspan=4>Number of Serialized Sections<sup>L</sup></td>
+          <td colspan=4><br>Number of Serialized Sections<sup>L</sup><br><br></td>
 	</tr>
 
 	<tr>
-	  <td colspan=4>Number of Un-serialized Sections<sup>L</sup></td>
+	  <td colspan=4><br>Number of Un-Serialized Sections<sup>L</sup><br><br></td>
 	</tr>
 
 	<tr>
 	  <td colspan=2>Number of Section Classes</td>
+          <td colspan=2 bgcolor=#DDDDDD><em>This space inserted only to align table nicely</em></td>
+	</tr>
+
+        <tr>
           <td colspan=2>Shrink Percent</td>
-	</tr>
-
-        <tr>
           <td colspan=2>Expand Percent</td>
+        </tr>
+
+        <tr>
           <td colspan=2>Size of Address Space</td>
+          <td colspan=2 bgcolor=#DDDDDD><em>This space inserted only to align table nicely</em></td>
 	</tr>
 
         <tr>
-          <td colspan=4>Maximum Section Size <sup>L</sup></td>
+          <td colspan=4><br>Maximum Section Size <sup>L</sup><br><br></td>
 	</tr>
 
         <tr>
-          <td colspan=4>Address of Serialized Section Information<sup>O</sup></td>
+          <td colspan=4><br>Address of Serialized Section List<sup>O</sup><br><br></td>
         </tr>
 
         <tr>
-          <td colspan=4>Size of Serialized Section Information<sup>L</sup></td>
+          <td colspan=4><br>Size of Serialized Section List Used<sup>L</sup><br><br></td>
         </tr>
 
         <tr>
-          <td colspan=4>Allocated Size of Serialized Section Information<sup>L</sup></td>
+          <td colspan=4><br>Allocated Size of Serialized Section List<sup>L</sup><br><br></td>
 	</tr>
 
 	<tr>
@@ -4629,14 +4563,35 @@ TABLE.list TD { border:none; }
         <tr>
           <td>Client ID</td>
           <td>
-            <P>This is the client ID for identifying the user of this free-space manager.
+            <P>This is the client ID for identifying the user of this
+                free-space manager:
+
+                <table class=list>
+                    <tr>
+                      <th width="30%">ID</th>
+                      <th align=left>Description</th>
+                    </tr>
+
+                    <tr>
+                      <td align=center><code>0</code></td>
+                      <td>Fractal heap
+                      </td>
+                    </tr>
+                    <tr>
+                      <td align=center><code>1+</code></td>
+                      <td>Reserved.
+                      </td>
+                    </tr>
+                </table>
             </P>
           </td>
         </tr>
 
 	<tr>
-          <td>Total Space</td>
-	  <td><P>This is the total amount of free space being tracked.</P>
+          <td>Total Space Tracked</td>
+	  <td>
+            <P>This is the total amount of free space being tracked, in bytes.
+            </P>
           </td>
 	</tr>
 
@@ -4651,14 +4606,17 @@ TABLE.list TD { border:none; }
 	<tr>
 	  <td>Number of Serialized Sections</td>
 	  <td>
-	    <P>This is the number of serialized free-space sections being tracked.
+	    <P>This is the number of serialized free-space sections being
+                tracked.
             </P>
 	  </td>
 	</tr>
 	<tr>
-	  <td>Number of Un-serialized Sections</td>
+	  <td>Number of Un-Serialized Sections</td>
 	  <td>
-            <P>This is the number of un-serialized free-space sections being tracked.
+            <P>This is the number of un-serialized free-space sections being
+                managed.  Un-serialized sections are created by the free-space
+                client when the list of sections is read in.
             </P>
 	  </td>
         </tr>
@@ -4666,7 +4624,8 @@ TABLE.list TD { border:none; }
         <tr>
           <td>Number of Section Classes</td>
           <td>
-	    <P>This is the number of section classes handled by this free space manager.
+	    <P>This is the number of section classes handled by this free space
+                manager for the free-space client.
             </P>
           </td>
         </tr>
@@ -4674,7 +4633,8 @@ TABLE.list TD { border:none; }
         <tr>
           <td>Shrink Percent</td>
           <td>
-	    <P>This is the percent of normal size to shrink serialized free-space size.
+	    <P>This is the percent of current size to shrink the allocated
+                serialized free-space section list.
             </P>
           </td>
         </tr>
@@ -4682,7 +4642,8 @@ TABLE.list TD { border:none; }
         <tr>
           <td>Expand Percent</td>
           <td>
-	    <P>This is the percent of normal size to expand serialized free-space size.
+	    <P>This is the percent of current size to expand the allocated
+                serialized free-space section list.
             </P>
           </td>
         </tr>
@@ -4690,45 +4651,55 @@ TABLE.list TD { border:none; }
         <tr>
           <td>Size of Address Space</td>
           <td>
-            <P>This is the size of the address space that free-space sections are within.</P>
+            <P>This is the size of the address space that free-space sections
+                are within.  This is stored as the log<sub>2</sub> of the
+                actual value (i.e. the number of bits required to store values
+                within that address space).
+            </P>
           </td>
         </tr>
 
         <tr>
           <td>Maximum Section Size</td>
           <td>
-            <P>This is the maximum size of a section to be tracked.</P>
+            <P>This is the maximum size of a section to be tracked.
+            </P>
           </td>
         </tr>
 
         <tr>
-          <td>Address of Serialized Section Information</td>
+          <td>Address of Serialized Section List</td>
           <td>
-            <P>This is the address where serialized free-space section information is
-		stored.</P>
+            <P>This is the address where the serialized free-space section
+                list is stored.
+            </P>
           </td>
         </tr>
 
         <tr>
-          <td>Size of Serialized Section Information</td>
+          <td>Size of Serialized Section List Used</td>
           <td>
-            <P>This is the total amount of serialized free-space section information.
+            <P>This is the size of the serialized free-space section
+                list used (in bytes).  This value must be less than
+                or equal to the <em>allocated size of serialized section
+                list</em>, below.
 	    </P>
           </td>
         </tr>
 
         <tr>
-          <td>Allocated Size of Serialized Section Information</td>
+          <td>Allocated Size of Serialized Section List</td>
           <td>
-            <P>This is the total amount of serialized free-space section information actually
-		allocated.</P>
+            <P>This is the size of serialized free-space section list
+                actually allocated (in bytes).
+            </P>
           </td>
         </tr>
 
         <tr>
           <td>Checksum</td>
           <td>
-            <P>This is the checksum for the Free-Space Manager Header.</P>
+            <P>This is the checksum for the free-space manager header.</P>
           </td>
         </tr>
 
@@ -4736,10 +4707,22 @@ TABLE.list TD { border:none; }
     </div>
 
     <br>
+    <P>
+        The free-space sections being managed are stored in a <em>free-space
+        section list</em>, described below.  The sections in the <em>free-space
+        section list</em> are stored in the following way: a count of the
+        number of
+        sections describing a particular size of free space and the size of the
+        free-space desribed (in bytes), followed by a list of section
+        description records; then another section count & size, followed by
+        the list of section descriptions for that size; etc.
+    </P>
+
+    <br>
     <div align=center>
       <table class=format>
         <caption>
-          Free-Space Section Information
+          Free-Space Section List
         </caption>
 
         <tr>
@@ -4751,68 +4734,138 @@ TABLE.list TD { border:none; }
 
         <tr>
           <td colspan=4>Signature</td>
+        </tr>
         
-          
         <tr>
           <td>Version</td>
           <td colspan=3 bgcolor=#DDDDDD><em>This space inserted only to align table nicely</em></td>
         </tr>
 
         <tr>
-          <td colspan=4>Header Address<sup>O</sup></td>
+          <td colspan=4><br>Free-Space Manager Header Address<sup>O</sup><br><br></td>
         </tr>
 
         <tr>
-          <td colspan=4>Number of Sections for set #0 <em>(optional, variable size)</em></td>
+          <td colspan=4>Number of Section Records in Set #0 <em>(variable size)</em></td>
         </tr>
 
         <tr>
-          <td colspan=4>Section Size for set #0<em> (optional, variable size)</em></td>
+          <td colspan=4>Size of Free-Space Section Described in Record Set #0 <em>(variable size)</em></td>
 	</tr>
 
 	<tr>
-	  <td colspan=4><br>Address <em> (optional, variable size),</em><br>
-			Type <em>(optional, 1-byte)</em>,<br>
-			Extra Size <em>(optional, variable size),</em><br>
-			for section #0, 1, ... K-1<br>
-	  </td>
+	  <td colspan=4>Record Set #0 Section Record #0 Offset<em>(variable size)</em></td>
 	</tr>
 
 	<tr>
-	  <td colspan=4>Number of Sections for set #1<em> (optional, variable size)</em></td>
+	  <td colspan=1>Record Set #0 Section Record #0 Type</td>
+          <td colspan=3 bgcolor=#DDDDDD><em>This space inserted only to align table nicely</em></td>
 	</tr>
 
 	<tr>
-	  <td colspan=4>Section Size for set #1<em> (optional, variable size)</em></td>
+	  <td colspan=4>Record Set #0 Section Record #0 Data <em>(variable size)</td>
 	</tr>
-	<tr>
-	  <td colspan=4><br>Address <em> (optional, variable size),</em><br>
-			Type <em>(optional, 1-byte)</em>,<br>
-			Extra Size <em>(optional, variable size),</em><br>
-			for section #0, 1, ... K-1<br>
-	  </td>
-	</tr>
-
 
 	<tr>
 	  <td colspan=4>...</td>
 	</tr>
 
 	<tr>
-	  <td colspan=4>Number of Sections for set #N-1<em> (optional, variable size)</em></td>
+	  <td colspan=4>Record Set #0 Section Record #K-1 Offset<em>(variable size)</em></td>
 	</tr>
 
 	<tr>
-	  <td colspan=4>Section Size for set #N-1<em> (optional, variable size)</em></td>
-	</tr>
-	<tr>
-	  <td colspan=4><br>Address <em> (optional, variable size),</em><br>
-			Type <em>(optional, 1-byte)</em>,<br>
-			Extra Size <em>(optional, variable size),</em><br>
-			for section #0, 1, ... K-1<br>
-	  </td>
+	  <td colspan=1>Record Set #0 Section Record #K-1 Type</td>
+          <td colspan=3 bgcolor=#DDDDDD><em>This space inserted only to align table nicely</em></td>
 	</tr>
 
+	<tr>
+	  <td colspan=4>Record Set #0 Section Record #K-1 Data <em>(variable size)</td>
+	</tr>
+
+        <tr>
+          <td colspan=4>Number of Section Records in Set #1 <em>(variable size)</em></td>
+        </tr>
+
+        <tr>
+          <td colspan=4>Size of Free-Space Section Described in Record Set #1 <em>(variable size)</em></td>
+	</tr>
+
+	<tr>
+	  <td colspan=4>Record Set #1 Section Record #0 Offset<em>(variable size)</em></td>
+	</tr>
+
+	<tr>
+	  <td colspan=1>Record Set #1 Section Record #0 Type</td>
+          <td colspan=3 bgcolor=#DDDDDD><em>This space inserted only to align table nicely</em></td>
+	</tr>
+
+	<tr>
+	  <td colspan=4>Record Set #1 Section Record #0 Data <em>(variable size)</td>
+	</tr>
+
+	<tr>
+	  <td colspan=4>...</td>
+	</tr>
+
+	<tr>
+	  <td colspan=4>Record Set #1 Section Record #K-1 Offset<em>(variable size)</em></td>
+	</tr>
+
+	<tr>
+	  <td colspan=1>Record Set #1 Section Record #K-1 Type</td>
+          <td colspan=3 bgcolor=#DDDDDD><em>This space inserted only to align table nicely</em></td>
+	</tr>
+
+	<tr>
+	  <td colspan=4>Record Set #1 Section Record #K-1 Data <em>(variable size)</td>
+	</tr>
+
+	<tr>
+	  <td colspan=4><strong>...</strong></td>
+	</tr>
+
+	<tr>
+	  <td colspan=4><strong>...</strong></td>
+	</tr>
+
+        <tr>
+          <td colspan=4>Number of Section Records in Set #N-1 <em>(variable size)</em></td>
+        </tr>
+
+        <tr>
+          <td colspan=4>Size of Free-Space Section Described in Record Set #N-1 <em>(variable size)</em></td>
+	</tr>
+
+	<tr>
+	  <td colspan=4>Record Set #N-1 Section Record #0 Offset<em>(variable size)</em></td>
+	</tr>
+
+	<tr>
+	  <td colspan=1>Record Set #N-1 Section Record #0 Type</td>
+          <td colspan=3 bgcolor=#DDDDDD><em>This space inserted only to align table nicely</em></td>
+	</tr>
+
+	<tr>
+	  <td colspan=4>Record Set #N-1 Section Record #0 Data <em>(variable size)</td>
+	</tr>
+
+	<tr>
+	  <td colspan=4>...</td>
+	</tr>
+
+	<tr>
+	  <td colspan=4>Record Set #N-1 Section Record #K-1 Offset<em>(variable size)</em></td>
+	</tr>
+
+	<tr>
+	  <td colspan=1>Record Set #N-1 Section Record #K-1 Type</td>
+          <td colspan=3 bgcolor=#DDDDDD><em>This space inserted only to align table nicely</em></td>
+	</tr>
+
+	<tr>
+	  <td colspan=4>Record Set #N-1 Section Record #K-1 Data <em>(variable size)</td>
+	</tr>
 
 	<tr>
 	  <td colspan=4>Checksum</td>
@@ -4842,57 +4895,128 @@ TABLE.list TD { border:none; }
         <tr>
           <td>Version</td>
           <td>
-            <P>This is the version number for the Free-Space Section Information
+            <P>This is the version number for the Free-Space Section List
 		and this document describes version 0.</P>
           </td>
         </tr>
 
         <tr>
-          <td>Header Address</td>
+          <td>Free-Space Manager Header Address</td>
           <td>
             <P>This is the address of the <em>Free-Space Manager Header</em>.
+                This field is principally used for file
+                integrity checking.
             </P>
           </td>
         </tr>
 
 	<tr>
-          <td>Number of Sections for set #N</td>
-	  <td><P>This is the number of free-space sections for set #N.
-		The length of this field is derived from <em>Number of Serialized Sections</em>
-		in the <em>Free-Space Manager Header</em>.</P>
-		<P>N is the number of sets of free-space section information
-		that fits into <em>Size of Serialized Section Information</em> in the 
-		<em>Free-Space Manager Header</em>.</P>
+          <td>Number of Section Records for Set #N</td>
+	  <td>
+            <P>This is the number of free-space section records for set #N.
+		The length of this field is the minimum number of bytes needed
+                to store the <em>number of serialized sections</em> (from the
+                <em>free-space manager header</em>).
+            </P>
+
+            <P>
+                The number of sets of free-space section records is
+                determined by the <em>size of serialized section list</em> in
+                the <em>free-space manager header</em>.
+            </P>
           </td>
 	</tr>
 
         <tr>
-          <td>Section Size for set #N</td>
+          <td>Section Size for Record Set #N</td>
           <td>
-	    <P>This is the size of the free-space section for set #N.
-		The length of this field is derived from <em>Maximum Section Size</em>
-		in the <em>Free-Space Manager Header</em>.
+	    <P>This is the size (in bytes) of the free-space section described
+                for <em>all</em> the section records in set #N.
+            </P>
+
+            <P>
+		The length of this field is the minimum number of bytes needed
+                to store the <em>maximum section size</em> (from the
+                <em>free-space manager header</em>).
             </P>
           </td>
         </tr>
 
-	<tr>
-	  <td>Address, Type, Extra Size for section #K</td>
-	  <td>
-	    <P><em>Address</em> is the address of the free-space section #K in the set.
-		    The length of this field is derived from <em>Size of Address Space</em> in the 
-		    <em>Free-Space Manager Header</em>.</P>
-	    <P><em>Type</em> is the type of free-space section #K in the set.</P>
-	    <P><em>Extra size</em> is the extra amount of space required for the 
-		    free-space section #K in the set.</P>
-	    <P>K is the <em>Number of Sections for set #N</em>.</P>
-	  </td>
-	</tr>
+        <tr>
+          <td>Record Set #N Section #K Offset</td>
+          <td>
+	    <P>This is the offset (in bytes) of the free-space section within
+                the client for the free-space manager.
+            </P>
+
+            <P>
+		The length of this field is the minimum number of bytes needed
+                to store the <em>size of address space</em> (from the
+                <em>free-space manager header</em>).
+            </P>
+          </td>
+        </tr>
+
+        <tr>
+          <td>Record Set #N Section #K Type</td>
+          <td>
+	    <P>This is the type of the section record, used to decode the
+                <em>record set #N section #K data</em> information.
+                Currently defined record types are:
+
+                <table class=list>
+                    <tr>
+                      <th width="30%">Type</th>
+                      <th align=left>Description</th>
+                    </tr>
+
+                    <tr>
+                      <td align=center><code>0</code></td>
+                      <td>Fractal heap "single" section
+                      </td>
+                    </tr>
+
+                    <tr>
+                      <td align=center><code>1</code></td>
+                      <td>Fractal heap "first row" section
+                      </td>
+                    </tr>
+
+                    <tr>
+                      <td align=center><code>2</code></td>
+                      <td>Fractal heap "normal row" section
+                      </td>
+                    </tr>
+
+                    <tr>
+                      <td align=center><code>3</code></td>
+                      <td>Fractal heap "indirect" section
+                      </td>
+                    </tr>
+
+                    <tr>
+                      <td align=center><code>4+</code></td>
+                      <td>Reserved.
+                      </td>
+                    </tr>
+                </table>
+            </P>
+          </td>
+        </tr>
+
+        <tr>
+          <td>Record Set #N Section #K Data</td>
+          <td>
+	    <P>This is the section-type specific information for each record
+                in the record set, described below.
+            </P>
+          </td>
+        </tr>
 
         <tr>
           <td>Checksum</td>
           <td>
-	    <P>This is the checksum for the Free-Space Section Information.
+	    <P>This is the checksum for the <em>Free-Space Section List</em>.
             </P>
           </td>
         </tr>
@@ -4916,23 +5040,175 @@ TABLE.list TD { border:none; }
     </div>
 
     <br>
-    <h3><a name="SOHM">Disk Format: Level 1G - Shared Object Header Message Table</a></h3>
-    <P>The <em>master table of shared object header message indexes</em> is a collection of index 
-	headers.  Each index header records information about the index type, the types 
-	and number of messages, the index address where the index nodes reside,
-	and the fractal heap address if shared messages were stored there.
-	The index type can be a list or B-tree which holds the index nodes.
-	Each index node contains information used to locate the shared message from either
-	the fractal heap or an object header.
-	The types of messages that can be shared are <em>Dataspace, Datatype, Fill Value,
-	Filter Pipeline and Attribute </em>messages.
+    <P>
+        The section-type specific data for each free-space section record is
+        described below:
     </P>
 
     <br>
     <div align=center>
       <table class=format>
         <caption>
-          Master Table of Shared Object Header Message Indexes
+          Fractal Heap "Single" Section Data Record
+        </caption>
+
+        <tr>
+          <td colspan=4><em>No additional record data stored</em></td>
+        </tr>
+      </table>
+    </div>
+
+    <br>
+    <div align=center>
+      <table class=format>
+        <caption>
+          Fractal Heap "First Row" Section Data Record
+        </caption>
+
+        <tr>
+          <td colspan=4><em>Same format as "indirect" section data</em></td>
+        </tr>
+      </table>
+    </div>
+
+    <br>
+    <div align=center>
+      <table class=format>
+        <caption>
+          Fractal Heap "Normal Row" Section Data Record
+        </caption>
+
+        <tr>
+          <td colspan=4><em>No additional record data stored</em></td>
+        </tr>
+      </table>
+    </div>
+
+    <br>
+    <div align=center>
+      <table class=format>
+        <caption>
+          Fractal Heap "Indirect" Section Data Record
+        </caption>
+
+        <tr>
+          <th>byte</th>
+          <th>byte</th>
+          <th>byte</th>
+          <th>byte</th>
+        </tr>
+
+        <tr>
+          <td colspan=4>Fractal Heap Indirect Block Offset <em>(variable size)</em></td>
+        </tr>
+
+        <tr>
+          <td colspan=2>Block Start Row</td>
+          <td colspan=2>Block Start Column</td>
+        </tr>
+
+        <tr>
+          <td colspan=2>Number of Blocks</td>
+          <td colspan=2 bgcolor=#DDDDDD><em>This space inserted only to align table nicely</em></td>
+        </tr>
+      </table>
+    </div>
+
+    <br>
+    <div align=center>
+      <table class=desc>
+	<tr>
+          <th width="30%">Field Name</th>
+          <th>Description</th>
+        </tr>
+
+        <tr>
+          <td>Fractal Heap Block Offset</td>
+          <td>
+            <P>The offset of the indirect block in the fractal heap's address
+                space containing the empty blocks.
+            </P>
+            <P>
+                The number of bytes used to encode this field is the minimum
+                number of bytes needed to encode values for the <em>Maximum
+                Heap Size</em> (in the fractal heap's header).
+            </P>
+          </td>
+        </tr>
+          
+        <tr>
+          <td>Block Start Row</td>
+          <td>
+            <P>This is the row that the empty blocks start in.
+	    </P>
+          </td>
+        </tr>
+
+        <tr>
+          <td>Block Start Column</td>
+          <td>
+            <P>This is the column that the empty blocks start in.
+	    </P>
+          </td>
+        </tr>
+
+        <tr>
+          <td>Number of Blocks</td>
+          <td>
+            <P>This is the number of empty blocks covered by the section.
+	    </P>
+          </td>
+        </tr>
+      </table>
+    </div>
+
+    <br>
+    <h3><a name="SOHMTable">Disk Format: Level 1G - Shared Object Header Message Table</a></h3>
+
+        <P>
+            The <em>shared object header message table</em> is used to locate
+            object
+            header messages that are shared between two or more object headers
+            in the file.  Shared object header messages are stored and indexed
+            in the file in one of two ways: indexed sequentially in a
+            <em>shared header message list</em> or indexed with a v2 B-tree.
+            The shared messages themselves are either stored in a fractal
+            heap (when two or more objects share the message), or remain in an
+            object's header (when only one object uses the message currently,
+            but the message can be shared in the future).
+        </P>
+
+        <P>
+            The <em>shared object header message table</em>
+            contains a list of shared message index headers.  Each index header
+            records information about the version of the index format, the index
+            storage type, flags for the message types indexed, the number of
+            messages in the index, the address where the index resides,
+            and the fractal heap address if shared messages are stored there.
+        </P>
+
+        <P>
+            Each index can be either a list or a v2 B-tree and may transition
+            between those two forms as the number of messages in the index
+            varies.  Each shared message record contains information used to
+            locate the shared message from either a fractal heap or an object
+            header.  The types of messages that can be shared are: <em>Dataspace,
+            Datatype, Fill Value, Filter Pipeline and Attribute</em>.
+        </P>
+
+        <P>
+            The <em>shared object header message table</em> is pointed to
+            from a <a href="#SOHMTableMessage">shared message table</a> message
+            in the superblock extension for a file.  This message stores the
+            version of the table format, along with the number of index headers
+            in the table.
+        </P>
+
+    <br>
+    <div align=center>
+      <table class=format>
+        <caption>
+          Shared Object Header Message Table
         </caption>
 
         <tr>
@@ -4949,7 +5225,7 @@ TABLE.list TD { border:none; }
         <tr>
           <td>Version for index #0</td>
           <td>Index Type for index #0</td>
-          <td colspan=2>Message Type for index #0</td>
+          <td colspan=2>Message Type Flags for index #0</td>
         </tr>
 
         <tr>
@@ -4958,7 +5234,7 @@ TABLE.list TD { border:none; }
 
         <tr>
           <td colspan=2>List Cutoff for index #0</td>
-          <td colspan=2>B-tree Cutoff for index #0</td>
+          <td colspan=2>v2 B-tree Cutoff for index #0</td>
         </tr>
 
         <tr>
@@ -4967,10 +5243,11 @@ TABLE.list TD { border:none; }
 	</tr>
 
 	<tr>
-	  <td colspan=4>Index Address<sup>O</sup> for index #0</td>
+	  <td colspan=4><br>Index Address<sup>O</sup> for index #0<br><br></td>
 	</tr>
+
 	<tr>
-	  <td colspan=4>Heap Address<sup>O</sup> for index #0</td>
+	  <td colspan=4><br>Fractal Heap Address<sup>O</sup> for index #0<br><br></td>
 	</tr>
 
         <tr>
@@ -4984,7 +5261,7 @@ TABLE.list TD { border:none; }
         <tr>
           <td>Version for index #N-1</td>
           <td>Index Type for index #N-1</td>
-          <td colspan=2>Message Type for index #N-1</td>
+          <td colspan=2>Message Type Flags for index #N-1</td>
         </tr>
 
         <tr>
@@ -4993,7 +5270,7 @@ TABLE.list TD { border:none; }
 
         <tr>
           <td colspan=2>List Cutoff for index #N-1</td>
-          <td colspan=2>B-tree Cutoff for index #N-1</td>
+          <td colspan=2>v2 B-tree Cutoff for index #N-1</td>
         </tr>
 
         <tr>
@@ -5002,10 +5279,11 @@ TABLE.list TD { border:none; }
 	</tr>
 
 	<tr>
-	  <td colspan=4>Index Address<sup>O</sup> for index #N-1</td>
+	  <td colspan=4><br>Index Address<sup>O</sup> for index #N-1<br><br></td>
 	</tr>
+
 	<tr>
-	  <td colspan=4>Heap Address<sup>O</sup> for index #N-1</td>
+	  <td colspan=4><br>Fractal Heap Address<sup>O</sup> for index #N-1<br><br></td>
 	</tr>
 
 	<tr>
@@ -5038,22 +5316,22 @@ TABLE.list TD { border:none; }
           <td>
             <P>This is the version number for the list of shared object header message
 		indexes and this document describes version 0.</P>
-		N is the <em>Number of Indices</em> from the
-		<em>Shared Message Table Message</em>.
           </td>
         </tr>
 
         <tr>
           <td>Index Type for index #N</td>
           <td>
-            <P>The type of index can be an unsorted list or a sorted B-tree.
+            <P>The type of index can be an unsorted list or a v2 B-tree.
             </P>
           </td>
         </tr>
 
 	<tr>
-          <td>Message Type for index #N</td>
-	  <td><P>This field indicates the type of message for the index as follows:
+          <td>Message Type Flags for index #N</td>
+	  <td>
+            <P>This field indicates the type of messages tracked in the index,
+                as follows:
                 <table class=list>
                     <tr>
                       <th width="30%">Bits</th>
@@ -5062,27 +5340,27 @@ TABLE.list TD { border:none; }
 
                     <tr>
                       <td align=center><code>0</code></td>
-                      <td>If set, the message is a <em>Dataspace Message</em>.
+                      <td>If set, the index tracks <em>Dataspace Messages</em>.
                       </td>
                     </tr>
                     <tr>
                       <td align=center><code>1</code></td>
-                      <td>If set, the message is a <em>Datatype Message</em>.
+                      <td>If set, the message tracks <em>Datatype Messages</em>.
                       </td>
                     </tr>
                     <tr>
                       <td align=center><code>2</code></td>
-                      <td>If set, the message is a <em>Data Storage-Fill Value Message</em>.
+                      <td>If set, the message tracks <em>Fill Value Messages</em>.
                       </td>
                     </tr>
                     <tr>
                       <td align=center><code>3</code></td>
-                      <td>If set, the message is a <em>Data Storage-Filter Pipeline Message</em>.
+                      <td>If set, the message tracks <em>Filter Pipeline Messages</em>.
                       </td>
                     </tr>
                     <tr>
                       <td align=center><code>4</code></td>
-                      <td>If set, the message is an <em>Attribute Message</em>.
+                      <td>If set, the message tracksn <em>Attribute Messages</em>.
                       </td>
                     </tr>
                     <tr>
@@ -5091,7 +5369,12 @@ TABLE.list TD { border:none; }
                       </td>
                     </tr>
                 </table>
-          </P>
+            </P>
+
+            <P>
+                An index can track more than one type of message, but each type
+                of message can only by in one index.
+            </P>
           </td>
 	</tr>
 
@@ -5099,7 +5382,8 @@ TABLE.list TD { border:none; }
           <td>Minimum Message Size for index #N</td>
           <td>
 	    <P>This is the message size sharing threshold for the index.
-		If the size of the message is less than this value, the message is not shared.
+		If the encoded size of the message is less than this value, the
+                message is not shared.
             </P>
           </td>
         </tr>
@@ -5107,19 +5391,18 @@ TABLE.list TD { border:none; }
 	<tr>
 	  <td>List Cutoff for index #N</td>
 	  <td>
-	    <P>This is is the cutoff value for the indexing of messages to switch 
-		from a list to a B-tree.  If the number of messages is greater than 
-		this value, switch to index with a B-tree.
-		The default cutoff is 50.
+	    <P>This is is the cutoff value for the indexing of messages to
+                switch from a list to a v2 B-tree.  If the number of messages
+                is greater than this value, the index should be a v2 B-tree.
             </P>
 	  </td>
 	</tr>
 	<tr>
-	  <td>B-tree Cutoff for index #N</td>
+	  <td>v2 B-tree Cutoff for index #N</td>
 	  <td>
             <P>This is is the cutoff value for the indexing of messages to 
-		switch from a B-tree back to a list.  If the number of messages is less 
-		than this value, switch to index with a list.  The default cutoff is 40.
+		switch from a v2 B-tree back to a list.  If the number of
+                messages is less than this value, the index should be a list.
             </P>
 	  </td>
         </tr>
@@ -5135,15 +5418,17 @@ TABLE.list TD { border:none; }
         <tr>
           <td>Index Address for index #N</td>
           <td>
-	    <P>This field is the address of the list or B-tree where the index nodes reside.
+	    <P>This field is the address of the list or v2 B-tree where the
+                index nodes reside.
             </P>
           </td>
         </tr>
 
         <tr>
-          <td>Heap Address for index #N</td>
+          <td>Fractal Heap Address for index #N</td>
           <td>
-	    <P>This field is the address of the fractal heap if shared messages were stored there.
+	    <P>This field is the address of the fractal heap if shared messages
+                are stored there.
             </P>
           </td>
         </tr>
@@ -5158,171 +5443,31 @@ TABLE.list TD { border:none; }
       </table>
     </div>
 
-    <br>
-    <div align=center>
-      <table class=format>
-        <caption>
-          Index Node for messages stored in heap
-        </caption>
-
-        <tr>
-          <th>byte</th>
-          <th>byte</th>
-          <th>byte</th>
-          <th>byte</th>
-        </tr>
-
-        <tr>
-          <td>Message Location</td>
-          <td colspan=3 bgcolor=#DDDDDD><em>This space inserted only to align table nicely</em></td>
-        </tr>
-          
-        <tr>
-          <td colspan=4>Hash Value</td>
-        </tr>
-
-        <tr>
-          <td colspan=4>Reference Count</td>
-        </tr>
-
-        <tr>
-          <td colspan=4><br>Heap ID</td>
-        </tr>
+    <div>
+      <table class=note>
+        <tr><td>
+            (Items marked with an 'O' in the above tables are
+            <br>
+            of the size specified in "Size of Offsets.")
+        </td></tr>
       </table>
     </div>
 
+
     <br>
-    <div align=center>
-      <table class=desc>
-	<tr>
-          <th width="30%">Field Name</th>
-          <th>Description</th>
-        </tr>
-
-        <tr>
-          <td>Message Location</td>
-          <td>
-            <P>This has a value of 0 indicating that the message is stored in the heap.
-            </P>
-          </td>
-        </tr>
-          
-        <tr>
-          <td>Hash Value</td>
-          <td>
-            <P>This is the hash value for the message.
-	    </P>
-          </td>
-        </tr>
-
-        <tr>
-          <td>Reference Count</td>
-          <td>
-            <P>This is the number of times the message is used in the file.
-            </P>
-          </td>
-        </tr>
-
-        <tr>
-          <td>Heap ID</td>
-          <td>
-	    <P>This is the ID of the message in the fractal heap.
-            </P>
-          </td>
-        </tr>
-      </table>
-    </div>
+    <P>
+        Shared messages are indexed either with a <em>shared message record
+        list</em>, described below, or using a v2 B-tree (using record type 7).
+        The number of records in the <em>shared message record list</em> is
+        determined in the index's entry in the <em>shared object header message
+        table</em>.
+    </P>
 
     <br>
     <div align=center>
       <table class=format>
         <caption>
-          Index Node for messages stored in object header
-        </caption>
-
-        <tr>
-          <th>byte</th>
-          <th>byte</th>
-          <th>byte</th>
-          <th>byte</th>
-        </tr>
-
-        <tr>
-          <td>Message Location</td>
-          <td colspan=3 bgcolor=#DDDDDD><em>This space inserted only to align table nicely</em></td>
-        </tr>
-          
-        <tr>
-          <td colspan=4>Hash Value</td>
-        </tr>
-
-        <tr>
-          <td>Reserved</td>
-          <td>Type ID</td>
-          <td colspan=2>Creation Index</td>
-        </tr>
-
-        <tr>
-          <td colspan=4>Object Header Address<sup>O</sup></td>
-        </tr>
-      </table>
-    </div>
-
-    <br>
-    <div align=center>
-      <table class=desc>
-	<tr>
-          <th width="30%">Field Name</th>
-          <th>Description</th>
-        </tr>
-
-        <tr>
-          <td>Message Location</td>
-          <td>
-            <P>This has a value of 1 indicating that the message is stored in the object header.
-            </P>
-          </td>
-        </tr>
-          
-        <tr>
-          <td>Hash Value</td>
-          <td>
-            <P>This is the hash value for the message.
-	    </P>
-          </td>
-        </tr>
-
-        <tr>
-          <td>Type ID</td>
-          <td>
-            <P>This field is the message type.
-            </P>
-          </td>
-        </tr>
-
-        <tr>
-          <td>Creation Index</td>
-          <td>
-	    <P>This is the creation index of the message within the object header.
-            </P>
-          </td>
-        </tr>
-
-        <tr>
-          <td>Object Header Address</td>
-          <td>
-	    <P>This is the address of the object header where the message is located.
-            </P>
-          </td>
-        </tr>
-      </table>
-    </div>
-
-    <br>
-    <div align=center>
-      <table class=format>
-        <caption>
-          List of Index Nodes
+          Shared Message Record List
         </caption>
 
         <tr>
@@ -5337,11 +5482,11 @@ TABLE.list TD { border:none; }
         </tr>
           
         <tr>
-          <td colspan=4>Index Node #0 <em>(variable size)</em></td>
+          <td colspan=4>Shared Message Record #0</td>
         </tr>
 
         <tr>
-          <td colspan=4>Index Node #1 <em>(variable size)</em></td>
+          <td colspan=4>Shared Message Record #1</td>
         </tr>
 
         <tr>
@@ -5349,7 +5494,7 @@ TABLE.list TD { border:none; }
         </tr>
 
         <tr>
-          <td colspan=4>Index Node #N-1 <em>(variable size)</em></td>
+          <td colspan=4>Shared Message Record #N-1</td>
         </tr>
 
         <tr>
@@ -5378,12 +5523,11 @@ TABLE.list TD { border:none; }
         </tr>
           
         <tr>
-          <td>Index Node #N</td>
+          <td>Shared Message Record #N</td>
           <td>
-            <P>The length of this field depends on whether the message is stored in
-		the heap or object header (see format for Index Header).
-		N is the <em>Number of Messages for index #N</em> in the <em>Master Table of 
-		Shared Object Header Message Indexes</em>.
+            <P>The record for locating the shared message, either in the
+                fractal heap for the index, or an object header (see format for
+                <em>index nodes</em> below).
 	    </P>
           </td>
         </tr>
@@ -5399,13 +5543,174 @@ TABLE.list TD { border:none; }
       </table>
     </div>
 
-    <div>
-      <table class=note>
-        <tr><td>
-            (Items marked with an 'O' in the above tables are
-            <br>
-            of the size specified in "Size of Offsets.")
-        </td></tr>
+    <br>
+    <P>
+        The record for each shared message in an index is stored in one of the
+        following forms:
+    </P>
+
+    <br>
+    <div align=center>
+      <table class=format>
+        <caption>
+          Shared Message Record, for messages stored in a fractal heap
+        </caption>
+
+        <tr>
+          <th>byte</th>
+          <th>byte</th>
+          <th>byte</th>
+          <th>byte</th>
+        </tr>
+
+        <tr>
+          <td>Message Location</td>
+          <td colspan=3 bgcolor=#DDDDDD><em>This space inserted only to align table nicely</em></td>
+        </tr>
+          
+        <tr>
+          <td colspan=4>Hash Value</td>
+        </tr>
+
+        <tr>
+          <td colspan=4>Reference Count</td>
+        </tr>
+
+        <tr>
+          <td colspan=4><br>Fractal Heap ID<br><br></td>
+        </tr>
+      </table>
+    </div>
+
+    <br>
+    <div align=center>
+      <table class=desc>
+	<tr>
+          <th width="30%">Field Name</th>
+          <th>Description</th>
+        </tr>
+
+        <tr>
+          <td>Message Location</td>
+          <td>
+            <P>This has a value of 0 indicating that the message is stored in
+                the heap.
+            </P>
+          </td>
+        </tr>
+          
+        <tr>
+          <td>Hash Value</td>
+          <td>
+            <P>This is the hash value for the message.
+	    </P>
+          </td>
+        </tr>
+
+        <tr>
+          <td>Reference Count</td>
+          <td>
+            <P>This is the number of times the message is used in the file.
+            </P>
+          </td>
+        </tr>
+
+        <tr>
+          <td>Fractal Heap ID</td>
+          <td>
+	    <P>This is an 8-byte fractal heap ID for the message as stored in
+                the fractal heap for the index.
+            </P>
+          </td>
+        </tr>
+      </table>
+    </div>
+
+    <br>
+    <div align=center>
+      <table class=format>
+        <caption>
+          Shared Message Record, for messages stored in an object header
+        </caption>
+
+        <tr>
+          <th>byte</th>
+          <th>byte</th>
+          <th>byte</th>
+          <th>byte</th>
+        </tr>
+
+        <tr>
+          <td>Message Location</td>
+          <td colspan=3 bgcolor=#DDDDDD><em>This space inserted only to align table nicely</em></td>
+        </tr>
+          
+        <tr>
+          <td colspan=4>Hash Value</td>
+        </tr>
+
+        <tr>
+          <td>Reserved</td>
+          <td>Message Type</td>
+          <td colspan=2>Creation Index</td>
+        </tr>
+
+        <tr>
+          <td colspan=4><br>Object Header Address<sup>O</sup><br><br></td>
+        </tr>
+      </table>
+    </div>
+
+    <br>
+    <div align=center>
+      <table class=desc>
+	<tr>
+          <th width="30%">Field Name</th>
+          <th>Description</th>
+        </tr>
+
+        <tr>
+          <td>Message Location</td>
+          <td>
+            <P>This has a value of 1 indicating that the message is stored in
+                an object header.
+            </P>
+          </td>
+        </tr>
+          
+        <tr>
+          <td>Hash Value</td>
+          <td>
+            <P>This is the hash value for the message.
+	    </P>
+          </td>
+        </tr>
+
+        <tr>
+          <td>Message Type</td>
+          <td>
+            <P>This is the message type in the object header.
+            </P>
+          </td>
+        </tr>
+
+        <tr>
+          <td>Creation Index</td>
+          <td>
+	    <P>This is the creation index of the message within the object
+                header.
+            </P>
+          </td>
+        </tr>
+
+        <tr>
+          <td>Object Header Address</td>
+          <td>
+	    <P>This is the address of the object header where the message is
+                located.
+            </P>
+          </td>
+        </tr>
       </table>
     </div>
 
@@ -11654,7 +11959,7 @@ TABLE.list TD { border:none; }
     <P class=item><B>Status:</B> Optional, may not be repeated.</P>
 
     <P class=item><B>Description:</B>  This message is used to locate the
-        master table of shared object header message (SOHM) indexes.  Each
+        table of shared object header message (SOHM) indexes.  Each
         index consists of information to find the shared messages from either
         the heap or object header.  This message is <em>only</em> found in the
         superblock extension.
@@ -11681,7 +11986,7 @@ TABLE.list TD { border:none; }
 	</tr>
 
 	<tr>
-	  <td colspan=4><br>Master Table Address<sup>O</sup><br><br></td>
+	  <td colspan=4><br>Shared Object Header Message Table Address<sup>O</sup><br><br></td>
 	</tr>
 
 	<tr>
@@ -11706,7 +12011,7 @@ TABLE.list TD { border:none; }
 	</tr>
 
 	<tr>
-	  <td>Master Table Address</td>
+	  <td>Shared Object Header Message Table Address</td>
 	  <td><P>This field is the address of the master table for shared
             object header message indexes.</P>
 	  </td>
