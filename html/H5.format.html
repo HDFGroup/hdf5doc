@@ -4402,6 +4402,607 @@ TABLE.list TD { border:none; }
         </tr>
 
       </table>
+    </div>
+    <br>
+    <P>An object in the fractal heap is identified by means of the fractal heap ID, 
+	which encodes the type and information to locate the object in the heap.
+	Currently, the fractal heap manages the following three types of objects:
+    <UL>
+    <LI>
+    Tiny object: 
+    <br>
+    When the size of an object is less than the maximum length able to be encoded in the 
+    heap ID byte,
+    the object's data is embedded in the fractal heap ID itself.
+    There are 2 subtypes for this type of object depending on whether the
+    tiny object needs an extra byte (extended form) to store its length or not.
+    See format description below.
+    <br>
+    <br>
+    <LI>
+    Huge object: 
+    <br>
+    When the size of an object is larger than <em>Maximum Size of Managed Objects</em>
+    in the <em>Fractal Heap Header</em>, 
+    the object's data is stored on its own in the file and the object
+    is tracked/indexed via the version 2 B-tree.
+    Depending on whether I/O pipeline filters are applied to the object's data
+    and whether the heap ID is large enough to hold the object's retrieval information,
+    4 subtypes are derived for this type of object:
+    <br>
+    <UL>
+    <br>
+    <LI>
+    Huge indirectly accessed, non-filtered object
+    <br>
+    The object is located by using the B-tree key embedded in the fractal heap ID to retrieve
+    the object's address and length that are stored in the version 2 B-tree.
+    <br>
+    <br>
+    <LI>
+    Huge indirectly accessed, filtered object
+    <br>
+    The object is located by using the B-tree key embedded in the fractal heap ID to retrieve
+    the filtered object's address, length, filter mask and de-filtered size that are 
+    stored in the version 2 B-tree.
+    <br>
+    <br>
+    <LI>
+    Huge directly accessed, non-filtered object
+    <br>
+    The object is directly located by retrieving its address and length
+    that are embedded in the fractal heap ID itself.
+    This speeds up access of object without resorting to the B-tree.
+    <br>
+    <br>
+    <LI>
+    Huge directly accessed, filtered object
+    <br>
+    The filtered object is directly located by retrieving its address, length, 
+    filter mask and de-filtered size 
+    that are embedded in the fractal heap ID itself.
+    This speeds up access of object without resorting to the B-tree.
+    </UL>
+    <br>
+    <LI>
+    Managed object: 
+    <br>
+    When the size of an object does not meet the above two conditions,
+    the object is stored and managed via the direct and indirect blocks based 
+    on the doubling table.
+    </UL>
+    </P>
+
+    <br>
+    <div align=center>
+      <table class=format>
+        <caption>Fractal Heap ID for Tiny Objects (subtype 1)
+        </caption>
+
+        <tr>
+          <th>byte</th>
+          <th>byte</th>
+          <th>byte</th>
+          <th>byte</th>
+	</tr>
+
+        <tr>
+          <td>Version, Type & Length</td>
+          <td colspan=3 bgcolor=#DDDDDD><em>This space inserted only to align table nicely</em></td>
+        </tr>
+
+        <tr>
+          <td colspan=4><br>Data <em>(variable size)</em></td>
+        </tr>
+
+      </table>
+    </div>
+
+    <br>
+    <div align=center>
+      <table class=desc>
+	<tr>
+          <th width="30%">Field Name</th>
+          <th>Description</th>
+        </tr>
+
+        <tr>
+          <td>Version, Type & Length</td>
+          <td>
+            <P>This is a bit field with the following definition:
+            <table class=list>
+                <tr>
+                  <th width="30%">Bit</th>
+                  <th align=left>Description</th>
+                </tr>
+
+                <tr>
+                  <td align=center><code>6-7</code></td>
+                  <td>This is the current version of ID format and this 
+			document describes version 0.
+                  </td>
+                </tr>
+                <tr>
+                  <td align=center><code>4-5</code></td>
+                  <td>This is the ID type and has a value of 2 indicating that this
+		    is a Tiny Object.
+                  </td>
+                </tr>
+                <tr>
+                  <td align=center><code>0-3</code></td>
+                  <td>This field is the length of the object which is
+		    one less than the actual length since
+		    zero-length object is not allowed to be stored in the heap.
+		    For example, an object of actual length 1 has an encoded
+		    length of 0, an object of actual length 2 has an encoded
+		    length of 1, etc.
+                  </td>
+                </tr>
+	    </table>
+            </P>
+          </td>
+        </tr>
+
+        <tr>
+          <td>Data</td>
+          <td>
+            <P>This is the data of the object.
+            </P>
+          </td>
+        </tr>
+
+      </table>
+    </div>
+
+    <br>
+    <div align=center>
+      <table class=format>
+        <caption>Fractal Heap ID for Tiny Objects (subtype 2)
+        </caption>
+
+        <tr>
+          <th>byte</th>
+          <th>byte</th>
+          <th>byte</th>
+          <th>byte</th>
+	</tr>
+
+        <tr>
+          <td>Version, Type & Length</td>
+          <td>Length</td>
+          <td colspan=2 bgcolor=#DDDDDD><em>This space inserted only to align table nicely</em></td>
+        </tr>
+
+        <tr>
+          <td colspan=4>Data <em>(variable size)</em></td>
+        </tr>
+
+      </table>
+    </div>
+
+    <br>
+    <div align=center>
+      <table class=desc>
+	<tr>
+          <th width="30%">Field Name</th>
+          <th>Description</th>
+        </tr>
+
+        <tr>
+          <td>Version, Type & Length</td>
+          <td>
+            <P>This is a bit field with the following definition:
+            <table class=list>
+                <tr>
+                  <th width="30%">Bit</th>
+                  <th align=left>Description</th>
+                </tr>
+
+                <tr>
+                  <td align=center><code>6-7</code></td>
+                  <td>This is the current version of ID format and this 
+			document describes version 0.
+                  </td>
+                </tr>
+                <tr>
+                  <td align=center><code>4-5</code></td>
+                  <td>This is the ID type and has a value of 2 indicating that this
+		    is a Tiny Object.
+                  </td>
+                </tr>
+                <tr>
+                  <td align=center><code>0-3</code></td>
+                  <td>These 4 bits, together with the next byte, form an unsigned 12-bit 
+		    interger for holding the length of the object.
+		    See description for <em>length</em> below.
+                  </td>
+                </tr>
+	    </table>
+            </P>
+          </td>
+        </tr>
+
+        <tr>
+          <td>Length</td>
+          <td>
+            <P>This byte, together with the 4 bits in the previous byte, 
+		forms an unsigned 12-bit integer for holding the length of the object.
+		The length is one less than the object's actual length since
+		zero-length object is not allowed to be stored in the heap.
+		For example, an object of actual length 1 has an encoded
+		length of 0, an object of actual length 2 has an encoded
+		length of 1, etc.
+            </P>
+          </td>
+        </tr>
+
+        <tr>
+          <td>Data</td>
+          <td>
+            <P>This is the data of the object.
+            </P>
+          </td>
+        </tr>
+
+      </table>
+    </div>
+
+
+    <br>
+    <div align=center>
+      <table class=format>
+	    <caption>Fractal Heap ID for Huge Objects (subtype 1 & 2): indirectly accessed, non-filtered/filtered
+	    </caption>
+
+	    <tr>
+	      <th>byte</th>
+	      <th>byte</th>
+	      <th>byte</th>
+	      <th>byte</th>
+	    </tr>
+
+	    <tr>
+	      <td>Version, Type & Key</td>
+	      <td colspan=3 bgcolor=#DDDDDD><em>This space inserted only to align table nicely</em></td>
+	    </tr>
+
+	    <tr>
+	      <td colspan=4>Key<sup>L</sup><em> (variable size)</em></td>
+	    </tr>
+
+	  </table>
+	</div>
+
+	<br>
+	<div align=center>
+	  <table class=desc>
+	    <tr>
+	      <th width="30%">Field Name</th>
+	      <th>Description</th>
+	    </tr>
+
+	    <tr>
+	      <td>Version, Type & Key</td>
+	      <td>
+		<P>This is a bit field with the following definition:
+		<table class=list>
+		    <tr>
+		      <th width="30%">Bit</th>
+		      <th align=left>Description</th>
+		    </tr>
+
+		    <tr>
+		      <td align=center><code>6-7</code></td>
+		      <td>This is the current version of ID format and
+			    this document describes version 0.
+		      </td>
+		    </tr>
+		    <tr>
+		      <td align=center><code>4-5</code></td>
+		      <td>This is the ID type and has a value of 1 indicating that this
+			is a Huge Object.
+		      </td>
+		    </tr>
+		    <tr>
+		      <td align=center><code>0-3</code></td>
+		      <td>This is part of <em>Key</em>.  See the next field description.
+		      </td>
+		    </tr>
+		</table>
+		</P>
+	      </td>
+	    </tr>
+
+	    <tr>
+		<td>Key</td>
+		<td><P>This field is the B-tree key in retrieving the address and length
+		of the huge object from version 2 B-tree.  The key is derived from
+		<em>Next Huge Object ID</em> in the <em>Fractal Heap Header</em>.</P>
+		</td>
+	    </tr>
+
+	  </table>
+	</div>
+
+	<br>
+	<div align=center>
+	  <table class=format>
+	    <caption>Fractal Heap ID for Huge Objects (subtype 3): directly accessed, non-filtered
+	    </caption>
+
+	    <tr>
+	      <th>byte</th>
+	      <th>byte</th>
+	      <th>byte</th>
+	      <th>byte</th>
+	    </tr>
+
+	    <tr>
+	      <td>Version, Type & Offset</td>
+	      <td colspan=3 bgcolor=#DDDDDD><em>This space inserted only to align table nicely</em></td>
+	    </tr>
+
+	    <tr>
+	      <td colspan=4>Address <sup>O</sup></td>
+	    </tr>
+
+	    <tr>
+	      <td colspan=4>Length <sup>L</sup></td>
+	    </tr>
+
+	  </table>
+	</div>
+
+	<br>
+	<div align=center>
+	  <table class=desc>
+	    <tr>
+	      <th width="30%">Field Name</th>
+	      <th>Description</th>
+	    </tr>
+
+	    <tr>
+	      <td>Version, Type & Offset</td>
+	      <td>
+		<P>This is a bit field with the following definition:
+		<table class=list>
+		    <tr>
+		      <th width="30%">Bit</th>
+		      <th align=left>Description</th>
+		    </tr>
+
+		    <tr>
+		      <td align=center><code>6-7</code></td>
+		      <td>This is the current version of ID format and
+			    this document describes version 0.
+		      </td>
+		    </tr>
+		    <tr>
+		      <td align=center><code>4-5</code></td>
+		      <td>This is the ID type and has a value of 1 indicating that this
+			is a Huge Object.
+		      </td>
+		    </tr>
+		    <tr>
+		      <td align=center><code>0-3</code></td>
+		      <td>This is part of <em>Address</em>.  See the next field description.
+		      </td>
+		    </tr>
+		</table>
+		</P>
+	      </td>
+	    </tr>
+
+	    <tr>
+		<td>Address</td>
+		<td><P>This field is the address of the object in the file.</P>
+		</td>
+	    </tr>
+
+	    <tr>
+		<td>Length</td>
+		<td><P>This field is the length of the object in the file.</P>
+		</td>
+	    </tr>
+	  </table>
+	</div>
+
+	<br>
+	<div align=center>
+	  <table class=format>
+	    <caption>Fractal Heap ID for Huge Objects (subtype 4): directly accessed, filtered
+	    </caption>
+
+	    <tr>
+	      <th>byte</th>
+	      <th>byte</th>
+	      <th>byte</th>
+	      <th>byte</th>
+	    </tr>
+
+	    <tr>
+	      <td>Version, Type & Offset</td>
+	      <td colspan=3 bgcolor=#DDDDDD><em>This space inserted only to align table nicely</em></td>
+	    </tr>
+
+	    <tr>
+	      <td colspan=4>Address <sup>O</sup></td>
+	    </tr>
+
+	    <tr>
+	      <td colspan=4>Length <sup>L</sup></td>
+	    </tr>
+
+	    <tr>
+	      <td colspan=4>Filter Mask</td>
+	    </tr>
+
+	    <tr>
+	      <td colspan=4>De-filtered Size <sup>L</sup></td>
+	    </tr>
+
+	  </table>
+	</div>
+
+	<br>
+	<div align=center>
+	  <table class=desc>
+	    <tr>
+	      <th width="30%">Field Name</th>
+	      <th>Description</th>
+	    </tr>
+
+	    <tr>
+	      <td>Version, Type & Offset</td>
+	      <td>
+		<P>This is a bit field with the following definition:
+		<table class=list>
+		    <tr>
+		      <th width="30%">Bit</th>
+		      <th align=left>Description</th>
+		    </tr>
+
+		    <tr>
+		      <td align=center><code>6-7</code></td>
+		      <td>This is the current version of ID format and
+			    this document describes version 0.
+		      </td>
+		    </tr>
+		    <tr>
+		      <td align=center><code>4-5</code></td>
+		      <td>This is the ID type and has a value of 1 indicating that this
+			is a Huge Object.
+		      </td>
+		    </tr>
+		    <tr>
+		      <td align=center><code>0-3</code></td>
+		      <td>This is part of <em>Address</em>.  See the next field description.
+		      </td>
+		    </tr>
+		</table>
+		</P>
+	      </td>
+	    </tr>
+
+	    <tr>
+		<td>Address</td>
+		<td><P>This field is the address of the filtered object in the file.</P>
+	    </td>
+	</tr>
+
+	<tr>
+	    <td>Length</td>
+	    <td><P>This field is the length of the filtered object in the file.</P>
+	    </td>
+	</tr>
+
+	<tr>
+	    <td>Filter Mask</td>
+	    <td><P>This field is the I/O pipeline filter mask for the 
+		filtered object in the file.</P>
+	    </td>
+	</tr>
+
+	<tr>
+	    <td>Filtered Size</td>
+	    <td><P>This field is the size of the de-flitered object in the file.</P>
+	    </td>
+	</tr>
+
+      </table>
+    </div>
+
+    <br>
+    <div align=center>
+      <table class=format>
+        <caption>Fractal Heap ID for Managed Objects
+        </caption>
+
+        <tr>
+          <th>byte</th>
+          <th>byte</th>
+          <th>byte</th>
+          <th>byte</th>
+	</tr>
+
+        <tr>
+          <td>Version & Type</td>
+          <td colspan=3 bgcolor=#DDDDDD><em>This space inserted only to align table nicely</em></td>
+        </tr>
+        <tr>
+          <td colspan=4>Offset <em>(variable size)</em></td>
+        </tr>
+
+        <tr>
+          <td colspan=4>Length <em>(variable size)</em></td>
+        </tr>
+      </table>
+    </div>
+
+    <br>
+    <div align=center>
+      <table class=desc>
+	<tr>
+          <th width="30%">Field Name</th>
+          <th>Description</th>
+        </tr>
+
+        <tr>
+          <td>Version & Type</td>
+          <td>
+            <P>This is a bit field with the following definition:
+            <table class=list>
+                <tr>
+                  <th width="30%">Bit</th>
+                  <th align=left>Description</th>
+                </tr>
+
+                <tr>
+                  <td align=center><code>6-7</code></td>
+                  <td>This is the current version of ID format and this 
+			document describes version 0.
+                  </td>
+                </tr>
+                <tr>
+                  <td align=center><code>4-5</code></td>
+                  <td>This is the ID type and has a value of 0 indicating that this
+		    is a Managed Object.
+                  </td>
+                </tr>
+                <tr>
+                  <td align=center><code>0-3</code></td>
+                  <td>Reserved.
+                  </td>
+                </tr>
+	    </table>
+            </P>
+          </td>
+        </tr>
+
+        <tr>
+          <td>Offset</td>
+          <td>
+            <P>This field is the offset of the object in the heap and is 
+		determined by the <em>Maximum Heap Size</em> in the
+		<em>Fractal Heap Header</em>.
+            </P>
+          </td>
+        </tr>
+
+        <tr>
+          <td>Length</td>
+          <td>
+            <P>This field is the length of the object in the heap.
+		It is determined by taking the minimum value of 
+		<em>Maximum Direct Block Size</em>
+		and <em>Maximum Size of Managed Objects</em> in the
+		<em>Fractal Heap Header</em>.
+            </P>
+          </td>
+        </tr>
+
+      </table>
+    </div>
 
       <table class=note>
         <tr><td>
