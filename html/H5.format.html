@@ -3310,8 +3310,16 @@ TABLE.list TD { border:none; }
         abstractly called the "global heap", although they don't actually link
         to each other, and there is no global place in the file where you can
         discover all of the collections.  The collections are found simply by
-        finding a reference to one through another object in the file (eg.
-        variable-length datatype elements, etc).
+        finding a reference to one through another object in the file.
+	For example, data of variable-length datatype elements is stored 
+	in the global heap and is accessed via the global heap ID.  
+	The ID encodes the data's length as well as the heap address and ID 
+	used in locating the data from the heap.
+	Another type of global heap collection is the dataset region reference type,
+	which points to a specific dataset region.
+	The <em>reference</em> encodes the heap address and the ID used in 
+	locating the address of the dataset's object header.
+	See description of these two formats at the end of this section.
     </P>
 
     <br>
@@ -3361,15 +3369,8 @@ TABLE.list TD { border:none; }
           <td colspan=4><br>Global Heap Object 0 (free space)<br><br></td>
         </tr>
       </table>
-
-      <table class=note>
-        <tr><td>
-            (Items marked with an 'L' the above table are
-            <br>
-            of the size specified in "Size of Lengths.")
-        </td></tr>
-      </table>
     </div>
+
 
     <br>
     <div align=center>
@@ -3468,14 +3469,6 @@ TABLE.list TD { border:none; }
           <td colspan=4><br>Object Data<br><br></td>
         </tr>
       </table>
-
-      <table class=note>
-        <tr><td>
-            (Items marked with an 'L' the above table are
-            <br>
-            of the size specified in "Size of Lengths.")
-        </td></tr>
-      </table>
     </div>
 
     <br>
@@ -3536,6 +3529,138 @@ TABLE.list TD { border:none; }
             </P>
           </td>
         </tr>
+      </table>
+    </div>
+
+    <br>
+    <div align=center>
+      <table class=format>
+        <caption>
+          Global Heap ID for Variable-length data
+        </caption>
+
+        <tr>
+          <th>byte</th>
+          <th>byte</th>
+          <th>byte</th>
+          <th>byte</th>
+        </tr>
+
+        <tr>
+          <td colspan=4>Length</td>
+        </tr>
+          
+        <tr>
+          <td colspan=4>Address<sup>O</sup></td>
+        </tr>
+
+        <tr>
+          <td colspan=4>ID</td>
+        </tr>
+      </table>
+    </div>
+
+    <br>
+    <div align=center>
+      <table class=desc>
+	<tr>
+          <th width="30%">Field Name</th>
+          <th>Description</th>
+        </tr>
+
+        <tr>
+          <td>Length</td>
+          <td>
+            <P>This field is the length of the variable-length data object stored 
+		in the heap.
+            </P>
+          </td>
+        </tr>
+
+        <tr>
+          <td>Address</td>
+          <td>
+            <P>This field is the address of the global heap collection
+		where the data object is stored.
+            </P>
+          </td>
+        </tr>
+
+        <tr>
+          <td>ID</td>
+          <td>
+            <P>This field is the ID of the data object within the
+		global heap collection.
+            </P>
+          </td>
+        </tr>
+
+      </table>
+    </div>
+
+    <br>
+    <div align=center>
+      <table class=format>
+        <caption>
+          Reference for Dataset Region Reference type
+        </caption>
+
+        <tr>
+          <th>byte</th>
+          <th>byte</th>
+          <th>byte</th>
+          <th>byte</th>
+        </tr>
+
+        <tr>
+          <td colspan=4>Address<sup>O</sup></td>
+        </tr>
+
+        <tr>
+          <td colspan=4>ID</td>
+        </tr>
+      </table>
+    </div>
+
+    <br>
+    <div align=center>
+      <table class=desc>
+	<tr>
+          <th width="30%">Field Name</th>
+          <th>Description</th>
+        </tr>
+
+        <tr>
+          <td>Address</td>
+          <td>
+            <P>This field is the address of the global heap collection
+		where the address of the dataset's object header is stored.
+            </P>
+          </td>
+        </tr>
+
+        <tr>
+          <td>ID</td>
+          <td>
+            <P>This field is the ID of the data object within the
+		global heap collection.
+            </P>
+          </td>
+        </tr>
+
+      </table>
+
+      <table class=note>
+        <tr><td>
+            (Items marked with an 'O' in the above tables are
+            <br>
+            of the size specified in "Size of Offsets.")
+        </td></tr>
+        <tr><td>
+            (Items marked with an 'L' the above tables are
+            <br>
+            of the size specified in "Size of Lengths.")
+        </td></tr>
       </table>
     </div>
 
