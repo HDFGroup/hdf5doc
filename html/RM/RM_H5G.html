@@ -482,20 +482,29 @@ END SUBROUTINE h5gclose_f
 <hr>
 <dl>
   <dt><strong>Name:</strong> <a name="Group-Create">H5Gcreate</a>
-  <dt><strong>Signature:</strong>
-    <dd><em>hid_t </em><code>H5Gcreate</code>(
-            <em>hid_t</em> <code>loc_id</code>, 
-            <em>const char *</em><code>name</code>,
-            <em>size_t</em> <code>size_hint</code>
-    )
-    <p>
-    <dd><em>hid_t</em> <code>H5Gcreate</code>(
-            <em>hid_t</em> <code>loc_id</code>, 
-            <em>const char *</em><code>name</code>, 
-            <em>hid_t</em> <code>lcpl_id</code>, 
-            <em>hid_t</em> <code>gcpl_id</code>,
-            <em>hid_t</em> <code>gapl_id</code>
-    )
+  <dt><strong>Signatures:</strong>
+    <dd>
+    <table width=95%>
+        <tr><td width=80% align=left valign=top>
+            <a href="#Group-Create1"><em>hid_t </em><code>H5Gcreate</code>(
+                <em>hid_t</em>&nbsp;<code>loc_id</code>, 
+                <em>const&nbsp;char&nbsp;*</em><code>name</code>,
+                <em>size_t</em>&nbsp;<code>size_hint</code>&nbsp;)</a>
+            <br>&nbsp;
+            </td><td width=10% align=right valign=top>
+                [1]
+        </td></tr>
+        <tr><td align=left valign=top>
+            <a href="#Group-Create2"><em>hid_t</em> <code>H5Gcreate</code>(
+                <em>hid_t</em> <code>loc_id</code>, 
+                <em>const&nbsp;char&nbsp;*</em><code>name</code>, 
+                <em>hid_t</em>&nbsp;<code>lcpl_id</code>, 
+                <em>hid_t</em>&nbsp;<code>gcpl_id</code>,
+                <em>hid_t</em>&nbsp;<code>gapl_id</code>&nbsp;)</a>
+            </td><td align=right valign=top>
+                [2]
+        </td></tr>
+    </table
   <p>
   <dt><strong>Purpose:</strong>
     <dd>Creates a new empty group and links it to a location in the file.
@@ -507,9 +516,23 @@ END SUBROUTINE h5gclose_f
       depending on the needs of the application.
       <p>
       Such macros are provided to facilitate application compatibility.
-      Their use and mappings are fully described in 
+      For example:
+      <ul>
+          <li>The <code>H5Gcreate</code> macro 
+              will be mapped to <code>H5Gcreate1</code> and 
+              will use the <code>H5Gcreate1</code> syntax 
+              (first signature above)
+              if an application is coded for HDF5 Release 1.6.<i>x</i>.
+          <li>The <code>H5Gcreate</code> macro 
+              mapped to <code>H5Gcreate2</code> and 
+              will use the <code>H5Gcreate2</code> syntax 
+              (second signature above)
+              if an application is coded for HDF5 Release 1.8.<i>x</i>.
+      </ul>
+      <p>
+      Macro use and mappings are fully described in 
       &ldquo;<a href="APICompatMacros.html">API Compatibility Macros 
-      in HDF5</a>&rdquo;; 
+      in HDF5</a>&rdquo; 
       we urge you to read that document closely.
       <p>
       When both the HDF5 Library and the application are built and 
@@ -558,17 +581,42 @@ END SUBROUTINE h5gclose_f
       </dir>
       
   <p>
+  <dd><strong>Interface history:</strong> &nbsp;
+        Signature [1] above is the original <code>H5Gcreate</code> interface
+        and the only interface available prior to HDF5 Release 1.8.0.
+        This signature and the corresponding function are now deprecated 
+        but will remain directly callable as 
+        <a href="#Group-Create1"><code>H5Gcreate1</code></a>.
+        <p>
+        Signature [2] above was introduced with HDF5 Release 1.8.0
+        and is the recommended and default interface.
+        It is directly callable as
+        <a href="#Group-Create2"><code>H5Gcreate2</code></a>.
+        <p>
+        See &ldquo;<a href="APICompatMacros.html">API Compatibility 
+        Macros in HDF5</a>&rdquo; 
+        for circumstances under which either of these functions might not
+        be available in an installed instance of the HDF5 Library.
+  <p>
   <dt><strong>Fortran90 Interface:</strong>  h5gcreate_f
-    <dd><i><font color=red>
-      Holding this space in case we need to say something about Fortran.
-      <br>
-      Will Fortran subroutine names do anything with the 1s and 2s 
-      of the C functions?
-      </font></i>
-<!--
-    <pre>
-    </pre>
--->
+    <dd>
+	<pre>
+SUBROUTINE h5gcreate_f(loc_id, name, gr_id, hdferr, size_hint)
+
+  IMPLICIT NONE
+  INTEGER(HID_T), INTENT(IN) :: loc_id   ! File or group identifier
+  CHARACTER(LEN=*), INTENT(IN) :: name   ! Name of the group to be created 
+  INTEGER(HID_T), INTENT(OUT) :: gr_id   ! Group identifier
+  INTEGER, INTENT(OUT) :: hdferr         ! Error code 
+                                         ! 0 on success and -1 on failure
+  INTEGER(SIZE_T), OPTIONAL, INTENT(IN) :: size_hint  
+                                         ! Number of bytes to store the names 
+                                         ! of objects in the group. 
+                                         ! Default value is 
+                                         ! OBJECT_NAMELEN_DEFAULT_F
+END SUBROUTINE h5gcreate_f 
+	</pre>		
+		
   <p>
   <dt><strong>History:</strong>
     <dd><table width="90%">
@@ -601,14 +649,18 @@ END SUBROUTINE h5gclose_f
         <em>const char *</em><code>name</code>,
         <em>size_t</em> <code>size_hint</code>
     )
+  <p>
   <dt><strong>Purpose:</strong>
     <dd>Creates a new empty group and links it to a location in the file.
+  <p>
   <dt><strong>Notice:</strong>
-    <dd><i>This function is deprecated in favor of the functions 
+    <dd><i>This function is renamed from <code>H5Gcreate</code> and 
+        deprecated in favor of the functions 
         <a href="#Group-Create2"><code>H5Gcreate2</code></a> and
         <a href="#Group-CreateAnon"><code>H5Gcreate_anon</code></a>,
-        or the macro 
+        or the new macro 
         <a href="#Group-Create"><code>H5Gcreate</code></a>.</i>
+  <p>
   <dt><strong>Description:</strong>
     <dd><code>H5Gcreate1</code> creates a new group with the specified
         name at the specified location, <code>loc_id</code>.  
@@ -643,6 +695,7 @@ END SUBROUTINE h5gclose_f
         See <a href="#Group-CreateAnon"><code>H5Gcreate_anon</code></a> 
         for a discussion of the differences between <code>H5Gcreate1</code> 
         and <code>H5Gcreate_anon</code>.
+  <p>
   <dt><strong>Parameters:</strong>
     <ul><table>
       <tr>
@@ -662,9 +715,11 @@ END SUBROUTINE h5gclose_f
               I/O request even when the group has just a few names.  
               HDF5 stores each name with a null terminator.</td></tr>
     </table></ul>
+  <p>
   <dt><strong>Returns:</strong>
     <dd>Returns a valid group identifier for the open group if successful; 
         otherwise returns a negative value.
+  <p>
   <dt><strong>Fortran90 Interface:</strong> h5gcreate_f
     <dd>
 	<pre>
@@ -2461,7 +2516,7 @@ END SUBROUTINE h5gmove2_f
       Such macros are provided to facilitate application compatibility.
       Their use and mappings are fully described in 
       &ldquo;<a href="APICompatMacros.html">API Compatibility Macros 
-      in HDF5</a>&rdquo;; 
+      in HDF5</a>&rdquo; 
       we urge you to read that document closely.
       <p>
       When both the HDF5 Library and the application are built and 
@@ -2927,7 +2982,7 @@ Describes HDF5 Release 1.8.0-beta.
 
 <!-- #EndLibraryItem --><SCRIPT LANGUAGE="JAVASCRIPT">
 <!--
-document.writeln("Last modified: 2 October 2007");
+document.writeln("Last modified: 17 October 2007");
 -->
 </SCRIPT>
 
