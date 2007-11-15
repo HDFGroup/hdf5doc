@@ -90,7 +90,6 @@ user-defined link classes.
     <li><a href="#Link-CreateHard">H5Lcreate_hard</a>
     <li><a href="#Link-CreateSoft">H5Lcreate_soft</a>
     <li><a href="#Link-CreateExternal">H5Lcreate_external</a>
-    <li><a href="#Link-Link">H5Llink</a> 
     <li><a href="#Link-Exists">H5Lexists</a> 
     <li><a href="#Link-Move">H5Lmove</a>
     <li><a href="#Link-Copy">H5Lcopy</a>
@@ -111,6 +110,7 @@ user-defined link classes.
 </td><td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td><td valign=top>
 <ul>
     <li><a href="#Link-Iterate">H5Literate</a>
+    <li><a href="#Link-IterateByName">H5Literate_by_name</a>
     <li><a href="#Link-GetInfoByIdx">H5Lget_info_by_idx</a>
     <li><a href="#Link-GetNameByIdx">H5Lget_name_by_idx</a>
     <li><a href="#Link-GetValByIdx">H5Lget_val_by_idx</a>
@@ -147,6 +147,7 @@ user-defined link classes.
         <li><a href="#Link-GetValByIdx">H5Lget_val_by_idx</a>
         <li><a href="#Link-IsRegistered">H5Lis_registered</a> 
         <li><a href="#Link-Iterate">H5Literate</a>
+        <li><a href="#Link-IterateByName">H5Literate_by_name</a>
       </ul>
     </td>
     
@@ -154,7 +155,6 @@ user-defined link classes.
     
     <td valign="top">
       <ul>
-        <li><a href="#Link-Link">H5Llink</a> 
         <li><a href="#Link-Move">H5Lmove</a>
         <li><a href="#Link-Register">H5Lregister</a> 
         <li><a href="#Link-Delete">H5Ldelete</a> 
@@ -183,6 +183,7 @@ as the corresponding C function.
     <li><a href="#Link-CreateExternal">h5lcreate_external_f</a>
     <li><a href="#Link-Exists">h5lexists_f</a> 
     <li><a href="#Link-Iterate">h5literate_f</a>
+    <li><a href="#Link-IterateByName">h5literate_by_name_f</a>
     <li><a href="#Link-Link">h5llink_f</a> 
     <li><a href="#Link-Delete">h5ldelete_f</a> 
     <li><a href="#Link-DeleteByIdx">h5ldelete_by_idx_f</a>
@@ -1652,30 +1653,29 @@ END SUBROUTINE h5lget_val_f
   <dt><strong>Name:</strong> <a name="Link-Iterate">H5Literate</a>
   <dt><strong>Signature:</strong>
     <dd><em>herr_t</em> <code>H5Literate</code>(
-        <em>hid_t</em> <code>loc_id</code>,
-        <em>const char *</em><code>group_name</code>,
-        <em>H5_index_t</em> <code>index_field</code>,
+        <em>hid_t</em> <code>group_id</code>,
+        <em>H5_index_t</em> <code>index_type</code>,
         <em>H5_iter_order_t</em> <code>order</code>,
         <em>hsize_t</em> *<code>idx</code>,
         <em>H5L_iterate_t</em> <code>op</code>,
-        <em>void</em> *<code>op_data</code>,
-        <em>hid_t</em> *<code>lapl_id</code>
+        <em>void</em> *<code>op_data</code>
     )
   <p>
   <dt><strong>Purpose:</strong>
     <dd>Iterates through links in a group.
   <p>
   <dt><strong>Description:</strong>
-    <dd><code>H5Literate</code> iterates through the links in a group
-      in the order of the specified index <code>index_field</code>
+    <dd><code>H5Literate</code> iterates through the links 
+      in a group, specified by <code>group_id</code>,
+      in the order of the specified index, <code>index_type</code>,
       using a user-defined callback routine <code>op</code>.
       <code>H5Literate</code> does not recursively follow links into 
       subgroups of the specified group.
       <p>
-      <code>index_field</code> specifies the index or field to be used.
-      If the links have not been indexed on the field, they will first
-      be sorted on that field then the iteration will begin; 
-      if the links have been indexed on the field, the sorting step will be 
+      <code>index_type</code> specifies the index to be used.
+      If the links have not been indexed by the index type, they will first
+      be sorted by that index then the iteration will begin; 
+      if the links have been so indexed, the sorting step will be 
       unnecesary, so the iteration may begin more quickly.
       Valid values include the following:
         <table border=0>
@@ -1684,13 +1684,13 @@ END SUBROUTINE h5lget_val_f
             </td><td valign=top>
             <code>H5_INDEX_NAME</code>
             </td><td valign=top>
-            Name field or alpha-numeric index on name 
+            Alpha-numeric index on name 
           </td></tr><tr><td valign=top>
             &nbsp;&nbsp;&nbsp;&nbsp;
             </td><td valign=top>
             <code>H5_INDEX_CRT_ORDER&nbsp;&nbsp;&nbsp;&nbsp;</code>
             </td><td valign=top>
-            Creation order field or index on creation order 
+            Index on creation order 
           <!-- H5_INDEX_N is used internally by the Library -->
           <!--
           </td></tr><tr><td valign=top>
@@ -1704,7 +1704,7 @@ END SUBROUTINE h5lget_val_f
         </table>
       <p>
       <code>order</code> specifies the order in which objects are to be
-      inspected along the index specified in <code>index_field</code>.  
+      inspected along the index specified in <code>index_type</code>.  
       Valid values include the following:
         <table border=0>
           <tr><td valign=top>
@@ -1756,6 +1756,170 @@ END SUBROUTINE h5lget_val_f
   <dt><strong>Parameters:</strong>
     <dd><table>
       <tr>
+        <td valign="top"><em>hid_t</em> <code>group_id</code></td>
+        <td valign="top">IN: Identifier specifying subject group</td></tr>
+      <tr>
+        <td valign="top"><em>H5_index_t</em>&nbsp;<code>index_type&nbsp;&nbsp;&nbsp;&nbsp;</code></td>
+        <td valign="top">IN: Type of index which determines the order </td></tr>
+      <tr>
+        <td valign="top"><em>H5_iter_order_t</em> <code>order</code></td>
+        <td valign="top">IN: Order within index</td></tr>
+      <tr>
+        <td valign="top"><em>hsize_t *</em><code>idx</code></td>
+        <td valign="top">IN: Link for which to retrieve information</td></tr>
+      <tr>
+        <td valign="top"><em>H5L_iterate_t</em> <code>op</code></td>
+        <td valign="top">OUT: Buffer in which link value is returned</td></tr>
+      <tr>
+        <td valign="top"><em>void *</em><code>op_data</code></td>
+        <td valign="top">IN: Link for which to retrieve information</td></tr>
+    </table>
+  <p>
+  <dt><strong>Returns:</strong>
+    <dd>Returns a non-negative value if successful;
+        otherwise returns a negative value.
+  <p>
+  <dt><strong>Fortran90 Interface:</strong> <!-- h5lfunc_f -->
+    <dd>None.
+<!--
+    <pre>
+  
+    </pre>
+-->
+        <!--<dt><strong>Non-C API(s):</strong>
+    	<dd>
+        
+        <img src="Graphics/Java.gif"> 
+        <img src="Graphics/C++.gif">
+        -->
+  <p>
+  <dt><strong>History:</strong>
+    <dd><table width="90%">
+        <tr>
+          <td valign="top" align="left" width="10%">
+            <strong>Release</strong>&nbsp;&nbsp;&nbsp;&nbsp;</td>
+          <td valign="top" align="left">
+            <strong>C</strong></td></tr>
+        <tr>
+          <td valign="top">1.8.0</td>
+          <td valign="top">
+            Function introduced in this release.</td></tr>
+    </table>
+</dl>
+
+
+<!-- NEW PAGE -->
+<!-- HEADER RIGHT "H5Literate_by_name" -->
+<hr>
+<dl>
+  <dt><strong>Name:</strong> <a name="Link-IterateByName">H5Literate_by_name</a>
+  <dt><strong>Signature:</strong>
+    <dd><em>herr_t</em> <code>H5Literate_by_name</code>(
+        <em>hid_t</em> <code>loc_id</code>,
+        <em>const char *</em><code>group_name</code>,
+        <em>H5_index_t</em> <code>index_type</code>,
+        <em>H5_iter_order_t</em> <code>order</code>,
+        <em>hsize_t</em> *<code>idx</code>,
+        <em>H5L_iterate_t</em> <code>op</code>,
+        <em>void</em> *<code>op_data</code>,
+        <em>hid_t</em> *<code>lapl_id</code>
+    )
+  <p>
+  <dt><strong>Purpose:</strong>
+    <dd>Iterates through links in a group.
+  <p>
+  <dt><strong>Description:</strong>
+    <dd><code>H5Literate_by_name</code> iterates through the links 
+      in a group, specified by <code>loc_id</code> and <code>group_name</code>,
+      in the order of the specified index, <code>index_type</code>,
+      using a user-defined callback routine <code>op</code>.
+      <code>H5Literate_by_name</code> does not recursively follow links into 
+      subgroups of the specified group.
+      <p>
+      <code>index_type</code> specifies the index to be used.
+      If the links have not been indexed by the index type, they will first
+      be sorted by that index then the iteration will begin; 
+      if the links have been so indexed, the sorting step will be 
+      unnecesary, so the iteration may begin more quickly.
+      Valid values include the following:
+        <table border=0>
+          <tr><td>
+            &nbsp;&nbsp;&nbsp;&nbsp;
+            </td><td valign=top>
+            <code>H5_INDEX_NAME</code>
+            </td><td valign=top>
+            Alpha-numeric index on name 
+          </td></tr><tr><td valign=top>
+            &nbsp;&nbsp;&nbsp;&nbsp;
+            </td><td valign=top>
+            <code>H5_INDEX_CRT_ORDER&nbsp;&nbsp;&nbsp;&nbsp;</code>
+            </td><td valign=top>
+            Index on creation order 
+          <!-- H5_INDEX_N is used internally by the Library -->
+          <!--
+          </td></tr><tr><td valign=top>
+            &nbsp;&nbsp;&nbsp;&nbsp;
+            </td><td valign=top>
+            <code>H5_INDEX_N</code>
+            </td><td valign=top>
+            Number of indices defined
+          -->
+          </td></tr>
+        </table>
+      <p>
+      <code>order</code> specifies the order in which objects are to be
+      inspected along the index specified in <code>index_type</code>.  
+      Valid values include the following:
+        <table border=0>
+          <tr><td valign=top>
+            &nbsp;&nbsp;&nbsp;&nbsp;
+            </td><td valign=top>
+            <code>H5_ITER_INC</code>
+            </td><td valign=top>
+            Increasing order 
+          </td></tr><tr><td valign=top>
+            &nbsp;&nbsp;&nbsp;&nbsp;
+            </td><td valign=top>
+            <code>H5_ITER_DEC</code>
+            </td><td valign=top>
+            Decreasing order
+          </td></tr><tr><td valign=top>
+            &nbsp;&nbsp;&nbsp;&nbsp;
+            </td><td valign=top>
+            <code>H5_ITER_NATIVE&nbsp;&nbsp;&nbsp;&nbsp;</code>
+            </td><td valign=top>
+            Fastest available order
+          <!-- H5_INDEX_N is used internally by the Library -->
+          <!--
+          </td></tr><tr><td valign=top>
+            &nbsp;&nbsp;&nbsp;&nbsp;
+            </td><td valign=top>
+            <code>H5_ITER_N</code>
+            </td><td valign=top>
+            Number of iteration orders defined 
+          -->
+          </td></tr>
+        </table>
+      <p>
+      <code>idx</code> allows an interrupted iteration to be resumed;
+      it is passed in by the application with a starting point and 
+      returned by the library with the point at which the iteration stopped. 
+      <p>
+      <code>H5Literate_by_name</code> is not recursive. 
+      In particular, if a member of <code>group_name</code> is found to be 
+      a group, call it <code>subgroup_a</code>, <code>H5Literate_by_name</code>
+      does not examine the members of <code>subgroup_a</code>.
+      When recursive iteration is required, the application must handle 
+      the recursion, explicitly calling <code>H5Literate_by_name</code> 
+      on discovered subgroups.
+      <p>
+      <code>H5Literate_by_name</code> is the same as <code>H5Giterate</code>,
+      except that <code>H5Giterate</code> always proceeds in alphanumeric 
+      order.
+  <p>
+  <dt><strong>Parameters:</strong>
+    <dd><table>
+      <tr>
         <td valign="top"><em>hid_t</em> <code>loc_id</code></td>
         <td valign="top">IN: File or group identifier specifying location 
             of subject group</td></tr>
@@ -1763,11 +1927,11 @@ END SUBROUTINE h5lget_val_f
         <td valign="top"><em>const&nbsp;char&nbsp;*</em><code>group_name&nbsp;&nbsp;&nbsp;&nbsp;</code></td>
         <td valign="top">IN: Name of subject group</td></tr>
       <tr>
-        <td valign="top"><em>H5_index_t</em> <code>index_field</code></td>
-        <td valign="top">IN: Index or field which determines the order </td></tr>
+        <td valign="top"><em>H5_index_t</em> <code>index_type</code></td>
+        <td valign="top">IN: Type of index which determines the order </td></tr>
       <tr>
         <td valign="top"><em>H5_iter_order_t</em> <code>order</code></td>
-        <td valign="top">IN: Order within field or index</td></tr>
+        <td valign="top">IN: Order within index</td></tr>
       <tr>
         <td valign="top"><em>hsize_t *</em><code>idx</code></td>
         <td valign="top">IN: Link for which to retrieve information</td></tr>
@@ -1811,127 +1975,6 @@ END SUBROUTINE h5lget_val_f
           <td valign="top">1.8.0</td>
           <td valign="top">
             Function introduced in this release.</td></tr>
-    </table>
-</dl>
-
-
-
-<!-- NEW PAGE -->
-<!-- HEADER RIGHT "H5Llink" -->
-<hr>
-<dl>
-  <dt><strong>Name:</strong> <a name="Link-Link">H5Llink</a> 
-  <dt><strong>Signature:</strong> 
-  <dd><em>herr_t</em> <code>H5Llink</code>( 
-      <em>hid_t</em> <code>link_loc_id</code>, 
-      <em>const char *</em><code>link_name</code>, 
-      <em>hid_t</em> <code>obj_id</code>, 
-      <em>hid_t</em> <code>lcpl</code>, 
-      <em>hid_t</em> <code>lapl</code> 
-      )
-      <p></p>
-  <dt><strong>Purpose:</strong> 
-  <dd>Creates a hard link to an object in an HDF5 file. 
-      <p></p>
-  <dt><strong>Description:</strong> 
-  <dd><code>H5Llink</code> creates a new hard link to an object in 
-      an HDF5 file.
-      <p>
-      <code>link_loc_id</code> and <code>link_name</code> specify the 
-      location and name of the new link while <code>obj_id</code>
-      identifies the object that the link points to.
-      <p>
-      <code>H5Llink</code> is designed for two purposes:
-      <table>
-        <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;</td><td>
-          <li>To create the first link to an object that has just been created.
-        </td></tr>
-        <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;</td><td>
-            <li>To add additional structure to an existing file so that, 
-            for example, an object can be shared among multiple groups.
-        </td></tr>
-      </table>
-      <p>
-      <code>lcpl</code> and <code>lapl</code> are the
-      link creation and access property lists associated with the 
-      new link.
-      </p>
-  <dt><strong>Parameters:</strong> 
-  <dd><table>
-      <tr>
-        <td valign="top"><em>hid_t</em> <code>link_loc_id</code></td> 
-        <td valign="top">IN: File or group identifier specifying location 
-            of new link.</td></tr>
-      <tr>
-        <td valign="top"><em>const&nbsp;char</em>&nbsp;<code>*link_name&nbsp;&nbsp;&nbsp;&nbsp;</code></td> 
-        <td valign="top">IN: Name of link to be created.</td></tr>
-      <tr>
-        <td valign="top"><em>hid_t</em> <code>obj_id</code></td> 
-        <td valign="top">IN: Object to be linked.</td></tr>
-      <tr>
-        <td valign="top"><em>hid_t</em> <code>lcpl_id</code></td> 
-        <td valign="top">IN: Link creation property list identifier.</td></tr>
-      <tr>
-        <td valign="top"><em>hid_t</em> <code>lapl_id</code></td> 
-        <td valign="top">IN: Link access property list identifier.</td></tr>
-    </table>
-      <p></p>
-  <dt><strong>Example:</strong> 
-  <dd>To create a new link to an object 
-      while simultaneously creating missing intermediate groups:<br>
-      Suppose that an application must create the group <code>C</code> 
-      with the path <code>/A/B01/C</code> but may not know at run time 
-      whether the groups <code>A</code> and <code>B01</code> exist. 
-      The following code ensures that those groups are created 
-      if they are missing:
-<pre>
-    hid_t lcpl_id = H5Pcreate(H5P_LINK_CREATE);   /* Creates a link creation
-                                                   * property list (LCPL).    */
-    int   status  = H5Pset_create_intermediate_group(lcpl_id, TRUE);
-                                           /* Sets "create missing intermediate
-                                            * groups" property in that LCPL.  */
-    hid_t gid     = H5Gcreate_anon(file_id, H5P_DEFAULT, H5P_DEFAULT);
-                                           /* Creates a group without linking 
-                                            * it into the file structure.     */
-    status        = H5Llink(file_id, "/A/B01/C", gid, lcpl_id, H5P_DEFAULT);
-                                           /* Links group into file structure.*/
-</pre>
-      <p>
-      Note that unless the object is intended to be temporary, 
-      the <code>H5Llink</code> call is mandatory if the object is to be 
-      retained in the file; the object will not be otherwise be linked into 
-      the HDF5 file structure and will be deleted when the file is closed.
-      <p></p>
-  <dt><strong>Returns:</strong> 
-  <dd>Returns a non-negative value if successful; otherwise returns a negative 
-    value. 
-      <p></p>
-  <dt><strong>Fortran90 Interface:</strong> <!-- h5llink_f -->
-    <dd>None.
-<!--
-    <pre>
-SUBROUTINE h5llink_f(new_loc_id, new_name, loc_id, lcpl_id, lapl_id, hdferr)
-END SUBROUTINE h5glink_f
-    </pre>
--->
-        <!--<dt><strong>Non-C API(s):</strong>
-    	<dd>
-        
-        <img src="Graphics/Java.gif"> 
-        <img src="Graphics/C++.gif">
-        -->
-<p></p>
-<dt><strong>History:</strong>
-    <dd><table width="90%">
-        <tr>
-          <td valign="top" align="left" width="10%">
-              <strong>Release</strong>&nbsp;&nbsp;&nbsp;&nbsp;</td>
-          <td valign="top" align="left">
-              <strong>C</strong></td></tr>
-        <tr>
-    	  <td valign="top">1.8.0</td>
-          <td valign="top">
-              Function introduced in this release.</td></tr>
     </table>
 </dl>
 
@@ -2622,7 +2665,7 @@ Describes HDF5 Release 1.8.0-beta.
 
 <!-- #EndLibraryItem --><SCRIPT LANGUAGE="JAVASCRIPT">
 <!--
-document.writeln("Last modified: 17 August 2007");
+document.writeln("Last modified: 15 November 2007");
 -->
 </SCRIPT>
 
