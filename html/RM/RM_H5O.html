@@ -87,23 +87,28 @@ Links interface (H5L).
 <tr><td valign=top>
 <ul>
     <li><a href="#Object-Open">H5Oopen</a>
+    <li><a href="#Object-Link">H5Olink</a> 
     <li><a href="#Object-Close">H5Oclose</a>
     <li><a href="#Object-Copy">H5Ocopy</a>
+    <li><a href="#Object-SetComment">H5Oset_comment</a>
+    <li><a href="#Object-SetCommentByName">H5Oset_comment_by_name</a>
 </ul>
 </td><td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
 <td valign=top> 
 <ul>
-    <li><a href="#Object-SetComment">H5Oset_comment</a>
     <li><a href="#Object-GetComment">H5Oget_comment</a>
+    <li><a href="#Object-GetCommentByName">H5Oget_comment_by_name</a>
     <li><a href="#Object-GetInfo">H5Oget_info</a>
+    <li><a href="#Object-GetInfoByName">H5Oget_info_by_name</a>
     <li><a href="#Object-GetInfoByIdx">H5Oget_info_by_idx</a>
 </ul>
 </td><td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td><td valign=top>
 <ul>
-    <li><a href="#Object-IncrRefCount">H5Oincr_refcount</a>
-    <li><a href="#Object-DecrRefCount">H5Odecr_refcount</a>
     <li><a href="#Object-OpenByIdx">H5Oopen_by_idx</a>
     <li><a href="#Object-OpenByAddr">H5Oopen_by_addr</a>
+    <br>&nbsp;
+    <li><a href="#Object-IncrRefCount">H5Oincr_refcount</a>
+    <li><a href="#Object-DecrRefCount">H5Odecr_refcount</a>
 </ul>
 </td></tr>
 </table>
@@ -119,6 +124,8 @@ Links interface (H5L).
       <li><a href="#Object-Close">H5Oclose</a>
       <li><a href="#Object-Copy">H5Ocopy</a>
       <li><a href="#Object-DecrRefCount">H5Odecr_refcount</a>
+      <li><a href="#Object-GetComment">H5Oget_comment</a>
+      <li><a href="#Object-GetCommentByName">H5Oget_comment_by_name</a>
       </ul>     
     </td> 
     
@@ -126,10 +133,11 @@ Links interface (H5L).
     
     <td valign="top">
       <ul>
-      <li><a href="#Object-GetComment">H5Oget_comment</a>
       <li><a href="#Object-GetInfo">H5Oget_info</a>
       <li><a href="#Object-GetInfoByIdx">H5Oget_info_by_idx</a>
+      <li><a href="#Object-GetInfoByName">H5Oget_info_by_name</a>
       <li><a href="#Object-IncrRefCount">H5Oincr_refcount</a>
+      <li><a href="#Object-Link">H5Olink</a> 
       </ul>
     </td>
     
@@ -141,6 +149,7 @@ Links interface (H5L).
       <li><a href="#Object-OpenByAddr">H5Oopen_by_addr</a>
       <li><a href="#Object-OpenByIdx">H5Oopen_by_idx</a>
       <li><a href="#Object-SetComment">H5Oset_comment</a>
+      <li><a href="#Object-SetCommentByName">H5Oset_comment_by_name</a>
       </ul>
     </td>
   </tr>
@@ -165,8 +174,10 @@ as the corresponding C function.
 </td><td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
 <td valign=top> 
 <ul>
+-->
 <!--<li><a href="#Object-SetComment">H5Oset_comment</a>-->
 <!--<li><a href="#Object-GetComment">H5Oget_comment</a>-->
+<!--
     <li><a href="#Object-GetInfo">h5oget_info_f</a>
     <li><a href="#Object-IncrRefCount">h5oincr_refcount_f</a>
     <li><a href="#Object-DecrRefCount">h5odecr_refcount_f</a>
@@ -466,19 +477,105 @@ as the corresponding C function.
   <dt><strong>Name:</strong> <a name="Object-GetComment">H5Oget_comment</a>
   <dt><strong>Signature:</strong>
     <dd><em>ssize_t</em> <code>H5Oget_comment</code>(
+        <em>hid_t</em> <code>object_id</code>,
+        <em>char *</em><code>comment</code>,
+        <em>size_t</em> <code>bufsize</code>,
+    )
+  <p>
+  <dt><strong>Purpose:</strong>
+    <dd>Retrieves comment for specified object.
+  <p>
+  <dt><strong>Description:</strong>
+    <dd><code>H5Oget_comment</code> retrieves the comment for the 
+        specified object in the buffer <code>comment</code>.
+        <p>
+        The target object is specified by an identifier, <code>object_id</code>.
+        <p>
+        At most <code>bufsize</code> characters, including a null 
+        terminator, are returned in <code>comment</code>.  
+        The returned value is not null terminated 
+        if the comment is longer than the supplied buffer.  
+        If the size of the comment is not known, a preliminary 
+        <code>H5Oget_comment</code> will return the size, including 
+        space for the null terminator.
+        <p>
+        If an object does not have a comment, the empty string 
+        is returned in <code>comment</code>.
+  <p>
+  <dt><strong>Parameters:</strong>
+    <ul><table>
+      <tr>
+        <td valign="top"><em>hid_t</em>&nbsp;<code>object_id&nbsp;&nbsp;&nbsp;&nbsp;</code></td>
+        <td valign="top">IN: Identifier for the target object.</td></tr>
+      <tr>
+        <td valign="top"><em>char *</em><code>comment</code></td>
+        <td valign="top">OUT: The comment.</td></tr>
+      <tr>
+        <td valign="top"><em>size_t</em> <code>bufsize</code></td>
+        <td valign="top">IN: Anticipated required size of the  
+            <code>comment</code> buffer.</td></tr>
+    </table></ul>
+  <p>
+  <dt><strong>Returns:</strong>
+    <dd>Upon success, 
+        returns the number of characters in the comment, 
+        including the null terminator, 
+        or zero (<code>0</code>) if the object has no comment.
+        The value returned may be larger than <code>bufsize</code>.
+        Otherwise returns a negative value.
+  <p>
+  <dt><strong>Fortran90 Interface:</strong> <!--h5oget_comment_f-->
+    <dd>None.
+<!--
+    <pre>
+    </pre>
+-->
+
+    <!--<dt><strong>Non-C API(s):</strong>
+    	<dd>
+        
+        <img src="Graphics/Java.gif"> 
+        <img src="Graphics/C++.gif">
+        -->
+  <p>
+  <dt><strong>History:</strong>
+    <dd><table width="90%">
+        <tr>
+          <td valign="top" align="left" width="10%">
+            <strong>Release</strong>&nbsp;&nbsp;&nbsp;&nbsp;</td>
+          <td valign="top" align="left">
+            <strong>C</strong></td></tr>
+        <tr>
+          <td valign="top">1.8.0</td>
+          <td valign="top">
+            Function introduced in this release.</td></tr>
+    </table>
+</dl>
+
+
+<!-- NEW PAGE -->
+<!-- HEADER RIGHT "H5Oget_comment_by_name" -->
+<hr>
+<dl>
+  <dt><strong>Name:</strong> <a name="Object-GetCommentByName">H5Oget_comment_by_name</a>
+  <dt><strong>Signature:</strong>
+    <dd><em>ssize_t</em> <code>H5Oget_comment_by_name</code>(
         <em>hid_t</em> <code>loc_id</code>,
         <em>const char *</em><code>name</code>,
         <em>char *</em><code>comment</code>,
         <em>size_t</em> <code>bufsize</code>,
         <em>hid_t</em> <code>lapl_id</code>
     )
+  <p>
   <dt><strong>Purpose:</strong>
     <dd>Retrieves comment for specified object.
+  <p>
   <dt><strong>Description:</strong>
-    <dd><code>H5Oget_comment</code> retrieves the comment for the the
-        object specified by <code>loc_id</code> and <code>name</code>.  
-        The comment is returned in the buffer <code>comment</code>.
+    <dd><code>H5Oget_comment_by_name</code> retrieves the comment for an
+        object in the buffer <code>comment</code>.
         <p>
+        The target object is specified by <code>loc_id</code> and 
+        <code>name</code>.  
         <code>loc_id</code> can specify any object in the file.
         <code>name</code> can be one of the following:
         <br>&nbsp;&nbsp;&mdash; The name of the object relative to 
@@ -493,8 +590,8 @@ as the corresponding C function.
         The returned value is not null terminated 
         if the comment is longer than the supplied buffer.  
         If the size of the comment is not known, a preliminary 
-        <code>H5Oget_comment</code> will return the size, including 
-        space for the null terminator.
+        <code>H5Oget_comment_by_name</code> call will return the size, 
+        including space for the null terminator.
         <p>
         If an object does not have a comment, the empty string 
         is returned in <code>comment</code>.
@@ -502,6 +599,7 @@ as the corresponding C function.
         <code>lapl_id</code> contains a link access property list identifier.
         A link access propety list can come into play when traversing links 
         to access an object.
+  <p>
   <dt><strong>Parameters:</strong>
     <ul><table>
       <tr>
@@ -513,7 +611,7 @@ as the corresponding C function.
         <td valign="top">IN: Name of the object whose comment is to be 
             retrieved, specified as a path relative to <code>loc_id</code>.
             <br>
-            <code>name</code> can be '.' (dot) if <code>loc_id</code> 
+            <code>name</code> can be '.' (a dot) if <code>loc_id</code> 
             fully specifies the object for which the associated comment 
             is to be retrieved.
             </td></tr>
@@ -528,6 +626,7 @@ as the corresponding C function.
         <td valign="top"><em>hid_t</em> <code>lapl_id</code></td>
         <td valign="top">IN: Link access property list identifier.</td></tr>
     </table></ul>
+  <p>
   <dt><strong>Returns:</strong>
     <dd>Upon success, 
         returns the number of characters in the comment, 
@@ -535,6 +634,7 @@ as the corresponding C function.
         or zero (<code>0</code>) if the object has no comment.
         The value returned may be larger than <code>bufsize</code>.
         Otherwise returns a negative value.
+  <p>
   <dt><strong>Fortran90 Interface:</strong> <!--h5oget_comment_f-->
     <dd>None.
 <!--
@@ -548,6 +648,7 @@ as the corresponding C function.
         <img src="Graphics/Java.gif"> 
         <img src="Graphics/C++.gif">
         -->
+  <p>
   <dt><strong>History:</strong>
     <dd><table width="90%">
         <tr>
@@ -570,84 +671,76 @@ as the corresponding C function.
   <dt><strong>Name:</strong> <a name="Object-GetInfo">H5Oget_info</a>
   <dt><strong>Signature:</strong>
     <dd><em>herr_t</em> <code>H5Oget_info</code>(
-        <em>hid_t</em> <code>loc_id</code>,
-        <em>const char *</em><code>obj_name</code>,
-        <em>H5O_info_t</em> *<code>obj_info</code>,
-        <em>hid_t</em> <code>lapl_id</code>
+        <em>hid_t</em> <code>object_id</code>,
+        <em>H5O_info_t</em> *<code>object_info</code>
     )
   <p>
   <dt><strong>Purpose:</strong>
-    <dd>Retrieves the metadata for an object, identifying the object by name.
+    <dd>Retrieves the metadata for an object specified by an identifier.
   <p>
   <dt><strong>Description:</strong>
-    <dd><code>H5Oget_info</code> specifies an object&rsquo;s
-    location and name, <code>loc_id</code> and <code>obj_name</code>, 
-    respectively, and retrieves the metadata describing that object
-    in the struct <code>obj_info</code>
+    <dd><code>H5Oget_info</code> specifies an object by its identifier,
+    <code>object_id</code>, and retrieves the metadata describing that object
+    in the struct <code>object_info</code>
     <p>
     The struct <em>H5O_info_t</em> is defined (in <code>H5Opublic.h</code>)
     as follows :
+    <dir>
     <pre>
-    unsigned long    fileno;      /* File number that object is located in   */
-    haddr_t          addr;        /* Object address in file                  */
-    H5O_type_t       type;        /* Basic object type (group, dataset,      */
-                                  /*     or named datatype)                  */
-    unsigned         rc;          /* Reference count of object               */
-    time_t           atime;       /* Access time                             */
-    time_t           mtime;       /* Modification time                       */
-    time_t           ctime;       /* Change time                             */
-    time_t           btime;       /* Birth time                              */
-    hsize_t          num_attrs;   /* Number of attributes attached to object */
+typedef struct H5O_info_t {
+    unsigned long       fileno;         /* File number that object is         */
+                                        /*    located in                      */
+    haddr_t             addr;           /* Object address in file             */
+    H5O_type_t          type;           /* Basic object type (group,          */
+                                        /*    dataset, etc.)                  */
+    unsigned            rc;             /* Reference count of object          */
+    time_t              atime;          /* Access time                        */
+    time_t              mtime;          /* Modification time                  */
+    time_t              ctime;          /* Change time                        */
+    time_t              btime;          /* Birth time                         */
+    hsize_t             num_attrs;      /* # of attributes attached to object */
     struct {
-        unsigned   version;       /* Version number of header format in file */
-        unsigned   nmesgs;        /* Number of object header messages        */
-        unsigned   nchunks;       /* Number of object header chunks          */
-        hsize_t    hdr_size;      /* Total size of object header in file     */
-        hsize_t    meta_space;    /* Space within header for object header   */
-                                  /*     metadata information                */
-        hsize_t    mesg_space;    /* Space within header for actual message  */
-                                  /*     information                         */
-        hsize_t    free_space;    /* Free space within object header         */
-        uint64_t   msg_present;   /* Flags to indicate presence of message   */
-                                  /*     type in header                      */
-        uint64_t   msg_shared;    /* Flags to indicate message type is       */
-                                  /*     shared in header                    */
-    } hdr;      
-    hsize_t          meta_size;   /* Size of additional metadata for an      */
-                                  /*     object (B-tree & heap for groups,   */
-                                  /*     B-tree for chunked dataset, etc.)   */
+        unsigned version;               /* Version number of header format in */
+                                        /*    file                            */
+        unsigned nmesgs;                /* Number of object header messages   */
+        unsigned nchunks;               /* Number of object header chunks     */
+        unsigned flags;                 /* Object header status flags         */
+        struct {
+            hsize_t total;              /* Total space for storing object     */
+                                        /*    header in file                  */
+            hsize_t meta;               /* Space within header for object     */
+                                        /*    header metadata information     */
+            hsize_t mesg;               /* Space within header for actual     */
+                                        /*    message information             */
+            hsize_t free;               /* Free space within object header    */
+        } space;
+        struct {
+            uint64_t present;           /* Flags to indicate presence of      */
+                                        /*    message type in header          */          
+            uint64_t shared;            /* Flags to indicate message type is  */
+                                        /*    shared in header                */        
+        } mesg;     
+    } hdr;
+    /* Extra metadata storage for obj & attributes */
+    struct {
+        H5_ih_info_t   obj;             /* v1/v2 B-tree & local/fractal heap  */
+                                        /*    for groups, B-tree for chunked  */
+                                        /*    datasets                        */
+        H5_ih_info_t   attr;            /* v2 B-tree & heap for attributes    */
+    } meta_size;
+} H5O_info_t;
     </pre>
-    The link access property list, <code>lapl_id</code>, 
-    is not currently used; it should be passed in as <code>NULL</code>.
+    </dir>
   <p>
   <dt><strong>Parameters:</strong>
     <dd><table>
       <tr>
-        <td valign="top"><em>hid_t</em> <code>loc_id</code></td>
-        <td valign="top">IN: File or group identifier specifying location 
-            of group in which object is located</td></tr>
+        <td valign="top"><em>hid_t</em> <code>object_id</code></td>
+        <td valign="top">IN: Identifier for target object</td></tr>
       <tr>
-        <td valign="top"><em>const&nbsp;char&nbsp;*</em><code>group_name&nbsp;&nbsp;&nbsp;&nbsp;</code></td>
-        <td valign="top">IN: Name of group in which object is located</td></tr>
-      <tr>
-        <td valign="top"><em>H5_index_t</em> <code>index_field</code></td>
-        <td valign="top">IN: Index or field that determines the order</td></tr>
-      <tr>
-        <td valign="top"><em>H5_iter_order_t</em> <code>order</code></td>
-        <td valign="top">IN: Order within field or index</td></tr>
-      <tr>
-        <td valign="top"><em>hsize_t</em> <code>n</code></td>
-        <td valign="top">IN: Object for which information is to be 
-            returned</td></tr>
-      <tr>
-        <td valign="top"><em>H5O_info_t *</em><code>obj_info</code></td>
+        <td valign="top"><em>H5O_info_t&nbsp;*</em><code>object_info&nbsp;&nbsp;&nbsp;&nbsp;</code></td>
         <td valign="top">OUT: Buffer in which to return object
             information</td></tr>
-      <tr>
-        <td valign="top"><em>hid_t</em> <code>lapl_id</code></td>
-        <td valign="top">IN: Link access property list<br>
-	    <cite>(Not currently used; 
-	    pass as <code>NULL</code>.)</cite></td></tr>
     </table>
   <p>
   <dt><strong>Returns:</strong>
@@ -695,7 +788,7 @@ as the corresponding C function.
         <em>H5_index_t</em> <code>index_field</code>,
         <em>H5_iter_order_t</em> <code>order</code>,
         <em>hsize_t</em> <code>n</code>,
-        <em>H5O_info_t</em> *<code>obj_info</code>,
+        <em>H5O_info_t</em> *<code>object_info</code>,
         <em>hid_t</em> <code>lapl_id</code>
     )
   <p>
@@ -712,9 +805,9 @@ as the corresponding C function.
       the order by which the index is to be traversed, <code>order</code>;
       and an object&rsquo;s position <code>n</code> within that index  
       and retrieves the metadata describing that object
-      in the struct <code>obj_info</code>
+      in the struct <code>object_info</code>
       <p>
-      <code>obj_info</code>, in which the object information is returned,
+      <code>object_info</code>, in which the object information is returned,
       is a struct of type <em>H5O_info_t</em>.  This struct type is
       described in the <a href="#Object-GetInfo"><code>H5Oget_info</code></a> 
       function entry.
@@ -745,7 +838,135 @@ as the corresponding C function.
         <td valign="top">IN: Object for which information is to be 
             returned</td></tr>
       <tr>
-        <td valign="top"><em>H5O_info_t *</em><code>obj_info</code></td>
+        <td valign="top"><em>H5O_info_t *</em><code>object_info</code></td>
+        <td valign="top">OUT: Buffer in which to return object
+            information</td></tr>
+      <tr>
+        <td valign="top"><em>hid_t</em> <code>lapl_id</code></td>
+        <td valign="top">IN: Link access property list<br>
+	    <cite>(Not currently used; 
+	    pass as <code>NULL</code>.)</cite></td></tr>
+    </table>
+  <p>
+  <dt><strong>Returns:</strong>
+    <dd>Returns a non-negative value if successful;
+        otherwise returns a negative value.
+  <p>
+  <dt><strong>Fortran90 Interface:</strong> <!-- h5lfunc_f -->
+    <dd>None.
+<!--
+    <pre>
+  
+    </pre>
+-->
+        <!--<dt><strong>Non-C API(s):</strong>
+    	<dd>
+        
+        <img src="Graphics/Java.gif"> 
+        <img src="Graphics/C++.gif">
+        -->
+  <p>
+  <dt><strong>History:</strong>
+    <dd><table width="90%">
+        <tr>
+          <td valign="top" align="left" width="10%">
+            <strong>Release</strong>&nbsp;&nbsp;&nbsp;&nbsp;</td>
+          <td valign="top" align="left">
+            <strong>C</strong></td></tr>
+        <tr>
+          <td valign="top">1.8.0</td>
+          <td valign="top">
+            Function introduced in this release.</td></tr>
+    </table>
+</dl>
+
+
+<!-- NEW PAGE -->
+<!-- HEADER RIGHT "H5Oget_info_by_name" -->
+<hr>
+<dl>
+  <dt><strong>Name:</strong> <a name="Object-GetInfoByName">H5Oget_info_by_name</a>
+  <dt><strong>Signature:</strong>
+    <dd><em>herr_t</em> <code>H5Oget_info_by_name</code>(
+        <em>hid_t</em> <code>loc_id</code>,
+        <em>const char *</em><code>object_name</code>,
+        <em>H5O_info_t</em> *<code>object_info</code>,
+        <em>hid_t</em> <code>lapl_id</code>
+    )
+  <p>
+  <dt><strong>Purpose:</strong>
+    <dd>Retrieves the metadata for an object, identifying the object by 
+    location and relative name.
+  <p>
+  <dt><strong>Description:</strong>
+    <dd><code>H5Oget_info_by_name</code> specifies an object&rsquo;s
+    location and name, <code>loc_id</code> and <code>object_name</code>, 
+    respectively, and retrieves the metadata describing that object
+    in the struct <code>object_info</code>.
+    <p>
+    The struct <em>H5O_info_t</em> is defined (in <code>H5Opublic.h</code>)
+    as follows:
+    <dir>
+    <pre>
+typedef struct H5O_info_t {
+    unsigned long       fileno;         /* File number that object is         */
+                                        /*    located in                      */
+    haddr_t             addr;           /* Object address in file             */
+    H5O_type_t          type;           /* Basic object type (group,          */
+                                        /*    dataset, etc.)                  */
+    unsigned            rc;             /* Reference count of object          */
+    time_t              atime;          /* Access time                        */
+    time_t              mtime;          /* Modification time                  */
+    time_t              ctime;          /* Change time                        */
+    time_t              btime;          /* Birth time                         */
+    hsize_t             num_attrs;      /* # of attributes attached to object */
+    struct {
+        unsigned version;               /* Version number of header format in */
+                                        /*    file                            */
+        unsigned nmesgs;                /* Number of object header messages   */
+        unsigned nchunks;               /* Number of object header chunks     */
+        unsigned flags;                 /* Object header status flags         */
+        struct {
+            hsize_t total;              /* Total space for storing object     */
+                                        /*    header in file                  */
+            hsize_t meta;               /* Space within header for object     */
+                                        /*    header metadata information     */
+            hsize_t mesg;               /* Space within header for actual     */
+                                        /*    message information             */
+            hsize_t free;               /* Free space within object header    */
+        } space;
+        struct {
+            uint64_t present;           /* Flags to indicate presence of      */
+                                        /*    message type in header          */          
+            uint64_t shared;            /* Flags to indicate message type is  */
+                                        /*    shared in header                */        
+        } mesg;     
+    } hdr;
+    /* Extra metadata storage for obj & attributes */
+    struct {
+        H5_ih_info_t   obj;             /* v1/v2 B-tree & local/fractal heap  */
+                                        /*    for groups, B-tree for chunked  */
+                                        /*    datasets                        */
+        H5_ih_info_t   attr;            /* v2 B-tree & heap for attributes    */
+    } meta_size;
+} H5O_info_t;
+    </pre>
+    </dir>
+    The link access property list, <code>lapl_id</code>, 
+    is not currently used; it should be passed in as <code>NULL</code>.
+  <p>
+  <dt><strong>Parameters:</strong>
+    <dd><table>
+      <tr>
+        <td valign="top"><em>hid_t</em> <code>loc_id</code></td>
+        <td valign="top">IN: File or group identifier specifying location 
+            of group in which object is located</td></tr>
+      <tr>
+        <td valign="top"><em>const char *</em><code>name</code></td>
+        <td valign="top">IN: Name of group, relative to 
+            <code>loc_id</code></td></tr>
+      <tr>
+        <td valign="top"><em>H5O_info_t&nbsp;*</em><code>object_info&nbsp;&nbsp;&nbsp;&nbsp;</code></td>
         <td valign="top">OUT: Buffer in which to return object
             information</td></tr>
       <tr>
@@ -878,6 +1099,131 @@ as the corresponding C function.
     </table>
 </dl>
 
+
+<!-- NEW PAGE -->
+<!-- HEADER RIGHT "H5Olink" -->
+<hr>
+<dl>
+  <dt><strong>Name:</strong> <a name="Object-Link">H5Olink</a> 
+  <dt><strong>Signature:</strong> 
+  <dd><em>herr_t</em> <code>H5Olink</code>( 
+      <em>hid_t</em> <code>object_id</code>, 
+      <em>hid_t</em> <code>new_loc_id</code>, 
+      <em>const char *</em><code>new_name</code>, 
+      <em>hid_t</em> <code>lcpl</code>, 
+      <em>hid_t</em> <code>lapl</code> 
+      )
+      <p></p>
+  <dt><strong>Purpose:</strong> 
+  <dd>Creates a hard link to an object in an HDF5 file. 
+      <p>
+  <dt><strong>Description:</strong> 
+  <dd><code>H5Olink</code> creates a new hard link to an object in 
+      an HDF5 file.
+      <p>
+      <code>new_loc_id</code> and <code>new_name</code> specify the 
+      location and name of the new link while <code>object_id</code>
+      identifies the object that the link points to.
+      <p>
+      <code>H5Olink</code> is designed for two purposes:
+      <table>
+        <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;</td><td>
+          <li>To create the first hard link to an object that has just 
+              been created with one of the <code>H5*create_anon</code>
+              functions or with <code>H5Tcommit_anon</code>.
+        </td></tr>
+        <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;</td><td>
+            <li>To add additional structure to an existing file so that, 
+                for example, an object can be shared among multiple groups.
+        </td></tr>
+      </table>
+      <p>
+      <code>lcpl</code> and <code>lapl</code> are the
+      link creation and access property lists associated with the 
+      new link.
+      <p>
+  <dt><strong>Parameters:</strong> 
+  <dd><table>
+      <tr>
+        <td valign="top"><em>hid_t</em> <code>object_id</code></td> 
+        <td valign="top">IN: Object to be linked.</td></tr>
+      <tr>
+        <td valign="top"><em>hid_t</em> <code>new_loc_id</code></td> 
+        <td valign="top">IN: File or group identifier specifying location 
+            at which object is to be linked.</td></tr>
+      <tr>
+        <td valign="top"><em>const&nbsp;char</em>&nbsp;<code>*new_name&nbsp;&nbsp;&nbsp;&nbsp;</code></td> 
+        <td valign="top">IN: Name of link to be created, relative to 
+            <code>new_loc_id</code>.</td></tr>
+      <tr>
+        <td valign="top"><em>hid_t</em> <code>lcpl_id</code></td> 
+        <td valign="top">IN: Link creation property list identifier.</td></tr>
+      <tr>
+        <td valign="top"><em>hid_t</em> <code>lapl_id</code></td> 
+        <td valign="top">IN: Link access property list identifier.</td></tr>
+    </table>
+      <p>
+  <dt><strong>Example:</strong> 
+  <dd>To create a new link to an object 
+      while simultaneously creating missing intermediate groups:<br>
+      Suppose that an application must create the group <code>C</code> 
+      with the path <code>/A/B01/C</code> but may not know at run time 
+      whether the groups <code>A</code> and <code>B01</code> exist. 
+      The following code ensures that those groups are created 
+      if they are missing:
+<pre>
+    hid_t lcpl_id = H5Pcreate(H5P_LINK_CREATE);   /* Creates a link creation
+                                                   * property list (LCPL).    */
+    int   status  = H5Pset_create_intermediate_group(lcpl_id, TRUE);
+                                           /* Sets "create missing intermediate
+                                            * groups" property in that LCPL.  */
+    hid_t gid     = H5Gcreate_anon(file_id, H5P_DEFAULT, H5P_DEFAULT);
+                                           /* Creates a group without linking 
+                                            * it into the file structure.     */
+    status        = H5Olink(obj_id, file_id, "/A/B01/C", lcpl_id, H5P_DEFAULT);
+                                           /* Links group into file structure.*/
+</pre>
+      <p>
+      Note that unless the object is intended to be temporary, 
+      the <code>H5Olink</code> call is mandatory if an object created 
+      with one of the <code>H5*create_anon</code> functions 
+      (or with <code>H5Tcommit_anon</code>)
+      is to be retained in the file; 
+      without an <code>H5Olink</code> call, the object will not be linked into 
+      the HDF5 file structure and will be deleted when the file is closed.
+      <p>
+  <dt><strong>Returns:</strong> 
+  <dd>Returns a non-negative value if successful; otherwise returns a negative 
+    value. 
+      <p>
+  <dt><strong>Fortran90 Interface:</strong> <!-- h5llink_f -->
+    <dd>None.
+<!--
+    <pre>
+SUBROUTINE h5llink_f(new_loc_id, new_name, loc_id, lcpl_id, lapl_id, hdferr)
+END SUBROUTINE h5glink_f
+    </pre>
+-->
+        <!--<dt><strong>Non-C API(s):</strong>
+    	<dd>
+        
+        <img src="Graphics/Java.gif"> 
+        <img src="Graphics/C++.gif">
+        -->
+<p>
+<dt><strong>History:</strong>
+    <dd><table width="90%">
+        <tr>
+          <td valign="top" align="left" width="10%">
+              <strong>Release</strong>&nbsp;&nbsp;&nbsp;&nbsp;</td>
+          <td valign="top" align="left">
+              <strong>C</strong></td></tr>
+        <tr>
+    	  <td valign="top">1.8.0</td>
+          <td valign="top">
+              Function introduced in this release.</td></tr>
+    </table>
+</dl>
 
 
 <!-- NEW PAGE -->
@@ -1194,20 +1540,98 @@ as the corresponding C function.
 <dl>
   <dt><strong>Name:</strong> <a name="Object-SetComment">H5Oset_comment</a>
   <dt><strong>Signature:</strong>
-    <dd><em>herr_t</em> <code>H5Oset_comment</code>(<em>hid_t</em> <code>loc_id</code>,
+    <dd><em>herr_t</em> <code>H5Oset_comment</code>(
+        <em>hid_t</em> <code>object_id</code>,
+        <em>const char *</em><code>comment</code>
+    )
+  <p>
+  <dt><strong>Purpose:</strong>
+    <dd>Sets comment for specified object.
+  <p>
+  <dt><strong>Description:</strong>
+    <dd><code>H5Oset_comment</code> sets the comment for 
+        the specified object to the contents of <code>comment</code>.
+        Any previously existing comment is overwritten.
+        <p>
+        The target object is specified by an identifier, <code>object_id</code>.
+        <p>
+        If <code>comment</code> is the empty string or a 
+        null pointer, any existing comment message is removed from the object. 
+        <p>
+        Comments should be relatively short, null-terminated, ASCII strings.
+        <p>
+        Comments can be attached to any object that has an object header, 
+        e.g., datasets, groups, and named datatypes, but not symbolic links.
+        <p>
+  <p>
+  <dt><strong>Parameters:</strong>
+    <ul><table>
+      <tr>
+        <td valign="top"><em>hid_t</em>&nbsp;<code>object_id&nbsp;&nbsp;&nbsp;&nbsp;</code></td>
+        <td valign="top">IN: Identifier of the target object</td></tr>
+        </td></tr>
+      <tr>
+        <td valign="top"><em>const&nbsp;char&nbsp;*</em><code>comment&nbsp;&nbsp;&nbsp;&nbsp;</code></td>
+        <td valign="top">IN: The new comment.</td></tr>
+    </table></ul>
+  <p>
+  <dt><strong>Returns:</strong>
+    <dd>Returns a non-negative value if successful;
+        otherwise returns a negative value.
+  <p>
+  <dt><strong>Fortran90 Interface:</strong> <!--h5oset_comment_f-->
+    <dd>None.
+<!--
+        <pre>
+        </pre>		
+-->
+		
+		<!--<dt><strong>Non-C API(s):</strong>
+    	<dd>
+        
+        <img src="Graphics/Java.gif"> 
+        <img src="Graphics/C++.gif">
+        -->
+  <p>
+  <dt><strong>History:</strong>
+    <dd><table width="90%">
+        <tr>
+          <td valign="top" align="left" width="10%">
+            <strong>Release</strong>&nbsp;&nbsp;&nbsp;&nbsp;</td>
+          <td valign="top" align="left">
+            <strong>C</strong></td></tr>
+        <tr>
+          <td valign="top">1.8.0</td>
+          <td valign="top">
+            Function introduced in this release.</td></tr>
+    </table>
+</dl>
+
+
+<!-- NEW PAGE -->
+<!-- HEADER RIGHT "H5Oset_comment_by_name" -->
+<hr>
+<dl>
+  <dt><strong>Name:</strong> <a name="Object-SetCommentByName">H5Oset_comment_by_name</a>
+  <dt><strong>Signature:</strong>
+    <dd><em>herr_t</em> <code>H5Oset_comment_by_name</code>(
+        <em>hid_t</em> <code>loc_id</code>,
         <em>const char *</em><code>name</code>,
         <em>const char *</em><code>comment</code>,
         <em>hid_t</em> <code>lapl_id</code>
     )
+  <p>
   <dt><strong>Purpose:</strong>
     <dd>Sets comment for specified object.
+  <p>
   <dt><strong>Description:</strong>
-    <dd><code>H5Oset_comment</code> sets the comment for the 
-        object specified by <code>loc_id</code> and <code>name</code> 
-        to <code>comment</code>.
+    <dd><code>H5Oset_comment_by_name</code> sets the comment for the 
+        specified object to the contents of <code>comment</code>.
         Any previously existing comment is overwritten.
         <p>
         <p>
+        The target object is specified by <code>loc_id</code> and 
+        <code>name</code>.
         <code>loc_id</code> can specify any object in the file.
         <code>name</code> can be one of the following:
         <br>&nbsp;&nbsp;&mdash; The name of the object relative to 
@@ -1220,8 +1644,7 @@ as the corresponding C function.
         If <code>comment</code> is the empty string or a 
         null pointer, any existing comment message is removed from the object. 
         <p>
-        Comments should be relatively short, null-terminated, 
-        ASCII strings.
+        Comments should be relatively short, null-terminated, ASCII strings.
         <p>
         Comments can be attached to any object that has an object header, 
         e.g., datasets, groups, and named datatypes, but not symbolic links.
@@ -1229,6 +1652,7 @@ as the corresponding C function.
         <code>lapl_id</code> contains a link access property list identifier.
         A link access propety list can come into play when traversing links 
         to access an object.
+  <p>
   <dt><strong>Parameters:</strong>
     <ul><table>
       <tr>
@@ -1240,7 +1664,7 @@ as the corresponding C function.
         <td valign="top">IN: Name of the object whose comment is to be 
             set or reset, specified as a path relative to <code>loc_id</code>.
             <br>
-            <code>name</code> can be '.' (dot) if <code>loc_id</code> 
+            <code>name</code> can be '.' (a dot) if <code>loc_id</code> 
             fully specifies the object for which the comment is to be set.
         </td></tr>
       <tr>
@@ -1250,9 +1674,11 @@ as the corresponding C function.
         <td valign="top"><em>hid_t</em> <code>lapl_id</code></td>
         <td valign="top">IN: Link access property list identifier.</td></tr>
     </table></ul>
+  <p>
   <dt><strong>Returns:</strong>
     <dd>Returns a non-negative value if successful;
         otherwise returns a negative value.
+  <p>
   <dt><strong>Fortran90 Interface:</strong> <!--h5oset_comment_f-->
     <dd>None.
 <!--
@@ -1339,7 +1765,7 @@ Describes HDF5 Release 1.8.0-beta.
 
 <!-- #EndLibraryItem --><SCRIPT LANGUAGE="JAVASCRIPT">
 <!--
-document.writeln("Last modified: 2 October 2007");
+document.writeln("Last modified: 9 November 2007");
 -->
 </SCRIPT>
 
