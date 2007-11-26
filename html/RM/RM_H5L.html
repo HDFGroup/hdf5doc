@@ -111,6 +111,8 @@ user-defined link classes.
 <ul>
     <li><a href="#Link-Iterate">H5Literate</a>
     <li><a href="#Link-IterateByName">H5Literate_by_name</a>
+    <li><a href="#Link-Visit">H5Lvisit</a>
+    <li><a href="#Link-VisitByName">H5Lvisit_by_name</a>
     <li><a href="#Link-GetInfoByIdx">H5Lget_info_by_idx</a>
     <li><a href="#Link-GetNameByIdx">H5Lget_name_by_idx</a>
     <li><a href="#Link-GetValByIdx">H5Lget_val_by_idx</a>
@@ -133,6 +135,7 @@ user-defined link classes.
         <li><a href="#Link-CreateSoft">H5Lcreate_soft</a>
         <li><a href="#Link-CreateUD">H5Lcreate_ud</a>
         <li><a href="#Link-Exists">H5Lexists</a> 
+        <li><a href="#Link-GetInfo">H5Lget_info</a>
       </ul>     
     </td>
     
@@ -140,7 +143,6 @@ user-defined link classes.
     
     <td valign="top">
       <ul>
-        <li><a href="#Link-GetInfo">H5Lget_info</a>
         <li><a href="#Link-GetInfoByIdx">H5Lget_info_by_idx</a>
         <li><a href="#Link-GetNameByIdx">H5Lget_name_by_idx</a>
         <li><a href="#Link-GetVal">H5Lget_val</a>
@@ -148,6 +150,7 @@ user-defined link classes.
         <li><a href="#Link-IsRegistered">H5Lis_registered</a> 
         <li><a href="#Link-Iterate">H5Literate</a>
         <li><a href="#Link-IterateByName">H5Literate_by_name</a>
+        <li><a href="#Link-Move">H5Lmove</a>
       </ul>
     </td>
     
@@ -155,12 +158,13 @@ user-defined link classes.
     
     <td valign="top">
       <ul>
-        <li><a href="#Link-Move">H5Lmove</a>
         <li><a href="#Link-Register">H5Lregister</a> 
         <li><a href="#Link-Delete">H5Ldelete</a> 
         <li><a href="#Link-DeleteByIdx">H5Ldelete_by_idx</a>
         <li><a href="#Link-UnpackELinkVal">H5Lunpack_elink_val</a>
         <li><a href="#Link-Unregister">H5Lunregister</a> 
+        <li><a href="#Link-Visit">H5Lvisit</a>
+        <li><a href="#Link-VisitByName">H5Lvisit_by_name</a>
       </ul>
     </td>
   </tr>
@@ -182,6 +186,8 @@ as the corresponding C function.
     <li><a href="#Link-CreateSoft">h5lcreate_soft_f</a>
     <li><a href="#Link-CreateExternal">h5lcreate_external_f</a>
     <li><a href="#Link-Exists">h5lexists_f</a> 
+    <li><a href="#Link-Visit">h5lvisit_f</a>
+    <li><a href="#Link-VisitByName">h5lvisit_by_name_f</a>
     <li><a href="#Link-Iterate">h5literate_f</a>
     <li><a href="#Link-IterateByName">h5literate_by_name_f</a>
     <li><a href="#Link-Link">h5llink_f</a> 
@@ -391,7 +397,7 @@ as the corresponding C function.
       <code>link_name</code> is interpreted relative to 
       <code>link_loc_id</code> 
       <p>
-      <code>lcpl</code> and <code>lapl</code> are the
+      <code>lcpl_id</code> and <code>lapl_id</code> are the
       link creation and access property lists associated with the 
       new link.
       <p> 
@@ -499,7 +505,7 @@ END SUBROUTINE h5lcreate_external_f
       <p> 
       The target object must already exist in the file.
       <p>
-      <code>lcpl</code> and <code>lapl</code> are the
+      <code>lcpl_id</code> and <code>lapl_id</code> are the
       link creation and access property lists associated with the 
       new link.
       <p> 
@@ -643,7 +649,7 @@ END SUBROUTINE h5lcreate_hard_f
       <a href="#Link-External"><code>H5Lcreate_external</code></a>
       to create an external link.
       <p>
-      <code>lcpl</code> and <code>lapl</code> are the
+      <code>lcpl_id</code> and <code>lapl_id</code> are the
       link creation and access property lists associated with the 
       new link.
       <p> 
@@ -876,10 +882,6 @@ END SUBROUTINE h5lcreate_soft_f
     <dd><code>H5Lexists</code> allows an application to determine if a link
         with a particular name exists in a group.  The link could be of any
         type, just the presence of a link with that name is checked.
-      <p>
-<pre>
-
-</pre>
   <p>
   <dt><strong>Parameters:</strong>
     <dd><table>
@@ -1672,6 +1674,9 @@ END SUBROUTINE h5lget_val_f
       <code>H5Literate</code> does not recursively follow links into 
       subgroups of the specified group.
       <p>
+      Three parameters are used to manage progress of the iteration:
+      <code>index_type</code>, <code>order</code>, and <code>idx</code>.
+      <p>
       <code>index_type</code> specifies the index to be used.
       If the links have not been indexed by the index type, they will first
       be sorted by that index then the iteration will begin; 
@@ -1741,13 +1746,26 @@ END SUBROUTINE h5lget_val_f
       it is passed in by the application with a starting point and 
       returned by the library with the point at which the iteration stopped. 
       <p>
-      <code>H5Literate</code> is not recursive. 
-      In particular, if a member of <code>group_name</code> is found to be 
+      As mentioned above, <code>H5Literate</code> is not recursive. 
+      In particular, if a member of <code>group_id</code> is found to be 
       a group, call it <code>subgroup_a</code>, <code>H5Literate</code>
       does not examine the members of <code>subgroup_a</code>.
-      When recursive iteration is required, the application must handle 
-      the recursion, explicitly calling <code>H5Literate</code> 
-      on discovered subgroups.
+      When recursive iteration is required, the application can 
+      do either of the following:
+      <ul>
+          <li>Use one of the following recursive routines instead
+              of <code>H5Literate</code>:
+              <br>&nbsp;&nbsp;&nbsp;&nbsp;
+              <a href="#Link-Visit"><code>H5Lvisit</code></a>
+              <br>&nbsp;&nbsp;&nbsp;&nbsp;
+              <a href="#Link-VisitByName"><code>H5Lvisit_by_name</code></a>
+              <br>&nbsp;&nbsp;&nbsp;&nbsp;
+              <a href="#Object-Visit"><code>H5Ovisit</code></a>
+              <br>&nbsp;&nbsp;&nbsp;&nbsp;
+              <a href="#Object-VisitByName"><code>H5Ovisit_by_name</code></a>
+          <li>Handle the recursion manually, explicitly calling 
+          <code>H5Literate</code> on discovered subgroups.
+      </ul>
       <p>
       <code>H5Literate</code> is the same as <code>H5Giterate</code>,
       except that <code>H5Giterate</code> always proceeds in alphanumeric 
@@ -1766,13 +1784,18 @@ END SUBROUTINE h5lget_val_f
         <td valign="top">IN: Order within index</td></tr>
       <tr>
         <td valign="top"><em>hsize_t *</em><code>idx</code></td>
-        <td valign="top">IN: Link for which to retrieve information</td></tr>
+        <td valign="top">IN: Iteration position at which to start 
+            <br>
+            OUT: Position at which an interrupted iteration may be restarted
+            </td></tr>
       <tr>
         <td valign="top"><em>H5L_iterate_t</em> <code>op</code></td>
-        <td valign="top">OUT: Buffer in which link value is returned</td></tr>
+        <td valign="top">IN: Callback function passing data regarding the 
+            link to the calling application</td></tr>
       <tr>
         <td valign="top"><em>void *</em><code>op_data</code></td>
-        <td valign="top">IN: Link for which to retrieve information</td></tr>
+        <td valign="top">IN: User-defined pointer to data required
+            by the application for its processing of the link</td></tr>
     </table>
   <p>
   <dt><strong>Returns:</strong>
@@ -1934,13 +1957,18 @@ END SUBROUTINE h5lget_val_f
         <td valign="top">IN: Order within index</td></tr>
       <tr>
         <td valign="top"><em>hsize_t *</em><code>idx</code></td>
-        <td valign="top">IN: Link for which to retrieve information</td></tr>
+        <td valign="top">IN: Iteration position at which to start 
+            <br>
+            OUT: Position at which an interrupted iteration may be restarted
+            </td></tr>
       <tr>
         <td valign="top"><em>H5L_iterate_t</em> <code>op</code></td>
-        <td valign="top">OUT: Buffer in which link value is returned</td></tr>
+        <td valign="top">IN: Callback function passing data regarding the 
+            link to the calling application</td></tr>
       <tr>
         <td valign="top"><em>void *</em><code>op_data</code></td>
-        <td valign="top">IN: Link for which to retrieve information</td></tr>
+        <td valign="top">IN: User-defined pointer to data required
+            by the application for its processing of the link</td></tr>
       <tr>
         <td valign="top"><em>hid_t</em> <code>lapl_id</code></td>
         <td valign="top">IN: Link access property list</td></tr>
@@ -2611,6 +2639,568 @@ END SUBROUTINE h5ldelete_f
 
 
 <!-- NEW PAGE -->
+<!-- HEADER RIGHT "H5Lvisit" -->
+<hr>
+<dl>
+  <dt><strong>Name:</strong> <a name="Link-Visit">H5Lvisit</a>
+  <dt><strong>Signature:</strong>
+    <dd><em>herr_t</em> <code>H5Lvisit</code>(
+            <em>hid_t</em> <code>group_id</code>,
+            <em>H5_index_t</em> <code>index_type</code>, 
+            <em>H5_iter_order_t</em> <code>order</code>, 
+            <em>H5L_iterate_t</em> <code>op</code>,
+            <em>void *</em><code>op_data</code>
+        )
+  <p>
+  <dt><strong>Purpose:</strong>
+    <dd>Recursively visits all links starting from a specified group.
+  <p>
+  <dt><strong>Description:</strong>
+    <dd><code>H5Lvisit</code> is a recursive iteration function 
+      to visit all links in and below a group in an HDF5 file,
+      thus providing a mechanism for an application to perform
+      a common set of operations across all of those links 
+      or a dynamically selected subset.
+      For non-recursive iteration across the members of a group, 
+      see <a href="#Link-Iterate"><code>H5Literate</code></a>.
+      <p>
+      The group serving as the root of the iteration is specified by 
+      it&rsquo;s group identifier, <code>group_id</code>
+      <p>
+      Two parameters are used to establish the iteration:
+      <code>index_type</code> and <code>order</code>.
+      <p>
+      <code>index_type</code> specifies the index to be used.
+      If the links have not been indexed by the index type, they will first
+      be sorted by that index then the iteration will begin; 
+      if the links have been so indexed, the sorting step will be 
+      unnecesary, so the iteration may begin more quickly.
+      Valid values include the following:
+        <table border=0>
+          <tr><td>
+            &nbsp;&nbsp;&nbsp;&nbsp;
+            </td><td valign=top>
+            <code>H5_INDEX_NAME</code>
+            </td><td valign=top>
+            Alpha-numeric index on name 
+          </td></tr><tr><td valign=top>
+            &nbsp;&nbsp;&nbsp;&nbsp;
+            </td><td valign=top>
+            <code>H5_INDEX_CRT_ORDER&nbsp;&nbsp;&nbsp;&nbsp;</code>
+            </td><td valign=top>
+            Index on creation order 
+          <!-- H5_INDEX_N is used internally by the Library -->
+          <!--
+          </td></tr><tr><td valign=top>
+            &nbsp;&nbsp;&nbsp;&nbsp;
+            </td><td valign=top>
+            <code>H5_INDEX_N</code>
+            </td><td valign=top>
+            Number of indices defined
+          -->
+          </td></tr>
+        </table>
+      <p>
+      Note that the index type passed in <code>index_type</code> is a 
+      <i>best effort</i> setting.  
+      If the application passes in a value indicating iteration in 
+      creation order and a group is encountered that was not tracked
+      in creation order, that group will be iterated over in 
+      alpha-numeric order by name, or <i>name order</i>.
+      (<i>Name order</i> is the native order used by the HDF5 Library
+      and is always available.)
+      <p>
+      <code>order</code> specifies the order in which objects are to be
+      inspected along the index specified in <code>index_type</code>.  
+      Valid values include the following:
+        <table border=0>
+          <tr><td valign=top>
+            &nbsp;&nbsp;&nbsp;&nbsp;
+            </td><td valign=top>
+            <code>H5_ITER_INC</code>
+            </td><td valign=top>
+            Increasing order 
+          </td></tr><tr><td valign=top>
+            &nbsp;&nbsp;&nbsp;&nbsp;
+            </td><td valign=top>
+            <code>H5_ITER_DEC</code>
+            </td><td valign=top>
+            Decreasing order
+          </td></tr><tr><td valign=top>
+            &nbsp;&nbsp;&nbsp;&nbsp;
+            </td><td valign=top>
+            <code>H5_ITER_NATIVE&nbsp;&nbsp;&nbsp;&nbsp;</code>
+            </td><td valign=top>
+            Fastest available order
+          <!-- H5_INDEX_N is used internally by the Library -->
+          <!--
+          </td></tr><tr><td valign=top>
+            &nbsp;&nbsp;&nbsp;&nbsp;
+            </td><td valign=top>
+            <code>H5_ITER_N</code>
+            </td><td valign=top>
+            Number of iteration orders defined 
+          -->
+          </td></tr>
+        </table>
+
+      <p>
+      The protoype of the callback function <code>op</code> is as follows
+      (as defined in the source code file <code>H5Lpublic.h</code>):
+      <dir>
+          <em>herr_t</em> <code>(*H5L_iterate_t)(</code>
+              <em>hid_t</em> <code>g_id,</code> 
+              <em>const char *</em><code>name,</code> 
+              <em>const H5L_info_t *</em><code>info,</code> 
+              <em>void *</em><code>op_data)</code>
+      </dir>
+      <p>
+      The parameters of this callback function have the following
+      values or meanings: 
+      <table>
+          <tr valign=top><td><code>&nbsp;&nbsp;&nbsp;&nbsp;</code></td><td>
+              <code>g_id</code>
+              </td><td>
+              Group that serves as root of the iteration; same value 
+              as the <code>H5Lvisit</code> <code>group_id</code> parameter
+              </td></tr>
+          <tr valign=top><td><code>&nbsp;&nbsp;&nbsp;&nbsp;</code></td><td>
+              <code>name</code>
+              </td><td>
+              Name of link, relative to <code>g_id</code>,
+              being examined at current step of the iteration
+              </td></tr>
+          <tr valign=top><td><code>&nbsp;&nbsp;&nbsp;&nbsp;</code></td><td>
+              <code>info</code>
+              </td><td>
+              <em>H5L_info_t</em> struct containing information regarding 
+              that link
+              </td></tr>
+          <tr valign=top><td><code>&nbsp;&nbsp;&nbsp;&nbsp;</code></td><td>
+              <code>op_data&nbsp;&nbsp;&nbsp;&nbsp;</code>
+              </td><td>
+              User-defined pointer to data required by the application 
+              in processing the link;
+              a pass-through of the <code>op_data</code> pointer provided
+              with the <code>H5Lvisit</code> function call
+              </td></tr>
+      </table>
+      <p>
+      The <em>H5L_info_t</em> struct is defined (in <code>H5Lpublic.h</code>) 
+      as follows:
+<pre>
+    typedef struct {
+        H5L_type_t     type;         /* Type of link                   */
+        hbool_t        corder_valid; /* Indicates whether creation     */
+                                     /* order is valid                 */
+        int64_t        corder;       /* Creation order                 */
+        H5T_cset_t     cset;         /* Character set of link name     */
+        union {
+            haddr_t    address;      /* Address hard link points to    */
+            size_t     val_size;     /* Size of soft link or           */
+                                     /* user-defined link value        */
+        } u;
+    } H5L_info_t;
+</pre>
+
+      <p>
+      The <code>H5Lvisit</code> <code>op_data</code> parameter is a 
+      user-defined pointer to the data required to process links 
+      in the course of the iteration.
+      This pointer is passed back to each step of the iteration in 
+      the callback function&rsquo;s <code>op_data</code> parameter.
+
+      <br>&nbsp;
+      <p>
+      <a href="#Link-Visit"><code>H5Lvisit</code></a> and 
+      <a href="#Object-Visit"><code>H5Ovisit</code></a> 
+      are companion functions:
+      one for examining and operating on links; 
+      the other for examining and operating on the objects that 
+      those links point to.
+      Both functions ensure that by the time the function completes
+      successfully, every link or object below the specified point in the 
+      file has been presented to the application for whatever 
+      processing the application requires.
+      
+  <p>
+  <dt><strong>Parameters:</strong>
+    <dd><table>
+      <tr>
+        <td valign="top">
+            <em>hid_t</em> <code>group_id</code>
+        </td>
+        <td valign="top">IN: Identifier of the group at which the 
+            recursive iteration begins.
+        </td></tr>
+      <tr>
+        <td valign="top">
+            <em>H5_index_t</em> <code>index_type</code> 
+        </td>
+        <td valign="top">IN: Type of index; valid values include:
+            <br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                <code>H5_INDEX_NAME</code>
+            <br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                <code>H5_INDEX_CRT_ORDER</code>
+        </td></tr>
+      <tr>
+        <td valign="top">
+            <em>H5_iter_order_t</em>&nbsp;<code>order&nbsp;&nbsp;&nbsp;&nbsp;</code> 
+        </td>
+        <td valign="top">IN: Order in which index is traversed; 
+            valid values include:
+            <br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                <code>H5_ITER_DEC</code>
+            <br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                <code>H5_ITER_INC</code>
+            <br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                <code>H5_ITER_NATIVE</code>
+        </td></tr>
+      <tr>
+        <td valign="top">
+            <em>H5L_iterate_t</em> <code>op</code>
+        </td>
+        <td valign="top">IN: Callback function passing data regarding 
+            the link to the calling application
+        </td></tr>
+      <tr>
+        <td valign="top">
+            <em>void *</em><code>op_data</code>
+        </td>
+        <td valign="top">IN: User-defined pointer to data required 
+            by the application for its processing of the link
+        </td></tr>
+    </table>
+  <p>
+  <dt><strong>Returns:</strong>
+    <dd>Returns a non-negative value if successful;
+        otherwise returns a negative value.
+  <p>
+  <dt><strong>Fortran90 Interface:</strong> <!-- h5lfunc_f -->
+    <dd>None.
+<!--
+    <pre>
+  
+    </pre>
+-->
+  <p>
+  <dt><strong>History:</strong>
+    <dd><table width="90%">
+        <tr>
+          <td valign="top" align="left" width="10%">
+            <strong>Release</strong>&nbsp;&nbsp;&nbsp;&nbsp;</td>
+          <td valign="top" align="left">
+            <strong>C</strong></td></tr>
+        <tr>
+          <td valign="top">1.8.0</td>
+          <td valign="top">
+            Function introduced in this release.</td></tr>
+    </table>
+</dl>
+
+
+<!-- NEW PAGE -->
+<!-- HEADER RIGHT "H5Lvisit_by_name" -->
+<hr>
+<dl>
+  <dt><strong>Name:</strong> <a name="Link-VisitByName">H5Lvisit_by_name</a>
+  <dt><strong>Signature:</strong>
+    <dd><em>herr_t</em> <code>H5Lvisit_by_name</code>(
+            <em>hid_t</em> <code>loc_id</code>,
+            <em>const char *</em><code>group_name</code>,
+            <em>H5_index_t</em> <code>index_type</code>, 
+            <em>H5_iter_order_t</em> <code>order</code>, 
+            <em>H5L_iterate_t</em> <code>op</code>,
+            <em>void *</em><code>op_data</code>,
+            <em>hid_t</em> <code>lapl_id</code>
+        )
+  <p>
+  <dt><strong>Purpose:</strong>
+    <dd>Recursively visits all links starting from a specified group.
+  <p>
+  <dt><strong>Description:</strong>
+    <dd><code>H5Lvisit_by_name</code> is a recursive iteration function 
+      to visit all links in and below a group in an HDF5 file,
+      thus providing a mechanism for an application to perform
+      a common set of operations across all of those links 
+      or a dynamically selected subset.
+      For non-recursive iteration across the members of a group, 
+      see <a href="#Link-Iterate"><code>H5Literate</code></a>.
+      <p>
+      The group serving as the root of the iteration is specified by 
+      the <code>loc_id</code> / <code>group_name</code> parameter pair.
+      <code>loc_id</code> specifies a file or group;
+      <code>group_name</code> specifies either 
+      a group in the file (with an absolute name based in the 
+      file&rsquo;s root group) or
+      a group relative to <code>loc_id</code>.
+      If <code>loc_id</code> fully specifies the group that is to 
+      serve as the root of the iteration, <code>group_name</code> should
+      be <code>'.'</code> (a dot).
+      (Note that when <code>loc_id</code> fully specifies the the 
+      group that is to serve as the root of the iteration, 
+      the user may wish to consider using <a name="#Link-Visit">H5Lvisit</a> 
+      instead of <code>H5Lvisit_by_name</code>.)
+      <p>
+      Two parameters are used to establish the iteration:
+      <code>index_type</code> and <code>order</code>.
+      <p>
+      <code>index_type</code> specifies the index to be used.
+      If the links have not been indexed by the index type, they will first
+      be sorted by that index then the iteration will begin; 
+      if the links have been so indexed, the sorting step will be 
+      unnecesary, so the iteration may begin more quickly.
+      Valid values include the following:
+        <table border=0>
+          <tr><td>
+            &nbsp;&nbsp;&nbsp;&nbsp;
+            </td><td valign=top>
+            <code>H5_INDEX_NAME</code>
+            </td><td valign=top>
+            Alpha-numeric index on name 
+          </td></tr><tr><td valign=top>
+            &nbsp;&nbsp;&nbsp;&nbsp;
+            </td><td valign=top>
+            <code>H5_INDEX_CRT_ORDER&nbsp;&nbsp;&nbsp;&nbsp;</code>
+            </td><td valign=top>
+            Index on creation order 
+          <!-- H5_INDEX_N is used internally by the Library -->
+          <!--
+          </td></tr><tr><td valign=top>
+            &nbsp;&nbsp;&nbsp;&nbsp;
+            </td><td valign=top>
+            <code>H5_INDEX_N</code>
+            </td><td valign=top>
+            Number of indices defined
+          -->
+          </td></tr>
+        </table>
+      <p>
+      Note that the index type passed in <code>index_type</code> is a 
+      <i>best effort</i> setting.  
+      If the application passes in a value indicating iteration in 
+      creation order and a group is encountered that was not tracked
+      in creation order, that group will be iterated over in 
+      alpha-numeric order by name, or <i>name order</i>.
+      (<i>Name order</i> is the native order used by the HDF5 Library
+      and is always available.)
+      <p>
+      <code>order</code> specifies the order in which objects are to be
+      inspected along the index specified in <code>index_type</code>.  
+      Valid values include the following:
+        <table border=0>
+          <tr><td valign=top>
+            &nbsp;&nbsp;&nbsp;&nbsp;
+            </td><td valign=top>
+            <code>H5_ITER_INC</code>
+            </td><td valign=top>
+            Increasing order 
+          </td></tr><tr><td valign=top>
+            &nbsp;&nbsp;&nbsp;&nbsp;
+            </td><td valign=top>
+            <code>H5_ITER_DEC</code>
+            </td><td valign=top>
+            Decreasing order
+          </td></tr><tr><td valign=top>
+            &nbsp;&nbsp;&nbsp;&nbsp;
+            </td><td valign=top>
+            <code>H5_ITER_NATIVE&nbsp;&nbsp;&nbsp;&nbsp;</code>
+            </td><td valign=top>
+            Fastest available order
+          <!-- H5_INDEX_N is used internally by the Library -->
+          <!--
+          </td></tr><tr><td valign=top>
+            &nbsp;&nbsp;&nbsp;&nbsp;
+            </td><td valign=top>
+            <code>H5_ITER_N</code>
+            </td><td valign=top>
+            Number of iteration orders defined 
+          -->
+          </td></tr>
+        </table>
+
+      <p>
+      The protoype of the callback function <code>op</code> is as follows
+      (as defined in the source code file <code>H5Lpublic.h</code>):
+      <dir>
+          <em>herr_t</em> <code>(*H5L_iterate_t)(</code>
+              <em>hid_t</em> <code>g_id,</code> 
+              <em>const char *</em><code>name,</code> 
+              <em>const H5L_info_t *</em><code>info,</code> 
+              <em>void *</em><code>op_data)</code>
+      </dir>
+      <p>
+      The parameters of this callback function have the following
+      values or meanings: 
+      <table>
+          <tr valign=top><td><code>&nbsp;&nbsp;&nbsp;&nbsp;</code></td><td>
+              <code>g_id</code>
+              </td><td>
+              Group that serves as root of the iteration,
+              i.e., identifier of the group specified by the
+              <code>H5Lvisit_by_name</code> <code>loc_id</code> /
+              <code>group_name</code> parameter pair
+              </td></tr>
+          <tr valign=top><td><code>&nbsp;&nbsp;&nbsp;&nbsp;</code></td><td>
+              <code>name</code>
+              </td><td>
+              Name of link, relative to <code>g_id</code>,
+              being examined at current step of the iteration
+              </td></tr>
+          <tr valign=top><td><code>&nbsp;&nbsp;&nbsp;&nbsp;</code></td><td>
+              <code>info</code>
+              </td><td>
+              <em>H5L_info_t</em> struct containing information regarding 
+              that link
+              </td></tr>
+          <tr valign=top><td><code>&nbsp;&nbsp;&nbsp;&nbsp;</code></td><td>
+              <code>op_data&nbsp;&nbsp;&nbsp;&nbsp;</code>
+              </td><td>
+              User-defined pointer to data required by the application 
+              in processing the link;
+              a pass-through of the <code>op_data</code> pointer provided
+              with the <code>H5Lvisit_by_name</code> function call
+              </td></tr>
+      </table>
+      <p>
+      The <em>H5L_info_t</em> struct is defined (in <code>H5Lpublic.h</code>) 
+      as follows:
+<pre>
+    typedef struct {
+        H5L_type_t     type;         /* Type of link                   */
+        hbool_t        corder_valid; /* Indicates whether creation     */
+                                     /* order is valid                 */
+        int64_t        corder;       /* Creation order                 */
+        H5T_cset_t     cset;         /* Character set of link name     */
+        union {
+            haddr_t    address;      /* Address hard link points to    */
+            size_t     val_size;     /* Size of soft link or           */
+                                     /* user-defined link value        */
+        } u;
+    } H5L_info_t;
+</pre>
+
+      <p>
+      The <code>H5Lvisit_by_name</code> <code>op_data</code> parameter is a 
+      user-defined pointer to the data required to process links 
+      in the course of the iteration.
+      This pointer is passed back to each step of the iteration in 
+      the callback function&rsquo;s <code>op_data</code> parameter.
+      <p>
+      <code>lapl_id</code> is a link access property list.
+      In the general case, when default link access properties are 
+      acceptable, this can be passed in as <code>H5P_DEFAULT</code>.
+      An example of a situation that requires a non-default link access 
+      property list is when the link is an external link; an external link 
+      may require that a link prefix be set in a link access property list
+      (see <a href="RM_H5P.html#Property-SetELinkPrefix">
+      <code>H5Pset_elink_prefix</code></a>).
+
+      <br>&nbsp;
+      <p>
+      <a href="#Link-VisitByName"><code>H5Lvisit_by_name</code></a> and 
+      <a href="#Object-VisitByName"><code>H5Ovisit_by_name</code></a> 
+      are companion functions:
+      one for examining and operating on links; 
+      the other for examining and operating on the objects that 
+      those links point to.
+      Both functions ensure that by the time the function completes
+      successfully, every link or object below the specified point in the 
+      file has been presented to the application for whatever 
+      processing the application requires.
+      
+  <p>
+  <dt><strong>Parameters:</strong>
+    <dd><table>
+      <tr>
+        <td valign="top">
+            <em>hid_t</em> <code>loc_id</code>
+        </td>
+        <td valign="top">IN: Identifier of a file or group 
+        </td></tr>
+      <tr>
+        <td valign="top">
+            <em>const char *</em><code>name</code>
+        </td>
+        <td valign="top">IN: Name of the group, 
+            generally relative to <code>loc_id</code>,
+            that will serve as root of the iteration
+        </td></tr>
+      <tr>
+        <td valign="top">
+            <em>H5_index_t</em> <code>index_type</code> 
+        </td>
+        <td valign="top">IN: Type of index; valid values include:
+            <br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                <code>H5_INDEX_NAME</code>
+            <br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                <code>H5_INDEX_CRT_ORDER</code>
+        </td></tr>
+      <tr>
+        <td valign="top">
+            <em>H5_iter_order_t</em>&nbsp;<code>order&nbsp;&nbsp;&nbsp;&nbsp;</code> 
+        </td>
+        <td valign="top">IN: Order in which index is traversed; 
+            valid values include:
+            <br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                <code>H5_ITER_DEC</code>
+            <br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                <code>H5_ITER_INC</code>
+            <br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                <code>H5_ITER_NATIVE</code>
+        </td></tr>
+      <tr>
+        <td valign="top">
+            <em>H5L_iterate_t</em> <code>op</code>
+        </td>
+        <td valign="top">IN: Callback function passing data regarding 
+            the link to the calling application
+        </td></tr>
+      <tr>
+        <td valign="top">
+            <em>void *</em><code>op_data</code>
+        </td>
+        <td valign="top">IN: User-defined pointer to data required 
+            by the application for its processing of the link
+        </td></tr>
+      <tr>
+        <td valign="top">
+            <em>hid_t</em> <code>lapl_id</code>
+        </td>
+        <td valign="top">IN: Link access property list identifier 
+        </td></tr>
+    </table>
+  <p>
+  <dt><strong>Returns:</strong>
+    <dd>Returns a non-negative value if successful;
+        otherwise returns a negative value.
+  <p>
+  <dt><strong>Fortran90 Interface:</strong> <!-- h5lfunc_f -->
+    <dd>None.
+<!--
+    <pre>
+  
+    </pre>
+-->
+  <p>
+  <dt><strong>History:</strong>
+    <dd><table width="90%">
+        <tr>
+          <td valign="top" align="left" width="10%">
+            <strong>Release</strong>&nbsp;&nbsp;&nbsp;&nbsp;</td>
+          <td valign="top" align="left">
+            <strong>C</strong></td></tr>
+        <tr>
+          <td valign="top">1.8.0</td>
+          <td valign="top">
+            Function introduced in this release.</td></tr>
+    </table>
+</dl>
+
+
+
+
+<!-- NEW PAGE -->
 
 
 <!-- #BeginLibraryItem "/ed_libs/NavBar_RM.lbi" --><hr>
@@ -2665,7 +3255,7 @@ Describes HDF5 Release 1.8.0-beta.
 
 <!-- #EndLibraryItem --><SCRIPT LANGUAGE="JAVASCRIPT">
 <!--
-document.writeln("Last modified: 15 November 2007");
+document.writeln("Last modified: 26 November 2007");
 -->
 </SCRIPT>
 
