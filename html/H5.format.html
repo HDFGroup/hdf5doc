@@ -93,9 +93,9 @@ TABLE.list TD { border:none; }
 	  <li><a href="#SymbolTableEntry">Disk Format Level 1C - Group Symbol Table Entry</a>
 	  <li><a href="#LocalHeap">Disk Format Level 1D - Local Heaps</a>
 	  <li><a href="#GlobalHeap">Disk Format Level 1E - Global Heap</a>
-	  <li><a href="#FractalHeap">Disk Format Level 1E - Fractal Heap</a>
-	  <li><a href="#FreeSpaceManager">Disk Format Level 1F - Free-Space Manager</a>
-	  <li><a href="#SOHMTable">Disk Format Level 1G - Shared Object Header Message Table</a>
+	  <li><a href="#FractalHeap">Disk Format Level 1F - Fractal Heap</a>
+	  <li><a href="#FreeSpaceManager">Disk Format Level 1G - Free-Space Manager</a>
+	  <li><a href="#SOHMTable">Disk Format Level 1H - Shared Object Header Message Table</a>
 	</ol>
         </font>
       <li><a href="#DataObject">Disk Format Level 2 - Data Objects</a>
@@ -150,7 +150,7 @@ TABLE.list TD { border:none; }
                   <li><a href="#BtreeKValuesMessage">B-tree 'K' Values</a>                    	          <!-- 0x0013 -->
                   <li><a href="#DrvInfoMessage">Driver Info</a>                    		          <!-- 0x0014 -->
                   <li><a href="#AinfoMessage">Attribute Info</a>                    		          <!-- 0x0015 -->
-                  <li><a href="#RefCountMessage">Reference Count</a>                    		  <!-- 0x0016 -->
+                  <li><a href="#RefCountMessage">Object Reference Count</a>                    		  <!-- 0x0016 -->
                 </ol>
 	    </ol>
 	  <li><a href="#DataStorage">Disk Format: Level 2B - Data Object Data Storage</a>
@@ -3596,7 +3596,7 @@ TABLE.list TD { border:none; }
     </P>
 
     <br>
-    <h3><a name="FractalHeap">Disk Format: Level 1E - Fractal Heap</a></h3>
+    <h3><a name="FractalHeap">Disk Format: Level 1F - Fractal Heap</a></h3>
 
         <P>
 	    Each fractal heap consists of a header and zero or more direct and
@@ -5130,7 +5130,7 @@ TABLE.list TD { border:none; }
     </div>
 
     <br>
-    <h3><a name="FreeSpaceManager">Disk Format: Level 1F - Free-Space Manager</a></h3>
+    <h3><a name="FreeSpaceManager">Disk Format: Level 1G - Free-Space Manager</a></h3>
 
         <P>
             Free-space managers are used to describe space within a heap or
@@ -5875,7 +5875,7 @@ TABLE.list TD { border:none; }
     </div>
 
     <br>
-    <h3><a name="SOHMTable">Disk Format: Level 1G - Shared Object Header Message Table</a></h3>
+    <h3><a name="SOHMTable">Disk Format: Level 1H - Shared Object Header Message Table</a></h3>
 
         <P>
             The <em>shared object header message table</em> is used to locate
@@ -6703,8 +6703,8 @@ TABLE.list TD { border:none; }
       </table>
     </div>
 
-    <h3><a name="V2ObjectHeaderPrefix">
-	Disk Format: Level 2A2 - Version 2 Data Object Headers</a></h3>
+    <h4><a name="V2ObjectHeaderPrefix">
+	Version 2 Data Object Headers</a></h4>
 
     <P>Note that the "total number of messages" field has been dropped from
         the data object header prefix in this version.  The number is messages
@@ -9016,7 +9016,7 @@ TABLE.list TD { border:none; }
 	</tr>
 
 	<tr>
-	  <td>15-23</td>
+	  <td>16-23</td>
 	  <td>Reserved (zero).</td>
 	</tr>
       </table>
@@ -9351,7 +9351,7 @@ TABLE.list TD { border:none; }
 	</tr>
 
 	<tr>
-	  <td>15-23</td>
+	  <td>4-23</td>
 	  <td>Reserved (zero).</td>
 	</tr>
       </table>
@@ -9647,14 +9647,18 @@ TABLE.list TD { border:none; }
 
                 <tr>
                   <td align=center><code>0</code></td>
-                  <td>ASCII: As of this writing (July 2003, Release 1.6.0),
-                    8-bit ASCII is the only character set supported.  Therefore,
-                    no translations have been defined.
+                  <td>ASCII character set encoding
                   </td>
                 </tr>
 
                 <tr>
-                  <td align=center><code>1-15</code></td>
+                  <td align=center><code>1</code></td>
+                  <td>UTF-8 character set encoding
+                  </td>
+                </tr>
+
+                <tr>
+                  <td align=center><code>2-15</code></td>
                   <td>Reserved
                   </td>
                 </tr>
@@ -10625,7 +10629,10 @@ TABLE.list TD { border:none; }
                 </tr>
                 <tr>
                   <td><em>Length of external link value</em> bytes:</td>
-                  <td>Two NULL-terminated strings, with no padding between
+                  <td>The first byte contains the version number in the upper 4 bits
+		    and flags in the lower 4 bits for the external link. 
+		    Both version and flags are defined to be zero in this document.
+		    The remaining bytes consist of two NULL-terminated strings, with no padding between
                     them.  The first string is the name of the HDF5 file
                     containing the object linked to and the second string is
                     the full path to the object linked to, within the HDF5
