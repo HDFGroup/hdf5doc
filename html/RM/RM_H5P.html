@@ -267,8 +267,8 @@ In the following lists, italic type indicates a configurable macro.
     <li><a href="#Property-SetFaplSplit">H5Pset_fapl_split</a>
     <li><a href="#Property-SetFaplSec2">H5Pset_fapl_sec2</a>
     <li><a href="#Property-SetFaplStdio">H5Pset_fapl_stdio</a>
-    <li><a href="#Property-SetFaplStream">H5Pset_fapl_stream</a>
-    <li><a href="#Property-GetFaplStream">H5Pget_fapl_stream</a>
+<!--<li><a href="#Property-SetFaplStream">H5Pset_fapl_stream</a>      -->
+<!--<li><a href="#Property-GetFaplStream">H5Pget_fapl_stream</a>      -->
     <li><a href="#Property-SetFaplWindows">H5Pset_fapl_windows</a>
 <!-- FOR USE WITH ELECTRONIC VERSION ----------------------------------->
 <!--<li><a href="#Property-SetDriver">H5Pset_driver</a>               -->
@@ -506,8 +506,8 @@ In the following lists, italic type indicates a configurable macro.
     <li><a href="#Property-SetFaplSplit">H5Pset_fapl_split</a>
     <li><a href="#Property-SetFaplSec2">H5Pset_fapl_sec2</a>
     <li><a href="#Property-SetFaplStdio">H5Pset_fapl_stdio</a>
-    <li><a href="#Property-SetFaplStream">H5Pset_fapl_stream</a>
-    <li><a href="#Property-GetFaplStream">H5Pget_fapl_stream</a>
+<!--<li><a href="#Property-SetFaplStream">H5Pset_fapl_stream</a>      -->
+<!--<li><a href="#Property-GetFaplStream">H5Pget_fapl_stream</a>      -->
     <li><a href="#Property-SetFaplWindows">H5Pset_fapl_windows</a>
 <!-- FOR USE WITH PRINT VERSION ---------------------------------------->
 <!--<li><a href="#Property-SetDriver">H5Pset_driver</a>               -->
@@ -719,7 +719,7 @@ See further notes in the description of each function.
       <li><a href="#Property-GetFaplMpio">H5Pget_fapl_mpio</a>&nbsp;&nbsp;&nbsp;||
       <li><a href="#Property-GetFaplMpiPosix">H5Pget_fapl_mpiposix</a>&nbsp;&nbsp;&nbsp;||
       <li><a href="#Property-GetFaplMulti">H5Pget_fapl_multi</a>
-      <li><a href="#Property-GetFaplStream">H5Pget_fapl_stream</a>
+<!--  <li><a href="#Property-GetFaplStream">H5Pget_fapl_stream</a>        -->
       <li><a href="#Property-GetFcloseDegree">H5Pget_fclose_degree</a>
       <li><a href="#Property-GetFillTime">H5Pget_fill_time</a>
       <li><a href="#Property-GetFillValue">H5Pget_fill_value</a>
@@ -821,7 +821,7 @@ See further notes in the description of each function.
       <li><a href="#Property-SetFaplSec2">H5Pset_fapl_sec2</a>
       <li><a href="#Property-SetFaplSplit">H5Pset_fapl_split</a>
       <li><a href="#Property-SetFaplStdio">H5Pset_fapl_stdio</a>
-      <li><a href="#Property-SetFaplStream">H5Pset_fapl_stream</a>
+<!--  <li><a href="#Property-SetFaplStream">H5Pset_fapl_stream</a>        -->
       <li><a href="#Property-SetFaplWindows">H5Pset_fapl_windows</a>
       <li><a href="#Property-SetFcloseDegree">H5Pset_fclose_degree</a>
       <li><a href="#Property-SetFillTime">H5Pset_fill_time</a>
@@ -3126,8 +3126,8 @@ SUBROUTINE
            H5FD_MPIO
            H5FD_MULTI
            H5FD_SEC2
-           H5FD_STDIO
-           H5FD_STREAM
+           H5FD_STDIO   <!--
+           H5FD_STREAM    -->
            H5FD_WINDOWS <font face=times,arial><i>(Windows only)</i></font></pre>
         If a user defines and registers custom drivers or 
         if additional drivers are defined in an HDF5 distribution, 
@@ -3429,9 +3429,10 @@ END SUBROUTINE h5pget_edc_check_f
 <dl>
   <dt><strong>Name:</strong> <a name="Property-GetELinkPrefix">H5Pget_elink_prefix</a>
   <dt><strong>Signature:</strong>
-    <dd><em>herr_t</em> <code>H5Pget_elink_prefix</code>(
+    <dd><em>ssize_t</em> <code>H5Pget_elink_prefix</code>(
         <em>hid_t</em> <code>lapl_id</code>,
-        <em>const char **</em><code>prefix</code>
+        <em>char *</em><code>prefix</code>,
+        <em>size_t</em> <code>size</code>
     )
   <p></p>
   <dt><strong>Purpose:</strong>
@@ -3443,8 +3444,17 @@ END SUBROUTINE h5pget_edc_check_f
 	<p>
         When an external link is traversed, the prefix is retrieved 
         from the link access property list <code>lapl_id</code>,
-        returned in the user-allocated buffer <code>prefix</code>, and 
+        returned in the user-allocated buffer pointed to by 
+        <code>prefix</code>, and 
         prepended to the filename stored in the external link.
+        <p>
+        The size in bytes of the prefix, including the <code>NULL</code> 
+        terminator, is specified in <code>size</code>.
+        If <code>size</code> is unknown, 
+        a preliminary <code>H5Pget_elink_prefix</code> call
+        with the pointer <code>prefix</code> set to <code>NULL</code> 
+        will return the size of the prefix 
+        <i>without</i> the <code>NULL</code> terminator.
   </p>
   <dt><strong>Parameters:</strong>
     <dd><table>
@@ -3452,12 +3462,17 @@ END SUBROUTINE h5pget_edc_check_f
         <td valign="top"><em>hid_t</em> <code>lapl_id</code></td>
         <td valign="top">IN: Link access property list identifier</td></tr>
       <tr>
-        <td valign="top"><em>const&nbsp;char&nbsp;**</em><code>prefix&nbsp;&nbsp;&nbsp;&nbsp;</code></td>
+        <td valign="top"><em>char&nbsp;*</em><code>prefix&nbsp;&nbsp;&nbsp;&nbsp;</code></td>
         <td valign="top">OUT: Prefix applied to external link paths</td></tr>
+      <tr>
+        <td valign="top"><em>size_t</em> <code>size</code></td>
+        <td valign="top">IN: Size of prefix, including null terminator</td></tr>
       </table>
   <p></p>
   <dt><strong>Returns:</strong>
-    <dd>Returns a non-negative value if successful;
+    <dd>If successful, returns a non-negative value 
+        specifying the size in bytes of the prefix  
+        <i>without</i> the <code>NULL</code> terminator;
         otherwise returns a negative value.
   <p></p>
   <dt><strong>Fortran90 Interface:</strong> <!--h5p...._f-->
@@ -4271,11 +4286,14 @@ END SUBROUTINE h5pget_fapl_multi_f
     </table></ul>
 </dl>
 
-<!-- NEW PAGE -->
-<!-- HEADER RIGHT "H5Pget_fapl_stream" -->
+
+<!-- NEW PAGE 
+     HEADER RIGHT "H5Pget_fapl_stream" 
 <hr>
 <dl>
-  <dt><strong>Name:</strong> <a name="Property-GetFaplStream">H5Pget_fapl_stream</a>
+                     STREAM DRIVER REMOVED FROM HDF5 
+                       DECEMBER 2007/RELEASE 1.8.0
+                        DUE TO LICENSING CONCERNS	
   <dt><strong>Signature:</strong>
     <dd><em>herr_t</em> <code>H5Pget_fapl_stream</code>(
                      <em>hid_t</em> <code>fapl_id</code>,
@@ -4303,17 +4321,6 @@ END SUBROUTINE h5pget_fapl_multi_f
         Otherwise returns a negative value.
   <dt><strong>Fortran90 Interface:</strong>
     <dd>None.
-<!--
-	<pre>
-SUBROUTINE
-	</pre>		
--->		
-		<!--<dt><strong>Non-C API(s):</strong>
-    	<dd>
-        
-        <img src="Graphics/Java.gif"> 
-        <img src="Graphics/C++.gif">
-        -->
   <dt><strong>History:</strong>
 	<ul><table width="90%">
         <tr>
@@ -4325,8 +4332,14 @@ SUBROUTINE
 		  <td valign="top">1.4.0</td>
           <td valign="top">
 		    Function introduced in this release.</td></tr>
+        <tr>
+		  <td valign="top">1.8.0</td>
+          <td valign="top">
+		    Function removed in this release.</td></tr>
     </table></ul>
 </dl>
+-->
+
 
 <!-- NEW PAGE -->
 <!-- HEADER RIGHT "H5Pget_fclose_degree" -->
@@ -12858,10 +12871,13 @@ END SUBROUTINE h5pset_fapl_stdio_f
     </table></ul>
 </dl>
 
-<!-- NEW PAGE -->
-<!-- HEADER RIGHT "H5Pset_fapl_stream" -->
+<!-- NEW PAGE 
+     HEADER RIGHT "H5Pset_fapl_stream" 
 <hr>
 <dl>
+                 STREAM DRIVER REMOVED FROM HDF5 
+                       DECEMBER 2007/RELEASE 1.8.0
+                        DUE TO LICENSING CONCERNS	
   <dt><strong>Name:</strong> <a name="Property-SetFaplStream">H5Pset_fapl_stream</a>
   <dt><strong>Signature:</strong>
     <dd><em>herr_t</em> <code>H5Pset_fapl_stream</code>(
@@ -12933,18 +12949,6 @@ END SUBROUTINE h5pset_fapl_stdio_f
         Otherwise returns a negative value.
   <dt><strong>Fortran90 Interface:</strong>
     <dd>None.
-<!--
-	<pre>
-SUBROUTINE
-	</pre>		
--->
-		
-		<!--<dt><strong>Non-C API(s):</strong>
-    	<dd>
-        
-        <img src="Graphics/Java.gif"> 
-        <img src="Graphics/C++.gif">
-        -->
   <dt><strong>History:</strong>
 	<ul><table width="90%">
         <tr>
@@ -12956,8 +12960,13 @@ SUBROUTINE
 		  <td valign="top">1.4.0</td>
           <td valign="top">
 		    Function introduced in this release.</td></tr>
+        <tr>
+		  <td valign="top">1.8.0</td>
+          <td valign="top">
+		    Function removed in this release.</td></tr>
     </table></ul>
 </dl>
+-->
 
 
 <!-- NEW PAGE -->
@@ -16490,7 +16499,7 @@ Describes HDF5 Release 1.8.0-beta.
 
 <!-- #EndLibraryItem --><SCRIPT LANGUAGE="JAVASCRIPT">
 <!--
-document.writeln("Last modified: 19 November 2007");
+document.writeln("Last modified: 12 December 2007");
 -->
 </SCRIPT>
  
