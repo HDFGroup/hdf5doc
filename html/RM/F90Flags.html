@@ -76,7 +76,7 @@ And in this document, the
 
 
 <center>
-<h1>HDF5 Fortran90 Flags and Datatypes</h1>
+<h1>HDF5 Fortran90 Flags, Datatypes and User&rsquo;s Notes</h1>
 </center>
 
 <br>
@@ -363,6 +363,144 @@ The Fortran90 HDF5 flags have the same meanings as the C flags defined in the
     </table>
 
 
+<a name="F90UserNotes">
+<hr>
+<h2>HDF5 Fortran90 User&rsquo;s Notes</h2></a>
+
+
+
+<h3>About the source code organization</h3>
+
+The Fortran APIs are organized in modules parallel to the HDF5 Interfaces.
+Each module is in a separate file with the name <code>H5*ff.f</code>.  
+Corresponding C stubs are in the <code>H5*f.c</code> files.  
+For example, the Fortran File APIs are in the file <code>H5Fff.f</code> 
+and the corresponding C stubs are in the file <code>H5Ff.c</code>. 
+
+<p>
+Each module contains Fortran definitions of the constants, interfaces to 
+the subroutines if needed, and the subroutines themselves.  
+
+<p>
+Users must use constant names in their programs instead of the numerical 
+values, as the numerical values are subject to change without notice. 
+
+
+<h3>About the Fortran APIs</h3>
+
+The Fortran APIs come in the form of Fortran subroutines 
+with the following characteristics:
+<p>
+
+<ul>
+<li>Each Fortran subroutine name is derived from the corresponding C function
+name by adding <code>"_f"</code> to the name.  For example, the name of 
+the C function to create an HDF5 file is <code>H5Fcreate</code>;  
+the corresponding Fortran subroutine is <code>h5fcreate_f</code>. 
+<br>&nbsp;
+
+<li>A description of each implemented Fortran subroutine and its parameters 
+can be found following the description of the corresponding C function in 
+the HDF5 Reference Manual provided with this release.  
+<br>&nbsp;
+
+<li>The parameter list for each Fortran subroutine has two more parameters
+than the corresponding C function.  These additional parameters hold 
+the return value and an error code.  The order of the Fortran subroutine 
+parameters may differ from the order of the C function parameters. 
+The Fortran subroutine parameters are listed in the following order: 
+    <ul>
+      <li>Required input parameters
+      <li>Output parameters, including return value and error code
+      <li>Optional input parameters
+    </ul>
+
+<p>
+For example, the C function to create a dataset has the following 
+prototype:
+
+<pre>
+       hid_t H5Dcreate(hid_it loc_id, char *name, hid_t type_id, 
+             hid_t space_id, hid_t creation_prp);
+</pre>
+
+<p>
+The corresponding Fortran subroutine has the following form:
+   
+<pre>
+       SUBROUTINE h5dcreate_f(loc_id, name, type_id, space_id, dset_id, 
+             hdferr, creation_prp)
+</pre>
+  
+<p>
+The first four parameters of the Fortran subroutine correspond to the 
+C function parameters.  The fifth parameter, <code>dset_id</code>, 
+is an output parameter and contains a valid dataset identifier if the 
+value of the sixth output parameter hdferr indicates successful completion. 
+(Error code descriptions are provided with the subroutine descriptions 
+in the Reference Manual.)  The seventh input parameter, 
+<code>creation_prp</code>, is optional, and may be omitted when the 
+default creation property list is used.
+
+<li>Parameters to the Fortran subroutines have one of the following 
+predefined datatypes (see the file <code>H5fortran_types.f90</code> 
+for <code>KIND</code> definitions):
+    <ul>
+        <li><em>INTEGER(HID_T)</em> compares with the
+            <code>hid_t</code> datatype in the HDF5 C APIs.
+        <li><code>INTEGER(HSIZE_T)</code> compares with 
+            <code>hsize_t</code> in the HDF5 C APIs.
+        <li><code>INTEGER(HSSIZE_T)</code> compares with
+            <code>hssize_t</code> in the HDF5 C APIs.
+        <li><code>INTEGER(SIZE_T)</code> compares with
+            the C <code>size_t</code> datatype.
+    </ul>
+
+<br>
+These integer types usually correspond to 4 or 8 byte integers, 
+depending on the FORTRAN90 compiler and the corresponding HDF5 
+C library definitions.
+   
+<br>&nbsp;
+<br>
+The H5R module defines two types of references: 
+    <ul>
+        <li><code>TYPE(HOBJ_REF_T_F)</code> compares to 
+            <code>hobj_ref_t</code> in the HDF5 C API.
+        <li><code>TYPE(HDSET_REG_REF_T_F)</code> compares to 
+            <code>hdset_reg_ref_t</code> in the HDF5 C API.
+    </ul>
+<br>
+
+<li>Each Fortran application must call the <code>h5open_f</code> subroutine 
+to initialize the Fortran interface and the HDF5 C Library before calling 
+any HDF5 Fortran subroutine. The application must call the 
+<code>h5close_f</code> subroutine after all calls to the HDF5 Fortran 
+Library to close the Fortran interface and HDF5 C Library. 
+<br>&nbsp;
+
+<li>List of the predefined datatypes can be found in the HDF5 Reference 
+Manual provided with this release.  
+See <a href="../RM/PredefDTypes.html">HDF5 Predefined Datatypes</a>.
+<br>&nbsp;
+
+<li>When a C application reads data stored from a Fortran program, the data 
+will appear to be transposed due to the difference in the C and Fortran 
+storage orders.  For example, if Fortran writes a 4x6 two-dimensional 
+dataset to the file, a C program will read it as a 6x4 two-dimensional 
+dataset into memory.  The HDF5 C utilities h5dump and h5ls will also 
+display transposed data, if data is written from a Fortran program.
+<br>&nbsp;
+
+<li>Fortran indices are 1-based.
+<br>&nbsp;
+
+<li>Compound datatype datasets can be written or read by atomic fields only.
+
+</ul>
+
+
+
 <hr>
 
 
@@ -424,7 +562,7 @@ Describes HDF5 Release 1.8.0, January 2008.
 
 <!-- #EndLibraryItem --> 
 
-Last modified:  26 December 2007
+Last modified:  27 December 2007
 
 </body>
 </html>
