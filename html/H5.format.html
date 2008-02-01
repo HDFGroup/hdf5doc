@@ -897,11 +897,10 @@ TABLE.list TD { border:none; }
     <H3><A name="DriverInfo">
 	Disk Format: Level 0B - File Driver Info</A></H3>
 
-    <p>The <em>file driver information block</em> is an optional region of the
-      file which contains information needed by the file driver in
-      order to reopen a file.  The format of the file driver information
-      block is:
- 
+    <p>The <B>driver information block</B> is an optional region of the
+      file which contains information needed by the file driver
+      to reopen a file.  The format is described below:
+
     <br>
     <div align=center>
       <table class=format>
@@ -918,11 +917,11 @@ TABLE.list TD { border:none; }
  
         <tr>
           <td>Version</td>
-          <td colspan=3>Reserved (zero)</td>
+          <td colspan=3>Reserved</td>
         </tr>
 
         <tr>
-          <td colspan=4>Driver Information Size (4 bytes)</td>
+          <td colspan=4>Driver Information Size</td>
         </tr>
 
         <tr>
@@ -930,7 +929,7 @@ TABLE.list TD { border:none; }
         </tr>
 
         <tr>
-          <td colspan=4><br><br>Driver Information (<em>n</em> bytes)<br><br><br></td>
+          <td colspan=4><br><br>Driver Information (<em>variable size</em>)<br><br><br></td>
         </tr>
       </table>
     </div>
@@ -946,8 +945,8 @@ TABLE.list TD { border:none; }
         <tr>
           <td>Version</td>
           <td>
-            <P>The version number of the driver information block. The
-            file format documented here is version zero.
+            <P>The version number of the Driver Information Block.
+	       This document describes version 0.
             </P>
           </td>
         </tr>
@@ -955,8 +954,7 @@ TABLE.list TD { border:none; }
         <tr>
           <td>Driver Information Size</td>
           <td>
-            <P>The size in bytes of the Driver Information part of this 
-            structure.
+            <P>The size in bytes of the <em>Driver Information</em> field.
             </P>
           </td>
         </tr>
@@ -965,27 +963,18 @@ TABLE.list TD { border:none; }
           <td>Driver Identification</td>
           <td>
             <P>This is an eight-byte ASCII string without null
-            termination which identifies the driver and version number 
-            of the Driver Information block. The predefined drivers
+            termination which identifies the driver and/or version number 
+            of the Driver Information Block. The predefined drivers
             supplied with the HDF5 library are identified by the
             letters <code>NCSA</code> followed by the first four characters of
             the driver name. If the Driver Information block is not
             the original version then the last letter(s) of the
             identification will be replaced by a version number in
-            ASCII.  
+            ASCII, starting with 0.
             </P>
             <P>
-            For example, the various versions of the <em>multi driver</em> 
-            will be identified by <code>NCSAmult</code>.
-            (<code>NCSAmult</code> is simply <code>NCSAmulti</code> truncated 
-            to eight characters.  Subsequent identifiers will be created by
-            substituting sequential numerical values for the final character, 
-            starting with zero.) <em>multi driver</em> is the only default driver that
-            is encoded in this field.
-            </P>
-            <P>
-            Identification for user-defined drivers 
-            is eight-byte long and arbitrary but should be unique and avoid 
+            Identification for user-defined drivers is also eight-byte long.  
+	    It can be arbitrary but should be unique to avoid 
             the four character prefix "NCSA".
             </P>
           </td>
@@ -993,17 +982,40 @@ TABLE.list TD { border:none; }
 
         <tr valign=top>
           <td>Driver Information</td>
-          <td>Driver information is encoded/decoded in a format defined by the
-            file driver. <em>multi driver</em> is the only default driver that has driver
-            information stored in this field.  Its format is explained in the 
-            following block.</td>
+          <td>Driver information is stored in a format defined by the
+            file driver.</td>
         </tr>
       </table>
     </div>
 
     <BR>
-    <P><em>Multi driver</em> has the following format:</P>
-
+    There are two predefined drivers supplied with the HDF5 library as follows:
+    <UL>
+    <LI>
+    Multi-driver:
+    <P>
+    The identifier for this driver is "NCSAmulti".  
+    This driver provides a mechanism for segregating raw data and different types of meta data 
+    into multiple files.
+    These files are viewed by the library as a single virtual HDF5 file with a single file address.
+    A maximum of 6 files will be created for the following data:
+    superblock, B-tree, raw data, global heap, local heap, and object header.  
+    More than one type of data can be written to the same file.
+    </P>
+    <LI>
+    Family driver
+    <P>
+    The identifier for this driver is "NCSAfami".
+    This driver is designed for systems that do not support files larger than 2 gigabytes
+    by splitting the HDF5 file address space across several smaller files. 
+    It does nothing to segregate meta data and raw data; 
+    they are mixed in the address space just as they would be in a single contiguous file.
+    </P>
+    </UL>
+    <BR>
+    The format of the <em>Driver Information</em> field for the two predefined drivers are described below:
+    <BR>
+    <BR>
     <div align=center>
       <table class=format>
 	<caption>
@@ -1052,16 +1064,29 @@ TABLE.list TD { border:none; }
 	</tr>
 
 	<tr>
-	  <td colspan=4><br>Name of Member File 1<br><br></td>
+	  <td colspan=4><br>Address of Member File N<br><br></td>
 	</tr>
 
 	<tr>
-	  <td colspan=4><br>Name of Member File 2<br><br></td>
+	  <td colspan=4><br>End of Address for Member File N<br><br></td>
+	</tr>
+
+	<tr>
+	  <td colspan=4><br>Name of Member File 1 <em>(variable size)</em><br><br></td>
+	</tr>
+
+	<tr>
+	  <td colspan=4><br>Name of Member File 2 <em>(variable size)</em><br><br></td>
 	</tr>
 
 	<tr>
 	  <td colspan=4><br>... ...<br><br></td>
 	</tr>
+
+	<tr>
+	  <td colspan=4><br>Name of Member File N <em>(variable size)</em><br><br></td>
+	</tr>
+
       </table>
     </div>
 
@@ -1075,15 +1100,7 @@ TABLE.list TD { border:none; }
 
 	<tr>
 	  <td>Member Mapping</td>
-	  <td><P><em>Multi driver</em> enables different types of HDF5 data and 
-            metadata to be written to separate files. These files are viewed by the
-            library as a single virtual HDF5 file with a single file address.
-            It allows maximal 6 files to be created.
-	    In sequence, these <em>Member Mapping</em> fields are for superblock, 
-            B-tree, raw data, global heap, local heap,
-	    and object header.  More than one type of data can be written to the 
-            same file.</P>  
-	    <P>These <em>Member Mapping</em> fields are integer values from 1 to 6 
+	  <td>These fields are integer values from 1 to 6 
             indicating how the data can be mapped to or merged with another type of
             data.
 	        <table class=list>
@@ -1117,7 +1134,7 @@ TABLE.list TD { border:none; }
                     </tr>
                 </table></P>
             For example, if the third field has the value 3 and all the rest have the 
-            value 1, it means there are two files, one for raw data, one for superblock,
+            value 1, it means there are two files: one for raw data, and one for superblock,
             B-tree, global heap, local heap, and object header.
           </td>
 	</tr>
@@ -1128,29 +1145,66 @@ TABLE.list TD { border:none; }
 	</tr>
 
 	<tr>
-	  <td>Address of Member File</td>
-	  <td><P>Specifies the virtual address. A normally eight-byte integer with 
-            the value from <em>0</em> (zero) to maximal value, 
-	    at which the member file starts.</P></td>
+	  <td>Address of Member File N</td>
+	  <td><P>This field Specifies the virtual address at which the member file starts.</P>
+	      <P>N is the number of member files.</P>
+	  </td>
 	</tr>
 
 	<tr>
-	  <td>End of Address for Member File</td>
-	  <td><P>The end of allocated address for the member file. A normally eight-byte 
-            integer value.</P></td>
+	  <td>End of Address for Member File N</td>
+	  <td><P>This field is the end of the allocated address for the member file.
+            </P></td>
 	</tr>
 
 	<tr>
-	  <td>Name of Member File</td>
-	  <td><P>The null-terminated name of member file.  Its length should be multiples of 
-	    8 bytes.  Additional bytes will be padded with <em>NULL</em>s. The default naming
-            convention is <em>%%s-X.h5</em>, where <em>X</em> is one of the letters 
+	  <td>Name of Member File N</td>
+	  <td><P>This field is the null-terminated name of the member file and
+		its length should be multiples of 8 bytes.  
+		Additional bytes will be padded with <em>NULL</em>s. The default naming
+		convention is <em>%s-X.h5</em>, where <em>X</em> is one of the letters 
             <em>s</em> (for superblock), <em>b</em> (for B-tree), <em>r</em> (for raw data),
             <em>g</em> (for global heap), <em>l</em> (for local heap), and <em>o</em> (for 
-            object header). The name for the whole HDF5 file will substitute the <em>%s</em>
+            object header). The name of the whole HDF5 file will substitute the <em>%s</em>
             in the string. 
           </P>
           </td> 
+	</tr>
+      </table>
+    </div>
+
+    <BR>
+    <div align=center>
+      <table class=format>
+	<caption>
+	  Family Driver Information
+	</caption>
+
+	<tr>
+	  <th width="25%">byte</th>
+	  <th width="25%">byte</th>
+	  <th width="25%">byte</th>
+	  <th width="25%">byte</th>
+	</tr>
+
+	<tr>
+	  <td colspan=8><br>Size of member file<br><br></td>
+	</tr>
+
+      </table>
+    </div>
+
+    <br>
+    <div align=center>
+      <table class=desc>
+	<tr>
+	  <th width="30%">Field Name</th>
+	  <th>Description</th>
+	</tr>
+
+	<tr>
+	  <td>Size of member file</td>
+	  <td><P>This field is the size of the member file in the family of files.</P></td>
 	</tr>
       </table>
     </div>
@@ -13220,16 +13274,17 @@ TABLE.list TD { border:none; }
 
 	<tr>
 	  <td>Version</td>
-	  <td colspan=3>Driver Name (bytes 1-3)</td>
+          <td colspan=3 bgcolor=#DDDDDD><em>This space inserted only to align table nicely</em></td>
 	</tr>
 	<tr>
-	  <td colspan=4>Driver Name (bytes 4-7)</td>
+	  <td colspan=4><br>Driver Identification</td>
 	</tr>
+
 	<tr>
-	  <td>Driver Name (byte 8)</td>
 	  <td colspan=2>Driver Information Size</td>
-          <td bgcolor=#DDDDDD><em>This space inserted only to align table nicely</em></td>
+          <td colspan=2 bgcolor=#DDDDDD><em>This space inserted only to align table nicely</em></td>
 	</tr>
+
 	<tr>
 	  <td colspan=4><br><br>Driver Information <em>(variable size)</em><br><br><br></td>
 	</tr>
@@ -13253,8 +13308,8 @@ TABLE.list TD { border:none; }
 	</tr>
 
 	<tr>
-	<td>Driver Name</td>
-	  <td><P>This is an eight-byte ASCII string with null termination which
+	<td>Driver Identification</td>
+	  <td><P>This is an eight-byte ASCII string without null termination which
                 identifies the driver.
 	      </P>
 	  </td>
@@ -13262,18 +13317,14 @@ TABLE.list TD { border:none; }
 
 	<tr>
 	  <td>Driver Information Size</td>
-	  <td><P>The size in bytes of the Driver Information part of this
+	  <td><P>The size in bytes of the <em>Driver Information</em> field of this
                 message.</P>
 	  </td>
 	</tr>
 
 	<tr>
 	  <td>Driver Information</td>
-	  <td><P>Driver information is stored in a format defined by the file
-                driver and encoded/decoded by the driver callbacks invoked from
-                the <em>H5FD_sb_encode</em> and <em>H5FD_sb_decode</em>
-                functions.
-	      </P>
+	  <td><P>Driver information is stored in a format defined by the file driver.</P>
 	  </td>
 	</tr>
       </table>
