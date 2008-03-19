@@ -971,58 +971,21 @@ END SUBROUTINE h5lcreate_soft_f
         which is described below and defined in <code>H5Lpublic.h</code>.
         This structure is returned in the buffer <code>link_buff</code>.
         <pre>
-                  typedef struct H5L_info_t {
-                      H5T_cset_t cset;
-                      int64_t create_order; 
-                      hbool_t create_order_valid; 
-                      H5L_type_t link_type;
-                      union {
-                          haddr_t address;
-                          size_t link_len;
-                      } u;
-                  } H5Linfo_t
+    typedef struct {
+        H5L_type_t     type;
+        hbool_t        corder_valid;
+        int64_t        corder;
+        H5T_cset_t     cset;
+        union {
+            haddr_t    address;
+            size_t     val_size;
+        } u;
+    } H5L_info_t;
         </pre>
 
         <p>
         In the above struct,
-        <code>cset</code> specifies the character set in which the link name
-        is encoded.  Valid values include the following:
-        <table border=0>
-          <tr><td>
-            &nbsp;&nbsp;&nbsp;&nbsp;
-            </td><td>
-            <code>H5T_CSET_ASCII</code>
-            </td><td>
-            US ASCII
-          </td></tr><tr><td>
-            &nbsp;&nbsp;&nbsp;&nbsp;
-            </td><td>
-            <code>H5T_CSET_UTF8&nbsp;&nbsp;&nbsp;&nbsp;</code>
-            </td><td>
-            UTF-8 Unicode encoding
-          </td></tr>
-        </table>
-
-        <p>
-        <code>create_order</code> specifies the link&rsquo;s creation order 
-        position while  <code>create_order_valid</code> indicates whether 
-        the value in <code>create_order</code> is valid.
-        <p>
-        <code>create_order</code> starts at zero (<code>0</code>) 
-        and is incremented by one (<code>1</code>) as new links are created. 
-        But higher-numbered entries are not adjusted when a lower-numbered 
-        link is deleted; the deleted link&rsquo;s creation order position is 
-        simply left vacant.  
-        In such situations, the value of <code>create_order</code> for the 
-        last link created will be larger than the number of links remaining 
-        in the group.
-        <p>
-        If <code>create_order</code> is <code>TRUE</code>,
-        the value in <code>create_order</code> is known to be valid;
-        if <code>create_order</code> is <code>FALSE</code>,
-        the value in <code>create_order</code> is presumed to be invalid;
-        <p>
-        <code>link_type</code> specifies the link class.  
+        <code>type</code> specifies the link class.  
         Valid values include the following:
         <table border=0>
           <tr><td>
@@ -1053,6 +1016,44 @@ END SUBROUTINE h5lcreate_soft_f
         </table>
         There will be additional valid values if user-defined links 
         have been registered.
+
+        <p>
+        <code>corder</code> specifies the link&rsquo;s creation order 
+        position while  <code>corder_valid</code> indicates whether 
+        the value in <code>corder</code> is valid.
+        <p>
+        If <code>corder_valid</code> is <code>TRUE</code>,
+        the value in <code>corder</code> is known to be valid;
+        if <code>corder_valid</code> is <code>FALSE</code>,
+        the value in <code>corder</code> is presumed to be invalid;
+        <p>
+        <code>corder</code> starts at zero (<code>0</code>) 
+        and is incremented by one (<code>1</code>) as new links are created. 
+        But higher-numbered entries are not adjusted when a lower-numbered 
+        link is deleted; the deleted link&rsquo;s creation order position is 
+        simply left vacant.  
+        In such situations, the value of <code>corder</code> for the 
+        last link created will be larger than the number of links remaining 
+        in the group.
+
+        <p>
+        <code>cset</code> specifies the character set in which the link name
+        is encoded.  Valid values include the following:
+        <table border=0>
+          <tr><td>
+            &nbsp;&nbsp;&nbsp;&nbsp;
+            </td><td>
+            <code>H5T_CSET_ASCII</code>
+            </td><td>
+            US ASCII
+          </td></tr><tr><td>
+            &nbsp;&nbsp;&nbsp;&nbsp;
+            </td><td>
+            <code>H5T_CSET_UTF8&nbsp;&nbsp;&nbsp;&nbsp;</code>
+            </td><td>
+            UTF-8 Unicode encoding
+          </td></tr>
+        </table>
         <p>
         <code>address</code> and <code>link_len</code> are returned
         for hard and symbolic links, respectively. 
@@ -1062,7 +1063,7 @@ END SUBROUTINE h5lcreate_soft_f
         If the link is a hard link, <code>address</code> specifies 
         the file address that the link points to.
         <p>
-        If the link is a symbolic link, <code>link_len</code> will be 
+        If the link is a symbolic link, <code>val_size</code> will be 
         the length of the link value, e.g., the length of the name of 
         the pointed-to object with a null terminator.
         <p>
@@ -3256,7 +3257,7 @@ Describes HDF5 Release 1.8.0, February 2008.
 
 <!-- #EndLibraryItem --><SCRIPT LANGUAGE="JAVASCRIPT">
 <!--
-document.writeln("Last modified: 11 December 2007");
+document.writeln("Last modified: 19 March 2008");
 -->
 </SCRIPT>
 
