@@ -386,15 +386,15 @@ as the corresponding C function.
       external object, which is an object in a different HDF5 file
       from the location of the link.  
       <p>
-      <code>file_name</code> identifies the file containing the 
+      <code>file_name</code> identifies the target file containing the 
       target object;
       <code>object_name</code> specifies the path to the target object
       within that file.
       <code>object_name</code> must start at the target file&rsquo;s 
-      the root group but is not interpreted until lookup time.                  
+      root group but is not interpreted until lookup time.                  
       <p>
       <code>link_loc_id</code> and <code>link_name</code> specify the 
-      location and name, respectively, of the new external link.
+      location and name, respectively, of the new link.
       <code>link_name</code> is interpreted relative to 
       <code>link_loc_id</code> 
       <p>
@@ -405,17 +405,76 @@ as the corresponding C function.
       <p> 
       An external link behaves similarly to a soft link, and like
       a soft link in an HDF5 file, it may <i>dangle</i>: the target 
-      object need not exist at the time that the link is created.
-      Both are also known as symbolic links as they use a name to point 
-      to an object; hard links employ an object&rsquo;s address in the file.
+      file and object need not exist at the time that the external link is created.
       </p>
+      <p>When the external link <code>link_name</code> is accessed,
+      the library will search for the target file <code>file_name</code> as
+      described below:
+      <ul>
+      <LI>If <code>file_name</code> is a relative pathname, the following steps are performed:
+	<ul>
+	<LI>The library will get the prefix(es) set in the environment variable HDF5_EXT_PREFIX and
+        will try prepending each prefix to <code>file_name</code> to form a new <code>file_name</code>.
+	<LI>If the new <code>file_name</code> does not exist or HDF5_EXT_PREFIX is not set, 
+	the library will get the prefix set via <a href="RM_H5P.html#Property-SetELinkPrefix">
+        <code>H5Pset_elink_prefix</code></a> and prepend it
+	to <code>file_name</code>
+	to form a new <code>file_name</code>.
+	<LI>If the new <code>file_name</code> does not exist or no prefix is being set 
+	by <a href="RM_H5P.html#Property-SetELinkPrefix">
+        <code>H5Pset_elink_prefix</code></a>,
+	then the path of the file for <code>link_loc_id</code> is obtained.
+	This path can be the absolute path or the current working directory+relative path
+	of that file when it is created/opened.
+	The library will prepend this path to <code>file_name</code> to form a new <code>file_name</code>.
+	<LI>If the new <code>file_name</code> does not exist, then the library will look for
+	<code>file_name</code> and will return failure/success accordingly.
+	</ul>
+      <P>
+      <LI>If <code>file_name</code> is an absolute pathname, the library will try to find
+      <code>file_name</code>.
+      If <code>file_name</code> does not exist, 
+      the <code>file_name</code> is stripped of the directory paths to form a
+      new <code>file_name</code>.   See examples below on how <code>file_name</code> is stripped
+      to form a new <code>file_name</code>.
+      The search for the new <code>file_name</code> then follows the 
+      same steps as described above for a relative pathname.
+      </ul>
+      <P>
+      Note that <code>file_name</code> is considered to be an absolute pathname when the following condition is true:
+      <ul>
+      <LI>
+      For Unix, the first character of <code>file_name</code> is a '/' , e.g. "/tmp/A.h5".  
+      <P>
+      If <code>file_name</code> does not exist, 
+      the new <code>file_name</code> after stripping <code>file_name</code> will be "A.h5".
+      <LI>
+      For Windows, there are 3 cases:
+	<ol>
+	<LI>
+	<code>file_name</code> is an absolute drive with absolute pathname,  e.g. "C:\tmp\A.h5".
+	<P>
+        If <code>file_name</code> does not exist, 
+	the new <code>file_name</code> after stripping <code>file_name</code> will be "A.h5".
+	<LI>
+	<code>file_name</code> is an absolute pathname without specifying drive name,  e.g. "\tmp\A.h5".
+	<P>
+        If <code>file_name</code> does not exist, 
+        the new <code>file_name</code> after stripping <code>file_name</code> will be "A.h5".
+	<LI>
+	<code>file_name</code> is an absolute drive with relative pathname, e.g. "C:tmp\A.h5".
+	<P>
+        If <code>file_name</code> does not exist, 
+        the new <code>file_name</code> after stripping <code>file_name</code> will be "tmp\A.h5".
+	<LI>
+	</ol>
+      </ul>
+      <P>	
   <dt><strong>Parameters:</strong>
     <dd><table>
           <tr>
             <td valign="top"><em>const char *</em> <code>file_name</code></td>
-            <td valign="top">IN: Name of the file containing the target object. 
-                Neither the file nor the target object is required to exist.
-                May be the file the link is being created in.</td></tr>
+            <td valign="top">IN: Name of the target file containing the target object.</td></tr>
           <tr>
             <td valign="top"><em>const&nbsp;char&nbsp;*</em><code>object_name&nbsp;&nbsp;&nbsp;&nbsp;</code></td>
             <td valign="top">IN: Path within the target file to the target 
@@ -616,32 +675,16 @@ END SUBROUTINE h5lcreate_hard_f
       location and name, respectively, of the new soft link.
       <code>link_name</code> is interpreted relative to 
       <code>link_loc_id</code> 
+      <p> 
+      <code>lcpl_id</code> and <code>lapl_id</code> are the
+      link creation and access property lists associated with the 
+      new link.
       <p>
-      For example, the following statement specifies that
-      the target path is <code>./foo</code>,  
-      the location of the new link is <code>./x/y/bar</code>, and
-      the name of the new link is <code>new_link</code>: 
-          <p>
-          <code>
-          &nbsp;&nbsp;&nbsp;&nbsp;
-          status = H5Lcreate_soft(./foo, ./x/y/bar/, new_link, 
-          <br>
-          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-          H5P_DEFAULT, H5P_DEFAULT)
-          </code>
-          <p>
-      A subsequent request for <code>./x/y/bar/new_link</code> 
-      would look up the object <code>./x/y/bar/foo</code>.   
-      <p>
-      <code>target_path</code> specifies the path to the target object, 
-      i.e., the object that the new soft link points to.
-      <code>target_path</code> can be anything and is interpreted at 
-      lookup time.  This path may be absolute in the file or relative 
-      to <code>link_loc_id</code>.  
       For instance, if <code>target_path</code> is <code>./foo</code>,  
       <code>link_loc_id</code> specifies <code>./x/y/bar</code>, 
-      and a request is made for <code>./x/y/bar/link_name</code>, 
-      then the actual object looked up is <code>./x/y/bar/foo</code>.   
+      and the name of the new link is <code>new_link</code>, then
+      a subsequent request for <code>new_link</code> will look up the object
+      <code>./x/y/bar/foo</code>.   
       <p> 
       <code>H5Lcreate_soft</code> is for use only if the target object 
       is in the current file.  
@@ -650,10 +693,6 @@ END SUBROUTINE h5lcreate_hard_f
       <a href="#Link-External"><code>H5Lcreate_external</code></a>
       to create an external link.
       <p>
-      <code>lcpl_id</code> and <code>lapl_id</code> are the
-      link creation and access property lists associated with the 
-      new link.
-      <p> 
       Soft links and external links are also known as symbolic links
       as they use a name to point to an object; hard links employ an 
       object&rsquo;s address in the file.
