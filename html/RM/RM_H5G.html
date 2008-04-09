@@ -213,54 +213,54 @@ In the following lists, italic type indicates a configurable macro.
 In general, each FORTRAN90 subroutine performs exactly the same task 
 as the corresponding C function.  
 <br>
-
-<table border=0>
-<tr><td valign=top>
-<ul>
-    <li><a href="#Group-Create">h5gcreate</a>
-    <li><a href="#Group-Create1">h5gcreate1_f</a>
+<table border="0">
+  <tr>
+    <td valign="top">
+	<ul>
+      <li><a href="#Group-Close">h5gclose_f</a>
+      <li><a href="#Group-Create"><i>h5gcreate_f</i></a>
+      <li><a href="#Group-CreateAnon">h5gcreate_anon_f</a>
+      <li><a href="#Group-GetComment">h5gget_comment_f</a>
           &nbsp;*
-<!--<li><a href="#Group-Create2">h5gcreate2_f</a>              -->
-    <li><a href="#Group-Open1">h5gopen_f</a>
-<!--<li><a href="#Group-Open2">h5gopen2_f</a>                  -->
-    <li><a href="#Group-Close">h5gclose_f</a>
-<!--<li><a href="#Group-Copy">h5gcopy_f</a>                     -->
-    <li><a href="#Group-SetComment">h5gset_comment_f</a>
+      <li><a href="#Group-GetCreatePlist">h5gget_create_plist_f</a>
+      <li><a href="#Group-GetLinkval">h5gget_linkval_f</a>
           &nbsp;*
-    <li><a href="#Group-GetComment">h5gget_comment_f</a>
+    </ul>     
+    </td>
+    
+    <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
+    
+    <td valign="top">
+	<ul>
+      <li><a href="#Group-GetInfo">h5gget_info_f</a>
+      <li><a href="#Group-GetInfoByIdx">h5gget_info_by_idx_f</a>
+      <li><a href="#Group-GetInfoByName">h5gget_info_by_name_f</a>
+      <li><a href="#Group-Iterate">h5giterate_f</a>
           &nbsp;*
-</ul>
-</td><td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td><td valign=top>
-<ul>
-    <li><a href="#Group-Link">h5glink_f</a>
+      <li><a href="#Group-Link">h5glink_f</a>
           &nbsp;*
-    <li><a href="#Group-Link2">h5glink2_f</a>
+	</ul>
+    </td>
+    
+    <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
+    
+    <td valign="top">
+	<ul>
+      <li><a href="#Group-Link2">h5glink2_f</a>
           &nbsp;*
-    <li><a href="#Group-Unlink">h5gunlink_f</a>  
+      <li><a href="#Group-Move">h5gmove_f</a>
           &nbsp;*
-    <li><a href="#Group-Move">h5gmove_f</a> 
+      <li><a href="#Group-Move2">h5gmove2_f</a>
           &nbsp;*
-    <li><a href="#Group-Move2">h5gmove2_f</a> 
+      <li><a href="#Group-Open"><i>h5gopen_f</i></a>
+      <li><a href="#Group-SetComment">h5gset_comment_f</a>
           &nbsp;*
-</ul>
-</td><td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td><td valign=top>
-<ul>
-    <li><a href="#Group-Iterate">h5gget_obj_info_idx_f</a>
+      <li><a href="#Group-Unlink">h5gunlink_f</a>
           &nbsp;*
-    <li><a href="#Group-Iterate">h5gn_members_f</a>
-          &nbsp;*
-<!--<li><a href="#Group-GetObjinfo">h5gget_objinfo_f</a> 
-          &nbsp;*                                                     -->
-<!--<li><a href="#Group-GetNumObjs">h5gget_num_objs_f</a>
-          &nbsp;*                                                     -->
-<!--<li><a href="#Group-GetObjNameByIdx">h5gget_objname_by_idx_f</a>
-          &nbsp;*                                                     -->
-<!--<li><a href="#Group-GetObjTypeByIdx">h5gget_objtype_by_idx_f</a>
-          &nbsp;*                                                     -->
-    <li><a href="#Group-GetLinkval">h5gget_linkval_f</a>
-          &nbsp;*
-</ul>
-</td></tr>
+	</ul>
+    </td>
+  </tr>
+</table>
 <tr><td align=right colspan=5>
     *&nbsp;<i>Use of these functions is deprecated in Release 1.8.0.</i>
 </td></tr>
@@ -593,20 +593,31 @@ END SUBROUTINE h5gclose_f
   <dt><strong>Fortran90 Interface:</strong>  h5gcreate_f
     <dd>
 	<pre>
-SUBROUTINE h5gcreate_f(loc_id, name, gr_id, hdferr, size_hint)
-
+SUBROUTINE h5gcreate_f(loc_id, name, grp_id, hdferr, &
+                        size_hint, lcpl_id, gcpl_id, gapl_id)
   IMPLICIT NONE
-  INTEGER(HID_T), INTENT(IN) :: loc_id   ! File or group identifier
-  CHARACTER(LEN=*), INTENT(IN) :: name   ! Name of the group to be created 
-  INTEGER(HID_T), INTENT(OUT) :: gr_id   ! Group identifier
-  INTEGER, INTENT(OUT) :: hdferr         ! Error code 
+  INTEGER(HID_T), INTENT(IN) :: loc_id   ! File or group identifier 
+  CHARACTER(LEN=*), INTENT(IN) :: name   ! Name of the group 
+  INTEGER(HID_T), INTENT(OUT) :: grp_id  ! Group identifier 
+  INTEGER, INTENT(OUT) :: hdferr         ! Error code  
                                          ! 0 on success and -1 on failure
-  INTEGER(SIZE_T), OPTIONAL, INTENT(IN) :: size_hint  
-                                         ! Number of bytes to store the names 
-                                         ! of objects in the group. 
-                                         ! Default value is 
-                                         ! OBJECT_NAMELEN_DEFAULT_F
-END SUBROUTINE h5gcreate_f 
+  INTEGER(SIZE_T), OPTIONAL, INTENT(IN) :: size_hint 
+                                         ! Parameter indicating the number of 
+                                         ! bytes to reserve for the names that 
+                                         ! will appear in the group. 
+                                         ! Note, set to OBJECT_NAMELEN_DEFAULT_F
+                                         ! if using any of the optional 
+                                         ! parameters lcpl_id, gcpl_id, 
+                                         ! and/or gapl_id when not
+                                         ! using keywords in specifying the 
+                                         ! optional parameters.
+  INTEGER(HID_T), OPTIONAL, INTENT(IN) :: lcpl_id  
+                                         ! Property list for link creation
+  INTEGER(HID_T), OPTIONAL, INTENT(IN) :: gcpl_id  
+                                         ! Property list for group creation
+  INTEGER(HID_T), OPTIONAL, INTENT(IN) :: gapl_id  
+                                         ! Property list for group access
+END SUBROUTINE h5gcreate_f
 	</pre>		
 		
   <p>
@@ -712,25 +723,7 @@ END SUBROUTINE h5gcreate_f
     <dd>Returns a valid group identifier for the open group if successful; 
         otherwise returns a negative value.
   <p>
-  <dt><strong>Fortran90 Interface:</strong> h5gcreate_f
-    <dd>
-	<pre>
-SUBROUTINE h5gcreate_f(loc_id, name, gr_id, hdferr, size_hint)
-
-  IMPLICIT NONE
-  INTEGER(HID_T), INTENT(IN) :: loc_id   ! File or group identifier
-  CHARACTER(LEN=*), INTENT(IN) :: name   ! Name of the group to be created 
-  INTEGER(HID_T), INTENT(OUT) :: gr_id   ! Group identifier
-  INTEGER, INTENT(OUT) :: hdferr         ! Error code 
-                                         ! 0 on success and -1 on failure
-  INTEGER(SIZE_T), OPTIONAL, INTENT(IN) :: size_hint  
-                                         ! Number of bytes to store the names 
-                                         ! of objects in the group. 
-                                         ! Default value is 
-                                         ! OBJECT_NAMELEN_DEFAULT_F
-END SUBROUTINE h5gcreate_f 
-	</pre>		
-		
+  <dt><strong>Fortran90 Interface:</strong> See listing under <a href="RM_H5G.html#Group-Create"><code>H5Gcreate</code></a>.
 		<!--<dt><strong>Non-C API(s):</strong>
     	<dd>
         
@@ -824,13 +817,8 @@ END SUBROUTINE h5gcreate_f
     <dd>Returns a group identifier if successful;
         otherwise returns a negative value.
   <p>
-  <dt><strong>Fortran90 Interface:</strong><!--h5gfunc_f--> 
-    <dd>None.
-<!--
-    <pre>
-  
-    </pre>
--->
+  <dt><strong>Fortran90 Interface:</strong> See listing under <a href="RM_H5G.html#Group-Create"><code>H5Gcreate</code></a>.
+
   <p>
   <dt><strong>History:</strong>
     <dd><table width="90%">
@@ -919,15 +907,22 @@ END SUBROUTINE h5gcreate_f
   <dt><strong>Returns:</strong>
     <dd>Returns a new group identifier if successful;
         otherwise returns a negative value.
-  <dt><strong>Fortran90 Interface:</strong> <!--h5gclose_f-->
+  <dt><strong>Fortran90 Interface:</strong> h5gcreate_anon_f
     <dd>
-      None.
-<!--
 	<pre>
+SUBROUTINE h5gcreate_anon_f(loc_id, grp_id, hdferr, gcpl_id, gapl_id)
 
-	</pre>		
--->
-		
+  IMPLICIT NONE
+  INTEGER(HID_T), INTENT(IN) :: loc_id   ! File or group identifier
+  INTEGER(HID_T), INTENT(OUT) :: grp_id  ! Group identifier 
+  INTEGER, INTENT(OUT) :: hdferr         ! Error code
+                                         ! 0 on success and -1 on failure
+  INTEGER(HID_T), OPTIONAL, INTENT(IN) :: gcpl_id  
+                                         ! Property list for group creation
+  INTEGER(HID_T), OPTIONAL, INTENT(IN) :: gapl_id  
+                                         ! Property list for group access
+END SUBROUTINE h5gcreate_anon_f
+	</pre>				
  <!--<dt><strong>Non-C API(s):</strong>
     	<dd>
         
@@ -1081,8 +1076,17 @@ END SUBROUTINE h5gget_comment_f
     <dd>Returns an identifier for the group&rsquo;s creation property list
         if successful.
         Otherwise returns a negative value.
-<dt><strong>Fortran90 Interface:</strong>
-    <dd>None.
+<dt><strong>Fortran90 Interface:</strong> h5gget_create_plist_f
+    <dd>
+<pre>
+SUBROUTINE h5gget_create_plist_f(grp_id, gcpl_id, hdferr)
+  IMPLICIT NONE
+  INTEGER(HID_T), INTENT(IN)  :: grp_id  ! Group identifier
+  INTEGER(HID_T), INTENT(OUT) :: gcpl_id ! Property list for group creation
+  INTEGER, INTENT(OUT) :: hdferr         ! Error code 
+                                         ! 0 on success and -1 on failure
+END SUBROUTINE h5gget_create_plist_f
+</pre>
 <dt><strong>History:</strong>
     <ul><table width="90%">
         <tr>
@@ -1167,13 +1171,29 @@ END SUBROUTINE h5gget_comment_f
     <dd>Returns a non-negative value if successful;
         otherwise returns a negative value.
   <p>
-  <dt><strong>Fortran90 Interface:</strong> <!-- h5lget_info_by_idx_f -->
-    <dd>None.
-<!--
+  <dt><strong>Fortran90 Interface:</strong> h5gget_info_f 
+    <dd>
     <pre>
-  
+SUBROUTINE h5gget_info_f(group_id, storage_type, nlinks, max_corder, hdferr)
+
+  IMPLICIT NONE
+  INTEGER(HID_T), INTENT(IN) :: group_id 
+                            ! Group identifier
+  INTEGER, INTENT(OUT) :: storage_type 
+                            ! Type of storage for links in group:
+                            !    H5G_STORAGE_TYPE_COMPACT_F: Compact storage
+                            !    H5G_STORAGE_TYPE_DENSE_F: Indexed storage
+                            !    H5G_STORAGE_TYPE_SYMBOL_TABLE_F: Symbol tables
+  INTEGER, INTENT(OUT) :: nlinks 
+                            ! Number of links in group
+  INTEGER, INTENT(OUT) :: max_corder 
+                            ! Current maximum creation order value for group
+  INTEGER, INTENT(OUT) :: hdferr       
+                            ! Error code:
+                            ! 0 on success and -1 on failure
+END SUBROUTINE h5gget_info_f
     </pre>
--->
+
         <!--<dt><strong>Non-C API(s):</strong>
     	<dd>
         
@@ -1325,13 +1345,40 @@ END SUBROUTINE h5gget_comment_f
     <dd>Returns a non-negative value if successful;
         otherwise returns a negative value.
   <p>
-  <dt><strong>Fortran90 Interface:</strong> <!-- h5lget_info_by_idx_f -->
-    <dd>None.
-<!--
+  <dt><strong>Fortran90 Interface:</strong> h5gget_info_by_idx_f
+    <dd>
     <pre>
-  
+SUBROUTINE h5gget_info_by_idx_f(loc_id, group_name, index_type, order, n, &
+     storage_type, nlinks, max_corder, hdferr, lapl_id)
+
+  IMPLICIT NONE
+  INTEGER(HID_T), INTENT(IN) :: loc_id     
+                               ! File or group identifier
+  CHARACTER(LEN=*), INTENT(IN) :: group_name 
+                               ! Name of group containing group for which 
+                               ! information is to be retrieved
+  INTEGER(HID_T), INTENT(IN) :: index_type 
+                               ! Index type
+  INTEGER(HID_T), INTENT(IN) :: order      
+                               ! Order of the count in the index
+  INTEGER(HSIZE_T), INTENT(IN) :: n          
+                               ! Position in the index of the group for which 
+                               ! information is retrieved
+  INTEGER, INTENT(OUT) :: storage_type 
+                               ! Type of storage for links in group:
+                               ! H5G_STORAGE_TYPE_COMPACT_F: Compact storage
+                               ! H5G_STORAGE_TYPE_DENSE_F: Indexed storage
+                               ! H5G_STORAGE_TYPE_SYMBOL_TABLE_F: Symbol tables
+  INTEGER, INTENT(OUT) :: nlinks 
+                               ! Number of links in group
+  INTEGER, INTENT(OUT) :: max_corder 
+                               ! Current maximum creation order value for group
+  INTEGER, INTENT(OUT) :: hdferr       
+                               ! Error code:
+                               ! 0 on success and -1 on failure
+END SUBROUTINE h5gget_info_by_idx_f
     </pre>
--->
+
         <!--<dt><strong>Non-C API(s):</strong>
         <dd>
         
@@ -1440,13 +1487,35 @@ END SUBROUTINE h5gget_comment_f
     <dd>Returns a non-negative value if successful;
         otherwise returns a negative value.
   <p>
-  <dt><strong>Fortran90 Interface:</strong> <!-- h5lget_info_by_idx_f -->
-    <dd>None.
-<!--
+  <dt><strong>Fortran90 Interface:</strong> h5gget_info_by_name_f
+    <dd>
     <pre>
-  
+SUBROUTINE h5gget_info_by_name_f(loc_id, group_name, &
+     storage_type, nlinks, max_corder, hdferr, lapl_id)
+
+  IMPLICIT NONE
+  INTEGER(HID_T), INTENT(IN) :: loc_id 
+                             ! File or group identifier
+  CHARACTER(LEN=*), INTENT(IN) :: group_name 
+                             ! Name of group containing group for which 
+                             ! information is to be retrieved
+  INTEGER, INTENT(OUT) :: storage_type 
+                             ! Type of storage for links in group:
+                             !   H5G_STORAGE_TYPE_COMPACT_F: Compact storage
+                             !   H5G_STORAGE_TYPE_DENSE_F: Indexed storage
+                             !   H5G_STORAGE_TYPE_SYMBOL_TABLE_F: Symbol tables
+  INTEGER, INTENT(OUT) :: nlinks 
+                             ! Number of links in group
+  INTEGER, INTENT(OUT) :: max_corder 
+                             ! Current maximum creation order value for group
+  INTEGER, INTENT(OUT) :: hdferr       
+                             ! Error code:
+                             ! 0 on success and -1 on failure
+  INTEGER(HID_T), OPTIONAL, INTENT(IN) :: lapl_id 
+                             ! Link access property list
+END SUBROUTINE h5gget_info_by_name_f
     </pre>
--->
+
         <!--<dt><strong>Non-C API(s):</strong>
     	<dd>
         
@@ -2292,7 +2361,8 @@ SUBROUTINE h5glink_f(loc_id, link_type, current_name, new_name, hdferr)
                                             ! Current object name relative
                                             ! to loc_id 
   CHARACTER(LEN=*), INTENT(IN) :: new_name  ! New object name 
-  INTEGER, INTENT(OUT) :: hdferr            ! Error code
+  INTEGER, INTENT(OUT) :: hdferr            ! Error code 
+                                            ! 0 on success and -1 on failure
 
 END SUBROUTINE h5glink_f
 	</pre>		
@@ -2390,7 +2460,8 @@ SUBROUTINE h5glink2_f(cur_loc_id, cur_name, link_type, new_loc_id, new_name, hdf
                                            !     H5G_LINK_SOFT_F
   INTEGER(HID_T), INTENT(IN) :: new_loc_id ! New location identifier
   CHARACTER(LEN=*), INTENT(IN) :: new_name ! New object name 
-  INTEGER, INTENT(OUT) :: hdferr           ! Error code
+  INTEGER, INTENT(OUT) :: hdferr           ! Error code 
+                                           ! 0 on success and -1 on failure
 
 END SUBROUTINE h5glink2_f
 	</pre>		
@@ -2652,15 +2723,21 @@ END SUBROUTINE h5gmove2_f
 
 
   <p>
-  <dt><strong>Fortran90 Interface:</strong>  h5gopen_f
-    <dd><i><font color=red>
-      Holding ...
-      </font></i>
-<!--
+  <dt><strong>Fortran90 Interface:</strong> h5gopen_f
+    <dd>
     <pre>
-  
+SUBROUTINE h5gopen_f(loc_id, name, grp_id, hdferr, gapl_id)
+  IMPLICIT NONE
+  INTEGER(HID_T), INTENT(IN) :: loc_id   ! File or group identifier 
+  CHARACTER(LEN=*), INTENT(IN) :: name   ! Name of the group 
+  INTEGER(HID_T), INTENT(OUT) :: grp_id  ! File identifier 
+  INTEGER, INTENT(OUT) :: hdferr         ! Error code  
+                                         ! 0 on success and -1 on failure
+  INTEGER(HID_T), OPTIONAL, INTENT(IN) :: gapl_id  
+                                         ! Group access property list identifier
+END SUBROUTINE h5gopen_f
     </pre>
--->
+
   <p>
   <dt><strong>History:</strong>
     <dd><table width="90%">
@@ -2720,19 +2797,10 @@ END SUBROUTINE h5gmove2_f
   <dt><strong>Returns:</strong>
     <dd>Returns a valid group identifier if successful; 
         otherwise returns a negative value.
-  <dt><strong>Fortran90 Interface:</strong> h5gopen_f
-    <dd>
-	<pre>
-SUBROUTINE h5gopen_f(loc_id, name, gr_id, hdferr)
-  IMPLICIT NONE
-  INTEGER(HID_T), INTENT(IN) :: loc_id   ! File or group identifier
-  CHARACTER(LEN=*), INTENT(IN) :: name   ! Name of the group to open 
-  INTEGER(HID_T), INTENT(OUT) :: gr_id   ! Group identifier
-  INTEGER, INTENT(OUT) :: hdferr         ! Error code 
-                                         ! 0 on success and -1 on failure
-END SUBROUTINE h5gopen_f
-	</pre>		
-		
+
+  <p>
+  <dt><strong>Fortran90 Interface:</strong> See listing under <a href="RM_H5G.html#Group-Open"><code>H5Gopen</code></a>.
+  <p>	
 		<!--<dt><strong>Non-C API(s):</strong>
     	<dd>
         
@@ -2806,14 +2874,9 @@ END SUBROUTINE h5gopen_f
   <dt><strong>Returns:</strong>
     <dd>Returns a group identifier if successful;
         otherwise returns a negative value.
-  <dt><strong>Fortran90 Interface:</strong> <!--h5gclose_f-->
-    <dd>
-      None.
-<!--
-	<pre>
-
-	</pre>		
--->
+  <p>
+  <dt><strong>Fortran90 Interface:</strong> See listing under <a href="RM_H5G.html#Group-Open"><code>H5Gopen</code></a>.
+  <p>
 		
  <!--<dt><strong>Non-C API(s):</strong>
     	<dd>
