@@ -1,0 +1,266 @@
+<html>
+<head>
+<title>HDF5-HL Packet Table</title>
+</head>
+<body bgcolor="#FFFFFF">
+
+<hr>
+<table cellspacing=0 cellpadding=0 border=0 width=98%>
+<tr><td valign=top align=left>
+<a href="index.html"> HDF5&nbsp;High Level APIs</a>
+</td>
+<td valign=top align=right>
+</td></tr>
+</table>
+<hr>
+
+<h1 align=center>HDF5-HL Packet Table<br>
+Use Cases</h1>
+
+<h4>General Use Case:</h4>
+
+<ol>
+<li>Create/Open HDF5 File</li>
+<li>Create/Open packet table</li>
+ <ul>
+ <li>Create fixed-length packet table</li>
+ <li>Create variable-length packet table</li>
+ <li>Open packet table</li>
+ </ul>
+<li>Perform operations on packet table (as many as desired)</li>
+ <ul>
+ <li>Append Packets</li>
+ <li>Read Packets</li>
+  <ul>
+  <li>Read packets starting from index</li>
+   <ul>
+   <li>Set/reset index</li>
+   </ul>
+  <li>Read packets from any location</li>
+  </ul>
+ <li>Query packet table</li>
+  <ul>
+  <li>Query whether packet table identifier is valid</li>
+  <li>Query whether packet table is variable-length or not</li>
+  <li>Query number of packets in packet table</li>
+  </ul>
+ </ul>
+<li>Close packet table</li>
+ &nbsp; &nbsp; - If packet table is variable-length, first free any buffers used
+<li>Close HDF5 File</li>
+</ol>
+
+<br>
+<h5>Writing one kind of data to a fixed-length packet table</h5>
+
+<p>An experimenter wants to store data from a single kind of sensor in a
+Packet Table. First, she must create or load an HDF5 datatype representing
+a &quot;packet&quot; of her data. This can be any valid HDF5 datatype,
+though it is likely to be a compound datatype, since each packet corresponds
+to a horizontal entry in a table. If the experimenter has used HDF5 in the
+past, she may have already created a datatype representing her data and
+can simply load it from a file.  This step is covered in more detail in
+the HDF5 User's Guide.<br>
+The experimenter then creates the packet table. She must specify the
+location (file or group identifier), name, and datatype of the new packet
+table. Her function call might look like this:</p>
+
+<p><code>hid_t ptable_id= H5PTcreate_fl( file_id, &quot;/trial1&quot;, datatype_id, 500 );</code></p>
+
+<p>The last argument is the &quot;chunk size,&quot; which affects how
+HDF5 stores data in the file; the experimenter may fine-tune this number
+later. Chunked storage is discussed in more detail in the HDF5 User's
+Guide.<br>
+Now the experimenter starts the experiment itself. Each time a sensor
+takes a reading, the data is stored in a buffer, which the experimenter
+uses to create an entry in the packet table:</p>
+
+<p><code>ret_value= H5PTappend( ptable_id, 1, &amp;(dataBuffer) );</code></p>
+
+<p>The above statement executes inside a loop and is called to add a new
+packet every time a new sensor reading is placed in the data buffer.<br>
+When the experiment is over, the experimenter closes the packet table.</p>
+
+<p><code>ret_value= H5PTclose( ptable_id );</code></p>
+
+<p>She may also wish the close the HDF5 file if she is done accessing it.
+
+<br>
+<h5>Reading data from a fixed-length packet table</h5>
+
+<p>An analyst wants to read from a fixed-length packet table like the one
+created by the experimenter in the previous use case.<br>
+First, he must open the packet table. To do this, he needs to know its
+location and name.</p>
+
+<p><code>hid_t ptable_id= H5PTopen( file_id, &quot;/trial1&quot; );</code></p>
+
+<p>Once the packet table is open, the analyst wants to discover how many
+packets it contains.</p>
+
+<p><code>hsize_t num_packets;<br>
+ret_value= H5PTget_num_packets( ptable_id, &amp;num_packets );</code></p>
+
+<p>The analyst then begins to read records one-by-one from the beginning
+of the packet table. He sets the packet table's index to the first packet.</p>
+
+<p><code>ret_value= H5PTcreate_index( ptable_id );</code></p>
+
+<p>Then, he creates a for-loop to read each packet into a buffer and
+perform his analysis on it.</p>
+
+<p><code>for(int x=0; x&lt;num_packets; x++) {<br>
+&nbsp;&nbsp;&nbsp;ret_value= H5PTget_next( ptable_id, 1, &amp;(readBuffer) );<br>
+&nbsp;&nbsp;&nbsp;// Perform analysis on readBuffer<br>
+}</code></p>
+
+<p>The analyst may want to read several packets into a larger buffer, and
+start from an arbitrary index without losing his place in the table. To
+read twenty packets starting from packet number 400, he uses the following
+call:</p>
+
+<p><code>ret_value= H5PTread_packets( ptable_id, 400, 20, &amp;(bigReadBuffer) ); </code></p>
+
+<p>Finally, the analyst closes the packet table.</p>
+
+<p><code>ret_value= H5PTclose(ptable_id);</code></p>
+
+<p>He may also wish to close the HDF5 file, or he may go on to examine
+other objects in the same file.
+
+<br>
+<h5>Writing data from multiple sources to a variable-length packet table</h5>
+
+<p>An experimenter has data from a number of sources to store in a packet
+table. Since there are different kinds of data to be stored together, he
+cannot describe them with a single datatype. Instead, he opens an HDF5 file
+and creates a packet table to store variable-length packets:</p>
+
+<p><code>ptable_id= H5PTcreate_vl( file_id, &quot;\trial2&quot;, 1000 );</code></p>
+
+<p>The last value is the &quot;chunk size&quot; and affects how HDF5
+stores data in the file. For more information on chunked storage, see
+the HDF5 User's Guide.<br>
+The experimenter then begins his experiment. When a sensor reading is
+taken, the data is stored in a buffer. The experimenter allocates space
+for HDF5's <code>hvl_t</code> struct and populates it with a pointer to
+the data and the length of the data in bytes.  He then stores the
+<code>hvl_t</code> as a packet in his packet table:</p>
+
+<p><code>hvl_t data_hvl_t;<br>
+
+data_hvl_t.p = &amp;dataBuffer;<br>
+
+data_hvl_t.len = sizeof( dataBuffer );<br>
+
+ret_value= H5PTappend(ptable_id, 1, &amp;(data_hvl_t) );</code></p>
+
+<p>He repeats this procedure for each sensor reading that arrives,
+packaging each data buffer with its length and appending it to the
+packet table.<br>
+When the experiment is over, the experimenter closes the packet table.</p>
+
+<p></code>ret_value= H5PTclose(ptable_id);</p>
+
+<p>When he is done accessing it, he also closes the HDF5 file.
+
+<br>
+<h5>Reading data from a variable-length packet table</h5>
+
+<p>An analyst needs to read data from a variable-length packet table like
+the one created in the previous use case.<br>
+First, she opens the packet table. This step is identical to opening a
+fixed-length packet table.</p>
+
+<p><code>hid_t ptable_id= H5PTopen( file_id, &quot;/trial1&quot; );</code></p>
+
+<p>She finds the number of packets it contains:</p>
+
+<p><code>hsize_t num_packets;<br>
+
+ret_value= H5PTget_num_packets(ptable_id, &amp;num_packets);</code></p>
+
+<p>Now she wishes to read packets from the packet table. She begins by
+iterating through all packets in order. She sets the index of the packet
+table to the first packet:</p>
+
+<p><code>ret_value= H5PTcreate_index(ptable_id);</code></p>
+
+<p>Then she reads each packet. Since the packets are of variable-length,
+her buffer will actually be filled with a <code>hvl_t</code> struct
+containing a pointer to the data and its length.</p>
+
+<p><code>hvl_t readBuffer;<br>
+
+ret_value= H5PTget_next( ptable_id, 1, &amp;(readBuffer) );<br>
+
+size_t dataLength= readBuffer.len;<br>
+
+(void *) data= readBuffer.p;</code></p>
+
+<p>When she is finished accessing that packet, she must be careful to free
+the memory HDF5 allocated to hold it.</p>
+
+<p>
+<code>ret_value= H5PTfree_vlen_readbuff( ptable_id, 1, &amp;(readBuffer) );
+</code></p>
+
+<p>She can continue to read single packets and free them until has read
+all the packets in the packet table. She can also read a number of packets
+at once using an array of <code>hvl_t</code> structs.</p>
+
+<p><code>hvl_t bigReadBuffer[20];<br>
+
+ret_value= H5PTread_packets( ptable_id, 0, 20, bigReadBuffer );</code></p>
+
+<p>Again, she must be careful to free the memory HDF5 allocated during
+the read operation.</p>
+
+<p><code>ret_value= H5PTfree_vlen_readbuff( ptable_id, 1, &amp;(readBuffer) );
+</code></p>
+
+<p>She can then safely close the packet table and the HDF5 file.</p>
+
+<p><code>ret_value= H5PTclose(ptable_id);</code></p>
+
+<p>For more examples of the use of <code>hvl_t</code> structs, see the
+HDF5 User's Guide or the Packet Table examples.
+
+<br>
+<h5>Handling an unknown packet table identifier</h5>
+
+<p>A function receives an identifier from another location in the program
+and the programmer wishes to double-check that it is the packet table she
+is expecting.<br>
+First, she checks that it is in fact a packet table and that it has been
+opened.</p>
+
+<p><code>ret_value= H5PTis_valid( ptable_id );</code></p>
+
+<p>If the identifier does not refer to an open packet table, the return
+value will be negative.</p>
+
+<p>Next, she makes sure that it is the right kind of packet table:</p>
+
+<p><code>ret_value= H5PTis_varlen( ptable_id );</code></p>
+
+<p>Again, the return value will indicate whether the packet table is
+fixed-length or variable-length.<br>
+The programmer may need to remember to close the packet table, depending
+on the semantics of the application.
+
+<hr>
+
+<address>
+</address>
+<table width=100% border=0>
+<tr><td align=left valign=top>
+<a href="mailto:hdfhelp@ncsa.uiuc.edu">HDF Help Desk</a> 
+<br>
+Last modified: 24 April 2005
+
+</td></tr>
+</table>
+
+</body>
+</html>
