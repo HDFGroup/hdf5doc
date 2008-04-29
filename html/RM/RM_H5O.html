@@ -696,9 +696,9 @@ as the corresponding C function.
   <dt><strong>Description:</strong>
     <dd><code>H5Oget_info</code> specifies an object by its identifier,
     <code>object_id</code>, and retrieves the metadata describing that object
-    in the struct <code>object_info</code>
+    in <code>object_info</code>, an <em>H5O_info_t</em> struct.
     <p>
-    The struct <em>H5O_info_t</em> is defined (in <code>H5Opublic.h</code>)
+    An <em>H5O_info_t</em> struct is defined (in <code>H5Opublic.h</code>)
     as follows :
     <dir>
     <pre>
@@ -820,7 +820,7 @@ typedef struct H5O_info_t {
       the order by which the index is to be traversed, <code>order</code>;
       and an object&rsquo;s position <code>n</code> within that index  
       and retrieves the metadata describing that object
-      in the struct <code>object_info</code>
+      in the struct <code>object_info</code>.
       <p>
       <code>object_info</code>, in which the object information is returned,
       is a struct of type <em>H5O_info_t</em>.  This struct type is
@@ -917,56 +917,12 @@ typedef struct H5O_info_t {
     <dd><code>H5Oget_info_by_name</code> specifies an object&rsquo;s
     location and name, <code>loc_id</code> and <code>object_name</code>, 
     respectively, and retrieves the metadata describing that object
-    in the struct <code>object_info</code>.
+    in <code>object_info</code>, an <em>H5O_info_t</em> struct.
     <p>
-    The struct <em>H5O_info_t</em> is defined (in <code>H5Opublic.h</code>)
-    as follows:
-    <dir>
-    <pre>
-typedef struct H5O_info_t {
-    unsigned long       fileno;         /* File number that object is         */
-                                        /*    located in                      */
-    haddr_t             addr;           /* Object address in file             */
-    H5O_type_t          type;           /* Basic object type (group,          */
-                                        /*    dataset, etc.)                  */
-    unsigned            rc;             /* Reference count of object          */
-    time_t              atime;          /* Access time                        */
-    time_t              mtime;          /* Modification time                  */
-    time_t              ctime;          /* Change time                        */
-    time_t              btime;          /* Birth time                         */
-    hsize_t             num_attrs;      /* # of attributes attached to object */
-    struct {
-        unsigned version;               /* Version number of header format in */
-                                        /*    file                            */
-        unsigned nmesgs;                /* Number of object header messages   */
-        unsigned nchunks;               /* Number of object header chunks     */
-        unsigned flags;                 /* Object header status flags         */
-        struct {
-            hsize_t total;              /* Total space for storing object     */
-                                        /*    header in file                  */
-            hsize_t meta;               /* Space within header for object     */
-                                        /*    header metadata information     */
-            hsize_t mesg;               /* Space within header for actual     */
-                                        /*    message information             */
-            hsize_t free;               /* Free space within object header    */
-        } space;
-        struct {
-            uint64_t present;           /* Flags to indicate presence of      */
-                                        /*    message type in header          */
-            uint64_t shared;            /* Flags to indicate message type is  */
-                                        /*    shared in header                */
-        } mesg;     
-    } hdr;
-    /* Extra metadata storage for obj & attributes */
-    struct {
-        H5_ih_info_t   obj;             /* v1/v2 B-tree & local/fractal heap  */
-                                        /*    for groups, B-tree for chunked  */
-                                        /*    datasets                        */
-        H5_ih_info_t   attr;            /* v2 B-tree & heap for attributes    */
-    } meta_size;
-} H5O_info_t;
-    </pre>
-    </dir>
+    The struct <em>H5O_info_t</em> is defined in <code>H5Opublic.h</code>
+    and described in the
+    <a href="#Object-GetInfo"><code>H5Oget_info</code></a> function entry.
+    <p>
     The link access property list, <code>lapl_id</code>, 
     is not currently used; it should be passed in as <code>H5P_DEFAULT</code>.
   <p>
@@ -1752,7 +1708,7 @@ END SUBROUTINE h5glink_f
       see <a href="#Link-Iterate"><code>H5Literate</code></a>.
       <p>
       The group serving as the root of the iteration is specified by 
-      it&rsquo;s group identifier, <code>group_id</code>
+      it&rsquo;s group identifier, <code>group_id</code>.
       <p>
       Two parameters are used to establish the iteration:
       <code>index_type</code> and <code>order</code>.
@@ -1838,7 +1794,7 @@ END SUBROUTINE h5glink_f
           <em>herr_t</em> <code>(*H5O_iterate_t)(</code>
               <em>hid_t</em> <code>o_id,</code> 
               <em>const char *</em><code>name,</code> 
-              <em>const H5O_info_t *</em><code>info,</code> 
+              <em>const H5O_info_t *</em><code>object_info,</code> 
               <em>void *</em><code>op_data)</code>
       </dir>
       <p>
@@ -1858,13 +1814,13 @@ END SUBROUTINE h5glink_f
               being examined at current step of the iteration
               </td></tr>
           <tr valign=top><td><code>&nbsp;&nbsp;&nbsp;&nbsp;</code></td><td>
-              <code>info</code>
+              <code>object_info&nbsp;&nbsp;&nbsp;&nbsp;</code>
               </td><td>
               <em>H5O_info_t</em> struct containing information regarding 
               that object
               </td></tr>
           <tr valign=top><td><code>&nbsp;&nbsp;&nbsp;&nbsp;</code></td><td>
-              <code>op_data&nbsp;&nbsp;&nbsp;&nbsp;</code>
+              <code>op_data</code>
               </td><td>
               User-defined pointer to data required by the application 
               in processing the object;
@@ -1873,53 +1829,9 @@ END SUBROUTINE h5glink_f
               </td></tr>
       </table>
       <p>
-      The <em>H5O_info_t</em> struct is defined (in <code>H5Opublic.h</code>) 
-      as follows:
-<pre>
-    typedef struct {
-    unsigned long       fileno;         /* File number that object is       */
-                                        /* located in                       */
-    haddr_t             addr;           /* Object address in file           */
-    H5O_type_t          type;           /* Basic object type (group,        */
-                                        /* dataset, etc.)                   */
-    unsigned            rc;             /* Reference count of object        */
-    time_t              atime;          /* Access time                      */
-    time_t              mtime;          /* Modification time                */
-    time_t              ctime;          /* Change time                      */
-    time_t              btime;          /* Birth time                       */
-    hsize_t             num_attrs;      /* Number of attributes attached    */
-                                        /* to object                        */
-    struct {
-        unsigned version;               /* Version number of header format  */
-                                        /* in file                          */
-        unsigned nmesgs;                /* Number of object header messages */
-        unsigned nchunks;               /* Number of object header chunks   */
-        unsigned flags;                 /* Object header status flags       */
-        struct {
-            hsize_t total;              /* Total space for storing          */
-                                        /* object header in file            */
-            hsize_t meta;               /* Space within header for object   */
-                                        /* header metadata information      */
-            hsize_t mesg;               /* Space within header for actual   */
-                                        /* message information              */
-            hsize_t free;               /* Free space within object header  */
-        } space;
-        struct {
-            uint64_t present;           /* Flags to indicate presence of   */
-                                        /* message type in header          */
-            uint64_t shared;            /* Flags to indicate whether       */
-                                        /* message type is shared in header*/
-        } mesg;
-    } hdr;
-    /* Extra metadata storage for obj & attributes */
-    struct {
-        H5_ih_info_t   obj;             /* v1/v2 B-tree & local/fractal    */
-                                        /* heap for groups;                */
-                                        /* B-tree for chunked  datasets    */
-        H5_ih_info_t   attr;            /* v2 B-tree & heap for attributes */
-    } meta_size;
-    } H5O_info_t;
-</pre>
+      The <em>H5O_info_t</em> struct is defined in <code>H5Opublic.h</code> 
+      and described in the 
+      <a href="#Object-GetInfo"><code>H5Oget_info</code></a> function entry.
 
       <p>
       The <code>H5Ovisit</code> <code>op_data</code> parameter is a 
@@ -2147,7 +2059,7 @@ END SUBROUTINE h5glink_f
           <em>herr_t</em> <code>(*H5O_iterate_t)(</code>
               <em>hid_t</em> <code>o_id,</code> 
               <em>const char *</em><code>name,</code> 
-              <em>const H5O_info_t *</em><code>info,</code> 
+              <em>const H5O_info_t *</em><code>object_info,</code> 
               <em>void *</em><code>op_data)</code>
       </dir>
       <p>
@@ -2169,13 +2081,13 @@ END SUBROUTINE h5glink_f
               being examined at current step of the iteration
               </td></tr>
           <tr valign=top><td><code>&nbsp;&nbsp;&nbsp;&nbsp;</code></td><td>
-              <code>info</code>
+              <code>object_info&nbsp;&nbsp;&nbsp;&nbsp;</code>
               </td><td>
               <em>H5O_info_t</em> struct containing information regarding 
               that object
               </td></tr>
           <tr valign=top><td><code>&nbsp;&nbsp;&nbsp;&nbsp;</code></td><td>
-              <code>op_data&nbsp;&nbsp;&nbsp;&nbsp;</code>
+              <code>op_data</code>
               </td><td>
               User-defined pointer to data required by the application 
               in processing the object;
@@ -2184,53 +2096,9 @@ END SUBROUTINE h5glink_f
               </td></tr>
       </table>
       <p>
-      The <em>H5O_info_t</em> struct is defined (in <code>H5Opublic.h</code>) 
-      as follows:
-<pre>
-    typedef struct {
-    unsigned long       fileno;         /* File number that object is       */
-                                        /* located in                       */
-    haddr_t             addr;           /* Object address in file           */
-    H5O_type_t          type;           /* Basic object type (group,        */
-                                        /* dataset, etc.)                   */
-    unsigned            rc;             /* Reference count of object        */
-    time_t              atime;          /* Access time                      */
-    time_t              mtime;          /* Modification time                */
-    time_t              ctime;          /* Change time                      */
-    time_t              btime;          /* Birth time                       */
-    hsize_t             num_attrs;      /* Number of attributes attached    */
-                                        /* to object                        */
-    struct {
-        unsigned version;               /* Version number of header format  */
-                                        /* in file                          */
-        unsigned nmesgs;                /* Number of object header messages */
-        unsigned nchunks;               /* Number of object header chunks   */
-        unsigned flags;                 /* Object header status flags       */
-        struct {
-            hsize_t total;              /* Total space for storing          */
-                                        /* object header in file            */
-            hsize_t meta;               /* Space within header for object   */
-                                        /* header metadata information      */
-            hsize_t mesg;               /* Space within header for actual   */
-                                        /* message information              */
-            hsize_t free;               /* Free space within object header  */
-        } space;
-        struct {
-            uint64_t present;           /* Flags to indicate presence of   */
-                                        /* message type in header          */
-            uint64_t shared;            /* Flags to indicate whether       */
-                                        /* message type is shared in header*/
-        } mesg;
-    } hdr;
-    /* Extra metadata storage for obj & attributes */
-    struct {
-        H5_ih_info_t   obj;             /* v1/v2 B-tree & local/fractal    */
-                                        /* heap for groups;                */
-                                        /* B-tree for chunked  datasets    */
-        H5_ih_info_t   attr;            /* v2 B-tree & heap for attributes */
-    } meta_size;
-    } H5O_info_t;
-</pre>
+      The <em>H5O_info_t</em> struct is defined in <code>H5Opublic.h</code> 
+      and described in the 
+      <a href="#Object-GetInfo"><code>H5Oget_info</code></a> function entry.
 
       <p>
       The <code>H5Ovisit_by_name</code> <code>op_data</code> parameter is a 
@@ -2410,7 +2278,7 @@ Describes HDF5 Release 1.8.0, February 2008.
 
 <!-- #EndLibraryItem --><SCRIPT LANGUAGE="JAVASCRIPT">
 <!--
-document.writeln("Last modified: 4 April 2008");
+document.writeln("Last modified: 29 April 2008");
 -->
 </SCRIPT>
 
