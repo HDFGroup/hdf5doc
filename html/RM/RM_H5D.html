@@ -193,10 +193,10 @@ as the corresponding C function.
 <table border=0>
 <tr><td valign=top>
 <ul>
-    <li><a href="#Dataset-Create">h5dcreate_f</a>
-<!--<li><a href="#Dataset-CreateAnon">h5dcreate_anon_f</a>           -->
-    <li><a href="#Dataset-Open">h5dopen_f</a>
     <li><a href="#Dataset-Close">h5dclose_f</a>
+    <li><a href="#Dataset-Create">h5dcreate_f</a>
+    <li><a href="#Dataset-CreateAnon">h5dcreate_anon_f</a>
+    <li><a href="#Dataset-Open">h5dopen_f</a>
     <li><a href="#Dataset-GetSpace">h5dget_space_f</a>
     <li><a href="#Dataset-GetSpaceStatus">h5dget_space_status_f</a>
 </ul>
@@ -354,17 +354,28 @@ END SUBROUTINE h5dclose_f
       </dir>
       
   <p>
-  <dt><strong>Fortran90 Interface:</strong>  h5gcreate_f
-    <dd><i><font color=red>
-      Holding this space in case we need to say something about Fortran.
-      <br>
-      Will Fortran subroutine names do anything with the 1s and 2s 
-      of the C functions?
-      </font></i>
-<!--
-    <pre>
-    </pre>
--->
+  <dt><strong>Fortran90 Interface:</strong>  h5dcreate_f
+    <dd>
+<pre>
+SUBROUTINE h5dcreate_f(loc_id, name, type_id, space_id, dset_id, & 
+     hdferr, dcpl_id, lcpl_id, dapl_id)
+
+  IMPLICIT NONE
+  INTEGER(HID_T), INTENT(IN) :: loc_id   ! File or group identifier 
+  CHARACTER(LEN=*), INTENT(IN) :: name   ! Name of the dataset 
+  INTEGER(HID_T), INTENT(IN) :: type_id  ! Datatype identifier 
+  INTEGER(HID_T), INTENT(IN) :: space_id ! Dataspace identifier 
+  INTEGER(HID_T), INTENT(OUT) :: dset_id ! Dataset identifier 
+  INTEGER, INTENT(OUT) :: hdferr         ! Error code  
+                                         ! 0 on success and -1 on failure
+  INTEGER(HID_T), OPTIONAL, INTENT(IN) :: dcpl_id 
+                                         ! Dataset creation property list
+  INTEGER(HID_T), OPTIONAL, INTENT(IN) :: lcpl_id 
+                                         ! Link creation property list
+  INTEGER(HID_T), OPTIONAL, INTENT(IN) :: dapl_id 
+                                         ! Dataset access property list
+END SUBROUTINE h5dcreate_f
+</pre>
   <p>
   <dt><strong>History:</strong>
     <dd><table width="90%">
@@ -532,25 +543,8 @@ END SUBROUTINE h5dclose_f
 <dt><strong>Returns:</strong>
     <dd>Returns a dataset identifier if successful;
         otherwise returns a negative value.
-<dt><strong>Fortran90 Interface:</strong> h5dcreate_f
-    <dd>
-	<pre>
-SUBROUTINE h5dcreate_f(loc_id, name, type_id, space_id, dset_id, & 
-                       hdferr, creation_prp) 
-  IMPLICIT NONE 
-  INTEGER(HID_T), INTENT(IN) :: loc_id   ! File or group identifier
-  CHARACTER(LEN=*), INTENT(IN) :: name   ! Name of the dataset 
-  INTEGER(HID_T), INTENT(IN) :: type_id  ! Datatype identifier 
-  INTEGER(HID_T), INTENT(IN) :: space_id ! Dataspace identifier
-  INTEGER(HID_T), INTENT(OUT) :: dset_id ! Dataset identifier
-  INTEGER, INTENT(OUT) :: hdferr         ! Error code 
-                                         ! 0 on success and -1 on failure
-  INTEGER(HID_T), OPTIONAL, INTENT(IN) :: creation_prp
-                                         ! Dataset creation propertly 
-                                         ! list identifier , default
-                                         ! value is H5P_DEFAULT_F (6) 
-END SUBROUTINE h5dcreate_f
-	</pre>		
+<dt><strong>Fortran90 Interface:</strong> See listing under <a href="RM_H5D.html#Dataset-Create"><code>H5Dcreate</code></a>.
+    <dd>	
 		
 		<!--<dt><strong>Non-C API(s):</strong>
     	<dd>
@@ -675,14 +669,8 @@ END SUBROUTINE h5dcreate_f
     <dd>Returns a dataset identifier if successful;
         otherwise returns a negative value.
   <p>
-  <dt><strong>Fortran90 Interface:</strong> <!--h5dfunc_f -->
-    <dd>None.
-
-<!--
-    <pre>
-  
-    </pre>
--->
+  <dt><strong>Fortran90 Interface:</strong> See listing under <a href="RM_H5D.html#Dataset-Create"><code>H5Dcreate</code></a>.
+    <dd>
   <p>
   <dt><strong>History:</strong>
     <dd><table width="90%">
@@ -781,11 +769,26 @@ END SUBROUTINE h5dcreate_f
     <dd>Returns a dataset identifier if successful;
         otherwise returns a negative value.
 <dt><strong>Fortran90 Interface:</strong> <!-- h5dcreate_anon_f -->
-    <dd> None.
-<!--
-	<pre>
-	</pre>		
--->
+    <dd>
+
+	    <pre>
+SUBROUTINE h5dcreate_anon_f(loc_id, type_id, space_id, dset_id, hdferr, &
+                            dcpl_id, dapl_id)
+  IMPLICIT NONE
+  INTEGER(HID_T), INTENT(IN)  :: loc_id   ! File or group identifier. 
+  INTEGER(HID_T), INTENT(IN)  :: type_id  ! Datatype identifier. 
+  INTEGER(HID_T), INTENT(IN)  :: space_id ! Dataspace identifier.
+  INTEGER(HID_T), INTENT(OUT) :: dset_id  ! Dataset identifier. 
+  INTEGER, INTENT(OUT) :: hdferr          ! Error code.  
+                                          ! 0 on success and -1 on failure
+  INTEGER(HID_T), OPTIONAL, INTENT(IN) :: dcpl_id  
+                                          ! Dataset creation property list 
+                                          ! identifier.
+  INTEGER(HID_T), OPTIONAL, INTENT(IN) :: dapl_id  
+                                          ! Dataset access property list 
+                                          ! identifier.
+END SUBROUTINE h5dcreate_anon_f
+	  </pre>
 		
 		<!--<dt><strong>Non-C API(s):</strong>
     	<dd>
@@ -1017,7 +1020,7 @@ END SUBROUTINE h5dfill_f
 <dt><strong>Fortran90 Interface:</strong> h5dget_create_plist_f
     <dd>
 	<pre>
-SUBROUTINE h5dget_create_plist_f(dataset_id, creation_prp, hdferr) 
+SUBROUTINE h5dget_create_plist_f(dataset_id, creation_id, hdferr) 
   IMPLICIT NONE 
   INTEGER(HID_T), INTENT(IN) :: dataset_id    ! Dataset identifier
   INTEGER(HID_T), INTENT(OUT) :: creation_id  ! Dataset creation
@@ -1487,17 +1490,20 @@ SUBROUTINE
       </dir>
       
   <p>
-  <dt><strong>Fortran90 Interface:</strong>  h5gcreate_f
-    <dd><i><font color=red>
-      Holding this space in case we need to say something about Fortran.
-      <br>
-      Will Fortran subroutine names do anything with the 1s and 2s 
-      of the C functions?
-      </font></i>
-<!--
+  <dt><strong>Fortran90 Interface:</strong>  h5dopen_f
+    <dd>
     <pre>
+SUBROUTINE h5dopen_f(loc_id, name, dset_id, hdferr, dapl_id)
+  IMPLICIT NONE
+  INTEGER(HID_T), INTENT(IN) :: loc_id   ! File or group identifier 
+  CHARACTER(LEN=*), INTENT(IN) :: name   ! Name of the dataset 
+  INTEGER(HID_T), INTENT(OUT) :: dset_id ! Dataset identifier
+  INTEGER, INTENT(OUT) :: hdferr         ! Error code: 
+                                         ! 0 on success and -1 on failure
+  INTEGER(HID_T), OPTIONAL, INTENT(IN) :: dapl_id 
+                                         ! Dataset access property list
+END SUBROUTINE h5dopen_f
     </pre>
--->
   <p>
   <dt><strong>History:</strong>
     <dd><table width="90%">
@@ -1559,18 +1565,8 @@ SUBROUTINE
     <dd>Returns a dataset identifier if successful;
         otherwise returns a negative value.
 <p>
-<dt><strong>Fortran90 Interface:</strong> h5dopen_f
-    <dd>
-	<pre>
-SUBROUTINE h5dopen_f(loc_id, name, dset_id, hdferr) 
-  IMPLICIT NONE 
-  INTEGER(HID_T), INTENT(IN) :: loc_id   ! File or group identifier
-  CHARACTER(LEN=*), INTENT(IN) :: name   ! Name of the dataset 
-  INTEGER(HID_T), INTENT(OUT) :: dset_id ! Dataset identifier
-  INTEGER, INTENT(OUT) :: hdferr         ! Error code 
-                                         ! 0 on success and -1 on failure
-END SUBROUTINE h5dopen_f
-	</pre>		
+<dt><strong>Fortran90 Interface:</strong> See listing under <a href="RM_H5D.html#Dataset-Open"><code>H5Dopen</code></a>.
+    <dd>	
 		
 		<!--<dt><strong>Non-C API(s):</strong>
     	<dd>
@@ -1644,14 +1640,10 @@ END SUBROUTINE h5dopen_f
     <dd>Returns a dataset identifier if successful;
         otherwise returns a negative value.
   <p>
-  <dt><strong>Fortran90 Interface:</strong> <!--h5dopen_f -->
-    <dd>None.
-
-<!--
+  <dt><strong>Fortran90 Interface:</strong> See listing under <a href="RM_H5D.html#Dataset-Open"><code>H5Dopen</code></a>.
+    <dd>
     <pre>
-  
     </pre>
--->
   <p>
   <dt><strong>History:</strong>
     <dd><table width="90%">
@@ -2034,13 +2026,19 @@ END SUBROUTINE h5dread_vl_f
     <dd>Returns a non-negative value if successful;
         otherwise returns a negative value.
   <p>
-  <dt><strong>Fortran90 Interface:</strong><!--h5dfunc_f--> 
-    <dd>None.
-<!--
-    <pre>
-  
+  <dt><strong>Fortran90 Interface:</strong> H5Dset_extent
+    <dd>
+	<pre>
+SUBROUTINE h5dset_extent_f(dataset_id, size, hdferr)
+  IMPLICIT NONE 
+  INTEGER(HID_T), INTENT(IN) :: dataset_id   ! Dataset identifier
+  INTEGER(HSIZE_T), DIMENSION(*), INTENT(IN) :: size 
+                                             ! Array containing 
+                                             ! dimensions&rsquo; sizes   
+  INTEGER, INTENT(OUT) :: hdferr             ! Error code:
+                                             ! 0 on success and -1 on failure
+END SUBROUTINE h5dset_extent_f
     </pre>
--->
   <p>
   <dt><strong>History:</strong>
     <dd><table width="90%">

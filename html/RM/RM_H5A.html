@@ -217,37 +217,43 @@ as the corresponding C function.
 <table border=0>
 <tr><td valign=top>
 <ul>
-    <li><a href="#Annot-Create">h5acreate_f</a>
-<!--<li><a href="#Annot-Open">h5aopen_f</a>                      -->
-    <li><a href="#Annot-OpenName">h5aopen_name_f</a>
-          &nbsp;*
     <li><a href="#Annot-Close">h5aclose_f</a>
-<!--<li><a href="#Annot-Rename">h5arename_f</a>                  -->
-<!--<li><a href="#Annot-RenameByName">h5arename_by_name_f</a>    -->
+    <li><a href="#Annot-Create">h5acreate_f</a>
+    <li><a href="#Annot-CreateByName">h5acreate_by_name_f</a>
     <li><a href="#Annot-Delete">h5adelete_f</a>
-<!--<li><a href="#Annot-DeleteByName">h5adelete_by_name_f</a>    -->
+    <li><a href="#Annot-DeleteByName">h5adelete_by_name_f</a>
+    <li><a href="#Annot-DeleteByIdx">h5adelete_by_idx_f</a>
+    <li><a href="#Annot-Exists">H5Aexists_f</a>
+    <li><a href="#Annot-ExistsByName">H5Aexists_by_name_f</a>
+    <li><a href="#Annot-GetCreatePlist">h5aget_create_plist_f</a>
 </ul>
 </td><td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td><td valign=top>
 <ul>
-    <li><a href="#Annot-Write">h5awrite_f</a>
-    <li><a href="#Annot-Read">h5aread_f</a>
+    <li><a href="#Annot-GetInfo">h5aget_info_f</a>
+    <li><a href="#Annot-GetInfoByIdx">h5aget_info_by_idx_f</a>
+    <li><a href="#Annot-GetInfoByName">h5aget_info_by_name_f</a>
     <li><a href="#Annot-GetName">h5aget_name_f</a>
+    <li><a href="#Annot-GetNameByIdx">h5aget_name_by_idx_f</a>
+    <li><a href="#Annot-NumAttrs">h5aget_num_attrs_f</a>
+          &nbsp;*
     <li><a href="#Annot-GetSpace">h5aget_space_f</a>
+    <li><a href="#Annot-GetStorageSize">h5aget_storage_size_f</a>
+    <li><a href="#Annot-GetType">h5aget_type_f</a>
 </ul>
 </td><td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td><td valign=top>
 <ul>
 <!--<li><a href="#Annot-Iterate">h5aiterate_f</a>                -->
+    <li><a href="#Annot-Open">h5aopen_f</a>
+    <li><a href="#Annot-OpenByIdx">h5aopen_by_idx_f</a>
+    <li><a href="#Annot-OpenByName">h5aopen_by_name_f</a>
     <li><a href="#Annot-OpenIdx">h5aopen_idx_f</a>
           &nbsp;*
-<!--<li><a href="#Annot-OpenByIdx">h5aopen_by_idx_f</a>          -->
-<!--<li><a href="#Annot-GetNameByIdx">h5aget_name_by_idx_f</a>   -->
-<!--<li><a href="#Annot-GetInfo">h5aget_info_f</a>               -->
-<!--<li><a href="#Annot-GetInfoByName">h5aget_info_by_name_f</a> -->
-<!--<li><a href="#Annot-GetInfoByIdx">h5aget_info_by_idx_f</a>   -->
-    <li><a href="#Annot-GetType">h5aget_type_f</a>
-    <li><a href="#Annot-NumAttrs">h5aget_num_attrs_f</a>
+    <li><a href="#Annot-OpenName">h5aopen_name_f</a>
           &nbsp;*
-<!--<li><a href="#Annot-DeleteByIdx">h5adelete_by_idx_f</a>      -->
+    <li><a href="#Annot-Read">h5aread_f</a>
+    <li><a href="#Annot-Rename">h5arename_f</a>
+    <li><a href="#Annot-RenameByName">h5arename_by_name_f</a>
+    <li><a href="#Annot-Write">h5awrite_f</a>
 </ul>
 </td></tr>
 <tr><td align=right colspan=5>
@@ -447,19 +453,22 @@ END SUBROUTINE h5aclose_f
   <dt><strong>Fortran90 Interface:</strong>  h5acreate_f
     <dd>
     <pre>
-SUBROUTINE h5acreate_f(obj_id, name, type_id, space_id, attr_id, &amp; 
-                       hdferr, creation_prp) 
+SUBROUTINE h5acreate_f(loc_id, name, type_id, space_id, attr_id, hdferr, &
+                       acpl_id, aapl_id )
   IMPLICIT NONE
-  INTEGER(HID_T), INTENT(IN) :: obj_id    ! Object identifier 
+  INTEGER(HID_T), INTENT(IN) :: loc_id    ! Object identifier 
   CHARACTER(LEN=*), INTENT(IN) :: name    ! Attribute name
-  INTEGER(HID_T), INTENT(IN) :: type_id   ! Attribute datatype identifier 
+  INTEGER(HID_T), INTENT(IN) :: type_id   ! Attribute datatype identifier    
   INTEGER(HID_T), INTENT(IN) :: space_id  ! Attribute dataspace identifier
   INTEGER(HID_T), INTENT(OUT) :: attr_id  ! Attribute identifier 
   INTEGER, INTENT(OUT) :: hdferr          ! Error code:
                                           ! 0 on success and -1 on failure
-  INTEGER(HID_T), OPTIONAL, INTENT(IN) :: creation_prp
+  INTEGER(HID_T), OPTIONAL, INTENT(IN) :: acpl_id 
                                           ! Attribute creation property 
-                                          ! list identifier 
+                                          ! list identifier
+  INTEGER(HID_T), OPTIONAL, INTENT(IN) :: aapl_id 
+                                          ! Attribute access property 
+                                          ! list identifier
 END SUBROUTINE h5acreate_f
     </pre>
   <p>
@@ -568,23 +577,9 @@ END SUBROUTINE h5acreate_f
         -->
 		
 <p>
-<dt><strong>Fortran90 Interface:</strong> h5acreate_f
+<dt><strong>Fortran90 Interface:</strong> See listing under <a href="RM_H5A.html#Annot-Create"><code>H5Acreate</code></a>.
     <dd>
 	<pre>
-SUBROUTINE h5acreate_f(obj_id, name, type_id, space_id, attr_id, &amp; 
-                       hdferr, creation_prp) 
-  IMPLICIT NONE
-  INTEGER(HID_T), INTENT(IN) :: obj_id    ! Object identifier 
-  CHARACTER(LEN=*), INTENT(IN) :: name    ! Attribute name
-  INTEGER(HID_T), INTENT(IN) :: type_id   ! Attribute datatype identifier 
-  INTEGER(HID_T), INTENT(IN) :: space_id  ! Attribute dataspace identifier
-  INTEGER(HID_T), INTENT(OUT) :: attr_id  ! Attribute identifier 
-  INTEGER, INTENT(OUT) :: hdferr          ! Error code:
-                                          ! 0 on success and -1 on failure
-  INTEGER(HID_T), OPTIONAL, INTENT(IN) :: creation_prp
-                                          ! Attribute creation property 
-                                          ! list identifier 
-END SUBROUTINE h5acreate_f
 	</pre>
 <p>
 <dt><strong>History:</strong>
@@ -685,13 +680,10 @@ END SUBROUTINE h5acreate_f
     <dd>Returns an attribute identifier if successful;
         otherwise returns a negative value.
   <p>
-  <dt><strong>Fortran90 Interface:</strong> <!-- h5afunc_f -->
-    <dd>None.
-<!--
-    <pre>
-  
-    </pre>
--->
+  <dt><strong>Fortran90 Interface:</strong> See listing under <a href="RM_H5A.html#Annot-Create"><code>H5Acreate</code></a>.
+    <dd>
+	<pre>
+	</pre>
         <!--<dt><strong>Non-C API(s):</strong>
     	<dd>
         
@@ -823,13 +815,32 @@ END SUBROUTINE h5acreate_f
     <dd>Returns an attribute identifier if successful;
         otherwise returns a negative value.
   <p>
-  <dt><strong>Fortran90 Interface:</strong> <!-- h5afunc_f -->
-    <dd>None.
-<!--
-    <pre>
-  
-    </pre>
--->
+  <dt><strong>Fortran90 Interface:</strong> h5acreate_by_name_f
+    <dd>
+	<pre>
+SUBROUTINE h5acreate_by_name_f(loc_id, obj_name, attr_name, type_id, space_id, &
+     attr, hdferr, acpl_id, aapl_id, lapl_id)
+
+  IMPLICIT NONE
+  INTEGER(HID_T), INTENT(IN) :: loc_id      ! Object identifier
+  CHARACTER(LEN=*), INTENT(IN) :: obj_name  ! Name of object to which 
+                                            ! attribute is attached
+  CHARACTER(LEN=*), INTENT(IN) :: attr_name ! Attribute name
+  INTEGER(HID_T), INTENT(IN) :: type_id     ! Attribute datatype identifier
+  INTEGER(HID_T), INTENT(IN) :: space_id    ! Attribute dataspace identifier
+  INTEGER(HID_T), INTENT(OUT) :: attr       ! An attribute identifier
+  INTEGER, INTENT(OUT) :: hdferr            ! Error code:
+                                            ! 0 on success and -1 on failure
+  INTEGER(HID_T), OPTIONAL, INTENT(IN) :: acpl_id 
+                                            ! Attribute creation property list
+                                            ! identifier (Currently not used.)
+  INTEGER(HID_T), OPTIONAL, INTENT(IN) :: aapl_id 
+                                            ! Attribute access property list 
+                                            ! identifier (Currently not used.)
+  INTEGER(HID_T), OPTIONAL, INTENT(IN) :: lapl_id 
+                                            ! Link access property list
+END SUBROUTINE h5acreate_by_name_f
+	</pre>
         <!--<dt><strong>Non-C API(s):</strong>
     	<dd>
         
@@ -981,13 +992,25 @@ END SUBROUTINE h5adelete_f
     <dd>Returns a non-negative value if successful;
         otherwise returns a negative value.
   <p>
-  <dt><strong>Fortran90 Interface:</strong> <!-- h5afunc_f -->
-    <dd>None.
-<!--
-    <pre>
-  
-    </pre>
--->
+  <dt><strong>Fortran90 Interface:</strong> h5adelete_by_name_f
+    <dd>
+	<pre>
+SUBROUTINE h5adelete_by_name_f(loc_id, obj_name, attr_name, hdferr, lapl_id) 
+  IMPLICIT NONE
+  INTEGER(HID_T), INTENT(IN) :: loc_id   ! Identifer for object to which 
+                                         ! attribute is attached
+  CHARACTER(LEN=*), INTENT(IN) :: obj_name 
+                                         ! Name of object, relative to location, 
+                                         ! from which attribute is to be removed
+  CHARACTER(LEN=*), INTENT(IN) :: attr_name 
+                                         ! Name of attribute to delete
+  INTEGER, INTENT(OUT) :: hdferr         ! Error code:
+                                         ! 0 on success and -1 on failure
+  INTEGER(HID_T), OPTIONAL, INTENT(IN) :: lapl_id
+                                         ! Link access property list
+END SUBROUTINE h5adelete_by_name_f
+	</pre>
+
         <!--<dt><strong>Non-C API(s):</strong>
     	<dd>
         
@@ -1107,13 +1130,42 @@ END SUBROUTINE h5adelete_f
     <dd>Returns a non-negative value if successful;
         otherwise returns a negative value.
   <p>
-  <dt><strong>Fortran90 Interface:</strong> <!-- h5afunc_f -->
-    <dd>None.
-<!--
+  <dt><strong>Fortran90 Interface:</strong> h5adelete_by_idx_f
+    <dd>
     <pre>
-  
+SUBROUTINE h5adelete_by_idx_f(loc_id, obj_name, idx_type, order, n,  hdferr, &
+     lapl_id)
+  IMPLICIT NONE
+  INTEGER(HID_T),INTENT(IN) :: loc_id 
+                            ! Identifer for object to which 
+                            ! attribute is attached
+  CHARACTER(LEN=*),INTENT(IN) :: obj_name 
+                            ! Name of object, relative to location,
+                            ! from which attribute is to be removed
+  INTEGER, INTENT(IN) :: idx_type       
+                            ! Type of index; Possible values are:
+                            !  H5_INDEX_UNKNOWN_F     - Unknown index type
+                            !    H5_INDEX_NAME_F      - Index on names
+                            !    H5_INDEX_CRT_ORDER_F - Index on creation order
+                            !    H5_INDEX_N_F	      - Number of indices defined
+  INTEGER, INTENT(IN) :: order            
+                            ! Order in which to iterate over index:
+                            !    H5_ITER_UNKNOWN_F  - Unknown order
+                            !    H5_ITER_INC_F      - Increasing order
+                            !    H5_ITER_DEC_F      - Decreasing order
+                            !    H5_ITER_NATIVE_F   - No particular order, 
+                            !                         whatever is fastest
+                            !    H5_ITER_N_F	    - Number of iteration orders
+  INTEGER(HSIZE_T), INTENT(IN) :: n      
+                            ! Offset within index
+  INTEGER, INTENT(OUT) :: hdferr       
+                            ! Error code:
+                            ! 0 on success and -1 on failure
+  INTEGER(HID_T), OPTIONAL, INTENT(IN) :: lapl_id  
+                            ! Link access property list  
+END SUBROUTINE h5adelete_by_idx_f 
     </pre>
--->
+
         <!--<dt><strong>Non-C API(s):</strong>
     	<dd>
         
@@ -1177,13 +1229,18 @@ END SUBROUTINE h5adelete_f
         <br>
         Otherwise returns a negative value.
   <p>
-  <dt><strong>Fortran90 Interface:</strong> <!-- h5afunc_f -->
-    <dd>None.
-<!--
+  <dt><strong>Fortran90 Interface:</strong> h5aexists_f
+    <dd>
     <pre>
-  
+SUBROUTINE h5aexists_f(obj_id, attr_name, attr_exists, hdferr)
+  IMPLICIT NONE
+  INTEGER(HID_T), INTENT(IN) :: obj_id      ! Object identifier
+  CHARACTER(LEN=*), INTENT(IN) :: attr_name ! Attribute name
+  LOGICAL, INTENT(OUT) :: attr_exists       ! .TRUE. if exists, .FALSE. otherwise
+  INTEGER, INTENT(OUT) :: hdferr            ! Error code:
+                                            ! 0 on success and -1 on failure 
+END SUBROUTINE
     </pre>
--->
   <p>
   <dt><strong>History:</strong>
     <dd><table width="90%">
@@ -1274,13 +1331,26 @@ END SUBROUTINE h5adelete_f
         <br>
         Otherwise returns a negative value.
   <p>
-  <dt><strong>Fortran90 Interface:</strong> <!-- h5afunc_f -->
-    <dd>None.
-<!--
+  <dt><strong>Fortran90 Interface:</strong> h5aexists_by_name_f
+    <dd>
     <pre>
-  
+SUBROUTINE h5aexists_by_name_f(loc_id, obj_name, attr_name, attr_exists, hdferr,&
+     lapl_id)
+  IMPLICIT NONE
+  INTEGER(HID_T), INTENT(IN) :: loc_id  ! Location identifier
+  CHARACTER(LEN=*), INTENT(IN) :: obj_name 
+                                        ! Object name either relative to loc_id, 
+                                        ! absolute from the 
+                                        ! file&rsquo;s root group, or '.'
+  CHARACTER(LEN=*), INTENT(IN) :: attr_name 
+                                        ! Attribute name
+  LOGICAL, INTENT(OUT) :: attr_exists   ! .TRUE. if exists, .FALSE. otherwise
+  INTEGER, INTENT(OUT) :: hdferr        ! Error code:
+                                        ! 0 on success and -1 on failure
+  INTEGER(HID_T), OPTIONAL, INTENT(IN) :: lapl_id 
+                                        ! Link access property list identifier
+END SUBROUTINE h5aexists_by_name_f
     </pre>
--->
   <p>
   <dt><strong>History:</strong>
     <dd><table width="90%">
@@ -1326,8 +1396,21 @@ END SUBROUTINE h5adelete_f
     <dd>Returns an identifier for the attribute&rsquo;s creation property list
         if successful.
         Otherwise returns a negative value.
-<dt><strong>Fortran90 Interface:</strong>
-    <dd>None.
+<dt><strong>Fortran90 Interface:</strong> h5aget_create_plist_f
+	  <dd>
+	    <pre>
+SUBROUTINE h5aget_create_plist_f(attr_id, creation_prop_id, hdferr) 
+  IMPLICIT NONE
+  INTEGER(HID_T), INTENT(IN) :: attr_id  
+                            ! Identifier of the attribute 
+  INTEGER(HID_T), INTENT(OUT) :: creation_prop_id 
+                            ! Identifier for the attribute&rsquo;s creation property
+  INTEGER, INTENT(OUT) :: hdferr         
+                            ! Error code:
+                            ! 0 on success and -1 on failure
+END SUBROUTINE h5aget_create_plist_f
+	    </pre>
+
 <dt><strong>History:</strong>
     <ul><table width="90%">
         <tr>
@@ -1375,7 +1458,7 @@ typedef struct {
     hsize_t             data_size;      
 } H5A_info_t;   </pre>
       <p>
-      <code>corder_valid</code> indicates whether the the creation order data
+      <code>corder_valid</code> indicates whether the creation order data
       is valid for this attribute.  Note that if creation order is not being tracked,
       no creation order data will be valid.  Valid values are <code>TRUE</code>
       and <code>FALSE</code>.
@@ -1428,13 +1511,26 @@ typedef struct {
     <dd>Returns a non-negative value if successful;
         otherwise returns a negative value.
   <p>
-  <dt><strong>Fortran90 Interface:</strong> <!-- h5afunc_f -->
-    <dd>None.
-<!--
-    <pre>
-  
-    </pre>
--->
+  <dt><strong>Fortran90 Interface:</strong> h5aget_info_f
+    <dd>
+
+	<pre>
+SUBROUTINE h5aget_info_f(attr_id, f_corder_valid, corder, cset, data_size,hdferr)
+  IMPLICIT NONE
+  INTEGER(HID_T), INTENT(IN) :: attr_id  ! Attribute identifier
+  LOGICAL, INTENT(OUT) :: f_corder_valid ! Indicates whether the creation order 
+                                         ! data is valid for this attribute 
+  INTEGER, INTENT(OUT) :: corder         ! Is a positive integer containing the 
+                                         ! creation order of the attribute
+  INTEGER, INTENT(OUT) :: cset           ! Indicates the character set used for 
+                                         ! the ! attribute&rsquo;s name
+  INTEGER(HSIZE_T), INTENT(OUT) :: data_size 
+                                         ! Indicates the size, in the number
+                                         ! of characters, of the attribute
+  INTEGER, INTENT(OUT) :: hdferr         ! Error code:
+                                         ! 0 on success and -1 on failure
+END SUBROUTINE h5aget_info_f
+	</pre>
         <!--<dt><strong>Non-C API(s):</strong>
     	<dd>
         
@@ -1550,13 +1646,52 @@ typedef struct {
     <dd>Returns a non-negative value if successful;
         otherwise returns a negative value.
   <p>
-  <dt><strong>Fortran90 Interface:</strong> <!-- h5afunc_f -->
-    <dd>None.
-<!--
-    <pre>
-  
-    </pre>
--->
+  <dt><strong>Fortran90 Interface:</strong> h5aget_info_by_idx_f
+    <dd>
+	<pre>
+SUBROUTINE h5aget_info_by_idx_f(loc_id, obj_name, idx_type, order, n, &
+     f_corder_valid, corder, cset, data_size, hdferr, lapl_id)
+  IMPLICIT NONE
+  INTEGER(HID_T), INTENT(IN) :: loc_id   
+                             ! Object identifier
+  CHARACTER(LEN=*), INTENT(IN) :: obj_name  
+                             ! Name of object to which attribute is attached
+  INTEGER, INTENT(IN) :: idx_type        
+                             ! Type of index; Possible values are:
+                             !   H5_INDEX_UNKNOWN_F   - Unknown index type
+                             !   H5_INDEX_NAME_F      - Index on names
+                             !   H5_INDEX_CRT_ORDER_F - Index on creation order
+                             !   H5_INDEX_N_F	      - Number of indices defined
+  INTEGER, INTENT(IN) :: order              
+                             ! Order in which to iterate over index:
+                             !   H5_ITER_UNKNOWN_F  - Unknown order
+                             !   H5_ITER_INC_F      - Increasing order
+                             !   H5_ITER_DEC_F      - Decreasing order
+                             !   H5_ITER_NATIVE_F   - No particular order, 
+                             !                        whatever is fastest
+  INTEGER(HSIZE_T), INTENT(IN) :: n     
+                             ! Attribute&rsquo;s position in index
+
+  LOGICAL, INTENT(OUT) :: f_corder_valid 
+                             ! Indicates whether the creation order data is 
+                             ! valid for this attribute 
+  INTEGER, INTENT(OUT) :: corder 
+                             ! Is a positive integer containing the creation 
+                             !order of the attribute
+  INTEGER, INTENT(OUT) :: cset   
+                             ! Indicates the character set used for the 
+                             ! attribute&rsquo;s name
+  INTEGER(HSIZE_T), INTENT(OUT) :: data_size   
+                             ! Indicates the size, in the number of characters, 
+                             ! of the attribute
+  INTEGER, INTENT(OUT) :: hdferr       
+                             ! Error code:
+                             ! 0 on success and -1 on failure
+  INTEGER(HID_T), OPTIONAL, INTENT(IN) :: lapl_id  
+                             ! Link access property list
+END SUBROUTINE h5aget_info_by_idx_f  
+	</pre>
+
         <!--<dt><strong>Non-C API(s):</strong>
     	<dd>
         
@@ -1650,13 +1785,34 @@ typedef struct {
     <dd>Returns a non-negative value if successful;
         otherwise returns a negative value.
   <p>
-  <dt><strong>Fortran90 Interface:</strong> <!-- h5afunc_f -->
-    <dd>None.
-<!--
-    <pre>
-  
+  <dt><strong>Fortran90 Interface:</strong> h5aget_info_by_name_f
+    <dd>
+
+	<pre>
+SUBROUTINE h5aget_info_by_name_f(loc_id, obj_name, attr_name, &
+     f_corder_valid, corder, cset, data_size, hdferr, lapl_id)
+  IMPLICIT NONE
+  INTEGER(HID_T), INTENT(IN) :: loc_id       ! Object identifier
+  CHARACTER(LEN=*), INTENT(IN) :: obj_name   ! Name of object to which attribute 
+                                             ! is attached
+  CHARACTER(LEN=*), INTENT(IN) :: attr_name  ! Attribute name
+  LOGICAL, INTENT(OUT) :: f_corder_valid     ! Indicates whether the creation 
+                                             ! order data is valid for this 
+                                             ! attribute 
+  INTEGER, INTENT(OUT) :: corder             ! Is a positive integer containing 
+                                             ! the creation order of the 
+                                             ! attribute
+  INTEGER, INTENT(OUT) :: cset               ! Indicates the character set used 
+                                             ! for the attribute&rsquo;s name
+  INTEGER(HSIZE_T), INTENT(OUT) :: data_size ! Indicates the size, in the number
+                                             ! of characters, of the attribute
+  INTEGER, INTENT(OUT) :: hdferr             ! Error code:
+                                             ! 0 on success and -1 on failure
+  INTEGER(HID_T), OPTIONAL, INTENT(IN) :: lapl_id  
+                                             ! Link access property list
+END SUBROUTINE h5aget_info_by_name_f
     </pre>
--->
+
         <!--<dt><strong>Non-C API(s):</strong>
     	<dd>
         
@@ -1726,8 +1882,20 @@ typedef struct {
     <dd>Returns the length of the attribute's name, which may be
         longer than <code>buf_size</code>, if successful.
         Otherwise returns a negative value.
-<dt><strong>Fortran90 Interface:</strong>
-    <dd>None.
+<dt><strong>Fortran90 Interface:</strong> h5aget_name_f
+    <dd>
+<pre>
+SUBROUTINE h5aget_name_f(attr_id, size, buf, hdferr)
+  IMPLICIT NONE
+  INTEGER(HID_T), INTENT(IN) :: attr_id  ! Attribute identifier 
+  INTEGER(SIZE_T), INTENT(IN) :: size            ! Buffer size 
+  CHARACTER(LEN=*), INTENT(INOUT) :: buf   
+                                               ! Buffer to hold attribute name
+  INTEGER, INTENT(OUT) :: hdferr         ! Error code:
+                                         ! name length is successful,
+                                         ! -1 if fail
+END SUBROUTINE h5aget_name_f
+</pre>
 </dl>
 
 
@@ -1834,13 +2002,46 @@ typedef struct {
     <dd>Returns attribute name size, in bytes, if successful;
         otherwise returns a negative value.
   <p>
-  <dt><strong>Fortran90 Interface:</strong> <!-- h5afunc_f -->
-    <dd>None.
-<!--
-    <pre>
-  
-    </pre>
--->
+  <dt><strong>Fortran90 Interface:</strong> h5aget_name_by_idx_f
+    <dd>
+	<pre>
+SUBROUTINE h5aget_name_by_idx_f(loc_id, obj_name, idx_type, order, &
+       n, name, size, lapl_id, hdferr) 
+  IMPLICIT NONE
+  INTEGER(HID_T), INTENT(IN) :: loc_id ! Identifer for object to which 
+                                       ! attribute is attached
+  CHARACTER(LEN=*), INTENT(IN) :: obj_name ! Name of object, relative to 
+                                           ! location,from which attribute is to
+                                           ! be removed
+  INTEGER, INTENT(IN) :: idx_type
+                               ! Type of index; Possible values are:
+                               !  H5_INDEX_UNKNOWN_F   - Unknown index type
+                               !  H5_INDEX_NAME_F      - Index on names
+                               !  H5_INDEX_CRT_ORDER_F - Index on creation order
+                               !  H5_INDEX_N_F         - Number indices defined
+
+  INTEGER, INTENT(IN) :: order ! Order in which to iterate over index:
+                               !  H5_ITER_UNKNOWN_F - Unknown order
+                               !  H5_ITER_INC_F     - Increasing order
+                               !  H5_ITER_DEC_F     - Decreasing order
+                               !  H5_ITER_NATIVE_F  - No particular order, 
+                               !                      whatever is fastest
+                               !  H5_ITER_N_F 	    - Number of iteration orders
+
+  INTEGER(HSIZE_T), INTENT(IN) :: n      
+                               ! Attribute&rsquo;s position in index
+  CHARACTER(LEN=*), INTENT(OUT) :: name  
+                               ! Attribute name
+  INTEGER(SIZE_T), INTENT(INOUT) :: size 
+                               ! Buffer size
+  INTEGER(HID_T), INTENT(IN) :: lapl_id  
+                               ! Link access property list
+  INTEGER, INTENT(OUT) :: hdferr        
+                               ! Error code:
+                               !  Returns attribute name size,
+                               !  -1 if fail
+END SUBROUTINE h5aget_name_by_idx_f
+	</pre>
         <!--<dt><strong>Non-C API(s):</strong>
     	<dd>
         
@@ -1974,8 +2175,17 @@ END SUBROUTINE h5aget_space_f
 <dt><strong>Returns:</strong>
     <dd>Returns the amount of storage size allocated for the attribute; 
       otherwise returns 0 (zero).
-<dt><strong>Fortran90 Interface:</strong>
-    <dd>None.
+<dt><strong>Fortran90 Interface:</strong> h5aget_storage_size_f
+    <dd>
+      <pre>
+SUBROUTINE h5aget_storage_size_f(attr_id, size, hdferr)
+  IMPLICIT NONE
+  INTEGER(HID_T), INTENT(IN) :: attr_id  ! Attribute identifier  
+  INTEGER(HSIZE_T), INTENT(OUT) :: size  ! Attribute storage requirement
+  INTEGER, INTENT(OUT) :: hdferr         ! Error code:
+                                         !   0 on success and -1 on failure
+END SUBROUTINE h5aget_storage_size_f
+      </pre>
 </dl>
 
 <!-- NEW PAGE -->
@@ -2719,7 +2929,7 @@ SUBROUTINE
   <dt><strong>Name:</strong> <a name="Annot-Open">H5Aopen</a>
   <dt><strong>Signature:</strong>
     <dd><em>herr_t</em> <code>H5Aopen</code>(
-            <em>hid_t</em> <code>object_id</code>, 
+            <em>hid_t</em> <code>obj_id</code>, 
             <em>const char *</em><code>attr_name</code>, 
             <em>hid_t</em> <code>aapl_id</code> 
     )
@@ -2750,7 +2960,7 @@ SUBROUTINE
   <dt><strong>Parameters:</strong>
     <dd><table>
       <tr>
-        <td valign="top"><em>hid_t</em> <code>object_id</code>
+        <td valign="top"><em>hid_t</em> <code>obj_id</code>
         </td>
         <td valign="top">IN: Identifer for object to which attribute is attached 
         </td></tr>
@@ -2770,13 +2980,21 @@ SUBROUTINE
     <dd>Returns an attribute identifier if successful;
         otherwise returns a negative value.
   <p>
-  <dt><strong>Fortran90 Interface:</strong> <!-- h5afunc_f -->
-    <dd>None.
-<!--
-    <pre>
-  
-    </pre>
--->
+  <dt><strong>Fortran90 Interface:</strong> h5aopen_f
+    <dd>
+      <pre>
+SUBROUTINE h5aopen_f(obj_id, attr_name, attr_id, hdferr, aapl_id) 
+  IMPLICIT NONE
+  INTEGER(HID_T), INTENT(IN) :: obj_id      ! Object identifier 
+  CHARACTER(LEN=*), INTENT(IN) :: attr_name ! Attribute name
+  INTEGER(HID_T), INTENT(OUT) :: attr_id    ! Attribute identifier 
+  INTEGER, INTENT(OUT) :: hdferr            ! Error code:
+                                            ! 0 on success and -1 on failure 
+  INTEGER(HID_T), OPTIONAL, INTENT(IN) :: aapl_id     
+                                            ! Attribute access property list
+END SUBROUTINE h5aopen_f
+      </pre>
+
         <!--<dt><strong>Non-C API(s):</strong>
     	<dd>
         
@@ -2896,13 +3114,44 @@ SUBROUTINE
     <dd>Returns an attribute identifier if successful;
         otherwise returns a negative value.
   <p>
-  <dt><strong>Fortran90 Interface:</strong> <!-- h5afunc_f -->
-    <dd>None.
-<!--
-    <pre>
-  
-    </pre>
--->
+  <dt><strong>Fortran90 Interface:</strong> h5aopen_by_idx_f
+    <dd>
+      <pre>
+SUBROUTINE h5aopen_by_idx_f(loc_id, obj_name, idx_type, order, n, attr_id, &
+     hdferr, aapl_id, lapl_id)
+  IMPLICIT NONE
+  INTEGER(HID_T), INTENT(IN) :: loc_id      
+                              ! Object identifier
+  CHARACTER(LEN=*), INTENT(IN) :: obj_name  
+                              ! Name of object to which attribute is attached
+  INTEGER, INTENT(IN) :: idx_type      
+                              ! Type of index; Possible values are:
+                              !  H5_INDEX_UNKNOWN_F   - Unknown index type
+                              !  H5_INDEX_NAME_F      - Index on names
+                              !  H5_INDEX_CRT_ORDER_F - Index on creation order
+                              !  H5_INDEX_N_F	      - Number of indices defined
+  INTEGER, INTENT(IN) :: order              
+                              ! Order in which to iterate over index:
+                              !  H5_ITER_UNKNOWN_F  - Unknown order
+                              !  H5_ITER_INC_F      - Increasing order
+                              !  H5_ITER_DEC_F      - Decreasing order
+                              !  H5_ITER_NATIVE_F   - No particular order, 
+                              !                       whatever is fastest
+                 
+  INTEGER(HSIZE_T), INTENT(IN) :: n      
+                              ! Attribute&rsquo;s position in index
+  INTEGER(HID_T), INTENT(OUT) :: attr_id  
+                              ! Attribute identifier
+  INTEGER, INTENT(OUT) :: hdferr          
+                              ! Error code:
+                              ! 0 on success and -1 on failure
+  INTEGER(HID_T), OPTIONAL, INTENT(IN) :: aapl_id  
+                              ! Attribute access property list
+  INTEGER(HID_T), OPTIONAL, INTENT(IN) :: lapl_id  
+                              ! Link access property list
+END SUBROUTINE h5aopen_by_idx_f
+      </pre>
+
         <!--<dt><strong>Non-C API(s):</strong>
     	<dd>
         
@@ -3014,12 +3263,29 @@ SUBROUTINE
         otherwise returns a negative value.
   <p>
   <dt><strong>Fortran90 Interface:</strong> <!-- h5afunc_f -->
-    <dd>None.
-<!--
+    <dd>
     <pre>
-  
+SUBROUTINE h5aopen_by_name_f(loc_id, obj_name, attr_name, attr_id, hdferr, &
+      aapl_id, lapl_id)
+  IMPLICIT NONE
+  INTEGER(HID_T), INTENT(IN) :: loc_id     
+                                     ! Location identifier
+  CHARACTER(LEN=*), INTENT(IN) :: obj_name 
+                                     ! Object name either relative to loc_id, 
+                                     ! absolute from file&rsquo;s root group, or '.'
+  CHARACTER(LEN=*), INTENT(IN) :: attr_name 
+                                     ! Attribute name
+  INTEGER(HID_T), INTENT(OUT) :: attr_id 
+                                     ! Attribute identifier
+  INTEGER, INTENT(OUT) :: hdferr     ! Error code:
+                                     ! 0 on success and -1 on failure
+  INTEGER(HID_T), OPTIONAL, INTENT(IN) :: aapl_id 
+                                     ! Attribute access property list 
+                                     ! (Currently unused; set to H5P_DEFAULT_F)
+  INTEGER(HID_T), OPTIONAL, INTENT(IN) :: lapl_id 
+                                     ! Link access property list identifier
+END SUBROUTINE
     </pre>
--->
         <!--<dt><strong>Non-C API(s):</strong>
     	<dd>
         
@@ -3277,25 +3543,19 @@ END SUBROUTINE h5aread_f
     <dd>Returns a non-negative value if successful;
         otherwise returns a negative value.
       <p>
-<dt><strong>Fortran90 Interface:</strong>
-    <dd>None.
-      <p>
-<!--
-<dt><strong>History:</strong>
-    <dd><table width="90%">
-        <tr>
-          <td valign="top" align="left" width="10%">
-            <strong>Release</strong>&nbsp;&nbsp;&nbsp;&nbsp;</td>
-          <td valign="top" align="left">
-            <strong>C</strong></td></tr>
-        <tr>
-          <td valign="top">1.n.n</td>
-          <td valign="top">
-            Text
-            </td></tr>
-    </table>
--->
-</dl>
+<dt><strong>Fortran90 Interface:</strong> h5arename_f
+    <dd>
+      <pre>
+SUBROUTINE h5arename_f(loc_id, old_attr_name, new_attr_name, hdferr) 
+    IMPLICIT NONE
+    INTEGER(HID_T), INTENT(IN) :: loc_id          ! Object identifier
+    CHARACTER(LEN=*), INTENT(IN) :: old_attr_name ! Prior attribute name
+    CHARACTER(LEN=*), INTENT(IN) :: new_attr_name ! New attribute name
+    INTEGER, INTENT(OUT) :: hdferr                ! Error code:
+                                                  !  0 on success, -1 on failure
+END SUBROUTINE h5arename_f
+      </pre>
+  </dl>
 
 
 <!-- NEW PAGE -->
@@ -3361,13 +3621,28 @@ END SUBROUTINE h5aread_f
     <dd>Returns a non-negative value if successful;
         otherwise returns a negative value.
   <p>
-  <dt><strong>Fortran90 Interface:</strong> <!-- h5afunc_f -->
-    <dd>None.
-<!--
+  <dt><strong>Fortran90 Interface:</strong> h5arename_by_name_f
+    <dd>
+
     <pre>
-  
+SUBROUTINE h5arename_by_name_f(loc_id, obj_name, old_attr_name, new_attr_name, &
+     hdferr, lapl_id)
+  IMPLICIT NONE
+  INTEGER(HID_T), INTENT(IN) :: loc_id  ! Object identifier 
+  CHARACTER(LEN=*), INTENT(IN) :: obj_name 
+                                        ! Name of object, relative to location, 
+                                        ! whose attribute is to be renamed
+  CHARACTER(LEN=*), INTENT(IN) :: old_attr_name 
+                                        ! Prior attribute name
+  CHARACTER(LEN=*), INTENT(IN) :: new_attr_name 
+                                        ! New attribute name
+  INTEGER, INTENT(OUT) :: hdferr        ! Error code:
+                                        ! 0 on success and -1 on failure
+  INTEGER(HID_T), OPTIONAL, INTENT(IN) :: lapl_id 
+                                        ! Link access property list identifier
+END SUBROUTINE h5arename_by_name_f
     </pre>
--->
+
         <!--<dt><strong>Non-C API(s):</strong>
     	<dd>
         
