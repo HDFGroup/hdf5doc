@@ -164,9 +164,9 @@ as the corresponding C function.
 </ul>
 </td><td valign=top width=20%>
 <ul>
-<!--
+
     <li><a href="#Reference-GetName">h5rget_name_f</a>
--->
+
 </ul>
 </td></tr>
 </table>
@@ -252,7 +252,8 @@ SUBROUTINE h5rcreate_f(loc_id, name, ref, hdferr)
   CHARACTER(LEN=*), INTENT(IN) :: name     ! Name of the object at location 
                                            ! specified by loc_id identifier 
   TYPE(hobj_ref_t_f), INTENT(OUT) :: ref   ! Object reference 
-  INTEGER, INTENT(OUT) :: hdferr           ! Error code 
+  INTEGER, INTENT(OUT) :: hdferr           ! Error code  
+                                           ! 0 on success and -1 on failure
 
 END SUBROUTINE h5rcreate_f
 	</pre></dt>
@@ -269,6 +270,7 @@ SUBROUTINE h5rcreate_f(loc_id, name, space_id, ref, hdferr)
   INTEGER(HID_T), INTENT(IN) :: space_id      ! Dataset's dataspace identifier 
   TYPE(hdset_reg_ref_t_f), INTENT(OUT) :: ref ! Dataset region reference 
   INTEGER, INTENT(OUT) :: hdferr              ! Error code 
+                                              ! 0 on success and -1 on failure 
 
 END SUBROUTINE h5rcreate_f
 	</pre>		
@@ -338,6 +340,7 @@ SUBROUTINE h5rdereference_f(obj_id, ref, ref_obj_id, hdferr)
   INTEGER(HID_T), INTENT(OUT) :: ref_obj_id ! Identifier of 
                                             ! referenced object 
   INTEGER, INTENT(OUT) :: hdferr            ! Error code 
+                                            ! 0 on success and -1 on failure 
 
 END SUBROUTINE h5rdereference_f
 	</pre>
@@ -354,6 +357,7 @@ SUBROUTINE h5rdereference_f(obj_id, ref, ref_obj_id, hdferr)
   INTEGER(HID_T), INTENT(OUT) :: ref_obj_id  ! Identifier of 
                                              ! referenced object 
   INTEGER, INTENT(OUT) :: hdferr             ! Error code 
+                                             ! 0 on success and -1 on failure 
           
 END SUBROUTINE h5rdereference_f
 	</pre>		
@@ -589,7 +593,8 @@ SUBROUTINE h5rget_object_type_f(dset_id, ref, obj_type, hdferr)
                                           !     H5G_GROUP_F     1
                                           !     H5G_DATASET_F   2
                                           !     H5G_TYPE_F      3
-  INTEGER, INTENT(OUT) :: hdferr          ! Error code 
+  INTEGER, INTENT(OUT) :: hdferr          ! Error code  
+                                          ! 0 on success and -1 on failure
 
 END SUBROUTINE h5rget_object_type_f
 	</pre>		
@@ -730,6 +735,7 @@ SUBROUTINE h5rget_object_type_f(dset_id, ref, obj_type, hdferr)
                                           !     H5G_DATASET_F   2
                                           !     H5G_TYPE_F      3
   INTEGER, INTENT(OUT) :: hdferr          ! Error code 
+                                          ! 0 on success and -1 on failure 
 
 END SUBROUTINE h5rget_object_type_f
 -->
@@ -844,23 +850,57 @@ END SUBROUTINE h5rget_object_type_f
     <dd>Returns the length of the name if successful, returning <code>0</code> 
         (zero) if no name is associated with the identifier.
         Otherwise returns a negative value.
-<dt><strong>Fortran90 Interface:</strong> <!--h5iget_name_f-->
-    <dd>None.
-<!--
+<dt><strong>Fortran90 Interface:</strong> h5rget_name_object_f
+
+    <p><strong>To get name of an object reference</strong> 
+    <dd>
 	<pre>
-SUBROUTINE h5rget_name_f( )
+SUBROUTINE h5rget_name_object_f(loc_id,  ref, name, hdferr, size) 
 
+  IMPLICIT NONE
+  INTEGER(HID_T), INTENT(IN) :: loc_id   
+                        ! Identifier for the dataset containing the reference 
+                        ! or for the group that dataset is in.
+  TYPE(hobj_ref_t_f), INTENT(IN) :: ref  
+                        ! Object reference
+  INTEGER(SIZE_T), OPTIONAL, INTENT(OUT) :: size   
+                        ! The size of the name buffer,
+                        ! returning 0 (zero) if no name is associated with the 
+                        ! identifier
+  CHARACTER(LEN=*), INTENT(OUT) :: name  
+                        ! A name associated with the referenced object or 
+                        ! dataset region.
+  INTEGER, INTENT(OUT) :: hdferr         
+                        ! Error code 
+                        ! 0 on success and -1 on failure 
+  INTEGER(HADDR_T) :: ref_f              
+                        ! Local buffer to pass reference
+END SUBROUTINE h5rget_name_object_f
+	</pre></dt>
+<!-- NEW PAGE -->
+	<dt><strong>To get name of a region reference</strong>	
+	<dd>
+	<pre>
+  SUBROUTINE h5rget_name_region_f(loc_id, ref, name, hdferr, size) 
 
-END SUBROUTINE h5rget_name_f
-	</pre>		
--->
-		
+    IMPLICIT NONE
+    INTEGER(HID_T), INTENT(IN) :: loc_id   ! Identifier for the dataset containing the reference 
+                                           ! or for the group that dataset is in.
+    TYPE(hdset_reg_ref_t_f), INTENT(IN) :: ref  ! Object reference
+    INTEGER(SIZE_T), OPTIONAL, INTENT(OUT) :: size   ! The size of the name buffer,
+                                           ! returning 0 (zero) if no name is associated with the identifier
+    CHARACTER(LEN=*), INTENT(OUT) :: name  ! A name associated with the referenced object or dataset region.
+    INTEGER, INTENT(OUT) :: hdferr         ! Error code 
+                                           ! 0 on success and -1 on failure
+	</pre>
         <!--<dt><strong>Non-C API(s):</strong>
     	<dd>
         
         <img src="Graphics/Java.gif"> 
         <img src="Graphics/C++.gif">
         -->
+</dl>
+
 <dt><strong>History:</strong>
     <ul><table width="90%">
         <tr>
@@ -923,7 +963,8 @@ SUBROUTINE h5rget_region_f(dset_id, ref, space_id, hdferr)
   INTEGER(HID_T), INTENT(IN) :: dset_id       ! Dataset identifier 
   TYPE(hdset_reg_ref_t_f), INTENT(IN) :: ref  ! Dataset region reference 
   INTEGER(HID_T), INTENT(OUT) :: space_id     ! Space identifier 
-  INTEGER, INTENT(OUT) :: hdferr              ! Error code
+  INTEGER, INTENT(OUT) :: hdferr              ! Error code 
+                                              ! 0 on success and -1 on failure
  
 END SUBROUTINE h5rget_region_f
 	</pre>		
