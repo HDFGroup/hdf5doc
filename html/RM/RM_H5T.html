@@ -306,16 +306,18 @@ as the corresponding C function.
 <tr><td valign=top width=32%>
 <i>General Datatype Operations</i>
     <li><a href="#Datatype-Create">h5tcreate_f</a>
+    <li><a href="#Datatype-Decode">h5tdecode_f</a>
+    <li><a href="#Datatype-Encode">h5tencode_f</a>
     <li><a href="#Datatype-Open">h5topen_f</a>
 <!--<li><a href="#Datatype-Open2">h5topen2_f</a>                        -->
     <li><a href="#Datatype-Commit">h5tcommit_f</a>
-<!--<li><a href="#Datatype-Commit2">h5tcommit2_f</a>                    -->
-<!--<li><a href="#Datatype-CommitAnon">h5tcommit_anon_f</a>             -->
+    <li><a href="#Datatype-CommitAnon">h5tcommit_anon_f</a>
     <li><a href="#Datatype-Committed">h5tcommitted_f</a>
+    <li><a href="#Datatype-CompilerConv">H5tcompiler_conv_f</a>
     <li><a href="#Datatype-Copy">h5tcopy_f</a>
     <li><a href="#Datatype-Equal">h5tequal_f</a>
 <!--<li><a href="#Datatype-Lock">h5tlock_f</a>                          -->
-<!--<li><a href="#Datatype-GetCreatePlist">h5tget_create_plist_f</a>    -->
+    <li><a href="#Datatype-GetCreatePlist">h5tget_create_plist_f</a>
     <li><a href="#Datatype-GetClass">h5tget_class_f</a>
     <li><a href="#Datatype-GetSize">h5tget_size_f</a>
     <li><a href="#Datatype-GetSuper">h5tget_super_f</a>
@@ -896,17 +898,25 @@ END SUBROUTINE h5tclose_f
       </dir>
       
   <p>
-  <dt><strong>Fortran90 Interface:</strong>  h5gcreate_f
-    <dd><i><font color=red>
-      Holding this space in case we need to say something about Fortran.
-      <br>
-      Will Fortran subroutine names do anything with the 1s and 2s 
-      of the C functions?
+  <dt><strong>Fortran90 Interface:</strong> h5tcommit_f
       </font></i>
-<!--
     <pre>
+SUBROUTINE h5tcommit_f(loc_id, name, type_id, hdferr, &
+                       lcpl_id, tcpl_id, tapl_id ) 
+  IMPLICIT NONE
+  INTEGER(HID_T), INTENT(IN) :: loc_id  ! File or group identifier 
+  CHARACTER(LEN=*), INTENT(IN) :: name  ! Datatype name within file or group
+  INTEGER(HID_T), INTENT(IN) :: type_id ! Datatype identifier 
+  INTEGER, INTENT(OUT) :: hdferr        ! Error code
+                                        ! 0 on success and -1 on failure
+  INTEGER(HID_T), OPTIONAL, INTENT(IN) :: lcpl_id 
+                                        ! Link creation property list
+  INTEGER(HID_T), OPTIONAL, INTENT(IN) :: tcpl_id 
+                                        ! Datatype creation property list
+  INTEGER(HID_T), OPTIONAL, INTENT(IN) :: tapl_id 
+                                        ! Datatype access property list
+END SUBROUTINE h5tcommit_f
     </pre>
--->
   <p>
   <dt><strong>History:</strong>
     <dd><table width="90%">
@@ -986,18 +996,8 @@ END SUBROUTINE h5tclose_f
     <dd>Returns a non-negative value if successful;
         otherwise returns a negative value.
 <p>
-<dt><strong>Fortran90 Interface:</strong> h5tcommit_f
-    <dd>
-	<pre>
-SUBROUTINE h5tcommit_f(loc_id, name, type_id, hdferr) 
-  IMPLICIT NONE
-  INTEGER(HID_T), INTENT(IN) :: loc_id  ! File or group identifier 
-  CHARACTER(LEN=*), INTENT(IN) :: name  ! Datatype name within file or group
-  INTEGER(HID_T), INTENT(IN) :: type_id ! Datatype identifier 
-  INTEGER, INTENT(OUT) :: hdferr        ! Error code
-                                        ! 0 on success and -1 on failure
-END SUBROUTINE h5tcommit_f
-	</pre>		
+<dt><strong>Fortran90 Interface:</strong>  See listing under <a href="RM_H5T.html#Datatype-Commit"><code>H5Tcommit</code></a>.
+    <dd>	
 		
 		<!--<dt><strong>Non-C API(s):</strong>
     	<dd>
@@ -1104,14 +1104,7 @@ END SUBROUTINE h5tcommit_f
     <dd>Returns a non-negative value if successful;
         otherwise returns a negative value.
   <p>
-  <dt><strong>Fortran90 Interface:</strong><!--h5tcommit2_f--> 
-    <dd>None.
-
-<!--
-    <pre>
-  
-    </pre>
--->
+  <dt><strong>Fortran90 Interface:</strong>  See listing under <a href="RM_H5T.html#Datatype-Commit"><code>H5Tcommit</code></a>.
   <p>
   <dt><strong>History:</strong>
     <dd><table width="90%">
@@ -1209,8 +1202,25 @@ END SUBROUTINE h5tcommit_f
     <dd>Returns a non-negative value if successful;
         otherwise returns a negative value.
         <p>
-<dt><strong>Fortran90 Interface:</strong>
-    <dd>None.
+<dt><strong>Fortran90 Interface:</strong> h5tcommit_anon_f
+<pre>
+SUBROUTINE h5tcommit_anon_f(loc_id, dtype_id, hdferr, tcpl_id, tapl_id)
+  IMPLICIT NONE
+  INTEGER(HID_T), INTENT(IN) :: loc_id ! A file or group identifier specifying 
+                                       ! the file in which the new named 
+                                       ! datatype is to be created.
+  INTEGER(HID_T), INTENT(IN) :: dtype_id  
+                                       ! Datatype identifier 
+  INTEGER, INTENT(OUT) :: hdferr       ! Error code
+                                       ! 0 on success and -1 on failure
+  INTEGER(HID_T), OPTIONAL, INTENT(IN) :: tcpl_id 
+                                       ! A datatype creation property 
+                                       ! list identifier.
+                                       !  H5P_DEFAULT_F = default property list
+  INTEGER(HID_T), OPTIONAL, INTENT(IN) :: tapl_id 
+                                       ! A datatype access property list id
+END SUBROUTINE h5tcommit_anon_f
+</pre>
         <p>
 <dt><strong>History:</strong>
     <ul><table width="90%">
@@ -1260,10 +1270,14 @@ END SUBROUTINE h5tcommit_f
 <dt><strong>Fortran90 Interface:</strong> h5tcommitted_f
     <dd>
 	<pre>
-SUBROUTINE h5tcommitted_f(type_id, hdferr) 
+SUBROUTINE h5tcommitted_f(dtype_id, committed, hdferr)
   IMPLICIT NONE
-  INTEGER(HID_T), INTENT(IN) :: type_id ! Datatype identifier 
-  INTEGER, INTENT(OUT) :: hdferr        ! Error code
+  INTEGER(HID_T), INTENT(IN) :: dtype_id  
+                                    ! A datatype identifier
+  LOGICAL, INTENT(OUT) :: committed ! .TRUE., if the datatype committed
+                                    ! .FALSE., if the datatype not committed.
+  INTEGER, INTENT(OUT) :: hdferr    ! Error code
+                                    ! 0 on success and -1 on failure
 END SUBROUTINE h5tcommitted_f
 	</pre>		
 		
@@ -1307,8 +1321,18 @@ END SUBROUTINE h5tcommitted_f
 <dt><strong>Returns:</strong>
   <dd>Returns TRUE for compiler conversion, FALSE for library conversion, 
     FAIL for the function’s failure.
-<dt><strong>Fortran90 Interface:</strong>
-  <dd>None.
+<dt><strong>Fortran90 Interface:</strong> h5tcompiler_conv_f
+<pre>
+SUBROUTINE h5tcompiler_conv_f( src_id, dst_id, flag, hdferr)
+  IMPLICIT NONE
+  INTEGER(HID_T), INTENT(IN) :: src_id ! Id for the source datatype.
+  INTEGER(HID_T), INTENT(IN) :: dst_id ! Id for the destination datatype.
+  LOGICAL, INTENT(OUT) :: flag         !   .TRUE. for compiler conversion, 
+                                       !   .FALSE. for library conversion
+  INTEGER, INTENT(OUT) :: hdferr       ! Error code:
+                                       ! 0 on success and -1 on failure
+END SUBROUTINE h5tcompiler_conv_f
+</pre>
 </dl>
 
 <!-- NEW PAGE -->
@@ -1560,6 +1584,7 @@ SUBROUTINE h5tcreate_f(class, size, type_id, hdferr)
   INTEGER(SIZE_T), INTENT(IN) :: size      ! Size of the datatype
   INTEGER(HID_T), INTENT(OUT) :: type_id   ! Datatype identifier
   INTEGER, INTENT(OUT) :: hdferr           ! Error code
+                                           ! 0 on success and -1 on failure
 END SUBROUTINE h5tcreate_f
 	</pre>		
 		
@@ -1602,8 +1627,16 @@ END SUBROUTINE h5tcreate_f
 <dt><strong>Returns:</strong>
     <dd>Returns an object ID(non-negative) if successful; 
       otherwise returns a negative value.
-<dt><strong>Fortran90 Interface:</strong>
-    <dd>None.
+<dt><strong>Fortran90 Interface:</strong> h5tdecode_f
+<pre>
+SUBROUTINE h5tdecode_f(buf, obj_id, hdferr)
+  IMPLICIT NONE
+  CHARACTER(LEN=*), INTENT(IN) :: buf  ! Data space object buffer to be decoded
+  INTEGER(HID_T), INTENT(OUT) :: obj_id! Object ID
+  INTEGER, INTENT(OUT) :: hdferr       ! Error code
+                                       ! 0 on success and -1 on failure
+END SUBROUTINE h5tdecode_f
+</pre>
 </dl>
 
 <!-- NEW PAGE -->
@@ -1720,8 +1753,18 @@ SUBROUTINE
 <dt><strong>Returns:</strong>
     <dd>Returns a non-negative value if successful; 
       otherwise returns a negative value.
-<dt><strong>Fortran90 Interface:</strong>
-    <dd>None.
+<dt><strong>Fortran90 Interface:</strong> h5tencode_f
+<pre>
+SUBROUTINE h5tencode_f(obj_id, buf, nalloc, hdferr)
+  IMPLICIT NONE
+  INTEGER(HID_T), INTENT(IN) :: obj_id ! Identifier of the object to be encoded
+  CHARACTER(LEN=*), INTENT(OUT) :: buf ! Buffer object to be encoded into
+  INTEGER(SIZE_T), INTENT(INOUT) :: nalloc 
+                                       ! The size of the allocated buffer
+  INTEGER, INTENT(OUT) :: hdferr       ! Error code
+                                       ! 0 on success and -1 on failure
+END SUBROUTINE h5tencode_f
+<\pre>
 </dl>
 
 <!-- NEW PAGE -->
@@ -2536,14 +2579,16 @@ END SUBROUTINE h5tget_class_f
     <dd>Returns a datatype property list identifier if successful;
         otherwise returns a negative value.
   <p>
-  <dt><strong>Fortran90 Interface:</strong><!--h5tget_create_plist_f--> 
-    <dd>None.
-
-<!--
+  <dt><strong>Fortran90 Interface:</strong> h5tget_create_plist_f
     <pre>
-  
+SUBROUTINE h5tget_create_plist_f(dtype_id, dtpl_id, hdferr)
+  IMPLICIT NONE
+  INTEGER(HID_T), INTENT(IN) :: dtype_id ! Datatype identifier
+  INTEGER(HID_T), INTENT(OUT) :: dtpl_id ! Datatype property list identifier.
+  INTEGER, INTENT(OUT) :: hdferr         ! Error code:
+                                         ! 0 on success and -1 on failure
+END SUBROUTINE h5tget_create_plist_f 
     </pre>
--->
   <p>
   <dt><strong>History:</strong>
     <dd><table width="90%">
@@ -3804,6 +3849,7 @@ SUBROUTINE h5tget_strpad_f(type_id, strpad, hdferr)
                                   !    Pad with spaces (as FORTRAN does): 
                                   !        H5T_STR_SPACEPAD_F(1)
   INTEGER, INTENT(OUT) :: hdferr  ! Error code
+                                  ! 0 on success and -1 on failure
 END SUBROUTINE h5tget_strpad_f
 	</pre>		
 		
@@ -3848,6 +3894,7 @@ SUBROUTINE h5tget_super_f(type_id, base_type_id, hdferr)
   INTEGER(HID_T), INTENT(IN) :: type_id  ! Datatype identifier 
   INTEGER(HID_T), INTENT(OUT) :: type_id ! Base datatype identifier 
   INTEGER, INTENT(OUT) :: hdferr         ! Error code
+                                         ! 0 on success and -1 on failure
 END SUBROUTINE h5tget_super_f
 	</pre>		
 		
@@ -3895,6 +3942,7 @@ SUBROUTINE h5tget_tag_f(type_id, tag,taglen, hdferr)
                                          ! opaque datatype is to be tagged
   INTEGER, INTENT(OUT) :: taglen         ! Length of tag 
   INTEGER, INTENT(OUT) :: hdferr         ! Error code
+                                         ! 0 on success and -1 on failure
 END SUBROUTINE h5tget_tag_f
 	</pre>		
 		
@@ -3960,6 +4008,7 @@ SUBROUTINE h5tinsert_f(type_id,  name, offset, field_id, hdferr)
   INTEGER(HID_T), INTENT(IN) :: field_id ! Datatype identifier of the 
                                          ! new member
   INTEGER, INTENT(OUT) :: hdferr         ! Error code
+                                         ! 0 on success and -1 on failure
 END SUBROUTINE h5tinsert_f
 	</pre>		
 		
@@ -4008,6 +4057,7 @@ SUBROUTINE h5tis_variable_str_f(type_id, status, hdferr)
                                           !         variable string
                                           !    .FALSE. otherwise 
   INTEGER, INTENT(OUT) :: hdferr          ! Error code
+                                          ! 0 on success and -1 on failure
 END SUBROUTINE h5tis_variable_str_f
 	</pre>		
 		
@@ -4154,17 +4204,19 @@ SUBROUTINE
       </dir>
       
   <p>
-  <dt><strong>Fortran90 Interface:</strong>  h5gcreate_f
-    <dd><i><font color=red>
-      Holding this space in case we need to say something about Fortran.
-      <br>
-      Will Fortran subroutine names do anything with the 1s and 2s 
-      of the C functions?
-      </font></i>
-<!--
+  <dt><strong>Fortran90 Interface:</strong> h5topen_f
     <pre>
+SUBROUTINE h5topen_f(loc_id, name, type_id, hdferr, tapl_id)
+  IMPLICIT NONE
+  INTEGER(HID_T), INTENT(IN) :: loc_id   ! File or group identifier 
+  CHARACTER(LEN=*), INTENT(IN) :: name   ! Datatype name within file or group
+  INTEGER(HID_T), INTENT(OUT) :: type_id ! Datatype identifier
+  INTEGER, INTENT(OUT) :: hdferr         ! Error code
+                                         ! 0 on success and -1 on failure
+  INTEGER(HID_T), OPTIONAL, INTENT(IN) :: tapl_id 
+                                         ! Datatype access property list id
+END SUBROUTINE h5topen_f
     </pre>
--->
   <p>
   <dt><strong>History:</strong>
     <dd><table width="90%">
@@ -4227,19 +4279,8 @@ SUBROUTINE
     <dd>Returns a named datatype identifier if successful;
         otherwise returns a negative value.
 <p>
-<dt><strong>Fortran90 Interface:</strong> h5topen_f
-    <dd>
-	<pre>
-SUBROUTINE h5topen_f(loc_id, name, type_id, hdferr) 
-  IMPLICIT NONE
-  INTEGER(HID_T), INTENT(IN) :: loc_id    ! File or group identifier 
-  CHARACTER(LEN=*), INTENT(IN) :: name    ! Datatype name within file or
-                                          ! group
-  INTEGER(HID_T), INTENT(out) :: type_id  ! Datatype identifier 
-  INTEGER, INTENT(OUT) :: hdferr          ! Error code
-                                          ! 0 on success and -1 on failure
-END SUBROUTINE h5topen_f
-	</pre>		
+<dt><strong>Fortran90 Interface:</strong> See listing under <a href="RM_H5T.html#Datatype-Open"><code>H5Topen</code></a>.
+    <dd>		
 		
 		<!--<dt><strong>Non-C API(s):</strong>
     	<dd>
@@ -4308,15 +4349,7 @@ END SUBROUTINE h5topen_f
     <dd>Returns a named datatype identifier if successful;
         otherwise returns a negative value.
 <p>
-<dt><strong>Fortran90 Interface:</strong> <!--h5topen2_f-->
-    <dd> None.
-<!--
-	<pre>
-SUBROUTINE h5topen2_f(                     )
-
-
-END SUBROUTINE h5topen2_f
--->
+<dt><strong>Fortran90 Interface:</strong>  See listing under <a href="RM_H5T.html#Datatype-Open"><code>H5Topen</code></a>.
 		
 
         <!--<dt><strong>Non-C API(s):</strong>
