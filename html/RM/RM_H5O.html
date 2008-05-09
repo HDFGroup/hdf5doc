@@ -163,39 +163,48 @@ Links interface (H5L).
 <br>
 <strong>The FORTRAN90 Interfaces:</strong>
 <br>
-Fortran90 interfaces for the H5O APIs have not yet been implemented.
-<!--
 In general, each FORTRAN90 subroutine performs exactly the same task 
-as the corresponding C function.  
+as the corresponding C function.   
 <br>
-
-<table border=0>
-<tr><td valign=top>
-<ul>
-    <li><a href="#Object-Open">h5oopen_f</a>
-    <li><a href="#Object-Close">h5oclose_f</a>
-    <li><a href="#Object-Copy">h5ocopy_f</a>
-</ul>
-</td><td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
-<td valign=top> 
-<ul>
--->
-<!--<li><a href="#Object-SetComment">H5Oset_comment</a>-->
-<!--<li><a href="#Object-GetComment">H5Oget_comment</a>-->
-<!--
-    <li><a href="#Object-GetInfo">h5oget_info_f</a>
-    <li><a href="#Object-IncrRefCount">h5oincr_refcount_f</a>
-    <li><a href="#Object-DecrRefCount">h5odecr_refcount_f</a>
-</ul>
-</td><td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td><td valign=top>
-<ul>
-    <li><a href="#Object-GetInfoByIdx">h5oget_info_by_idx_f</a>
-    <li><a href="#Object-OpenByIdx">h5oopen_by_idx_f</a>
-    <li><a href="#Object-OpenByAddr">h5oopen_by_addr_f</a>
-</ul>
-</td></tr>
+<table border="0">
+  <tr>
+    <td valign="top">
+      <ul>
+      <!--<li><a href="#Object-Close">H5Oclose</a>-->
+      <!--<li><a href="#Object-Copy">H5Ocopy</a>-->
+      <!--<li><a href="#Object-DecrRefCount">H5Odecr_refcount</a>-->
+      <!--<li><a href="#Object-GetComment">H5Oget_comment</a>-->
+      <!--<li><a href="#Object-GetCommentByName">H5Oget_comment_by_name</a>-->
+      <!--<li><a href="#Object-GetInfo">H5Oget_info</a>-->
+      </ul>     
+    </td> 
+    
+    <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
+    
+    <td valign="top">
+      <ul>
+      <!--<li><a href="#Object-GetInfoByIdx">H5Oget_info_by_idx</a>-->
+      <!--<li><a href="#Object-GetInfoByName">H5Oget_info_by_name</a>-->
+      <!--<li><a href="#Object-IncrRefCount">H5Oincr_refcount</a>-->
+      <li><a href="#Object-Link">h5olink_f</a>
+      <li><a href="#Object-Open">h5oopen_f</a>
+      <!--<li><a href="#Object-OpenByAddr">H5Oopen_by_addr</a>-->
+      </ul>
+    </td>
+    
+    <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
+    
+    <td valign="top">
+      <ul>
+      <!--<li><a href="#Object-OpenByIdx">H5Oopen_by_idx</a>-->
+      <!--<li><a href="#Object-SetComment">H5Oset_comment</a>-->
+      <!--<li><a href="#Object-SetCommentByName">H5Oset_comment_by_name</a>-->
+      <!--<li><a href="#Object-Visit">H5Ovisit</a>-->
+      <!--<li><a href="#Object-VisitByName">H5Ovisit_by_name</a>-->
+      </ul>
+    </td>
+  </tr>
 </table>
--->
 
 <p>
 
@@ -1167,14 +1176,28 @@ typedef struct H5O_info_t {
   <dd>Returns a non-negative value if successful; otherwise returns a negative 
     value. 
       <p>
-  <dt><strong>Fortran90 Interface:</strong> <!-- h5llink_f -->
-    <dd>None.
-<!--
+  <dt><strong>Fortran90 Interface:</strong> h5olink_f
     <pre>
-SUBROUTINE h5llink_f(new_loc_id, new_name, loc_id, lcpl_id, lapl_id, hdferr)
-END SUBROUTINE h5glink_f
+SUBROUTINE h5olink_f(object_id, new_loc_id, new_link_name, hdferr, &
+                     lcpl_id, lapl_id)
+  IMPLICIT NONE
+  INTEGER(HID_T), INTENT(IN) :: object_id  
+                                  ! Object to be linked
+  INTEGER(HID_T), INTENT(IN) :: new_loc_id 
+                                  ! File or group identifier specifying 
+                                  ! location at which object is to be linked.
+  CHARACTER(LEN=*), INTENT(IN) :: new_link_name 
+                                  ! Name of link to be created, 
+                                  ! relative to new_loc_id.
+  INTEGER, INTENT(OUT) :: hdferr  ! Error code 		
+                                  !   Success:  0
+                                  !   Failure: -1  
+  INTEGER(HID_T), OPTIONAL, INTENT(IN) :: lcpl_id 
+                                  ! Link creation property list identifier.  
+  INTEGER(HID_T), OPTIONAL, INTENT(IN) :: lapl_id 
+                                  ! Link creation property list identifier.
+END SUBROUTINE h5olink_f
     </pre>
--->
         <!--<dt><strong>Non-C API(s):</strong>
     	<dd>
         
@@ -1269,14 +1292,21 @@ END SUBROUTINE h5glink_f
     <dd>Returns an object identifier for the opened object if successful;
         otherwise returns a negative value.
   <p></p>
-  <dt><strong>Fortran90 Interface:</strong> <!--h5gclose_f-->
-    <dd>
-      None.
-<!--
-	<pre>
-
-	</pre>		
--->
+  <dt><strong>Fortran90 Interface:</strong> h5oopen_f
+  <pre>
+SUBROUTINE h5oopen_f(loc_id, name, obj_id, hdferr, lapl_id)
+  IMPLICIT NONE
+  INTEGER(HID_T), INTENT(IN) :: loc_id  ! File or group identifier
+  CHARACTER(LEN=*), INTENT(IN) :: name  ! Path to the object, 
+                                        ! relative to loc_id
+  INTEGER(HID_T), INTENT(OUT) :: obj_id ! Object identifier for opened object
+  INTEGER, INTENT(OUT) :: hdferr        ! Error code 		
+                                        !   Success:  0
+                                        !   Failure: -1  
+  INTEGER(HID_T), OPTIONAL, INTENT(IN) :: lapl_id  
+                                        ! Attribute access property list
+END SUBROUTINE h5oopen_f
+	</pre>
 		
  <!--<dt><strong>Non-C API(s):</strong>
     	<dd>
