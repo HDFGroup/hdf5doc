@@ -102,10 +102,12 @@ installed with HDF5.
 	    and dump those contents to an ASCII file.
         <li><a href="#Tools-Ls">h5ls</a> -- 
             Lists specified features of HDF5 file contents.
-        <li><a href="#Tools-Diff">h5diff</a> -- 
-            Compares two HDF5 files and reports the differences.
-        <li><a href="#Tools-Repack">h5repack</a> -- Copies an HDF5 file to a new
-          file with or without compression/chunking.
+        <li><a href="#Tools-Diff">h5diff</a> and
+           <a href="#Tools-Diff">ph5diff</a> -- 
+            Compare two HDF5 files and report the differences.
+        <li><a href="#Tools-Repack">h5repack</a> -- 
+            Copies an HDF5 file to a new file 
+            with or without compression and/or chunking.
         <li><a href="#Tools-Perf">h5perf</a> -- 
             Measures HDF5 performance.
         <li><a href="#Tools-Repart">h5repart</a> -- 
@@ -321,15 +323,14 @@ installed with HDF5.
         </tr>
         <tr> 
           <td valign="top"><code>-B</code> &nbsp;&nbsp;or&nbsp;&nbsp; <code>--bootblock</code></td>
-          <td valign="top">Print the content of the boot block.<br> <em>(This 
-            option is not yet implemented.)</em></td>
+          <td valign="top">Print the content of the boot block.</td>
         </tr>
         <tr> 
           <td valign="top"><code>-H</code> &nbsp;&nbsp;or&nbsp;&nbsp; <code>--header</code></td>
           <td valign="top">Print the header only; no data is displayed.</td>
         </tr>
         <tr> 
-          <td valign="top"><code>-A</code></td>
+          <td valign="top"><code>-A</code> &nbsp;&nbsp;or&nbsp;&nbsp; <code>--onlyattr</code></td>
           <td valign="top">Print the header and value of attributes; data of datasets 
             is not displayed.</td>
         </tr>
@@ -339,7 +340,7 @@ installed with HDF5.
         </tr>
         <tr> 
           <td valign="top"><code>-r</code> &nbsp;&nbsp;or&nbsp;&nbsp; <code>--string</code></td>
-          <td valign="top">Print 1-bytes integer datasets as ASCII.</td>
+          <td valign="top">Print 1-byte integer datasets as ASCII.</td>
         </tr>
         <tr>
           <td valign="top"><code>-e</code> &nbsp;&nbsp;or&nbsp;&nbsp; <code>--escape</code></td>
@@ -364,7 +365,25 @@ installed with HDF5.
         </tr>
         <tr>
           <td valign="top"><code>-p</code> &nbsp;&nbsp;or&nbsp;&nbsp; <code>--properties</code></td>
-          <td valign="top">Print dataset filters, storage layout, and fill value.</td>
+          <td valign="top">Print information regarding dataset properties, 
+              including filters, storage layout, fill value,
+              and allocation time.
+              <br>
+              The filter output lists any filters used with a dataset, 
+              including the type of filter, its name, and any filter parameters.
+              <br>
+              The storage layout output specifies the dataset layout 
+              (chunked, compact, or contiguous), 
+              the size in bytes of the dataset on disk, 
+              and, if a compression filter is associated with the dataset, 
+              the compression ratio.  The compression ratio is computed as 
+              (uncompressed&nbsp;size)/(compressed&nbsp;size).
+              <br>
+              The fill value output includes the fill value datatype and value.
+              <br>
+              The allocation time output displays the allocation time as 
+              specified with 
+              <a href="RM_H5P.html#Property-SetAllocTime"><code>H5Pset_alloc_time</code></a>.
         </tr>
         <tr> 
           <td valign="top"><code>-f<em>&nbsp;D</em></code>&nbsp;&nbsp;or&nbsp;&nbsp;<code>--filedriver=<em>D&nbsp;&nbsp;&nbsp;&nbsp;</em>&nbsp;&nbsp;&nbsp;&nbsp;</code></td>
@@ -383,16 +402,6 @@ installed with HDF5.
           <td valign="top"><code>-o <em>F</em></code> &nbsp;&nbsp;or&nbsp;&nbsp; 
             <code>--output=<em>F</em></code></td>
           <td valign="top">Output raw data into file F.</td>
-        </tr>
-        <tr> 
-          <td valign="top"><code>-t <em>P</em></code> &nbsp;&nbsp;or&nbsp;&nbsp; 
-            <code>--datatype=<em>P</em></code></td>
-          <td valign="top">Print the specified named datatype.</td>
-        </tr>
-        <tr> 
-          <td valign="top"><code>-w <em>N</em></code> &nbsp;&nbsp;or&nbsp;&nbsp; 
-            <code>--width=<em>N</em></code></td>
-          <td valign="top">Set the number of columns of output.</td>
         </tr>
         <tr> 
           <td valign="top"><code>-b <em>B</em></code> &nbsp;&nbsp;or&nbsp;&nbsp; 
@@ -421,6 +430,57 @@ installed with HDF5.
             Recommended usage is with the <code>-d</code> and <code>-o</code>
             options.
           </td>
+        </tr>
+        <tr> 
+          <td valign="top"><code>-t <em>P</em></code> &nbsp;&nbsp;or&nbsp;&nbsp; 
+            <code>--datatype=<em>P</em></code></td>
+          <td valign="top">Print the specified named datatype.</td>
+        </tr>
+        <tr> 
+          <td valign="top"><code>-w <em>N</em></code> &nbsp;&nbsp;or&nbsp;&nbsp;
+            <code>--width=<em>N</em></code></td>
+          <td valign="top">Set the number of columns of output.</td>
+        </tr>
+        <tr> 
+          <td valign="top"><code>-m <em>T</em></code> &nbsp;&nbsp;or&nbsp;&nbsp;
+            <code>--format=<em>T</em></code></td>
+          <td valign="top">Set the floating point output format.
+            <br>
+            <em>T</em> is a string defining the floating point format,
+            e.g., <code>'%.3f'</code>.
+            </td>
+        </tr>
+        <tr> 
+          <td valign="top"><code>-q <em>Q</em></code> &nbsp;&nbsp;or&nbsp;&nbsp;
+            <code>--sort_by=<em>Q</em></code></td>
+          <td valign="top">Sort groups and attributes by the specified
+            index type, <em>Q</em>.  
+            Valid values of <em>Q</em> are as follows:
+                <br>
+                &nbsp;&nbsp;&nbsp;&nbsp;
+                <code>name&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code>
+                    Alpha-numeric index by name <em>(Default)</em>
+                <br>
+                &nbsp;&nbsp;&nbsp;&nbsp;
+                <code>creation_order &nbsp;&nbsp;</code>
+                    Index by creation order 
+            </td>
+        </tr>
+        <tr> 
+          <td valign="top"><code>-z <em>Z</em></code> &nbsp;&nbsp;or&nbsp;&nbsp;
+            <code>--sort_order=<em>Z</em></code></td>
+          <td valign="top">Sort groups and attributes in the specified
+            order, <em>Z</em>.  
+            Valid values of <em>Z</em> are as follows:
+                <br>
+                &nbsp;&nbsp;&nbsp;&nbsp;
+                <code>ascending&nbsp;&nbsp;&nbsp;</code>
+                    Sort in ascending order <em>(Default)</em>
+                <br>
+                &nbsp;&nbsp;&nbsp;&nbsp;
+                <code>descending&nbsp;&nbsp;</code>
+                    Sort in descending order 
+            </td>
         </tr>
         <tr> 
           <td valign="top"><code>-x <em></em></code> &nbsp;&nbsp;or&nbsp;&nbsp; 
@@ -701,6 +761,20 @@ installed with HDF5.
           <br>
           <code>-b</code> or <code>--binary</code> 
        </td></tr>
+      <tr>
+        <td valign="top">1.8.0</td>
+        <td valign="top">
+          The following options added in this release:
+          <br>
+          <code>-q</code> or <code>--sort_by</code> 
+          <br>
+          <code>-z</code> or <code>--sort_order</code> 
+       </td></tr>
+      <tr>
+        <td valign="top">1.8.1</td>
+        <td valign="top">
+          Compression ratio added to -p option in this release.
+       </td></tr>
   </table></ul>
 
 </dl>
@@ -803,100 +877,183 @@ installed with HDF5.
 <dl>
 <dt><strong>Tool Name:</strong> <a name="Tools-Diff">h5diff</a>  &nbsp;&nbsp;&nbsp;
 <dt><strong>Syntax:</strong>
+    <dd><code>h5diff </code> [<em>OPTIONS</em>]
+                    <em>file1</em> <em>file2</em> 
+                    [<em>object1</em> [<em>object2</em> ] ]       
+    <!--
     <dd><code>h5diff </code> <em>file1</em> <em>file2</em> 
                     [<em>OPTIONS</em>]
-		    [<em>object1</em> [<em>object2</em> ] ]       
+                    [<em>object1</em> [<em>object2</em> ] ]       
+    -->
+    <p>
+    <dd><code>ph5diff </code> [<em>OPTIONS</em>]
+                    <em>file1</em> <em>file2</em> 
+                    [<em>object1</em> [<em>object2</em> ] ]       
+    <!--
+    <dd><code>ph5diff </code> <em>file1</em> <em>file2</em> 
+                    [<em>OPTIONS</em>] 
+                    [<em>object1</em> [<em>object2</em> ] ]       
+    -->
+    <p>
 <dt><strong>Purpose:</strong>
-    <dd>Compares two HDF5 files and reports the differences.
+    <dd>Compare two HDF5 files and report the differences.
+    <p>
 <dt><strong>Description:</strong>
-    <dd><code>h5diff</code> is a command line tool that compares 
-        two HDF5 files, <em>file1</em> and <em>file2</em>, and 
-	reports the differences between them. 
+    <dd><code>h5diff</code> and <code>ph5diff</code> are command line tools 
+        that compare two HDF5 files, <em>file1</em> and <em>file2</em>, 
+	and report the differences between them.
+        <code>h5diff</code> is for serial use while
+        <code>ph5diff</code> is for use in parallel environments.
 	<p>
-	Optionally, <code>h5diff</code> will compare two objects 
-	within these files.
-	If only one object, <em>object1</em>, is specified, 
+        Optionally, <code>h5diff</code> and <code>ph5diff</code> 
+        will compare two objects within these files.
+        If only one object, <em>object1</em>, is specified, 
 	<code>h5diff</code> will compare 
 	<em>object1</em> in <em>file1</em>
 	with <em>object1</em> in <em>file2</em>.
-	In two objects, <em>object1</em> and <em>object2</em>, 
+	If two objects, <em>object1</em> and <em>object2</em>, 
 	are specified, <code>h5diff</code> will compare 
 	<em>object1</em> in <em>file1</em>
 	with <em>object2</em> in <em>file2</em>.
-	These objects must be HDF5 datasets.
-    <dd>
-	<p>
-	<em>object1</em> and <em>object2</em> must be expressed
-	as absolute paths from the respective file's root group.
-    <dd>
-	<p>
- <code>h5diff</code>  has the following four modes of output:<br>
-    Normal mode: print the number of differences found and where they occurred<br>
-    Report mode (-r): print the above plus the differences<br>
-    Verbose mode (-v): print the above plus a list of objects and warnings<br>
-    Quiet mode (-q): do not print output (h5diff always returns an exit code of
-    1 when differences are found).
-    <dd>
+        <p>
+        <em>object1</em> and <em>object2</em> 
+        can be groups, datasets, named datatypes, or links
+        and must be expressed as absolute 
+        paths from the respective file&rsquo;s root group.
+        <ul>
+            <li>If these objects are groups, the name string is compared.
+            <li>If these objects are datasets, array rank and dimensions, 
+                datatypes, and data values are compared.
+            <li>If these objects are named datatypes, the comparison 
+                is based on the return value of
+                <code><a href="RM_H5T.html#Datatype-Equal">H5Tequal</a>.
+            <li>If these objects are links, the link value is compared.
+                <br>
+                (The link value is the string that is often referred to 
+                as the name of the linked object.)
+        </ul>
+        <p>
+        <code>h5diff</code> and <code>ph5diff</code> 
+        have the following output modes:
+        <dir>
+        <table width=80% border=0>
+          <tr valign=top><td>Normal mode</td>
+              <td>Prints the number of differences found 
+                  and where they occurred.
+          </td></tr>
+          <tr valign=top><td>Report mode (<code>-r</code>)</td>
+              <td>Prints the above plus the differences.
+          </td></tr>
+          <tr valign=top><td>Verbose&nbsp;mode&nbsp;(<code>-v</code>)&nbsp;&nbsp;&nbsp;&nbsp;</td>
+              <td>Prints all of the above plus a list of objects and warnings.
+          </td></tr>
+          <tr valign=top><td>Quiet mode (<code>-q</code>)</td>
+              <td>Prints no output. 
+                  <br>
+                  (<code>h5diff</code> always returns an exit code of
+                  <code>1</code> when differences are found.)
+          </td></tr>
+        </table>
+        </dir>
+        <p>
+        <b>Difference between <code>h5diff</code> and <code>ph5diff</code>:</b>
+        <br>
+        With the following exception, 
+        <code>h5diff</code> and <code>ph5diff</code> behave identically.
+        With <code>ph5diff</code>, the comparison of objects is shared across 
+        multiple processors, with the comparison of each pair of objects 
+        assigned to a single processor.  I.e., the comparison of a single
+        object, even a very large dataset, in each file is not shared.
 <!--
-	<p>
 	Additional information, with several sample cases, 
 	can be found in the document 
 	<a href="http://www.hdfgroup.org/HDF5/h5diff/h5diff_design.html">
 	<cite>H5diff Examples</cite></a>.
 -->
+	<p>
 <dt><strong>Options and Parameters:</strong>
     <ul><table>
         <tr>
-		    <td valign="top"><em>file1</em></td>
-			<td valign="top">&nbsp;</td></tr>
+            <td valign="top"><code>-h</code>
+                &nbsp;&nbsp;or&nbsp;
+                <code>--help</code></td>
+            <td valign="top">Print help message.</td></tr>
         <tr>
-		    <td valign="top"><em>file2</em></td>
+            <td valign="top"><code>-V</code>
+                &nbsp;&nbsp;or&nbsp;
+                <code>--version</code></td>
+            <td valign="top">Print version number and exit.</td></tr>
+        <tr>
+            <td valign="top"><code>-r</code>
+                &nbsp;&nbsp;or&nbsp;
+                <code>--report</code></td>
+            <td valign="top">Report mode &mdash; 
+                Print the differences.</td></tr>
+        <tr>
+            <td valign="top"><code>-v</code>
+                &nbsp;&nbsp;or&nbsp;
+                <code>--verbose</code></td>
+            <td valign="top">Verbose mode &mdash; 
+                Print the differences, a list of objects, 
+                and warnings.</td></tr>
+        <tr>
+            <td valign="top"><code>-q</code>
+                &nbsp;&nbsp;or&nbsp;
+                <code>--quiet</code></td>
+            <td valign="top">Quiet mode &mdash; 
+                Do not print output.</td></tr>
+        <tr>
+            <td valign="top"><code>-n</code> <em>count</em>
+                &nbsp;&nbsp;or
+                <br>
+                <code>--count=</code><em>count</em></td>
+            <td valign="top">Print difference up to <em>count</em> 
+                differences, then stop. 
+                <em>count</em> must be a positive integer.</td></tr>
+        <tr>
+            <td valign="top"><code>-d</code> <em>delta</em>
+                &nbsp;&nbsp;or
+                <br>
+                <code>--delta=</code><em>delta</em></td>
+            <td valign="top">Print only differences that are greater than the 
+                limit <em>delta</em>. <em>delta</em> must be a positive number.
+                The comparison criterion is whether the absolute value of the 
+                difference of two corresponding values is greater than 
+                <em>delta</em> 
+                (e.g.,&nbsp;<code>&nbsp;|a&ndash;b|&nbsp;&gt;&nbsp;<em>delta</em></code>,
+                where <code>a</code> is a value in <em>file1</em> and
+                <code>b</code> is a value in <em>file2</em>).</td></tr>
+        <tr>
+            <td valign="top"><code>-p</code> <em>relative</em>
+                &nbsp;&nbsp;or
+                <br>
+                <code>--relative=</code><em>relative&nbsp;&nbsp;&nbsp;&nbsp;</em>&nbsp;&nbsp;&nbsp;&nbsp;</td>
+            <td valign="top">Print only differences that are greater than a 
+                relative error. <em>relative</em> must be a positive number.
+                The comparison criterion is whether the absolute value of the 
+                difference <code>1</code> and the ratio of two corresponding 
+                values is greater than <em>relative</em> 
+                (e.g.,&nbsp;<code>|1&ndash;(b/a)|&nbsp;&gt;&nbsp;<em>relative</em></code>
+                where <code>a</code> is a value in <em>file1</em> and
+                <code>b</code> is a value in <em>file2</em>).</td></tr>
+        <tr>
+            <td valign="top"><em>file1</em>
+                &nbsp;&nbsp;
+                <em>file2</em></td>
             <td valign="top">The HDF5 files to be compared.</td></tr>
         <tr>
-		    <td valign="top"><code>-h</code></td>
-            <td valign="top">help message.</td></tr>
-        <tr>
-		    <td valign="top"><code>-r</code></td>
-            <td valign="top">Report mode. Print the differences.</td></tr>
-        <tr>
-		    <td valign="top"><code>-v</code></td>
-            <td valign="top">Verbose mode. Print the differences, list of objects, warnings.</td>
-        </tr>
-        <tr>
-		    <td valign="top"><code>-q</code></td>
-            <td valign="top">Quiet mode. Do not print output.</td>
-        </tr>
-        <tr>
-		    <td valign="top"><code>-n</code> <em>count</em></td>
-            <td valign="top">Print difference up to <em>count</em> 
-			    differences, then stop. <em>count</em> must be a positive integer.</td></tr>
-        <tr>
-		    <td valign="top"><code>-d</code> <em>delta</em></td>
-            <td valign="top">Print only differences that are greater than the 
-	            limit <em>delta</em>. <em>delta</em> must be a positive number.
-                The comparison criterion is whether the absolute value of the 
-				difference of two corresponding values is greater than 
-		        <em>delta</em> 
-				<br>(e.g., <code> |a&ndash;b|&nbsp;&gt;&nbsp;<em>delta</em></code>,
-		        where <code>a</code> is a value in <em>file1</em> and
-		        <code>b</code> is a value in <em>file2</em>).</td></tr>
-        <tr>
-		    <td valign="top"><code>-p</code>&nbsp;<em>relative&nbsp;&nbsp;&nbsp;&nbsp;</em>&nbsp;&nbsp;&nbsp;&nbsp;</td>
-            <td valign="top">Print only differences that are greater than a 
-	            relative error. <em>relative</em> must be a positive number.
-                The comparison criterion is whether the absolute value of the 
-				difference <code>1</code> and the ratio of two corresponding values
-		        is greater than <em>relative</em> 
-				(e.g., <code>|1&ndash;(b/a)|&nbsp;&gt;&nbsp;<em>relative</em></code>
-		        where <code>a</code> is a value in <em>file1</em> and
-		        <code>b</code> is a value in <em>file2</em>).</td></tr>
-        <tr>
-		    <td valign="top"><em>object1</em></td>
-			<td valign="top">&nbsp;</td></tr>
-        <tr>
-		    <td valign="top"><em>object2</em></td>
-            <td valign="top">Specific object(s) within the files to be compared.</td></tr>
+            <td valign="top"><em>object1</em>
+                &nbsp;&nbsp;
+                <em>object2</em></td>
+            <td valign="top">Specific object(s) within the files 
+                to be compared.</td></tr>
     </table></ul>
+	<p>
+<dt><strong>Returns:</strong>
+    <dd>Returns <code>1</code> (one) if differences are found, 
+        <code>0</code> (zero) if no differences are found, and
+        a negative value if the call fails.
+        <p>
 <dt><strong>Examples:</strong>
     <dd>The following <code>h5diff</code> call compares
         the object <code>/a/b</code> in <code>file1</code> 
@@ -909,18 +1066,33 @@ installed with HDF5.
     <dd>And this <code>h5diff</code> call compares
         all objects in both files:<br>
         <code>&nbsp;&nbsp;&nbsp;&nbsp;h5diff file1 file2</code>
+        <p>
 <!-- NEW PAGE -->
 <dt><strong>History:</strong>
   	<ul><table width="90%">
         <tr>
-		  <td valign="top" align="left" width="10%">
-		    <strong>Release</strong>&nbsp;&nbsp;&nbsp;&nbsp;</td>
+          <td valign="top" align="left" width="10%">
+            <strong>Release</strong>&nbsp;&nbsp;&nbsp;&nbsp;</td>
           <td valign="top" align="left">
-		    <strong>Command Line Tool</strong></td></tr>
+            <strong>Command Line Tool</strong></td></tr>
         <tr>
-		  <td valign="top">1.6.0</td>
+          <td valign="top">1.6.0</td>
           <td valign="top">
-		    Tool introduced in this release.</td></tr>
+            <code>h5diff</code> introduced in this release.</td></tr>
+        <tr>
+          <td valign="top">1.8.0</td>
+          <td valign="top">
+            <code>ph5diff</code> introduced in this release.
+            <br>
+            <code>h5diff</code> command line syntax changed in this 
+            release.</td></tr>
+<!--
+        <tr>
+          <td valign="top">1.8.1</td>
+          <td valign="top">
+            Original syntax restored; both the original and the new syntax
+            are now supported.</td></tr>
+-->
     </table></ul>
 <!--
 <dt><strong>Current Status:</strong>
@@ -938,15 +1110,14 @@ installed with HDF5.
 <dt><strong>Tool Name:</strong>  <a name="Tools-Repack">h5repack</a>  &nbsp;&nbsp;&nbsp;
 <dt><strong>Syntax:</strong>
     <dd><code>h5repack </code> 
-        <code>[-h]</code> 
-        <code>[-v]</code> 
-        <code>[-m</code> <em>number</em><code>]</code> 
-        <code>[-n]</code> 
-        <code>[-f '</code><em>filter</em><code>']</code> 
-        <code>[-l '</code><em>layout</em><code>']</code> 
-        <code>[-e</code> <em>file</em><code>]</code> 
+        [<em>OPTIONS</em>]
         <em>in_file</em>
         <em>out_file</em> 
+      <p>
+    <dd><code>h5repack </code> 
+        <code>-i</code> <em>in_file</em>
+        <code>-o</code> <em>out_file</em>
+	[<em>OPTIONS</em>]
       <p>
 <dt><strong>Purpose:</strong>
     <dd>Copies an HDF5 file to a new file with or without compression and/or chunking.
@@ -959,15 +1130,30 @@ installed with HDF5.
       <p>
 <dt><strong>Options and Parameters:</strong>
     <dl>
-        <dt><code>-h</code>
-            <dd>Help message
+        <dt><code>-i</code> <em>in_file</em>
+            <dd>Input HDF5 file
+            <p>
+        <dt><code>-o</code> <em>out_file</em>
+            <dd>Output HDF5 file
+            <p>
+        <dt><code>-h</code> 
+            &nbsp;&nbsp;or&nbsp;
+            <code>--help</code>
+            <dd>Print help message.
+            <p>
         <dt><code>-v</code>
-            <dd>Verbose output mode
-        <dt><code>-m</code> <em>number</em>
-            <dd>Do not apply the filter to objects which size in bytes is
-              smaller than number. If no size is specified a minimum of 1024
-              bytes is assumed.
+            &nbsp;&nbsp;or&nbsp;
+            <code>--verbose</code>
+            <dd>Print verbose output.
+            <p>
+        <dt><code>-V</code> 
+            &nbsp;&nbsp;or&nbsp;
+            <code>--version</code>
+            <dd>Print version number.
+            <p>
         <dt><code>-n</code>
+            &nbsp;&nbsp;or&nbsp;
+            <code>--native</code>
             <dd>Use native HDF5 datatypes when repacking. 
                 <br>
                 (Default behavior is to use original file datatypes.)
@@ -975,20 +1161,91 @@ installed with HDF5.
                 <em>Note that this is a change in default behavior; 
                     prior to Release 1.6.6, <code>h5repack</code> generated
                     files only with native datatypes.</em>
+            <p>
+        <dt><code>-L</code> 
+            &nbsp;&nbsp;or&nbsp;
+            <code>--latest</code>
+            <dd>Use latest version of the HDF5 file format.
+            <p>
+        <dt><code>-c</code> <em>max_compact_links</em>
+            &nbsp;&nbsp;or&nbsp;
+            <code>--compact</code>=<em>max_compact_links</em>
+            <dd>Set the maximum number of links, <em>max_compact_links</em>, 
+                that can be stored in a group header message (compact format).
+            <p>
+        <dt><code>-d</code> <em>min_indexed_links</em>
+            &nbsp;&nbsp;or&nbsp;
+            <code>--indexed</code>=<em>min_indexed_links</em>
+            <dd>Set the minimum number of links, <em>min_indexed_links</em>, 
+                in the indexed format.
+                <p>
+                <em>max_compact_links</em> and <em>min_indexed_links</em>
+                are closely related and the first must be equal to or 
+                greater than the second.
+                In the general case, however, performance will suffer, 
+                possibly dramatically, if they are equal; 
+                performance can be improved by tuning the gap between 
+                the two values to minimize unnecessary thrashing
+                between the compact storage and indexed storage modes
+                as group size waxes and wanes.
+                The relationship between <em>max_compact_links</em> and 
+                <em>min_indexed_links</em> is most important when 
+                group sizes are highly dynamic; that relationship is much
+                less important in files with a stable structure.
+                Compact mode is space and performance-efficient when groups
+                have small numbers of members;
+                indexed mode requires slightly more storage space, 
+                but provides increasingly better performance as the 
+                number of members in each group increases.
+            <p>
+        <dt><code>-m</code> <em>number</em>
+            &nbsp;&nbsp;or&nbsp;
+            <code>--threshold</code>=<em>number</em>
+            <dd>Apply filter(s) only to objects whose size in bytes is
+              equal to or greater than <em>number</em>. 
+              If no size is specified, a threshold of 1024 bytes is assumed.
+            <p>
+        <dt><code>-s</code> <em>min_size</em>[:<em>header_type</em>]
+            &nbsp;&nbsp;or&nbsp;
+            <code>--ssize</code>=<em>min_size</em>[:<em>header_type</em>]
+            <dd>Set the minimum size of optionally specified types 
+            of shared object header messages.
+            <p>
+            <em>min_size</em> is the minimum size, in bytes, of a 
+            shared object header message.  Header messages smaller than the
+            specified size will not be shared.
+            <p>
+            <em>header_type</em> specifies the type(s) of header message that 
+            this minimum size is to be applied to.
+            Valid values of <em>header_type</em> are any of the following:
+            <br><code>&nbsp;&nbsp;dspace&nbsp;</code> 
+                for dataspace header messages
+            <br><code>&nbsp;&nbsp;dtype&nbsp;&nbsp;</code> 
+                for datatype header messages
+            <br><code>&nbsp;&nbsp;fill&nbsp;&nbsp;&nbsp;</code> 
+                for fill values
+            <br><code>&nbsp;&nbsp;pline&nbsp;&nbsp;</code> 
+                for property list header messages
+            <br><code>&nbsp;&nbsp;attr&nbsp;&nbsp;&nbsp;</code> 
+                for attribute header messages
+            <br>If <em>header_type</em> is not specified, 
+            <em>min_size</em> will be applied to all header messages.
+            <p>
         <dt><code>-f</code> <em>filter</em>
+            &nbsp;&nbsp;or&nbsp;
+            <code>--filter</code>=<em>filter</em>
             <dd>Filter type
                 <p>
-                <em>filter</em> is a string with the following format:
+                <em>filter</em> is a string of the following format:
                 <dir>
-                &lt;list of objects&gt; : &lt;name of filter&gt; 
-                    = &lt;filter parameters&gt;
-                <p>
-                &lt;list of objects&gt; is a comma separated list of object 
-                names meaning apply compression only to those objects. 
+                <em>list_of_objects</em> : <em>name_of_filter</em>[=<em>filter_parameters</em>]
+		<p>
+		<em>list_of_objects</em> is a comma separated list of object 
+                names meaning apply the filter(s) only to those objects. 
                 If no object names are specified, the filter is applied to 
                 all objects.
                 <p>
-                &lt;name of filter&gt; can be one of the following:
+                <em>name_of_filter</em> can be one of the following:
                 <br>&nbsp;&nbsp;&nbsp;&nbsp;
                     <code>GZIP</code>, to apply the HDF5 GZIP filter 
                     (GZIP compression)
@@ -1000,36 +1257,56 @@ installed with HDF5.
                 <br>&nbsp;&nbsp;&nbsp;&nbsp;
                     <code>FLET</code>, to apply the HDF5 checksum filter
                 <br>&nbsp;&nbsp;&nbsp;&nbsp;
-                    <code>NONE</code>, to remove the filter
+                    <code>NBIT</code>, to apply the HDF5 N-bit filter
+                <br>&nbsp;&nbsp;&nbsp;&nbsp;
+                    <code>SOFF</code>, to apply the HDF5 scale/offset filter
+                <br>&nbsp;&nbsp;&nbsp;&nbsp;
+                    <code>NONE</code>, to remove any filter(s)
                 <p>
-                &lt;filter parameters&gt; conveys optional compression 
+                <em>filter_parameters</em> conveys optional compression 
                     information:
+                <br>&nbsp;&nbsp;&nbsp;&nbsp;
+                    <code>GZIP=</code><em>deflation_level</em> from 1-9
+                <br>&nbsp;&nbsp;&nbsp;&nbsp;
+                    <code>SZIP=</code><em>pixels_per_block,coding_method</em> 
+                    <br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                    <em>pixels_per_block</em> is a even number 
+                    in the range 2-32.
+                    <br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                    <em>coding_method</em> is 
+                    <code>EC</code> or <code>NN</code>.
                 <br>&nbsp;&nbsp;&nbsp;&nbsp;
                     <code>SHUF</code> (no parameter)
                 <br>&nbsp;&nbsp;&nbsp;&nbsp;
                     <code>FLET</code> (no parameter)
                 <br>&nbsp;&nbsp;&nbsp;&nbsp;
-                    <code>GZIP=</code>&lt;deflation level&gt; from 1-9
+                    <code>NBIT</code> (no parameter)
                 <br>&nbsp;&nbsp;&nbsp;&nbsp;
-                    <code>SZIP=</code>&lt;pixels per block,coding&gt; 
+                    <code>SOFF=</code><em>scale_factor,scale_type</em>
                     <br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                    Pixels per block is a even number in the range 2-32.
+                    <em>scale_factor</em> is an integer.
                     <br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                    Coding method is <code>EC</code> or <code>NN</code>.
+                    <em>scale_type</em> is either <code>IN</code> or 
+                    <code>DS</code>.
+                <br>&nbsp;&nbsp;&nbsp;&nbsp;
+                    <code>NONE</code> (no parameter)
                 </dir>
+            <p>
         <dt><code>-l</code> <em>layout</em>
+            &nbsp;&nbsp;or&nbsp;
+            <code>--layout</code>=<em>layout</em>
             <dd>Layout type
                 <p>
-                <em>layout</em> is a string with the following format:<br>
+                <em>layout</em> is a string of the following format:<br>
                 <dir>
-                &lt;list of objects&gt; : &lt;layout type&gt;=&lt;layout parameters&gt
+                <em>list_of_objects</em> : <em>layout_type</em>[=<em>layout_parameters</em>]
                 <p>
-                &lt;list of objects&gt; is a comma separated list of object 
+                <em>list_of_objects</em> is a comma separated list of object 
                 names, meaning that layout information is supplied for those 
                 objects.  If no object names are specified, the layout 
                 is applied to all objects.
                 <p>
-                &lt;layout type&gt; can be one of the following:
+                <em>layout_type</em> can be one of the following:
                 <br>&nbsp;&nbsp;&nbsp;&nbsp;
                     <code>CHUNK</code>, to apply chunking layout
                 <br>&nbsp;&nbsp;&nbsp;&nbsp;
@@ -1037,7 +1314,7 @@ installed with HDF5.
                 <br>&nbsp;&nbsp;&nbsp;&nbsp;
                     <code>CONTI</code>, to apply continuous layout
                 <p>
-                &lt;layout parameters&gt; is present only in the 
+                <em>layout_parameters</em> is present only in the 
                 <code>CHUNK</code> case and specifies the chunk size of 
                 each dimension in the  following format with no intervening 
                 spaces:
@@ -1046,11 +1323,14 @@ installed with HDF5.
                     <em>dim_n</em></code>
                 </dd>
                 </dir>
+            <p>
         <dt><code>-e</code> <em>file</em>
             <dd>File containing the -f and -l options 
                 (only filter and layout flags)
+            <p>
         <dt><em>in_file</em>
             <dd>Input HDF5 file
+            <p>
         <dt><em>out_file</em>
             <dd>Output HDF5 file
     </dl>
@@ -1073,6 +1353,30 @@ installed with HDF5.
             Applies chunked layout to objects <code>dset1</code> 
             and <code>dset2</code>.
             <br>
+    </ol>
+        <p>
+<dt><strong>History:</strong>
+  	<ul><table width="90%">
+        <tr>
+          <td valign="top" align="left" width="10%">
+            <strong>Release</strong>&nbsp;&nbsp;&nbsp;&nbsp;</td>
+          <td valign="top" align="left">
+            <strong>Command Line Tool</strong></td></tr>
+        <tr>
+          <td valign="top">1.6.2</td>
+          <td valign="top">
+            <code>h5repack</code> introduced in this release.</td></tr>
+        <tr>
+          <td valign="top">1.8.0</td>
+          <td valign="top">
+            <code>h5repack</code> command line syntax changed in this 
+            release.</td></tr>
+        <tr>
+          <td valign="top">1.8.1</td>
+          <td valign="top">
+            Original syntax restored; both the new and the original syntax
+            are now supported.</td></tr>
+    </table></ul>
 </dl>
 
 
@@ -3306,7 +3610,7 @@ Describes HDF5 Release 1.8.1, May 2008.
 <!-- #EndLibraryItem --><dl>
   <dt><dt><SCRIPT LANGUAGE="JAVASCRIPT">
 <!--
-document.writeln("Last modified: 30 April 2008");
+document.writeln("Last modified: 28 May 2008");
 -->
 </SCRIPT>
 
