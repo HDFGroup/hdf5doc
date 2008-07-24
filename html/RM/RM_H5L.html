@@ -260,7 +260,7 @@ as the corresponding C function.
       The new copy of the link is created with the name <code>dest_name</code>. 
       <p>
       The destination location, as specified in <code>dest_loc_id</code>,
-      may be a group in the current file. 
+      must be either the current file or a group in the current file.
       If <code>dest_loc_id</code> is the file identifier, the copy is
       placed in the file&rsquo;s root group.
       <p>
@@ -298,6 +298,11 @@ as the corresponding C function.
           <code>H5Pset_elink_prefix</code></a>.
       <p>
       <code>H5Lcopy</code> does not affect the object that the link points to.
+      <p>
+      <code>H5Lcopy</code> cannot copy links to a different file; 
+      to copy objects to a different file, see
+      <a href="RM_H5O.html#Object-Copy"><code>H5Ocopy</code></a>. 
+      
   </p>
   <dt><strong>Parameters:</strong>
     <dd><table>
@@ -1987,8 +1992,10 @@ END SUBROUTINE H5Lis_registered_f
       it is passed in by the application with a starting point and 
       returned by the library with the point at which the iteration stopped. 
       <p>
-      The <code>op</code> callback funtion and 
-      the related <i>H5L_iterate_t</i> struct are described in
+      The <code>op</code> callback funtion, 
+      the related <i>H5L_info_t</i> struct, 
+      and the effect of the callback function&rsquo;s return value 
+      on the application are described in
       <a href="#Link-Visit"><code>H5Lvisit</code></a>.
       <p>
       <code>op_data</code> is a user-defined pointer to the data required 
@@ -3089,6 +3096,21 @@ END SUBROUTINE h5ldelete_by_idx_f
 </pre>
 
       <p>
+      The possible return values from the callback function,
+      and the effect of each, are as follows:
+      <ul>
+          <li>Zero causes the visit iterator to continue, returning 
+              zero when all group members have been processed.
+          <li>A positive value causes the visit iterator to immediately 
+              return that positive value, indicating short-circuit success.  
+              The iterator can be restarted at the next group member.
+          <li>A negative value causes the visit iterator to immediately 
+              return that value, indicating failure.  
+              The iterator can be restarted at the next group member.
+      </ul>
+
+
+      <p>
       The <code>H5Lvisit</code> <code>op_data</code> parameter is a 
       user-defined pointer to the data required to process links 
       in the course of the iteration.
@@ -3306,6 +3328,13 @@ END SUBROUTINE h5ldelete_by_idx_f
         </table>
 
       <p>
+      The <code>op</code> callback funtion, 
+      the related <i>H5L_info_t</i> struct, 
+      and the effect that the callback function&rsquo;s return value has 
+      on the application are described in
+      <a href="#Link-Visit"><code>H5Lvisit</code></a>.
+      <p>
+<!--
       The protoype of the callback function <code>op</code> is as follows
       (as defined in the source code file <code>H5Lpublic.h</code>):
       <dir>
@@ -3315,7 +3344,9 @@ END SUBROUTINE h5ldelete_by_idx_f
               <em>const H5L_info_t *</em><code>info,</code> 
               <em>void *</em><code>op_data)</code>
       </dir>
+-->
 <!-- NEW PAGE -->
+<!--
       <p>
       The parameters of this callback function have the following
       values or meanings: 
@@ -3366,6 +3397,7 @@ END SUBROUTINE h5ldelete_by_idx_f
         } u;
     } H5L_info_t;
 </pre>
+-->
 
       <p>
       The <code>H5Lvisit_by_name</code> <code>op_data</code> parameter is a 
@@ -3546,7 +3578,7 @@ Describes HDF5 Release 1.8.1, May 2008.
 </address>
 <!-- #EndLibraryItem --><SCRIPT LANGUAGE="JAVASCRIPT">
 <!--
-document.writeln("Last modified: 25 June 2008");
+document.writeln("Last modified: 22 July 2008");
 -->
 </SCRIPT>
 
