@@ -1,0 +1,214 @@
+
+<!--__ *** PARAMETERS ********************************************  -->
+<!--__ This file supplements the PARAMETERS section of              -->
+<!--__ H5function_template.html with guidance for describing for    -->
+<!--__ describing parameters that have ENUM or struct datatypes.    -->
+<!--__                                                              -->
+<!--__ For the section on structs, search on the string             -->
+<!--__     In the case of a struct...                               -->
+<!--__                                                              -->
+<!--__ For the section on ENUMs, search on the string             -->
+<!--__     In the case of an ENUM...                                -->
+<!--__                                                              -->
+
+
+
+<!--__ This section is used to enumerate and describe the           -->
+<!--__ parameters.  A type, name, direction (IN/OUT), and general   -->
+<!--__ description must be given for each parameter.  Additional    -->
+<!--__ information is often provided on the specific values a       -->
+<!--__ parameter may assume, and the meanings of those values.      -->
+<!--__                                                              -->
+<!--__ For each parameter:                                          -->
+<!--__  Indicate the parameter's "direction" (input, output, or     -->
+<!--__  both) with respect to the function via the IN, OUT, or      -->
+<!--__  IN/OUT notation at the beginning of the parameter           -->
+<!--__  description.                                                -->
+<!--__  IN indicates the parameter is input to the function.        -->
+<!--__  OUT indicates the parameter is set by the function.         -->
+<!--__  IN/OUT indicates the parameter is input to the function and -->
+<!--__         is also set by the function.                         -->
+<!--__                                                              -->
+<!--__ HTML tables are used for parameters; feel free to ask if     -->
+<!--__ you need assistance with the tables.                         -->
+<!--__ ***********************************************************  -->
+
+<!--__ ***********************************************************  -->
+<!--__                                                              -->
+<!--__ ***********************************************************  -->
+  <dt><strong>Parameters:</strong>
+    <dd><table>
+<!--__ *** STRUCTS ***********************************************  -->
+<!--__ In the case of a struct...                                   -->
+<!--__                                                              -->
+<!--__ When the parameter type is an HDF5 struct, include a         -->
+<!--__ high-level description of the struct, but provide a link     -->
+<!--__ to the struct's HDF5 Reference Manual entry for the full     -->
+<!--__ description.                                                 --> 
+<!--__                                                              -->
+<!--__ Note to authors: We began documenting HDF5 structs in        -->
+<!--__ separate entries in the fall of 2008.  They had previously   -->
+<!--__ been documented within function descriptions; since structs  -->
+<!--__ are often used in multiple functions, this practice  has     -->
+<!--__ proven error prone.                                          -->
+<!--__                                                              -->
+<!--__ If any of the struct's fields require special handling       -->
+<!--__ (e.g., initialization) or have special meaning in the        -->
+<!--__ context of this function, explain that here.                 -->
+<!--__                                                              -->
+<!--__ In 'set' functions, it is often necessary to specify valid   -->
+<!--__ values for several or all fields.                            -->
+<!--__                                                              -->
+<!--__ In 'get' functions, it is often sufficent to direct the      -->
+<!--__ user to the struct definition, stating that the struct       -->
+<!--__ fields are interpreted as described in that entry.           -->
+<!--__                                                              -->
+<!--__ If the struct's fields do not all have the same direction    -->
+<!--__ (IN/OUT), specify the direction of each field individually.  -->
+<!--__ ***********************************************************  -->
+      <tr>
+        <td valign="top"><em>struct_param_type </em><code>struct_param</code>
+        </td><td>&nbsp;&nbsp;&nbsp;&nbsp;</td>
+        <td valign="top">IN: Struct parameter description
+            <p>
+            In a 'set' function, it will often be necessary to list
+            valid values.
+            <p>
+            In a 'get' function, it will often be sufficient to 
+            refer to the struct description for interpretation of 
+            the struct&rsquo;s fields.
+            Be sure to make that reference an active link.
+            <p>
+            With structs, a parameter description can be lengthy;
+            for example, see
+            <a href="http://hdfgroup.org/HDF5/doc/RM/RM_H5P.html#Property-SetLibverBounds">
+            <code>H5Pset_libver_bounds</a>.
+            <p>
+            The following description of the <code>config_ptr</code> 
+            parameter from the function 
+            <a href="H5Pset_jnl_config.html">H5Pset_jnl_config</a>,
+            illustrates a field-by-field description for a 'set' function.
+            <p>
+            The second description below illustrates the much briefer
+            description that is often appropriate for a 'get' function.
+        </td></tr>
+      <tr>    
+        <td valign="top"><em>H5AC_jnl_config_t&nbsp;*</em><code>config_ptr</code>        </td>
+        <td>&nbsp;</td>
+        <td valign="top">IN:  Pointer to the instance of
+            <code><em>H5AC_jnl_config_t</em></code> containing the
+            desired configuration.
+            <p>     
+            See <a href="H5AC_jnl_config_t.html"><em>H5AC_jnl_config_t</em></a>
+            for the struct definition and a field-by-field description.
+            <p>     
+            Set struct fields as follows:
+            <ul>    
+            <li>Initialize <code>version</code> to the value of
+                <code>H5AC2__CURR_JNL_CONFIG_VER</code> 
+                (defined in <code>H5ACpublic.h</code>).
+            <li>Set <code>enable_journaling</code> 
+                to <code>TRUE</code> if journaling is to be turned on,
+                to <code>FALSE</code> if journaling is being turned off.
+            <li>Set <code>journal_file_path</code> to the full path  
+                of the file used to store the metadata journal.
+                This path is defined only if <code>enable_journaling</code>
+                is set to <code>TRUE</code> and can be no longer 
+                <code>H5AC2__MAX_JOURNAL_FILE_NAME_LEN</code> characters long.
+            <li><code>journal_recovered</code> is a boolean flag
+                that indicates, when set to <code>TRUE</code> that the 
+                journaled file being opened was not closed correctly and 
+                that the journal recovery tool was run on it successfuly.
+                Otherwise, the field whould always be <code>FALSE</code>.
+                <p>     
+                Set this field to <code>TRUE</code> only if you are
+                writing a new journal recovery tool; in all other situations,
+                it should be set to <code>FALSE</code>.
+            <li><code>jbrb_buf_size</code> specifies the size of each
+                individual buffer in the journal buffer ring buffer.
+                The specified value should be a multiple of the block size 
+                used by the file system on which the journal file 
+                will be written.
+            <li><code>jbrb_num_bufs</code> specifies the number of
+                buffers in the journal buffer ring buffer.   
+                If synchronous I/O is used, one or two buffers will be
+                sufficient.  
+                If asynchronous I/O is used, the number of buffers should be
+                large enough that a write to a buffer is likely to complete 
+                before that buffer is needed again.
+            <li>Set <code>jbrb_human_readable</code> to <code>TRUE</code>
+                if the journal file should be human readable.
+                Otherwise, use <code>FALSE</code> for the more efficient
+                machine-readble file.
+            </ul>       
+        </td></tr>  
+      <tr>      
+        <td valign="top"><em>H5AC_jnl_config_t&nbsp;*</em><code>config_ptr</code>
+        </td> 
+        <td>&nbsp;</td>
+        <td valign="top">IN/OUT:  Pointer to the instance of
+            <a href="H5AC_jnl_config_t.html">
+            <code><em>H5AC_jnl_config_t</em></code></a>
+            in which the journaling configuration is to be returned.
+            <p>     
+            Initialize the field <code>version</code> to the value of
+            <code>H5AC2__CURR_JNL_CONFIG_VER</code>
+            (defined in <code>H5ACpublic.h</code>).
+            <p>     
+            Values returned in other fields are interpreted as described in
+            <a href="H5AC_jnl_config_t.html">
+            <code><em>H5AC_jnl_config_t</em></code></a>.
+        </td></tr>  
+
+
+
+<!--__ *** ENUMS *************************************************  -->
+<!--__ In the case of an ENUM...                                    -->
+<!--__                                                              -->
+<!--__ When the parameter type is an HDF5 ENUM, include a           -->
+<!--__ high-level description of the ENUM, but provide a link       -->
+<!--__ to the ENUM's HDF5 Reference Manual entry for the full       -->
+<!--__ description.                                                 --> 
+<!--__                                                              -->
+<!--__ Note to authors: We began documenting HDF5 ENUMs in          -->
+<!--__ separate entries in the fall of 2008.  They had previously   -->
+<!--__ been documented within function descriptions; since structs  -->
+<!--__ are often used in multiple functions, this practice has      -->
+<!--__ proven error prone.                                          -->
+<!--__                                                              -->
+<!--__ If only a subset of the ENUM values are relevant to this     -->
+<!--__ function, or if any of the ENUM values have special meaning  -->
+<!--__ in the context of this function, document that here.         -->
+<!--__                                                              -->
+<!--__ In 'set' functions, it is sometimes necessary to specify     -->
+<!--__ which ENUM values have meaning in the context of the         -->
+<!--__ function.                                                    -->
+<!--__                                                              -->
+<!--__ In 'get' functions, it is often sufficent to direct the      -->
+<!--__ user to the ENUM definition, stating that the ENUM values    -->
+<!--__ are interpreted as described in that entry.                  -->
+<!--__ ***********************************************************  -->
+      <tr>
+        <td valign="top"><em>second_param_type&nbsp;*</em><code>second_param</code>
+        </td><td>&nbsp;</td>
+        <td valign="top">OUT: Second parameter description
+            <p>
+            Second paragraph of description.  Extended parameter descriptions,
+            described in the instructional header preceding this section, 
+            are presented here.
+            <p>
+            This can run to several paragraphs (e.g., 
+            <a href="http://hdfgroup.org/HDF5/doc/RM/RM_H5P.html#Property-SetLibverBounds"><code>H5Pset_libver_bounds</a>).
+        </td></tr>
+      <tr>
+        <td valign="top"><em>last_param_type *</em><code>last_param</code>
+        </td><td>&nbsp;</td>
+        <td valign="top">IN/OUT: Last parameter description
+            <p>
+            Some parameters may require mutiple paragraphs while others 
+            can be described in a single line.
+        </td></tr>
+    </table>
+  <p>
+
+
