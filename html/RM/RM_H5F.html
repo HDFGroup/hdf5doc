@@ -995,7 +995,12 @@ END SUBROUTINE h5fget_freespace_f
               to be opened if the <code>open_trace_file</code>
               field is <code>TRUE</code>.  This field will always
               be set to the empty string in this context.</td></tr>
-
+        <tr>
+            <td valign="top"><em>hbool_t</em> <code>evictions_enabled</code>
+              &nbsp;&nbsp;&nbsp;&nbsp;</td>
+            <td valign="top">OUT:  Boolean flag indicating whether 
+                metadata cache entry evictions are enabled.
+                </td></tr>
 
 <!-- NEW PAGE -->
 
@@ -1066,6 +1071,31 @@ END SUBROUTINE h5fget_freespace_f
               maximum cache size can be increased in a single step -- if
               applicable.</td></tr>
         <tr>
+            <td valign="top"><em>enum&nbsp;H5C_cache_flash_incr_mode</em>&nbsp;<code>flash_incr_mode</code>&nbsp;&nbsp;&nbsp;&nbsp;</td>
+            <td valign="top">OUT: Enumerated value indicating the operational mode of
+                          the flash cache size increase code.  At present, only the following
+                          values are legal:
+              <p>H5C_flash_incr__off:  Flash cache size increase is disabled.
+              <p>H5C_flash_incr__add_space:  Flash cache size increase is enabled using
+                          the add space algorithm.</td></tr>
+
+        <tr>
+                    <td valign="top"><em>double</em> <code>flash_threshold</code>
+                          &nbsp;&nbsp;&nbsp;&nbsp;</td>
+            <td valign="top">OUT: The factor by which the current maximum cache
+                          size is multiplied to obtain the minimum size
+                          entry / entry size increase which may trigger a
+                          flash cache size increase.</td></tr>
+
+        <tr>
+                    <td valign="top"><em>double</em> <code>flash_multiple</code>
+                          &nbsp;&nbsp;&nbsp;&nbsp;</td>
+            <td valign="top">OUT: The factor by which the size of the triggering
+                          entry / entry size increase is multiplied to obtain
+                          the initial cache size increment.  This increment
+                          may be reduced to reflect existing free space in
+                          the cache and the <code>max_size</code> field
+                          above.</td></tr>
           <td colspan="2">&nbsp;</td>
         </tr>
 <!-- NEW PAGE -->
@@ -2104,9 +2134,38 @@ END SUBROUTINE h5freopen_f
               it absent the direction of THG, you 
               are on your own.</td></tr>
 
-
-
-
+        <tr>
+           <td valign="top"><em>hbool_t</em> <code>evictions_enabled</code>
+                &nbsp;&nbsp;&nbsp;&nbsp;</td>
+            <td valign="top">IN: A boolean flag indicating whether evictions
+                from the metadata cache are enabled.  This flag is initially
+                set to <code>TRUE</code>.
+                <p>
+                In rare circumstances, the raw data throughput requirements
+                may be so high that the user wishes to postpone metadata
+                writes so as to reserve I/O throughput for raw data.  The
+                <code>evictions_enabled</code> field exists to allow this.
+                However, this is an extreme step, and you have no business
+                doing it unless you have read the User Guide section on 
+		metadata caching, and have considered all other options 
+		carefully.
+                <p>
+                The <code>evictions_enabled</code> field may not be set to
+                <code>FALSE</code> unless all adaptive cache resizing code
+                is disabled via the <code>incr_mode</code>,
+                <code>flash_incr_mode</code>, and <code>decr_mode</code>
+                fields.
+                <p>
+                When this flag is set to <code>FALSE</code>,
+                the metadata cache will not attempt to evict entries
+                to make space for new entries, and thus will grow without
+                bound.
+                <p>
+                Evictions will be re-enabled when this field is set back
+                to <code>TRUE</code>.  This should be done as soon as
+                possible.
+                <p>
+                </td></tr>
 
         <tr>
             <td valign="top"><em>hbool_t</em> <code>set_initial_size</code>
@@ -2197,6 +2256,38 @@ END SUBROUTINE h5freopen_f
               &nbsp;&nbsp;&nbsp;&nbsp;</td>
             <td valign="top">IN: Maximum number of bytes by which cache size can 
               be increased in a single step -- if applicable.</td></tr>
+        <tr>
+            <td valign="top"><em>enum&nbsp;H5C_cache_flash_incr_mode</em>&nbsp;<code>flash_incr_mode</code>&nbsp;&nbsp;&nbsp;&nbsp;</td>
+            <td valign="top">IN: Enumerated value indicating the operational mode of
+                          the flash cache size increase code.  At present, only the following
+                          values are legal:
+              <p>H5C_flash_incr__off:  Flash cache size increase is disabled.
+              <p>H5C_flash_incr__add_space:  Flash cache size increase is enabled using
+                          the add space algorithm.</td></tr>
+
+        <tr>
+                    <td valign="top"><em>double</em> <code>flash_threshold</code>
+                          &nbsp;&nbsp;&nbsp;&nbsp;</td>
+            <td valign="top">IN: The factor by which the current maximum cache
+                          size is multiplied to obtain the minimum size
+                          entry / entry size increase which may trigger a
+                          flash cache size increase.
+                          <p>
+                          At present, this value must lie in the range
+                          [0.1, 1.0].</td></tr>
+
+        <tr>
+                    <td valign="top"><em>double</em> <code>flash_multiple</code>
+                          &nbsp;&nbsp;&nbsp;&nbsp;</td>
+            <td valign="top">IN: The factor by which the size of the triggering
+                          entry / entry size increase is multiplied to obtain
+                          the initial cache size increment.  This increment
+                          may be reduced to reflect existing free space in
+                          the cache and the <code>max_size</code> field
+                          above.
+                          <p>
+                          At present, this field must lie in the range
+                          [0.1, 10.0].</td></tr>
         <tr>
           <td colspan="2">&nbsp;</td>
         </tr>

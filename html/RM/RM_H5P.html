@@ -6565,6 +6565,14 @@ END SUBROUTINE h5pget_local_heap_size_hint_f
                 </td></tr>
 
         <tr>
+            <td valign="top"><em>hbool_t</em> <code>evictions_enabled</code>
+              &nbsp;&nbsp;&nbsp;&nbsp;</td>
+            <td valign="top">OUT:  Boolean flag indicating whether metadata
+                cache entry evictions will be enabled when the file is 
+                opened / created.
+                </td></tr>
+
+        <tr>
 		    <td valign="top"><em>hbool_t</em> <code>set_initial_size</code>
 			  &nbsp;&nbsp;&nbsp;&nbsp;</td>
             <td valign="top">OUT: Boolean flag indicating whether the cache should be 
@@ -6630,6 +6638,34 @@ END SUBROUTINE h5pget_local_heap_size_hint_f
             <td valign="top">OUT: The maximum number of bytes by which the maximum 
 			  cache size can be increased in a single step -- if applicable.</td></tr>
         <tr><td colspan="2">&nbsp;</td></tr>
+
+		<tr>
+		    <td valign="top"><em>enum&nbsp;H5C_cache_flash_incr_mode</em>&nbsp;<code>flash_incr_mode</code>&nbsp;&nbsp;&nbsp;&nbsp;</td>
+            <td valign="top">OUT: Enumerated value indicating the operational mode of 
+			  the flash cache size increase code.  At present, only the following 
+			  values are legal:
+              <p>H5C_flash_incr__off:  Flash cache size increase is disabled.
+              <p>H5C_flash_incr__add_space:  Flash cache size increase is enabled using 
+			  the add space algorithm.</td></tr>
+
+        <tr>
+		    <td valign="top"><em>double</em> <code>flash_threshold</code>
+			  &nbsp;&nbsp;&nbsp;&nbsp;</td>
+            <td valign="top">OUT: The factor by which the current maximum cache 
+			  size is multiplied to obtain the minimum size 
+                          entry / entry size increase which may trigger a 
+                          flash cache size increase.</td></tr>
+
+        <tr>
+		    <td valign="top"><em>double</em> <code>flash_multiple</code>
+			  &nbsp;&nbsp;&nbsp;&nbsp;</td>
+            <td valign="top">OUT: The factor by which the size of the triggering
+			  entry / entry size increase is multiplied to obtain
+                          the initial cache size increment.  This increment 
+                          may be reduced to reflect existing free space in 
+                          the cache and the <code>max_size</code> field
+                          above.</td></tr>
+
 		<tr><td colspan="2"><strong>Decrement configuration section:</strong></td></tr>
         <tr>
 		    <td valign="top"><em>enum&nbsp;H5C_cache_decr_mode</em>&nbsp;<code>decr_mode</code>
@@ -15050,31 +15086,35 @@ END SUBROUTINE h5pset_local_heap_size_hint_f
                 </td></tr>
 
         <tr>
-           <td valign="top"><em>char</em> <code>evictions_enabled</code>
+           <td valign="top"><em>hbool_t</em> <code>evictions_enabled</code>
                 &nbsp;&nbsp;&nbsp;&nbsp;</td>
-            <td valign="top">IN: A boolean flag that is initially set
-                to <code>TRUE</code>.
+            <td valign="top">IN: A boolean flag indicating whether evictions
+		from the metadata cache are enabled.  This flag is initially 
+                set to <code>TRUE</code>.
                 <p>
-                In cases where memory is plentiful and performance is 
-                an issue, it can be useful to disable all cache evictions, 
-                thereby postponing metadata writes.  
-                The <code>evictions_enabled</code> field is used to implement 
-                and manage this behavior.
+                In rare circumstances, the raw data throughput requirements
+		may be so high that the user wishes to postpone metadata 
+                writes so as to reserve I/O throughput for raw data.  The
+                <code>evictions_enabled</code> field exists to allow this.
+                However, this is an extreme step, and you have no business
+                doing it unless you have read the User Guide section on 
+		metadata caching, and have considered all other options 
+		carefully.
+                <p>
+                The <code>evictions_enabled</code> field may not be set to 
+                <code>FALSE</code> unless all adaptive cache resizing code 
+                is disabled via the <code>incr_mode</code>, 
+                <code>flash_incr_mode</code>, and <code>decr_mode</code>
+                fields.
                 <p>
                 When this flag is set to <code>FALSE</code>, 
                 the metadata cache will not attempt to evict entries 
-                to make space for newly protected entries;
-                the cache will instead grow without limit.
+                to make space for new entries, and thus will grow without
+                bound.
                 <p>
-                Once the need for highest performance is past, 
-                or if the cache becomes unreasonably large,
-                <code>evictions_enabled</code> can be set back 
-                to <code>TRUE</code>.
-                In the general case, this will result in immediate large
-                writes of metadata to the file.
-                <p>
-                <i>This feature must be used with care as the cache can
-                quickly become extremely large.</i>
+                Evictions will be re-enabled when this field is set back 
+                to <code>TRUE</code>.  This should be done as soon as 
+                possible.
                 <p>
                 </td></tr>
 
@@ -15145,11 +15185,6 @@ END SUBROUTINE h5pset_local_heap_size_hint_f
                 From the source code file <code>H5ACpublic.h</code>:
 -->
 
-<pre>
-    enum H5C_cache_flash_incr_mode      flash_incr_mode;
-    double                              flash_multiple;
-    double                              flash_threshold;
-</pre>
                 <p>
                 </td></tr>
         <tr>
@@ -15185,6 +15220,39 @@ END SUBROUTINE h5pset_local_heap_size_hint_f
 			  &nbsp;&nbsp;&nbsp;&nbsp;</td>
             <td valign="top">IN: Maximum number of bytes by which cache size 
 			  can be increased in a single step -- if applicable.</td></tr>
+
+		<tr>
+		    <td valign="top"><em>enum&nbsp;H5C_cache_flash_incr_mode</em>&nbsp;<code>flash_incr_mode</code>&nbsp;&nbsp;&nbsp;&nbsp;</td>
+            <td valign="top">IN: Enumerated value indicating the operational mode of 
+			  the flash cache size increase code.  At present, only the following 
+			  values are legal:
+              <p>H5C_flash_incr__off:  Flash cache size increase is disabled.
+              <p>H5C_flash_incr__add_space:  Flash cache size increase is enabled using 
+			  the add space algorithm.</td></tr>
+
+        <tr>
+		    <td valign="top"><em>double</em> <code>flash_threshold</code>
+			  &nbsp;&nbsp;&nbsp;&nbsp;</td>
+            <td valign="top">IN: The factor by which the current maximum cache 
+			  size is multiplied to obtain the minimum size 
+                          entry / entry size increase which may trigger a 
+                          flash cache size increase.  
+                          <p>
+                          At present, this value must lie in the range 
+                          [0.1, 1.0].</td></tr>
+
+        <tr>
+		    <td valign="top"><em>double</em> <code>flash_multiple</code>
+			  &nbsp;&nbsp;&nbsp;&nbsp;</td>
+            <td valign="top">IN: The factor by which the size of the triggering
+			  entry / entry size increase is multiplied to obtain
+                          the initial cache size increment.  This increment 
+                          may be reduced to reflect existing free space in 
+                          the cache and the <code>max_size</code> field
+                          above.
+                          <p>
+                          At present, this field must lie in the range
+                          [0.1, 10.0].</td></tr>
         <tr><td colspan="2">&nbsp;</td></tr>
 <!-- NEW PAGE -->
 		<tr><td colspan="2"><strong>Decrement configuration section:</strong></td></tr>
@@ -17443,7 +17511,7 @@ Describes HDF5 Release 1.8.1, May 2008.
 </address>
 <!-- #EndLibraryItem --><SCRIPT LANGUAGE="JAVASCRIPT">
 <!--
-document.writeln("Last modified: 18 September 2008");
+document.writeln("Last modified: 16 October 2008");
 -->
 </SCRIPT>
  
