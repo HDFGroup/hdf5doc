@@ -1,0 +1,154 @@
+<html>
+<head>
+<title>Metadata Journaling and File Recovery</title>
+</head>
+<body>
+
+
+<!-- NEW PAGE -->
+<!-- HEADER RIGHT "Metadata Journaling and File Recovery" -->
+
+<h2>Using HDF5&rsquo;s Metadata Journaling and File Recovery Features</h2>
+
+  <h3>This document</h3>
+  <dir>
+      This document provides a very brief outline for using the
+      HDF5 metadata journaling and file recovery features.
+      More complete user guide material is being prepared. 
+
+  </dir>
+  <h3>Motivation</h3>
+  <dir>
+      The metadata journaling and file recovery feature set
+      is provided to to guard against metadata corruption,
+      providing a means of recovering cleanly from such a loss. 
+<!--
+      <p>
+      HDF5 Library functions govern metadata journaling:
+      <ul>
+          <li><a href="../RM/H5Fset_jnl_config.html">
+              <code>H5Fset_jnl_config</code></a> 
+          <li><a href="../RM/H5Fget_jnl_config.html">
+              <code>H5Fget_jnl_config</code></a> 
+          <li><a href="../RM/H5Pset_jnl_config.html">
+              <code>H5Pset_jnl_config</code></a>
+          <li><a href="../RM/H5Pget_jnl_config.html">
+              <code>H5Pget_jnl_config</code></a> 
+      </ul>
+      <p>
+      If a system crash or similar event subsequently
+      results in abandoning a file without properly closing it,
+      leaving the file in a corrupted state, 
+      a scriptable command-line tool can use that journal record to 
+      bring the metadta up-to-date:
+      <ul>
+          <li><a href="../RM/h5recover.html"><code>h5recover</code></a> 
+      </ul>
+-->
+
+      <p>
+      Note that this feature set preserves only metadata; different 
+      steps must be taken to guard against raw data loss or corruption.
+      For example, 
+      <a href="http:/www.hdfgroup.org/HDF5/doc/RM/RM_H5F.html#File-Flush">
+      <code>H5Fflush</code></a>
+      can reduce the delay between processing data and writing it to the file.
+      
+
+  </dir>
+  <h3>Metadata journaling usage</h3>
+  <dir>
+      Metadata journaling is for situations where 
+      a file is vulnerable to loss in a &ldquo;crash&rdquo; situation.
+
+      <p>
+  <b>Journaling by property list</b> 
+  <br>
+      <a href="../RM/H5Pset_jnl_config.html"><code>H5Pset_jnl_config</code></a>
+      sets up the metadata journaling configuration in 
+      a file access property list.  
+      Using this property list, a file can be opened with metadata journaling
+      already configured and running; journaling will keep running until
+      it is turned off with 
+      <a href="../RM/H5Fset_jnl_config.html"><code>H5Fset_jnl_config</code></a>,
+      the file is closed, 
+      or a crash occurs.
+      <p>
+      <a href="../RM/H5Pget_jnl_config.html"><code>H5Pget_jnl_config</code></a>
+      retrieves the metadata journaling configuration from the file access
+      property list.
+
+      <p>
+  <b>Journaling on an open file</b> 
+  <br>
+      By its nature, metadata journaling slows an HDF5 application 
+      to some degree.  It is common, therefore, to turn journaling on 
+      only at times when the file is particularly vulnerable to metadata loss.
+      <p>
+      Use 
+      <a href="../RM/H5Fset_jnl_config.html"><code>H5Fset_jnl_config</code></a> 
+      to turn metadata journaling on and off for an open file, 
+      turning it on when the file is thought to be vulnerable
+      and off when it is safe to do so.
+      When it is safe, the application can run at full speed;
+      application processing will slow only when journaling is most necessary.
+      <p>
+      <a href="../RM/H5Fget_jnl_config.html"><code>H5Fget_jnl_config</code></a> 
+      retrieves the current metadata journaling configuration for 
+      the open file.
+      <p>
+      Note that starting metadata journaling on an already-open file
+      first flushes the metadata cache so that journaling can start with 
+      a clean slate.
+      Such a cache flush can result in significant I/O, so there may be
+      a corresponding pause in application processing.
+
+      <p>
+  <b>Combined usage</b> 
+  <br>
+      The file (H5F) and property list (H5P) functions can be used 
+      in combination.
+      For example, metadata journaling can be set up in a property list
+      with <code>H5Pset_jnl_config</code> and a file opened with that
+      property list.
+      Metadata journaling can run for as long as it is needed,
+      then turned off and back on repeatedly with 
+      <code>H5Fset_jnl_config</code>.
+
+  </dir>
+  <h3>File recovery</h3>
+  <dir>
+      If a system crash or similar event subsequently
+      results in abandoning a file without properly closing it,
+      the file is very likely to be in a corrupted state. 
+      If metadata journaling was running when that crash occurred, 
+      the scriptable command-line tool 
+      <a href="../RM/h5recover.html"><code>h5recover</code></a> 
+      can use the metadata journal record to recover the lost cached metadata.
+
+  </dir>
+  <h3>See also</h3>
+  <dir>
+        <a href="../RM/H5Fset_jnl_config.html"><code>H5Fset_jnl_config</code></a>,
+        &nbsp;
+        <a href="../RM/H5Fget_jnl_config.html"><code>H5Fget_jnl_config</code></a>, 
+        &nbsp;
+        <a href="../RM/H5Pset_jnl_config.html"><code>H5Pset_jnl_config</code></a>, 
+        &nbsp;
+        <a href="../RM/H5Pget_jnl_config.html"><code>H5Pget_jnl_config</code></a> 
+        <p>
+        <a href="../RM/H5AC_jnl_config_t.html"><code>H5AC_jnl_config_t</code></a>
+        <p>
+        <a href="../RM/h5recover.html"><code>h5recover</code></a>
+        <p>
+        &ldquo;<a href="../RG/MetadataJournal_FileRecovery.html">Metadata 
+          Journaling and File Recovery</a>&rdquo;
+        <br>
+        &ldquo;<a href="../RG/Metadata_Journaling,Crash_Survivability.pdf">Metadata
+          Journaling to Improve Crash Survivability</a>&rdquo; 
+
+  </dir>
+      
+
+</body>
+</html>
