@@ -58,8 +58,49 @@ an application synchronized with the HDF5 library or related software.
 
 <dir>
 
-HDF5 Release 1.8.2 is a minor release with several bugfixes and optimizations
-and limited new features.
+This section lists API-level changes and changes in behavior 
+in the transition from HDF5 Release 1.8.1 to Release 1.8.2.
+
+    <h3>New Functions</h3>
+        <dl>
+	<dt><u>C functions:</u> 
+        <dd>The following C functions are new for this release 
+            and are documented in the
+            <a href="../RM/RM_H5Front.html"><cite>HDF5 Reference 
+                     Manual</cite></a>.
+	
+            <table border="0">
+
+            <tr>
+              <td align="left" valign="top">&nbsp;&nbsp;&nbsp;&nbsp;</td>
+              <td align="left" valign="top"><code>H5Pset_elink_fapl</code>
+                  &nbsp;&nbsp;&nbsp;&nbsp;</td>
+              <td align="left" valign="top">&nbsp;&nbsp;&nbsp;&nbsp;</td>
+              <td align="left" valign="top">
+                  <em>herr_t</em> <code>H5Pset_elink_fapl</code>(
+                  <em>hid_t</em> <code>lapl_id</code>,
+                  <em>hid_t</em><code>fapl_id</code>
+                  )
+                  <br>
+                  See <a href="../RM/RM_H5P.html#Property-SetELinkFapl">entry</a>.
+              </td>
+            </tr><tr>
+              <td align="left" valign="top">&nbsp;</td>
+              <td align="left" valign="top"><code>H5Pget_elink_fapl</code>
+                  &nbsp;&nbsp;&nbsp;&nbsp;</td>
+              <td align="left" valign="top">&nbsp;</td>
+              <td align="left" valign="top">
+                  <em>hid_t</em> <code>H5Pget_elink_fapl</code>(
+                  <em>hid_t</em> <code>lapl_id</code>
+                  )
+                  <br>
+                  See <a href="../RM/RM_H5P.html#Property-GetELinkFapl">entry</a>.
+              </td>
+            </tr>
+            </table>
+        </dl>
+
+
 
     <h3>Functions with Changed Syntax</h3>
 
@@ -100,7 +141,36 @@ and limited new features.
     <h3>Tools with Changed Interface or Behavior</h3>
     
         <dl>
-            <dt><code>h5repack</code>
+
+            <dt><code>h5diff</code>
+                <dd><code>h5diff</code> now returns <code>1</code>
+                    if the files differ in structure, 
+                    i.e., if the file graphs differ by any object.
+                    <p>
+                    The tool&rsquo;s error return code has been changed 
+                    to <code>2</code>.
+                    <p>
+
+            <dt><code>h5repack</code> and <code>h5diff</code>
+                <dd>The standard command-line syntax of both tools
+                    has been changed to parallel that of <code>h5dump</code>.
+                    The new syntax of each is as follows:
+                    <p>&nbsp;&nbsp;&nbsp;&nbsp;
+                    <code>
+                    h5repack [<i>OPTIONS</i>] <i>file1 file2</i> 
+                    </code>
+                    <p>&nbsp;&nbsp;&nbsp;&nbsp;
+                    <code>
+                    h5diff [<i>OPTIONS</i>] <i>file1 file2</i> 
+                           [<i>object1</i> [<i>object2</i>]]
+                    </code>
+                    <p>
+                    In each case, 
+                    the old syntax remains available (though undocumented)
+                    to avoid breaking existing scripts. 
+                    <p>
+                   
+            <dt><code>h5repack</code> 
                 <dd>The following new options control the addition of 
                     user block data to an existing HDF5 file:
                     <dir>
@@ -125,7 +195,8 @@ and limited new features.
                     </table>
                     </dir>
                     <p>
-                <dd>The following new options set parameters to 
+
+                <dd>The following new options set parameters 
                     governing the tool&rsquo;s use of 
                     <code>H5Pset_alignment</code>:
                     <dir>
@@ -152,27 +223,44 @@ and limited new features.
                     </dir>
                     <p>
 
-            <dt><code>h5dump</code>
+                <dd><code>h5repack</code> now supports multiple instances of
+                    the <code>'-f'</code> or <code>'--filter'</code> option, 
+                    allowing the use of multiple I/O filters with an object.
+                    <p>
+
+                <dd>With no change in the command-line syntax, 
+                    <code>h5repack</code> now retains an existing userblock
+                    when repacking an HDF5 file.
+                    <p>
+                   
+            <dt><code>h5import</code> 
+                <dd>The floating point format flag <code>TEXTFPE</code>, 
+                    for scientific notation, has been deprecated.
+                    The flag <code>TEXTFP</code>, which accepts 
+                    scientific notation, should be used instead.
+                    <p>
+
+                <dd><code>h5import</code> now imports string data 
+                    with the <code>STR</code> keyword 
+                    in the <code>INPUT-CLASS</code> configuration field.
+                    <p>
+                   
+            <dt><code>h5dump</code> 
                 <dd>Binary output now defaults to <code>NATIVE</code>
-                    with the <code>-b</code> option optionally 
+                    with the <code>'-b'</code> option, optionally 
                     accepting <code>NATIVE</code>, <code>FILE</code>, 
                     <code>BE</code>, and <code>LE</code>.
                     <p>
 
-            <dt><code>h5diff</code>
-                <dd><code>h5diff</code> now returns <code>1</code>
-                    if the files differ in structure, 
-                    i.e., if the file graphs differ by any object.
+                <dd>The new <code>'-m <i>T</i>'</code> or 
+                    <code>'--format <i>T</i>'</code> option 
+                    enables a user-defined formatting string 
+                    for printing floating-point numbers.
                     <p>
-                    The error return code has been changed to <code>2</code>.
-                    <p>
-
-            <dt><code>h5import</code>
-                <dd>The floating point format flag <code>TEXTFPE</code>, 
-                    for scientific notation, has been deprecated.
-                    <p>
-                    The flag <code>TEXTFP</code>, which accepts 
-                    scientific notation, should be used instead.
+                    
+                <dd>With no change in the command-line syntax, 
+                    <code>h5dump</code> now prints a compression ratio
+                    when compression filters are in use.
 
         </dl>
 
@@ -7374,7 +7462,7 @@ Describes HDF5 Release 1.8.2, November 2008.
 </address>
 <!-- #EndLibraryItem --><!-- Created: Spring 1999 -->
 <!-- hhmts start -->
-Last modified: 4 November 2008 
+Last modified: 5 November 2008 
 <!-- hhmts end -->
 
 </body>
