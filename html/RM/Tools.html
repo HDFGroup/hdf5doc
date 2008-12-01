@@ -1561,17 +1561,24 @@ installed with HDF5.
 <dt><strong>Tool Name:</strong> <a name="Tools-Copy">h5copy</a>
 
 <dt><strong>Syntax:</strong>
-<dd><code>h5copy [OPTIONS] file/object new_file/object</code></dd>
+    <dd><code>h5copy [OPTIONS] [OBJECTS]</code>
+<!--
+    <dd><code>h5copy [OPTIONS] file/object new_file/object</code>
+-->
 
 <dt><strong>Purpose:</strong>
-  <dd>Copy an object from an HDF5 file to a new HDF5 file.</dd>
+    <dd>Copy an object from one HDF5 file to another HDF5 file.</dd>
 <dt><strong>Description:</strong>
-  <dd><code>h5copy</code>&nbsp; copies a HDF5 object 
+    <dd><code>h5copy</code>&nbsp; copies an HDF5 object 
     (dataset, named datatype, or group) 
-    from an HDF5 file to a new HDF5 file.</dd>
+    from one HDF5 file to another HDF5 file, 
+    which may either already exist or not.</dd>
         
-<dt><strong>Options and Parameters:</strong>
-  <dir><dl>
+<dt><strong>Arguments:</strong>
+    <dir>
+    <dl>
+    <dt><strong>Options and Parameters:</strong>
+<!--
     <dt><code>file/object</code>
       <dd>An existing HDF5 file (<code>file</code>) and an existing HDF5 
 	object (<code>object</code>) within the file. The slash (/) is used 
@@ -1579,28 +1586,34 @@ installed with HDF5.
     <dt><code>new_file/object</code>
        <dd>Newly created HDF5 file (<code>new_file</code>) and 
          HDF5 (<code>object</code>) object within the file.
-     <dt><code>[OPTIONS]</code>
-       <dd>Input options.
+-->
      <dt><code>-h</code>
-       <dd>Print a usage message and exit
+         &nbsp; or &nbsp;
+         <code>--help</code>
+         <dd>Print a usage message and exit.
      <dt><code>-v</code>
-       <dd>Produce verbose output.
-     <dt><code>-f FLAG</code>
-       <dd>A string indicating several copy options. 
-       <br>
-       <code>FLAG </code>can be one of the following strings:
-       <dir>
-       <code>SHALLOW</code> 
-           &nbsp; Copy only immediate members for groups.<br>
-       <code>SOFT&nbsp;&nbsp;&nbsp;</code> 
-           &nbsp; Expand soft links to new objects.<br>
-       <code>EXT&nbsp;&nbsp;&nbsp;&nbsp;</code> 
-           &nbsp; Expand external links to new objects.<br>
-       <code>REF&nbsp;&nbsp;&nbsp;&nbsp;</code> 
-           &nbsp; Copy objects that are pointed to by references.<br>
-       <code>ATTR&nbsp;&nbsp;&nbsp;</code> 
-           &nbsp; Copy objects without copying attributes.<br>
-       </dir>
+         &nbsp; or &nbsp;
+         <code>--verbose</code>
+         <dd>Produce verbose output, printing information regarding
+             the specified options and objects.
+     <dt><code>-f flag_type</code>
+         &nbsp; or &nbsp;
+         <code>--flag=flag_type</code>
+         <dd>Specify one or more of several copy options; 
+         <code>flag_type</code> may be one of the following strings
+         or a logical AND of two or more:
+         <dir>
+             <code>shallow</code> 
+                 &nbsp; Copy only immediate members of a group.<br>
+             <code>soft&nbsp;&nbsp;&nbsp;</code> 
+                 &nbsp; Expand soft links to copy target objects.<br>
+             <code>ext&nbsp;&nbsp;&nbsp;&nbsp;</code> 
+                 &nbsp; Expand external links to copy external objects.<br>
+             <code>ref&nbsp;&nbsp;&nbsp;&nbsp;</code> 
+                 &nbsp; Copy objects that are pointed to by references.<br>
+             <code>attr&nbsp;&nbsp;&nbsp;</code> 
+                 &nbsp; Copy objects without copying attributes.<br>
+         </dir>
 <!--
        <dd>These flag types correspond to the following API symbols for 
          H5Ocopy
@@ -1612,19 +1625,47 @@ installed with HDF5.
        H5G_COPY_WITHOUT_ATTR_FLAG
        </pre>
 -->
+     <dt><code>-V</code>
+         &nbsp; or &nbsp;
+         <code>--Version</code>
+         <dd>Print version information.
+  <p>
+  <dt><strong>Objects (all required):</strong>
+     <dt><code>-i input_file</code>
+         &nbsp; or &nbsp;
+         <code>--input=input_file</code>
+         <dd>Input HDF5 file name
+     <dt><code>-o output_file</code>
+         &nbsp; or &nbsp;
+         <code>--output=output_file</code>
+         <dd>Output HDF5 file name (existing or non-existing)
+     <dt><code>-s source_object</code>
+         &nbsp; or &nbsp;
+         <code>--source=source_object</code>
+         <dd>Input HDF5 object name within the source file
+     <dt><code>-d destination_object</code>
+         &nbsp; or &nbsp;
+         <code>--destination=destination_object</code>
+         <dd>Output HDF5 object name within the destination file
   </dl></dir>
 <dd>&nbsp; </dd>
 
 <dt><strong>Example Usage</strong></dt>
-<dd>Create a new file, <code>test1.out.h5</code>,&nbsp; with the object 
-  <code>array</code> in it, copied from the existing file 
-  <code>test1.h5</code> and object <code>array</code>.
-  <pre>&nbsp;&nbsp;&nbsp;&nbsp;h5copy -v test1.h5/array test1.out.h5/array</pre>
-  Create a new file, <code>test1.out.h5</code>,&nbsp; with the object 
-  <code>array</code> in it, copied from the existing file 
-  <code>test1.h5</code> and object <code> array</code>, 
-  and use the flag&nbsp; <code>SHALLOW</code>.
-  <pre>&nbsp;&nbsp;&nbsp;&nbsp;h5copy -v -f <code>SHALLOW </code>test1.h5/array test1.out.h5/array</pre>
+    <dd>In verbose mode, 
+        create a new file, <code>test1.out.h5</code>, 
+        containing the object <code>array</code> in the root group, 
+        copied from the existing file <code>test1.h5</code> 
+        and object <code>array</code>.
+        <pre>    h5copy -v -i "test1.h5" -o "test1.out.h5" -s "/array" -d "/array
+        </pre>
+        <p>
+        In verbose mode and using the flag <code>shallow</code> 
+        to prevent recursion in the file hierarchy,
+        create a new file, <code>test1.out.h5</code>, 
+        containing the object <code>array</code> in the root group, 
+        copied from the existing file <code>test1.h5</code> 
+        and object <code> array</code>.
+        <pre>    h5copy -v -f shallow -i "test1.h5" -s "/array" -o test1.out.h5" -d "/array"</pre>
 
 
 <dt><strong>History:</strong>
@@ -3966,7 +4007,7 @@ Describes HDF5 Release 1.8.2, November 2008.
 <!-- #EndLibraryItem --><dl>
   <dt><dt><SCRIPT LANGUAGE="JAVASCRIPT">
 <!--
-document.writeln("Last modified: 4 June 2008");
+document.writeln("Last modified: 30 November 2008");
 -->
 </SCRIPT>
 
