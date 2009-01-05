@@ -172,7 +172,116 @@
       is in sync with the metadata.
 
   </dir>
-  <h3>Example 1: Metadata journaling in an HDF5 file</h3>
+  <h3>Example 1: Metadata journaling with HDF5</h3>
+  <dir>
+
+      The C example in the file
+      <a href="../examples/enable_journaling1.c"><code>enable_journaling1.c</a>
+      demonstrates enabling metadata journaling at file creation time 
+      and enabling journaling on an open file.  
+      It also demonstrates disabling metadata journaling both manually 
+      during a computation and automatically at file close.  
+      Finally, the example demonstrates the use of 
+      <a href="http://www.hdfgroup.org/HDF5/doc/RM/RM_H5F.html#File-Flush">
+      <code>H5Fflush</code></a> 
+      to keep the journal file from becoming too large.
+      <p>
+      The example  begins by creating an HDF5 file with journaling enabled.
+      The paths to the HDF5 and journal files are passed in, so the only point 
+      to consider is whether the journal file already exists, as HDF5 will 
+      refuse to overwrite it if it does.  This example removes any pre-existing
+      journal file unconditionally, but you will probably wish to do otherwise 
+      in your application.
+      <p>
+      With these preliminaries dealt with, the example allocates a 
+      file access property list (FAPL).  Journaling uses recent extensions 
+      to the superblock, so the first step is to call 
+      <a href="http://www.hdfgroup.org/HDF5/doc/RM/RM_H5P.html#Property-SetLibverBounds">
+      <code>H5Pset_libver_bounds</code></a>
+      to specify using the latest version of the HDF5 file format.
+      <p>
+      The example next sets up the journaling property.  
+      We could do this in several ways, but this example uses
+      <a href="../RM/H5Pget_jnl_config.html"><code>H5Pget_jnl_config</code></a> 
+      to get the default journaling configuration, 
+      modifies that configuration as needed, 
+      and then uses 
+      <a href="../RM/H5Pset_jnl_config.html"><code>H5Pset_jnl_config</code></a> 
+      to replace the default journaling configuration with our own.  
+      See the comments in the code for the particulars, noting that 
+      we must set the version field of the 
+      <a href="../RM/H5AC_jnl_config_t.html"><code>H5AC2_jnl_config_t</code></a>
+      struct before calling <code>H5Pget_jnl_config</code>.
+      <p>
+      After setting up the FAPL, this example creates the file as usual.
+      Since the FAPL calls for metadata journaling, journaling will be enabled 
+      on this file.
+      <p>
+      With the file created and journaling running, we can then go off 
+      and do what we want; this is where application computation occures. 
+      This example sets up a selection of chunked datasets.  
+      Note that these datasets (and the later access pattern) 
+      are chosen to maximize the amount of dirty metadata generated.  
+      This is done deliberately to exercise the metadata journaling features.  
+      Your application will presumably be structured quite differently.
+      <p>
+      After the datasets are created, journaling is shut down and
+      re-started via 
+          <a href="../RM/H5Fget_jnl_config.html">
+          <code>H5Fget_jnl_config</code></a> 
+      and 
+          <a href="../RM/H5Fset_jnl_config.html">
+          <code>H5Fset_jnl_config</code></a>
+      calls.  Note that when re-enabling journaling via the 
+      <code>H5Fset_jnl_config</code> call, not all of the fields 
+      in the <code>H5AC2_jnl_config_t</code> struct need to be reset; 
+      the configuration obtained via the original 
+      <code>H5Fget_jnl_config</code> call is re-used.  
+      (If we had originally opened the file without journaling and
+      then wanted to enable journaling, we would have to set up the
+      fields of the <code>H5AC2_jnl_config_t</code> struct in much the same way 
+      we did earlier in this example.  We would also have had to use
+      <code>H5Pset_libver_bounds</code> to set the FAPL to create the file 
+      initially with the latest HDF5 file format format.) 
+      <p>
+      Having re-enabled journaling, the example then proceeds to write to 
+      the datasets.  Again, please note that the write strategy in this 
+      example (round robin and small chunks) is designed to maximize
+      dirty metadata generation and to load on the metadata cache.
+      When possible, real applications would be designed to do just the 
+      opposite.
+      <p>
+      This example maximizes dirty metadata generation deliberately to force
+      the journal file will grow quickly, setting up the next illustration.  
+      Large journal files can be a problem, so from time to time it may
+      be necessary to force truncation of the journal file via a call to 
+      <code>H5Fflush</code>.  This call flushes the HDF5 file then truncates 
+      the journal file, as the content of the journal becomes irrelevant 
+      after the metadata journal is flushed.
+      <p>
+      After writing data to the datasets, the example then does a number of 
+      reads.  We could turn off journaling here, as we are not modifying the 
+      file.  But neither are we generating dirty metadata or journal entries,
+      so there is no cost to keep journaling running.
+      <p>
+      Finally, the example closes the HDF5 file.  Since journaling is enabled,
+      the call to 
+      <a href="http://www.hdfgroup.org/HDF5/doc/RM/RM_H5F.html#File-Close">
+      <code>H5Fclose</code></a> 
+      will flush the journal, flush the metadata cache, truncate the journal, 
+      mark the file as not having journaling in progress, 
+      and then delete the journal file as part of the close.
+      <p>
+      This example may run for several minutes.  If you are 
+      interested in observing the example's behavior (or if you are
+      just bored), run <code>'ls -l'</code> every few seconds in the directory 
+      containing the journal file; you will be able to watch the 
+      journal file grow, see when it is truncated as the file is 
+      flushed, and watch it grow again.  This cycle is repeated many 
+      times through the course of the example.
+
+  </dir>
+  <h3>Example 2: Metadata journaling with HDF5 and file recovery</h3>
   <dir>
       The file 
       <a href="../examples/enable_journaling.c"><code>enable_journaling.c</a>
@@ -195,9 +304,100 @@
       </pre>
 
   </dir>
-  <h3>Example 2: Metadata journaling with netCDF-4</h3>
+  <h3>Example 3: Metadata journaling with netCDF-4 and file recovery</h3>
   <dir>
-      <i>(NetCDF4 example will go here.)</i>
+      NetCDF-4 employs a single function, 
+      <code>nc_set_metadata_journaling()</code>,
+      to control metadata journaling.
+      The example files 
+      <a href="../examples/nc4_norecover.c"><code>nc4_norecover.c</code></a>
+      and 
+      <a href="../examples/nc4_recover.c"><code>nc4_recover.c</code></a>
+      demonstrate the simple code additions required to use this function
+      to enable HDF5 metadata journaling for data files;  
+      the code in these files is identical except 
+      for the names of the output data files and 
+      the fact that <code>nc4_recover.c</code> includes a call to 
+      <code>nc_set_metadata_journaling</code>
+      and the setup that that function requires.
+      Running the examples will produce two files:
+      <code>nc4_recover.c</code> produces <code>recover.nc</code> and
+      <code>nc4_norecover.c</code> produces <code>norecover.nc</code>.  
+      <p>
+      Both example codes generate an interrupt that causes the output files 
+      to be corrupted, so running the netCDF-4 utility <code>ncdump</code> 
+      on these files will result in an error.  
+      But since <code>nc4_recover.c</code> employs metadata journaling, 
+      the data in the file <code>recover.nc</code> can be recovered 
+      with the use of the HDF5 utility <code>h5recover</code> as follows:
+      <pre>    h5recover -j recover.jnl recover.nc </pre>
+      <code>nc4_norecover.c</code> does not employ metadata journaling,
+      so the file <code>norecover.nc</code> cannot be recovered.
+      <p>
+      HDF5 does not journal raw data; therefore raw data consistency 
+      is unknown if a file is open when a machine crash occurs.  
+      But these example files illustrate one method of using 
+      journaled metadata to track the certainty of consistent raw data 
+      in an application which only appends data, 
+      never changing previously written data.  
+      The examples write four arrays of 32768 rows of 16 integers 
+      to a dataset in the test file, considering each of these arrays 
+      to be a consistent set of data if and only if it is complete.
+      <p>
+      The procedure for tracking data in the example is to write one of 
+      the arrays, sync the test file, write the iteration number to 
+      an attribute named <code>DataLastUpdated</code>, 
+      and sync the test file again to flush the current attribute value 
+      to disk.  The example data consists of rows of consecutive integers 
+      beginning with the iteration number at the beginning of 
+      row 0 and consecutively higher integers to begin each row 
+      and across each row, as illustrated.  
+      <pre>        1 2 3 ... 16
+        2 3 4 ... 17
+        3 4 5 ... 18
+          .
+          .
+          .
+        32767 32768 32769 ... 32782
+        32768 32769 32770 ... 32783 </pre>
+      <p>
+      Four arrays of consecutive integers will be present 
+      in the recovered file: 
+      the first three arrays will contain the integers
+          0 through 131086, 
+          1 through 131087, and
+          2 through 131088, respectively;
+      the fourth array will contain the integers
+          3 through 98321 followed by 524288 fill values.  
+      These arrays can be conveniently viewed by running this command
+      <pre>    &lt;path to ncdump&gt;/ncdump recover.nc | more </pre>
+      then searching for the largest number of each successive array 
+      (e.g. /131086).
+      <p>
+      The fill values are present in the fourth array 
+      because that array of data is not synced to disk 
+      before terminating the program.  
+      Since some of the data written to the file is flushed 
+      when the cache reaches its capacity, approximately three-fourths 
+      of the fourth array is present on disk.  
+      The <code>DataLastUpdated</code> attribute at the beginning 
+      of the file should have a value of 2, indicating that the 
+      third array was completely synced to disk, and that the 
+      fourth array was not completely written to disk 
+      and should therefore be entirely disregarded.  
+      <p>
+      For real data, the tracking attribute should be assigned a value 
+      that corresponds to a unique value identifying the 
+      most recently written collection of data.  
+      The key to accurately tracking the raw data is to write 
+      the value associated with the recently written and 
+      completely synced raw data to the tracking attribute, 
+      followed by another sync of the file to ensure that 
+      the updated attribute value is written to disk.  
+      This last sync avoids discarding data that could not be validated 
+      if the program crashes after writing the attribute value 
+      but before the next sync of the file occurs.
+
 
 
   </dir>
@@ -241,7 +441,13 @@
           <p>
       </td><td>&nbsp;</td><td>
           <p>
+          <a href="../examples/enable_journaling1.c"><code>enable_journaling1.c</a>
+          <br>
           <a href="../examples/enable_journaling.c"><code>enable_journaling.c</a>
+          <br>
+          <a href="../examples/nc4_recover.c"><code>nc4_recover.c</a>
+          <br>
+          <a href="../examples/nc4_norecover.c"><code>nc4_norecover.c</a>
           <p>
 
       </td></tr><tr valign=top><td>
