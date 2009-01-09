@@ -181,14 +181,14 @@ mdj_api_example(char * hdf5_file_name,
 
     /* The HDF5 library will refuse to overwrite an existing journal
      * file -- thus we delete it unconditionally here.  You probably 
-     * don't want to do this in your application.
+     * want to to be more cautious in your application.
      */
     remove(jnl_file_name);
 
     fprintf(stdout, "setting up FAPL...");
     fflush(stdout);
 
-    /* create a file access propertly list. */
+    /* Create a file access propertly list (FAPL). */
     fapl_id = H5Pcreate(H5P_FILE_ACCESS);
 
     if ( fapl_id < 0 ) {
@@ -198,7 +198,7 @@ mdj_api_example(char * hdf5_file_name,
     }
 
 
-    /* need latest version of file format to use journaling */
+    /* Metadata journaling requires the latest version of the file format.  */
     if ( H5Pset_libver_bounds(fapl_id, H5F_LIBVER_LATEST, 
 			      H5F_LIBVER_LATEST) < 0 ) {
 
@@ -208,11 +208,11 @@ mdj_api_example(char * hdf5_file_name,
     }
 
 
-    /* Get the current FAPL journaling configuration.  This should be 
-     * the default, and we could just write a predifined journal configuration
-     * structure to the FAPL directly, but doing it this way shows off the
-     * H5Pget_jnl_config() call, and is less suceptible to API definition
-     * changes.
+    /* Get the current FAPL journaling configuration; this will normally be 
+     * the default. We could just write a predefined journal configuration
+     * structure to the FAPL directly, but creating it in the manner 
+     * illustrated here shows off the H5Pget_jnl_config() call and is less 
+     * suceptible to API definition changes.
      */
     jnl_config_0.version = H5AC2__CURR_JNL_CONFIG_VER;
 
@@ -226,7 +226,7 @@ mdj_api_example(char * hdf5_file_name,
 
 
     /* Modify the current FAPL journaling configuration to enable 
-     * journaling as desired, and then write the revised configuration
+     * journaling as desired, then write the revised configuration
      * back to the FAPL.
      */
     jnl_config_0.enable_journaling = 1; /* TRUE */
@@ -234,33 +234,33 @@ mdj_api_example(char * hdf5_file_name,
     strcpy(jnl_config_0.journal_file_path, jnl_file_name);
 
     /* jnl_config_0.journal_recovered should always be FALSE unless
-     * you are writing a new journal recovery tool, and need to 
+     * you are writing a new journal recovery tool and need to 
      * tell the library that you have recovered the journal and 
      * that the file is now readable.  As this field is set to 
      * FALSE by default, we don't touch it here.
      */
 
-    /* the journal buffer size should  be some multiple of the block 
+    /* The journal buffer size should be some multiple of the block 
      * size of the underlying file system.  
      */
     jnl_config_0.jbrb_buf_size = (8 * 1024);
 
-    /* the number of journal buffers should be either 1 or 2 when 
-     * synchronous I/O is used for journal writes.  If AIO is used,
-     * the number should be large enough that the write of a buffer 
-     * will usually be complete by the time that buffer is needed
-     * again.
+    /* The number of journal buffers should be either 1 or 2 when 
+     * synchronous I/O is used for journal writes.  If asynchronous I/O (AIO) 
+     * is used, the number should be large enough that the write of a buffer 
+     * will usually be complete by the time that buffer is needed again.
      */
     jnl_config_0.jbrb_num_bufs = 2;
 
-    /* At present we don't support AIO for journal writes, so this 
+    /* At present, HDF5 does not support AIO for journal writes, so this 
      * field will be FALSE.
      */
     jnl_config_0.jbrb_use_aio = 0; /* FALSE */
 
-    /* At present only human readable journal file are supported
-     * so this field will be TRUE for now.  Once it becomes available,
-     * machine readable journal files should be smaller and faster.
+    /* At present, only human-readable journal files are supported,
+     * so this field will be TRUE for now.  Once machine readable journal 
+     * files become available, journaling should be faster and journal files 
+     * will be smaller.
      */
     jnl_config_0.jbrb_human_readable = 1; /* TRUE */
         
@@ -289,12 +289,12 @@ mdj_api_example(char * hdf5_file_name,
     fprintf(stdout, "creating the datasets...");
     fflush(stdout);
 
-    /* create the datasets */
+    /* Create the datasets. */
     i = 0;
 
     while ( i < NUM_DSETS )
     {
-        /* create a dataspace for the chunked dataset */
+        /* Create a dataspace for the chunked dataset. */
         dims[0] = DSET_SIZE;
         dims[1] = DSET_SIZE;
         dataspace_id = H5Screate_simple(2, dims, NULL);
@@ -305,8 +305,8 @@ mdj_api_example(char * hdf5_file_name,
 	    exit(1);
 	}
 
-        /* set the dataset creation plist to specify that the raw data is
-         * to be partioned into 10X10 element chunks.
+        /* Set the dataset creation property list to specify that the raw data 
+         * is to be partitioned into 10X10 element chunks.
          */
 
         chunk_size[0] = CHUNK_SIZE;
@@ -325,7 +325,7 @@ mdj_api_example(char * hdf5_file_name,
 	    exit(1);
 	}
 
-        /* create the dataset */
+        /* Create the dataset. */
         sprintf(dset_name, "/dset%03d", i);
         dataset_ids[i] = H5Dcreate2(file_id, dset_name, H5T_STD_I32BE,
 			            dataspace_id, H5P_DEFAULT, 
@@ -338,7 +338,7 @@ mdj_api_example(char * hdf5_file_name,
 	}
 
 
-        /* get the file space ID */
+        /* Get the file dataspace ID. */
         filespace_ids[i] = H5Dget_space(dataset_ids[i]);
 
         if ( filespace_ids[i] < 0 ) {
@@ -354,10 +354,10 @@ mdj_api_example(char * hdf5_file_name,
     fprintf(stdout, "disabling and re-enabling journaling...");
     fflush(stdout);
 
-    /* just for purposes of demonstration, turn off journaling, and 
-     * then turn it back on again.  Note that this will force a 
-     * flush of the file, and all metadata with it.  Turning off 
-     * journaling will also cause us to close and discard the 
+    /* Just for purposes of demonstration, turn off journaling and 
+     * turn it back on again.  Note that this will force a 
+     * flush of the file, including all metadata.  Turning off 
+     * journaling will also cause HDF5 to close and discard the 
      * journal file after all metadata is on disk.
      */
     jnl_config_1.version = H5AC2__CURR_JNL_CONFIG_VER;
@@ -382,7 +382,7 @@ mdj_api_example(char * hdf5_file_name,
 
 
     /* Note that here we simply set jnl_config_1.enable_journaling to
-     * TRUE, and pass it back to the HDF5 library via the 
+     * TRUE and pass it back to the HDF5 library via the 
      * H5Fset_jnl_config() call.  
      *
      * We can do this because jnl_config_1 reflected the current 
@@ -404,7 +404,7 @@ mdj_api_example(char * hdf5_file_name,
     fprintf(stdout, "setting up to write the datasets...");
     fflush(stdout);
 
-    /* create the mem space to be used to read and write chunks */
+    /* Create the memory dataspace to be used to read and write chunks. */
     dims[0] = CHUNK_SIZE;
     dims[1] = CHUNK_SIZE;
     memspace_id = H5Screate_simple(2, dims, NULL);
@@ -415,7 +415,7 @@ mdj_api_example(char * hdf5_file_name,
 	exit(1);
     }
 
-    /* select in memory hyperslab */
+    /* Select in-memory hyperslab. */
     offset[0] = 0;  /*offset of hyperslab in memory*/
     offset[1] = 0;
     a_size[0] = CHUNK_SIZE;  /*size of hyperslab*/
@@ -433,7 +433,7 @@ mdj_api_example(char * hdf5_file_name,
     fprintf(stdout, "writing the datasets...");
     fflush(stdout);
 
-    /* initialize all datasets on a round robin basis */
+    /* Initialize all datasets on a round robin basis. */
     i = 0;
     progress_counter = 0;
 
@@ -445,7 +445,7 @@ mdj_api_example(char * hdf5_file_name,
             m = 0;
             while ( m < NUM_DSETS )
             {
-                /* initialize the slab */
+                /* Initialize the hyperslab. */
                 for ( k = 0; k < CHUNK_SIZE; k++ )
                 {
                     for ( l = 0; l < CHUNK_SIZE; l++ )
@@ -455,7 +455,7 @@ mdj_api_example(char * hdf5_file_name,
                     }
                 }
 
-                /* select on disk hyperslab */
+                /* Select on-disk hyperslab. */
                 offset[0] = i; /*offset of hyperslab in file*/
                 offset[1] = j;
                 a_size[0] = CHUNK_SIZE;   /*size of hyperslab*/
@@ -470,7 +470,7 @@ mdj_api_example(char * hdf5_file_name,
 		    exit(1);
                 }
 
-                /* write the chunk to file */
+                /* Write the chunk to the file. */
                 status = H5Dwrite(dataset_ids[m], H5T_NATIVE_INT, memspace_id,
                                   filespace_ids[m], H5P_DEFAULT, data_chunk);
 
@@ -489,13 +489,13 @@ mdj_api_example(char * hdf5_file_name,
 	/* We are generating a lot of dirty metadata here, all of which 
 	 * will wind up in the journal file.  To keep the journal file
 	 * from getting too big (and to make sure the raw data is on 
-	 * disk, we should do an occasional flush of the HDF5 file.
+	 * disk), we should do an occasional flush of the HDF5 file.
 	 *
-	 * This will force all metadata to disk, and cause the journal
+	 * This will force all metadata to disk and cause the journal
 	 * file to be truncated.
 	 *
 	 * On the other hand, it will impose a significant file I/O 
-	 * overhead, and slow us down. (try it both ways).
+	 * overhead, and slow us down. (Try it both ways.)
 	 */
 #if 1 
 	status = H5Fflush(file_id, H5F_SCOPE_GLOBAL);
@@ -510,7 +510,7 @@ mdj_api_example(char * hdf5_file_name,
         fflush(stdout);
     }
 
-    /* do random reads on all datasets */
+    /* Do random reads on all datasets. */
 
     fprintf(stdout, "done.\n");
     fprintf(stdout, "doing random reads across all datasets...");
@@ -524,7 +524,7 @@ mdj_api_example(char * hdf5_file_name,
         i = (rand() % (DSET_SIZE / CHUNK_SIZE)) * CHUNK_SIZE;
         j = (rand() % (DSET_SIZE / CHUNK_SIZE)) * CHUNK_SIZE;
 
-        /* select on disk hyperslab */
+        /* Select on-disk hyperslab. */
         offset[0] = i; /*offset of hyperslab in file*/
         offset[1] = j;
         a_size[0] = CHUNK_SIZE;   /*size of hyperslab*/
@@ -538,7 +538,7 @@ mdj_api_example(char * hdf5_file_name,
 	    exit(1);
         }
 
-        /* read the chunk from file */
+        /* Read the chunk from the file. */
         status = H5Dread(dataset_ids[m], H5T_NATIVE_INT, memspace_id,
                          filespace_ids[m], H5P_DEFAULT, data_chunk);
 
@@ -548,7 +548,7 @@ mdj_api_example(char * hdf5_file_name,
             exit(1);
         }
 
-        /* validate the slab */
+        /* Validate the hyperslab. */
         valid_chunk = 1; /* TRUE */
         for ( k = 0; k < CHUNK_SIZE; k++ )
         {
@@ -577,7 +577,7 @@ mdj_api_example(char * hdf5_file_name,
     fprintf(stdout, "closing data sets 1 and up...");
     fflush(stdout);
 
-    /* close the file spaces we are done with */
+    /* Close the file dataspaces we are done with. */
     i = 1;
     while ( i < NUM_DSETS )
     {
@@ -590,7 +590,7 @@ mdj_api_example(char * hdf5_file_name,
     }
 
 
-    /* close the datasets we are done with */
+    /* Close the datasets we are done with. */
     i = 1;
     while ( i < NUM_DSETS )
     {
@@ -606,7 +606,7 @@ mdj_api_example(char * hdf5_file_name,
     fprintf(stdout, "doing random reads on data set 0 only...");
     fflush(stdout);
 
-    /* do random reads on data set 0 only */
+    /* Do random reads on data set 0 only. */
     m = 0;
     n = 0;
     progress_counter = 0;
@@ -615,7 +615,7 @@ mdj_api_example(char * hdf5_file_name,
         i = (rand() % (DSET_SIZE / CHUNK_SIZE)) * CHUNK_SIZE;
         j = (rand() % (DSET_SIZE / CHUNK_SIZE)) * CHUNK_SIZE;
 
-        /* select on disk hyperslab */
+        /* Select on-disk hyperslab. */
         offset[0] = i; /*offset of hyperslab in file*/
         offset[1] = j;
         a_size[0] = CHUNK_SIZE;   /*size of hyperslab*/
@@ -638,7 +638,7 @@ mdj_api_example(char * hdf5_file_name,
 	    exit(1);
         }
 
-        /* validate the slab */
+        /* Validate the hyperslab. */
         valid_chunk = 1; /* TRUE */
         for ( k = 0; k < CHUNK_SIZE; k++ )
         {
@@ -667,35 +667,35 @@ mdj_api_example(char * hdf5_file_name,
     fprintf(stdout, "closing down...");
     fflush(stdout);
 
-    /* close file space 0 */
+    /* Close file dataspace 0. */
     if ( H5Sclose(filespace_ids[0]) < 0 ) {
 
         fprintf(stderr, "H5Sclose(filespace_ids[0]) failed.  Exiting...\n");
         exit(1);
     }
 
-    /* close the data space */
+    /* Close the dataspace. */
     if ( H5Sclose(dataspace_id) < 0 ) {
 
         fprintf(stderr, "H5Sclose(dataspace_id) failed.  Exiting...\n");
         exit(1);
     }
 
-    /* close the mem space */
+    /* Close the memmory dataspace */
     if ( H5Sclose(memspace_id) < 0 ) {
 
         fprintf(stderr, "H5Sclose(memspace_id) failed.  Exiting...\n");
         exit(1);
     }
 
-    /* close dataset 0 */
+    /* Close dataset 0. */
     if ( H5Dclose(dataset_ids[0]) < 0 ) {
 
         fprintf(stderr, "H5Dclose(dataset_ids[0]) failed.  Exiting...\n");
         exit(1);
     }
 
-    /* close the file and delete it */
+    /* Close the file and delete it. */
     if ( H5Fclose(file_id) < 0  ) {
 
         fprintf(stderr, "H5Fclose() failed.  Exiting...\n");
