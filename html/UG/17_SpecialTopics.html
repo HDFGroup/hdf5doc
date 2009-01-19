@@ -212,7 +212,7 @@ document.writeln ('\
   time they reach the end of the LRU list, they are flushed, marked
   as clean, and moved to the head of the LRU list.  When a clean
   entry reaches the end of the LRU list, it is simply evicted if
-  space is needed.
+  space is needed.  
 
 <p>The cache cannot evict entries that are locked, and thus it
   will temporarily grow beyond its maximum size if there are
@@ -253,10 +253,24 @@ document.writeln ('\
 <p>To decrease the likelihood of this event, the new cache allows
   the user to specify a minimum clean size -- which is a minimum
   total size of all the entries on the clean LRU plus all unused
-  space in the cache.  Note that the clean LRU list is only
-  maintained in the parallel version of the HDF5 library, and
-  thus that the minimum clean size is only relevant when running
-  that version.
+  space in the cache.  
+  
+<p>While the clean LRU list is only maintained in the parallel 
+  version of the HDF5 library, the notion of a minimum clean size 
+  still applies in the serial case.  Here it is used to force a 
+  mix of clean and dirty entries in the cache even in the write only
+  case. 
+  
+<p>This in turn reduces the number of redundant flushes by avoiding 
+  the case in which the cache fills with dirty metadata and all 
+  entries must be flushed before a clean entry can be evicted to 
+  make room for a new entry.
+
+<p>Observe that in both the serial and parallel cases, the maintenance
+  of a minimum clean size modifies the replacement policy, as dirty 
+  entries may be flushed earlier than would otherwise be the case so 
+  as to maintain the desired amount of clean and/or empty space in 
+  the cache.
 
 <p>While the new metadata cache only supports the LRU replacement
   policy at present, that may change.  Support for multiple
@@ -312,8 +326,8 @@ document.writeln ('\
   current metadata cache size.
 
 <p>The algorithms for handling these situations are discussed below.
-  These problems are largely orthoginal to each other, so both algorithms
-  may be used simultaniously.
+  These problems are largely orthogonal to each other, so both algorithms
+  may be used simultaneously.
   
 <h4>2.3.1.1 Hit Rate Threshold Cache Size Increment:</h4>
 
@@ -341,7 +355,7 @@ document.writeln ('\
   cache size, and load remained steady for many epochs, I observed a
   case in which cache size increased until hit rate just exceeded
   the specified minimum and then stalled.  This is a problem, as to
-  avoid volitility, it is necessary to set the minimum hit rate
+  avoid volatility, it is necessary to set the minimum hit rate
   threshold well below the desired hit rate.  Thus we may find ourselves
   with a cache running with a 91% hit rate when we really want it to
   increase its size until the hit rate is about 99%.
@@ -363,7 +377,7 @@ document.writeln ('\
 
 <p>While it is true that such occurances are rare, and it is true that
   the hit rate threshold cache size increment algorithm will rectify
-  the situation eventually, the performance degredation experienced 
+  the situation eventually, the performance degradation experienced 
   by users while waiting for the epoch to end was so extreme that 
   some way of accelerating response to such situations was essential.
 
@@ -379,15 +393,15 @@ document.writeln ('\
   of the old, copy the data from the old local heap into the new, and 
   discard the old local heap.
 
-<p>By default, the minimum metadata cache size is set to 1 MB.  Thus in
+<p>By default, the minimum metadata cache size is set to 2 MB.  Thus in
   this use case, our hit rate will be fine as long as the local heap is
-  no larger than a little less than 1 MB, as the group related metadata 
+  no larger than a little less than 2 MB, as the group related metadata 
   is accessed frequently and never evicted, and the data set related 
   metadata is never accessed once the data set is closed, and thus is 
   evicted smoothly to make room for new data sets.
 
 <p>All this changes abruptly when the local heap finally doubles in size
-  to a value above the slightly less than 1 MB limit.  All of a sudden, 
+  to a value above the slightly less than 2 MB limit.  All of a sudden, 
   the local heap is the size of the metadata cache, and the cache must 
   constantly swap it in to access it, and then swap it out to make room 
   for other metadata.  
@@ -718,9 +732,11 @@ document.writeln ('\
   thereby avoid changing it.
 
 <p>The <code>min_clean_fraction</code> sets the current minimum 
-  clean size as a fraction of the current max cache size.  This 
-  field is only used in the parallel version of the library, and 
-  must lie in the range [0.0, 1.0].  0.5 is a reasonable value.
+  clean size as a fraction of the current max cache size.  While
+  this field was originally used only in the parallel version of 
+  the library, it now applies to the serial version as well. 
+  Its value must lie in the range [0.0, 1.0].  0.3 is a reasonable 
+  value.
 
 <p>The <code>max_size</code> and <code>min_size</code> fields specify 
   the range of maximum sizes that may be set for the cache by the 
@@ -823,7 +839,7 @@ document.writeln ('\
 <p>If increment is greater than zero, increase the current cache size
   by increment.  To avoid confusing the other cache size increment
   or decrement algorithms, start a new epoch.  Note however, that we
-  do not cycle the epoch markers if some varient of the age out 
+  do not cycle the epoch markers if some variant of the age out 
   algorithm is in use.
 
 <p>The use of the <code>flash_threshold</code> field is discussed 
@@ -1029,8 +1045,8 @@ document.writeln ('\
   /* char        trace_file_name[]      = */ "",
   /* hbool_t     evictions_enabled      = */ TRUE,
   /* hbool_t     set_initial_size       = */ TRUE,
-  /* size_t      initial_size           = */ ( 1 * 1024 * 1024),
-  /* double      min_clean_fraction     = */ 0.5,
+  /* size_t      initial_size           = */ ( 2 * 1024 * 1024),
+  /* double      min_clean_fraction     = */ 0.3,
   /* size_t      max_size               = */ (16 * 1024 * 1024),
   /* size_t      min_size               = */ ( 1 * 1024 * 1024),
   /* long int    epoch_length           = */ 50000,
