@@ -25,9 +25,18 @@
       <p>
       <code>H5Zregister</code> accepts a single parameter, a pointer to 
       a buffer for the <code>filter_class</code> data structure. 
-      That data structure is defined as follows:
+      That data structure must conform to one of the following
+      definitions:
       <pre>
-        typedef struct H5Z_class_t {
+        typedef struct H5Z_class1_t {
+            H5Z_filter_t id;
+            const char  *name;
+            H5Z_can_apply_func_t can_apply;
+            H5Z_set_local_func_t set_local;
+            H5Z_func_t filter;
+        } H5Z_class1_t;
+
+        typedef struct H5Z_class2_t {
             int version;
             H5Z_filter_t id;
             unsigned encoder_present;
@@ -35,15 +44,14 @@
             const char  *name;
             H5Z_can_apply_func_t can_apply;
             H5Z_set_local_func_t set_local;
-            H5Z_func_t filter;            
-        } H5Z_class_t;
+            H5Z_func_t filter;
+        } H5Z_class2_t;
       </pre>
-        
+
       <p>
-      <code>version</code> is a libray-defined value reporting 
+      <code>version</code> is a libray-defined value reporting
       the version number of the <em>H5Z_class_t</em> struct.
-      This value is not normally of interest to the user 
-      but may be of value for debugging purposes.
+      This currently must be set to H5Z_CLASS_T_VERS.
       <p>
       <code>id</code> is the identifier for the new filter. 
       This is a user-defined value between 
@@ -83,6 +91,22 @@
       <p>
       The statistics associated with a filter are not reset
       by this function; they accumulate over the life of the library.
+      <p>
+      <code>H5Z_class_t</code> is a macro which maps to either
+      <code>H5Z_class1_t</code> or <code>H5Z_class2_t</code>, depending on the
+      needs of the application.  To affect only this macro,
+      <code>H5Z_class_t_vers</code> may be defined to either <code>1</code> or
+      <code>2</code>.  Otherwise, it will behave in the same manner as other API
+      compatibility macros.  See &ldquo;<a href="APICompatMacros.html">API
+      Compatibility Macros in HDF5</a>&rdquo; for more information.
+      <code>H5Z_class1_t</code> matches the <code>H5Z_class_t</code> structure
+      that is used in the 1.6.x versions of the HDF5 library.
+      <p>
+      H5Zregister will automatically detect which structure type has been passed
+      in, regardless of the mapping of the <code>H5Z_class_t</code> macro.
+      However, the application must make sure that the fields are filled in
+      according to the correct structure definition if the macro is used to
+      declare the structure.
 
       <p>
       <strong>The callback functions</strong> 
@@ -242,6 +266,14 @@
             The fields <code>version</code>, <code>encoder_present</code>, 
             and <code>decoder_present</code> were added to the 
             <code>H5Z_class_t</code> struct in this release.</td></tr>
+        <tr>
+          <td valign="top">1.8.3</td>
+          <td valign="top">
+            <code>H5Z_class_t</code> renamed to <code>H5Z_class2_t</code>,
+            <code>H5Z_class1_t</code> structure introduced for backwards
+            compatibility with release 1.6.x, and <code>H5Z_class_t</code> macro
+            introduced in this release.  Function modified to accept either
+            structure type.</td><tr>
     </table></ul>
 </dl>
 
