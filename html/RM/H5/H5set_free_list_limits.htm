@@ -17,52 +17,58 @@
     <dd><code>H5set_free_list_limits</code> sets size limits 
         on all types of free lists.
 	The HDF5 library uses free lists internally to manage memory.
-	There are three types of free lists:
+	The types of free lists used are as follows:
 	<ul><li><span class=termDef>Regular</span> 
-	        free lists manage a single data structure.
+	        free lists manage memory for single internal data structures.
 	    <li><span class=termDef>Array</span> 
-	        free lists manage arrays of a data structure.
+	        free lists manage memory for arrays of internal data structures.
 	    <li><span class=termDef>Block</span> 
-	        free lists manage blocks of bytes.
-	</ul> 
-	<em>Alternate phrasing?</em>:
-	<ul><li><span class=termDef>Regular</span> 
-	        free lists manage data structures containing atomic data.
-	    <li><span class=termDef>Array</span> 
-	        free lists manage data structures containing array data.
-	    <li><span class=termDef>Block</span> 
-	        free lists manage blocks of bytes.
+	        free lists manage memory for arbitrarily-sized blocks of bytes.
+            <li><span class=termDef>Factory</span>
+                free lists manage memory for fixed-size blocks of bytes.
 	</ul> 
 	<p>
-	These are global limits, but each limit applies only to 
-        free lists of the specified type. 
-        Therefore, if an application sets a 1Mb limit on each of 
-        the global lists, up to 3Mb of total storage might be 
-	allocated, 1Mb for each of the regular, array, and 
-	block type lists.
+	The parameters specify global and per-list limits; for example,
+        <code>reg_global_limit</code> and <code>reg_list_limit</code> limit the
+        accumulated size of all regular free lists and the size of each
+        individual regular free list, respectively. Therefore, if an application
+        sets a 1Mb limit on each of the global lists, up to 4Mb of total storage
+        might be allocated, 1Mb for each of the regular, array, block, and
+        factory type lists.
 	<p>
+        The settings specified for block free lists are duplicated for
+        factory free lists.  Therefore, increasing the global limit on block
+        free lists by <i>x</i> bytes will increase the potential free list
+        memory usage by 2<i>x</i> bytes.
+        <p>
         Using a value of <code>-1</code> for a limit means that 
 	no limit is set for the specified type of free list.  
 <dt><strong>Parameters:</strong>
     <ul><table>
         <tr>
 		    <td valign="top"><em>int</em>&nbsp;<code>reg_global_lim&nbsp;&nbsp;&nbsp;&nbsp;</code></td>
-	        <td valign="top">IN: The limit on all regular free list memory used</td></tr>
+	        <td valign="top">IN: The cumulative limit on all regular free
+                list memory used</td></tr>
         <tr>
 		    <td valign="top"><em>int</em> <code>reg_list_lim</code></td>
-	        <td valign="top">IN: The limit on memory used in each regular free list</td></tr>
+	        <td valign="top">IN: The limit on memory used for each regular
+                free list</td></tr>
         <tr>
 		    <td valign="top"><em>int</em> <code>arr_global_lim</code></td>
-	        <td valign="top">IN: The limit on all array free list memory used</td></tr>
+	        <td valign="top">IN: The cumulative limit on all array free list
+                memory used</td></tr>
         <tr>
 		    <td valign="top"><em>int</em> <code>arr_list_lim</code></td>
-	        <td valign="top">IN: The limit on memory used in each array free list</td></tr>
+	        <td valign="top">IN: The limit on memory used for each array free
+                list</td></tr>
         <tr>
 		    <td valign="top"><em>int</em> <code>blk_global_lim</code></td>
-	        <td valign="top">IN: The limit on all block free list memory used</td></tr>
+	        <td valign="top">IN: The cumulative limit on each of block free
+                list memory and factory free list memory used</td></tr>
         <tr>
 		    <td valign="top"><em>int</em> <code>blk_list_lim</code></td>
-	        <td valign="top">IN: The limit on memory used in each block free list</td></tr>
+	        <td valign="top">IN: The limit on memory used for each block or
+                factory free list</td></tr>
     </table></ul>
 <dt><strong>Returns:</strong>
     <dd>Returns a non-negative value if successful;
@@ -92,6 +98,11 @@ SUBROUTINE
 		  <td valign="top">1.6.0</td>
           <td valign="top">
 		    Function introduced in this release.</td></tr>
+        <tr>
+          <td valign="top">1.8.3</td>
+          <td valign="top">
+            Function changed in this release to set factory free list memory
+            limits.</td></tr>
     </table></ul>
 </dl>
 
