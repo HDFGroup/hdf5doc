@@ -738,12 +738,13 @@ document.writeln ('\
   Its value must lie in the range [0.0, 1.0].  0.01 is reasonable 
   in the serial case, and 0.3 in the parallel.
 
-<p>Shortly before the 1.8.3 release, one of our users encountered 
-  a destructive interaction between the enforcement of the 
-  <code>min_clean_fraction</code> and the adaptive cache resize code.  
+<p>A potential interaction, discovered at release 1.8.3, 
+  between the enforcement of the <code>min_clean_fraction</code> 
+  and the adaptive cache resize code can severely degrade performance. 
   While this interaction is easily dealt in the serial case by 
   setting <code>min_clean_fraction</code> to 0.01, the problem is 
-  more difficult in the parallel case.  Please see the interactions 
+  more difficult in the parallel case.  Please see the 
+  &ldquo;<a href="#MDC_Interactions">Interactions</a>&rdquo; 
   section below for further details. 
 
 <p>The <code>max_size</code> and <code>min_size</code> fields specify 
@@ -1000,7 +1001,9 @@ document.writeln ('\
   this by a collective call to H5Fflush() immediately after the
   metadata modification phase.
 
+<a name="MDC_Interactions">
 <h4>2.4.5 Interactions:</h4>
+</a>
 
 <p>Evictions may not be disabled unless the automatic cache
   resize code is disabled as well (by setting <code>decr_mode</code>
@@ -1030,8 +1033,9 @@ document.writeln ('\
   other cache size increment or decrement code.
 
 <p>In both the serial and parallel cases, there is the potential for 
-  a destructive interaction between the <code>min_clean_fraction</code>
-  and the cache size increment code.  Specifically, if the 
+  an interaction between the <code>min_clean_fraction</code> and
+  the cache size increment code that can severly degrade performance.
+  Specifically, if the 
   <code>min_clean_fraction</code> is large enough, it is possible that
   keeping the specified fraction of the cache clean may generate 
   enough flushes to seriously degrade performance even though the 
@@ -1049,23 +1053,25 @@ document.writeln ('\
   new entries when metadata writes are forbidden -- i.e. between 
   sync points.
 
-<p>As this issue was discovered in the run up to the 1.8.3 release,
-  I'm afraid I don't have an automated solution for the problem.
-  Should it become an issue for you, I suggest that you manually set
-  the cache size to ~1.5 times the maximum working set size for your 
+<p>This issue was discovered shortly before release 1.8.3 and
+  an automated solution has not been implemented.
+  Should it become an issue for an application, try manually setting
+  the cache size to ~1.5 times the maximum working set size for the 
   application, and leave <code>min_clean_fraction</code> set to 0.3.
 
-<p>You can approximate working set size of you application via 
+<p>You can approximate the working set size of your application via 
   repeated calls to <code>H5Fget_mdc_size()</code> and 
   <code>H5Fget_mdc_hit_rate()</code> while running your program with
   the cache resize code enabled.  The maximum value returned by 
   <code>H5Fget_mdc_size()</code> should be a reasonable approximation 
   -- particularly if the associated hit rate is good.
 
+<!--
 <p>I believe this interaction between <code>min_clean_fraction</code> 
   and the cache size increase code is quite susceptible to automated
   solutions, and hope to have a better solution for parallel HDF5 
   users in the 1.8.4 release.
+-->
 
 <p>In the parallel case, there is also an interaction between
   <code>min_clean_fraction</code> and <code>dirty_bytes_threshold</code>.  
@@ -1077,11 +1083,13 @@ document.writeln ('\
   <code>min_clean_fraction</code>, and the <code>dirty_bytes_threshold</code>
   are chosen so that the cache can't fill with dirty data.
 
-<h4>2.4.6  Default Configuration:</h4>
+<h4>2.4.6  Default Metadata Cache Configuration:</h4>
 
-<p>Starting in the 1.8.3 release, we have different default metadata cache
+<p>Starting with release 1.8.3, HDF5 provides different default metadata cache
   configurations depending on whether the library is compiled for serial or
-  parallel.  The default configuration for the serial case is shown below:
+  parallel.  
+
+<p>The default configuration for the serial case is as follows:
   
 <pre>
 {
@@ -1118,7 +1126,7 @@ document.writeln ('\
 }
 </pre>
 
-<p>This is the default for the parallel case:
+<p>The default configuration for the parallel case is as follows:
   
 <pre>
 {
@@ -1156,13 +1164,15 @@ document.writeln ('\
 </pre>
 
 
-<p>The serial configuration should be adequate for most users of that
-  version of HDF5. 
+<p>The default serial configuration should be adequate 
+  for most serial HDF5 users.
 
-<p>Unfortunately, the same may not be true for the parallel configuration
-  due to a recently discovered destructive interaction between the 
+<p>The same may not be true for the default parallel configuration
+  due the interaction between the 
   <code>min_clean_fraction</code> and the cache size increase code.
-  See the interactions section for further details.
+  See the 
+  &ldquo;<a href="#MDC_Interactions">Interactions</a>&rdquo; 
+  section for further details.
 
 <p>Should you need to change the default configuration, it can be found in 
   <code>H5ACprivate.h</code>. Look for the definition of 
