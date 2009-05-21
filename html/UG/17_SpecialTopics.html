@@ -735,8 +735,17 @@ document.writeln ('\
   clean size as a fraction of the current max cache size.  While
   this field was originally used only in the parallel version of 
   the library, it now applies to the serial version as well. 
-  Its value must lie in the range [0.0, 1.0].  0.3 is a reasonable 
-  value.
+  Its value must lie in the range [0.0, 1.0].  0.01 is reasonable 
+  in the serial case, and 0.3 in the parallel.
+
+<p>A potential interaction, discovered at release 1.8.3, 
+  between the enforcement of the <code>min_clean_fraction</code> 
+  and the adaptive cache resize code can severely degrade performance. 
+  While this interaction is easily dealt in the serial case by 
+  setting <code>min_clean_fraction</code> to 0.01, the problem is 
+  more difficult in the parallel case.  Please see the 
+  &ldquo;<a href="#MDC_Interactions">Interactions</a>&rdquo; 
+  section below for further details. 
 
 <p>The <code>max_size</code> and <code>min_size</code> fields specify 
   the range of maximum sizes that may be set for the cache by the 
@@ -848,7 +857,7 @@ document.writeln ('\
 
 <p>The use of the <code>flash_multiple</code> field is also discussed
   above.  It must be a floating point value in the range of [0.1, 10.0].
-  1.0 is a reasonable value.
+  1.4 is a reasonable value.
   
 <h4>2.4.3 Decrement Configuration:</h4>
 
@@ -992,7 +1001,9 @@ document.writeln ('\
   this by a collective call to H5Fflush() immediately after the
   metadata modification phase.
 
+<a name="MDC_Interactions">
 <h4>2.4.5 Interactions:</h4>
+</a>
 
 <p>Evictions may not be disabled unless the automatic cache
   resize code is disabled as well (by setting <code>decr_mode</code>
@@ -1021,6 +1032,47 @@ document.writeln ('\
   triggered, it will restart the current epoch without calling any
   other cache size increment or decrement code.
 
+<p>In both the serial and parallel cases, there is the potential for 
+  an interaction between the <code>min_clean_fraction</code> and
+  the cache size increment code that can severly degrade performance.
+  Specifically, if the 
+  <code>min_clean_fraction</code> is large enough, it is possible that
+  keeping the specified fraction of the cache clean may generate 
+  enough flushes to seriously degrade performance even though the 
+  hit rate is excellent.
+
+<p>In the serial case, this is easily dealt with by selecting a very
+  small <code>min_clean_fraction</code> -- 0.01 for example -- as 
+  this still avoids the "metadata blizzard" phenomenon that appears
+  when the cache fills with dirty metadata and must then flush all 
+  of it before evicting an entry to make space for a new entry.
+
+<p>The problem is more difficult in the parallel case, as the 
+  <code>min_clean_fraction</code> is used ensure that the cache 
+  contains clean entries that can be evicted to make space for 
+  new entries when metadata writes are forbidden -- i.e. between 
+  sync points.
+
+<p>This issue was discovered shortly before release 1.8.3 and
+  an automated solution has not been implemented.
+  Should it become an issue for an application, try manually setting
+  the cache size to ~1.5 times the maximum working set size for the 
+  application, and leave <code>min_clean_fraction</code> set to 0.3.
+
+<p>You can approximate the working set size of your application via 
+  repeated calls to <code>H5Fget_mdc_size()</code> and 
+  <code>H5Fget_mdc_hit_rate()</code> while running your program with
+  the cache resize code enabled.  The maximum value returned by 
+  <code>H5Fget_mdc_size()</code> should be a reasonable approximation 
+  -- particularly if the associated hit rate is good.
+
+<!--
+<p>I believe this interaction between <code>min_clean_fraction</code> 
+  and the cache size increase code is quite susceptible to automated
+  solutions, and hope to have a better solution for parallel HDF5 
+  users in the 1.8.4 release.
+-->
+
 <p>In the parallel case, there is also an interaction between
   <code>min_clean_fraction</code> and <code>dirty_bytes_threshold</code>.  
   Absent calls to H5Fflush() (discussed above), the upper bound on the 
@@ -1031,10 +1083,50 @@ document.writeln ('\
   <code>min_clean_fraction</code>, and the <code>dirty_bytes_threshold</code>
   are chosen so that the cache can't fill with dirty data.
 
-<h4>2.4.6  Default Configuration:</h4>
+<h4>2.4.6  Default Metadata Cache Configuration:</h4>
 
-<p>At present, the default configuration for the new metadata 
-  cache is as follows:
+<p>Starting with release 1.8.3, HDF5 provides different default metadata cache
+  configurations depending on whether the library is compiled for serial or
+  parallel.  
+
+<p>The default configuration for the serial case is as follows:
+  
+<pre>
+{
+  /* int         version                = */ H5C__CURR_AUTO_SIZE_CTL_VER,
+  /* hbool_t     rpt_fcn_enabled        = */ FALSE,
+  /* hbool_t     open_trace_file        = */ FALSE,
+  /* hbool_t     close_trace_file       = */ FALSE,
+  /* char        trace_file_name[]      = */ "",
+  /* hbool_t     evictions_enabled      = */ TRUE,
+  /* hbool_t     set_initial_size       = */ TRUE,
+  /* size_t      initial_size           = */ ( 2 * 1024 * 1024),
+  /* double      min_clean_fraction     = */ 0.01,
+  /* size_t      max_size               = */ (32 * 1024 * 1024),
+  /* size_t      min_size               = */ ( 1 * 1024 * 1024),
+  /* long int    epoch_length           = */ 50000,
+  /* enum H5C_cache_incr_mode incr_mode = */ H5C_incr__threshold,
+  /* double      lower_hr_threshold     = */ 0.9,
+  /* double      increment              = */ 2.0,
+  /* hbool_t     apply_max_increment    = */ TRUE,
+  /* size_t      max_increment          = */ (4 * 1024 * 1024),
+  /* enum H5C_cache_flash_incr_mode       */
+  /*                    flash_incr_mode = */ H5C_flash_incr__add_space,
+  /* double      flash_multiple         = */ 1.4,
+  /* double      flash_threshold        = */ 0.25,
+  /* enum H5C_cache_decr_mode decr_mode = */ H5C_decr__age_out_with_threshold,
+  /* double      upper_hr_threshold     = */ 0.999,
+  /* double      decrement              = */ 0.9,
+  /* hbool_t     apply_max_decrement    = */ TRUE,
+  /* size_t      max_decrement          = */ (1 * 1024 * 1024),
+  /* int         epochs_before_eviction = */ 3,
+  /* hbool_t     apply_empty_reserve    = */ TRUE,
+  /* double      empty_reserve          = */ 0.1,
+  /* int         dirty_bytes_threshold  = */ (256 * 1024)
+}
+</pre>
+
+<p>The default configuration for the parallel case is as follows:
   
 <pre>
 {
@@ -1047,7 +1139,7 @@ document.writeln ('\
   /* hbool_t     set_initial_size       = */ TRUE,
   /* size_t      initial_size           = */ ( 2 * 1024 * 1024),
   /* double      min_clean_fraction     = */ 0.3,
-  /* size_t      max_size               = */ (16 * 1024 * 1024),
+  /* size_t      max_size               = */ (32 * 1024 * 1024),
   /* size_t      min_size               = */ ( 1 * 1024 * 1024),
   /* long int    epoch_length           = */ 50000,
   /* enum H5C_cache_incr_mode incr_mode = */ H5C_incr__threshold,
@@ -1071,11 +1163,18 @@ document.writeln ('\
 }
 </pre>
 
-<p>This configuration should be adequate for most HDF5 users. 
-  Outside of synthetic tests, I have only seen the cache increase 
-  beyond 1 MB on a few occasions, and never beyond 8 MB.
 
-<p>Should you need to change it, it can be found in 
+<p>The default serial configuration should be adequate 
+  for most serial HDF5 users.
+
+<p>The same may not be true for the default parallel configuration
+  due the interaction between the 
+  <code>min_clean_fraction</code> and the cache size increase code.
+  See the 
+  &ldquo;<a href="#MDC_Interactions">Interactions</a>&rdquo; 
+  section for further details.
+
+<p>Should you need to change the default configuration, it can be found in 
   <code>H5ACprivate.h</code>. Look for the definition of 
   <code>H5AC__DEFAULT_RESIZE_CONFIG</code>.
   
@@ -1105,7 +1204,7 @@ document.writeln ('\
   top command) is typically about three times the maximum cache size.  I
   haven't tracked it down yet, but I would guess that most of this is due
   to the very small typical cache entry size combined with the rather
-  large size of cache entry header strucure.  This should be investigated
+  large size of cache entry header structure.  This should be investigated
   further, but there are other matters of higher priority.
 
 <h4>2.6 New Metadata Cache Debugging Facilities:</h4>
