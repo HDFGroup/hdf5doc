@@ -4,7 +4,7 @@
 <dl>
 
   <dt><div align=right><font color=999999 size=-1><i>
-      Last modified: 31 July 2009
+      Last modified: 3 August 2009
       </i></font></div>
 
   <dt><strong>Name:</strong> <a name="H5L_elink_traverse_t">H5L_elink_traverse_t</a>
@@ -26,11 +26,26 @@
         specified external link target.
 
   <p>
+  <dt><strong>Motivation:</strong>
+    <dd><code>H5L_elink_traverse_t</code>
+      defines the prototype for a user-defined callback function to be
+      called when traversing an external link.  This callback will be executed
+      by the HDF5 Library immediately before opening the target file and
+      provides a mechanism to 
+          set specific access permissions, 
+          modify the file access property list, 
+          modify the parent or target file, or 
+          take any other user-defined action.
+      This callback function is used in situations where the HDF5 Library's 
+      default behavior is not suitable.
+
+  <p>
   <dt><strong>Description:</strong>
     <dd><code>H5L_elink_traverse_t</code>
       defines a callback function which may adjust the file access property list
       and file access flag to use when opening a file through an external link.
-      The callback will be made immediately before opening the target file.
+      The callback will be executed by the HDF5 Library immediately before 
+      opening the target file.
       <p>
       The callback function should return 0 if there are no issues and a
       negative value in case of an error. If the callback function returns a
@@ -64,13 +79,15 @@
       <tr valign="top">
         <td><em>unsigned *</em><code>acc_flags</code>
             </td><td>&nbsp;</td>
-        <td>IN/OUT: File access flag used to open the target file. 
+        <td>IN/OUT: File access flags used to open the target file. 
             This should be set to either 
             <code>H5F_ACC_RDWR</code> or <code>H5F_ACC_RDONLY</code>. 
-            The initial value of this field will be the flag that would 
-            otherwise be used to open the target file as inherited from the 
-            parent file, or overridden with <code>H5Pset_elink_acc_flags</code>. 
-            After making the callback, the flag returned in this parameter 
+            The initial value of this field will be the flags that would 
+            otherwise be used to open the target file 
+            as inherited from the parent file or as overridden with 
+            <a href="RM_H5P.html#Property-SetELinkAccFlags">
+            <code>H5Pset_elink_acc_flags</code></a>.
+            After making the callback, the flags returned in this parameter 
             will always be used to open the target file.
             </td></tr>
       <tr valign="top">
@@ -79,7 +96,9 @@
         <td>IN/OUT: Identifier of the file access property list used to open the
             target file. This will initially be a copy of the property list that
             would otherwise be used to open the target file, as inherited from
-            the parent file, or overridden with <code>H5Pset_elink_fapl</code>. 
+            the parent file or as overridden with 
+            <a href="RM_H5P.html#Property-SetELinkFapl">
+            <code>H5Pset_elink_fapl</code></a>.
             After making the callback, this property list, 
             including any changes made by the callback function, 
             will always be used to open the target file.
@@ -88,7 +107,9 @@
         <td><em>void *</em><code>op_data</code>
             </td><td>&nbsp;</td>
         <td>IN/OUT: Pointer to user-defined input data. This is a pass-through
-            of the value that was passed to <code>H5Pset_elink_cb</code>.
+            of the data that was passed to 
+            <a href="RM_H5P.html#Property-SetELinkCb">
+            <code>H5Pset_elink_cb</code></a>.
             </td></tr>
     </table>
 
@@ -125,10 +146,10 @@ herr_t elink_callback(const char *parent_file_name, const char
   <p>
   <dt><strong>See Also:</strong>
     <dd><a href="RM_H5P.html#Property-SetELinkCb">
-        <code>H5Pset_elink_cb</code></a>
+        <code>H5Pset_elink_cb</code></a>,
         &nbsp;
         <a href="RM_H5P.html#Property-GetELinkCb">
-        <code>H5Pget_elink_cb</code></a>,
+        <code>H5Pget_elink_cb</code></a>
         <p>
 
         <a href="RM_H5P.html#Property-SetELinkFapl">
