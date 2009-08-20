@@ -17,10 +17,12 @@
       <em>hid_t</em> <code>lcpl_id</code>, 
       <em>hid_t</em> <code>lapl_id</code> 
       ) 
-      <p></p>
+
+  <p></p>
   <dt><strong>Purpose:</strong>
     <dd>Creates a soft link to an object in a different file.
-      <p></p>
+
+  <p></p>
   <dt><strong>Description:</strong>  
     <dd><code>H5Lcreate_external</code> creates a new soft link to an 
       external object, which is an object in a different HDF5 file
@@ -38,106 +40,139 @@
       <code>link_name</code> is interpreted relative to 
       <code>link_loc_id</code> 
       <p>
-      <code>lcpl_id</code> is the link creation property list used in creating the
-      new link.
+      <code>lcpl_id</code> is the link creation property list used in creating 
+      the new link.
       <p> 
-      <code>lapl_id</code> is the link access property list used in traversing to the
-      place where the new link is to be created.
+      <code>lapl_id</code> is the link access property list used in traversing 
+      to the place where the new link is to be created.
       <p> 
       An external link behaves similarly to a soft link, and like
-      a soft link in an HDF5 file, it may <i>dangle</i>: the target 
-      file and object need not exist at the time that the external link is created.
+      a soft link in an HDF5 file, it may <i>dangle</i>: the target file
+      and object need not exist at the time that the external link is created.
       </p>
       <p>When the external link <code>link_name</code> is accessed,
       the library will search for the target file <code>file_name</code> as
       described below:
       <ul>
-      <LI>If <code>file_name</code> is a relative pathname, the following steps are performed:
-	<ul>
-	<LI>The library will get the prefix(es) set in the environment variable HDF5_EXT_PREFIX and
-        will try prepending each prefix to <code>file_name</code> to form a new <code>file_name</code>.
-	<LI>If the new <code>file_name</code> does not exist or HDF5_EXT_PREFIX is not set, 
-	the library will get the prefix set via <a href="RM_H5P.html#Property-SetELinkPrefix">
-        <code>H5Pset_elink_prefix</code></a> and prepend it
-	to <code>file_name</code>
-	to form a new <code>file_name</code>.
-	<LI>If the new <code>file_name</code> does not exist or no prefix is being set 
-	by <a href="RM_H5P.html#Property-SetELinkPrefix">
-        <code>H5Pset_elink_prefix</code></a>,
-	then the path of the file associated with <code>link_loc_id</code> is obtained.
-	This path can be the absolute path or the current working directory+relative path
-	of that file when it is created/opened.
-	The library will prepend this path to <code>file_name</code> to form a new <code>file_name</code>.
-	<LI>If the new <code>file_name</code> does not exist, then the library will look for
-	<code>file_name</code> and will return failure/success accordingly.
-	</ul>
-      <P>
-      <LI>If <code>file_name</code> is an absolute pathname, the library will try to find
-      <code>file_name</code>.
-      If <code>file_name</code> does not exist, 
-      the <code>file_name</code> is stripped of the directory paths to form a
-      new <code>file_name</code>.   See examples below on how <code>file_name</code> is stripped
-      to form a new <code>file_name</code>.
-      The search for the new <code>file_name</code> then follows the 
-      same steps as described above for a relative pathname.
+          <li>If <code>file_name</code> is a relative pathname, the following 
+              steps are performed:
+	      <ul>
+	          <li>The library will get the prefix(es) set in the 
+                      environment variable <code>HDF5_EXT_PREFIX</code> and 
+                      will try to prepend each prefix to <code>file_name</code> 
+                      to form a new <code>file_name</code>.
+	          <li>If the new <code>file_name</code> does not exist or 
+                      <code>HDF5_EXT_PREFIX</code> is not set, 
+	              the library will get the prefix set via 
+                      <a href="RM_H5P.html#Property-SetELinkPrefix">
+                      <code>H5Pset_elink_prefix</code></a> and 
+	              prepend it to <code>file_name</code>
+	              to form a new <code>file_name</code>.
+	          <li>If the new <code>file_name</code> does not exist or 
+                      no prefix is being set 
+	              by <a href="RM_H5P.html#Property-SetELinkPrefix">
+                      <code>H5Pset_elink_prefix</code></a>,
+	              then the path of the file associated with 
+                      <code>link_loc_id</code> is obtained.
+	              This path can be the absolute path or the 
+                      current working directory plus the relative path
+	              of that file when it is created/opened.
+	              The library will 
+                      prepend this path to <code>file_name</code> 
+                      to form a new <code>file_name</code>.
+	          <li>If the new <code>file_name</code> does not exist, 
+                      then the library will look for <code>file_name</code> 
+                      and will return failure/success accordingly.
+	      </ul>
+          <p>
+          <li>If <code>file_name</code> is an absolute pathname, the library 
+              will try to find <code>file_name</code>.
+              If <code>file_name</code> does not exist, 
+              the <code>file_name</code> is stripped of the directory paths 
+              to form a new <code>file_name</code>.   
+              See examples below on how <code>file_name</code> is stripped
+              to form a new <code>file_name</code>.
+              The search for the new <code>file_name</code> then follows the 
+              same steps as described above for a relative pathname.
       </ul>
-      <P>
-      Note that <code>file_name</code> is considered to be an absolute pathname when the following condition is true:
+      <p>
+      Note that <code>file_name</code> is considered to be an absolute pathname 
+      when the following condition is true:
       <ul>
-      <LI>
-      For Unix, the first character of <code>file_name</code> is a '/' , e.g. "/tmp/A.h5".  
-      <P>
-      If <code>file_name</code> does not exist, 
-      the new <code>file_name</code> after stripping <code>file_name</code> will be "A.h5".
-      <LI>
-      For Windows, there are 6 cases:
-	<ol>
-	<LI>
-	<code>file_name</code> is an absolute drive with absolute pathname,  e.g. "C:\tmp\A.h5".
-	<P>
-        If <code>file_name</code> does not exist, 
-	the new <code>file_name</code> after stripping <code>file_name</code> will be "A.h5".
-	<LI>
-	<code>file_name</code> is an absolute pathname without specifying drive name,  e.g. "\tmp\A.h5".
-	<P>
-        If <code>file_name</code> does not exist, 
-        the new <code>file_name</code> after stripping <code>file_name</code> will be "A.h5".
-	<LI>
-	<code>file_name</code> is an absolute drive with relative pathname, e.g. "C:tmp\A.h5".
-	<P>
-        If <code>file_name</code> does not exist, 
-        the new <code>file_name</code> after stripping <code>file_name</code> will be "tmp\A.h5".
-        <li><code>file_name</code> is in UNC (Uniform Naming
-          Convention) format with server name, share name, and pathname, <br />
-          e.g. "\\serverA\shareB\tmp\A.h5".
-          <p>
-          If <code>file_name</code> does not exist, the new <code>file_name</code>
-          after stripping <code>file_name</code> will be "A.h5".</p>
-          </li>
-        <li><code>file_name</code> is in Long UNC (Uniform Naming
-          Convention) format with server name, share name, and pathname, <br />
-          e.g. "\\?\serverA\shareB\tmp\A.h5".
-          <p>
-          If <code>file_name</code> does not exist, the new <code>file_name</code>
-          after stripping <code>file_name</code> will be "A.h5".</p>
-          </li>
-        <li><code>file_name</code> is in Long UNC (Uniform Naming
-          Convention) format with an absolute drive with absolute pathname,
-          <br />
-          e.g. "\\?\C:\tmp\A.h5".
-          <p>
-          If <code>file_name</code> does not exist, the new <code>file_name</code>
-          after stripping <code>file_name</code> will be "A.h5".</p>
-	</ol>
+          <li>For Unix, the first character of <code>file_name</code> is a 
+              slash ( <code>/</code> ). For example:
+              <br />
+              <code>/tmp/A.h5</code>.  
+              <p>
+              If <code>file_name</code> does not exist, 
+              the new <code>file_name</code> after stripping 
+              <code>file_name</code> will be <code>A.h5</code>.
+          <li>For Windows, there are 6 cases:
+	      <ol>
+	          <li><code>file_name</code> is an absolute drive with 
+                      absolute pathname. For example:
+                      <br />
+                      <code>C:\tmp\A.h5</code>.
+	              <p>
+                      If <code>file_name</code> does not exist, 
+	              the new <code>file_name</code> after stripping 
+                      <code>file_name</code> will be <code>A.h5</code>.
+	          <li><code>file_name</code> is an absolute pathname without 
+                      specifying drive name. For example:
+                      <br />
+                      <code>\tmp\A.h5</code>.
+	              <p>
+                      If <code>file_name</code> does not exist, 
+                      the new <code>file_name</code> after stripping 
+                      <code>file_name</code> will be <code>A.h5</code>.
+	          <li><code>file_name</code> is an absolute drive with 
+                      relative pathname. For example:
+                      <br />
+                      <code>C:tmp\A.h5</code>.
+	              <p>
+                      If <code>file_name</code> does not exist, 
+                      the new <code>file_name</code> after stripping 
+                      <code>file_name</code> will be <code>tmp\A.h5</code>.
+                  <li><code>file_name</code> is in UNC (Uniform Naming
+                      Convention) format with server name, share name, 
+                      and pathname. For example: 
+                      <br />
+                      <code>\\serverA\shareB\tmp\A.h5</code>.
+                      <p>
+                      If <code>file_name</code> does not exist, the new 
+                      <code>file_name</code> after stripping 
+                      <code>file_name</code> will be <code>A.h5</code>.</p>
+                      </li>
+                  <li><code>file_name</code> is in Long UNC (Uniform Naming
+                      Convention) format with server name, share name, and 
+                      pathname. For example: 
+                      <br />
+                      <code>\\?\serverA\shareB\tmp\A.h5</code>.
+                      <p>
+                      If <code>file_name</code> does not exist, the new 
+                      <code>file_name</code> after stripping 
+                      <code>file_name</code> will be <code>A.h5</code>.</p>
+                      </li>
+                  <li><code>file_name</code> is in Long UNC (Uniform Naming
+                      Convention) format with an absolute drive with 
+                      absolute pathname. For example:
+                      <br />
+                      <code>\\?\C:\tmp\A.h5</code>.
+                      <p>
+                      If <code>file_name</code> does not exist, the new 
+                      <code>file_name</code> after stripping 
+                      <code>file_name</code> will be <code>A.h5</code>.</p>
+              </ol>
       </ul>
-      <P>	
-      The library opens the target file <code>file_name</code> with the file access property list 
-      that is set via <a href="RM_H5P.html#Property-SetELinkFapl"> 
+      <p>	
+      The library opens the target file <code>file_name</code> with the 
+      file access property list that is set via 
+      <a href="RM_H5P.html#Property-SetELinkFapl"> 
       <code>H5Pset_elink_fapl()</code></a>
       when the external link <code>link_name</code> is accessed.
       If no such identifier is set, the library uses the 
-      file access property list identifier of the file associated with <code>link_loc_id</code>
-      to open the target file.
+      file access property list identifier of the file associated with 
+      <code>link_loc_id</code> to open the target file.
       <p>
       If an application requires additional control over file access flags
       or the file access property list, see 
@@ -147,12 +182,13 @@
       <a href="H5L/H5L_elink_traverse_t.htm">
       <code>H5L_elink_traverse_t</code></a>.
 
-        <p></p>
+  <p></p>
   <dt><strong>Parameters:</strong>
     <dd><table>
           <tr>
             <td valign="top"><em>const char *</em> <code>file_name</code></td>
-            <td valign="top">IN: Name of the target file containing the target object.</td></tr>
+            <td valign="top">IN: Name of the target file containing the 
+                target object.</td></tr>
           <tr>
             <td valign="top"><em>const&nbsp;char&nbsp;*</em><code>object_name&nbsp;&nbsp;&nbsp;&nbsp;</code></td>
             <td valign="top">IN: Path within the target file to the target 
@@ -170,13 +206,15 @@
           <tr>
             <td valign="top"><em>hid_t</em> <code>lapl_id</code></td> 
             <td valign="top">IN: Link access property list identifier.</td></tr>
-    </table>
-       <p></p>
- <dt><strong>Returns:</strong>
+      </table>
+
+  <p></p>
+  <dt><strong>Returns:</strong>
     <dd>Returns a non-negative value if successful;
         otherwise returns a negative value.
-       <p></p>
- <dt><strong>Fortran90 Interface:</strong> h5lcreate_external_f
+
+  <p></p>
+  <dt><strong>Fortran90 Interface:</strong> h5lcreate_external_f
     <dd>
     <pre>
 SUBROUTINE h5lcreate_external_f(file_name, obj_name, link_loc_id, link_name, &
@@ -202,8 +240,8 @@ SUBROUTINE h5lcreate_external_f(file_name, obj_name, link_loc_id, link_name, &
 END SUBROUTINE h5lcreate_external_f
     </pre>
 
-<p></p>
-<dt><strong>See Also:</strong>
+  <p></p>
+  <dt><strong>See Also:</strong>
     <dd><a href="RM_H5P.html#Property-SetELinkFapl">
         <code>H5Pset_elink_fapl</code></a>,
         &nbsp;
@@ -214,8 +252,8 @@ END SUBROUTINE h5lcreate_external_f
         <a href="H5L/H5L_elink_traverse_t.htm">
         <code>H5L_elink_traverse_t</code></a>
 
-<p></p>
-<dt><strong>History:</strong>
+  <p></p>
+  <dt><strong>History:</strong>
     <dd><table width="90%">
         <tr>
           <td valign="top" align="left" width="10%">
