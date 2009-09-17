@@ -1368,16 +1368,18 @@ document.writeln ("
 
   <p>A hyperslab is a selection of elements from a hyper rectangle.  
   An HDF5 hyperslab is a rectangular pattern defined by four arrays (Table 1). 
-  The <em>start</em> defines the origin of the hyperslab in the original dataspace.  
-  The stride is the number of elements to increment between selected elements.  
+  <p>
+  The <em>offset</em> defines the origin of the hyperslab in the original dataspace.  
+  <p>
+  The <em>stride</em> is the number of elements to increment between selected elements.  
   A stride of '1' is every element, a stride of '2' is every second element, etc.  
   Note that there may be a different stride for each dimension of the dataspace.  
   The default stride is 1.
   
-  <p>The count is the number of elements in the hyperslab selection.  
-  When the stride is 1, the selection is a hyper rectangle with a corner at start 
-  and size count[0] by count[1] by …. When stride is greater than one, the 
-  hyperslab bounded by start and the corners defined by stride[n] * count[n].</p>
+  <p>The <em>count</em> is the number of elements in the hyperslab selection.  
+  When the stride is 1, the selection is a hyper rectangle with a corner at the offset 
+  and size count[0] by count[1] by.... When stride is greater than one, the 
+  hyperslab bounded by the offset and the corners defined by stride[n] * count[n].</p>
   
 <table x-use-null-cells
 		class="genTable"
@@ -1397,7 +1399,7 @@ document.writeln ("
   </tr>
   <tr valign=top> 
     <td class="genTableCell"
-	width=23%> <p>start</td>
+	width=23%> <p>offset</td>
     <td class="genTableCell"
 	width=76%> <p>Starting location for the hyperslab.</td>
   </tr>
@@ -1425,7 +1427,7 @@ document.writeln ("
 
   <p>The <em>block</em> is a count on the number of repetitions of the hyperslab. 
   The default block size is '1', which is one hyperslab.  A block of 2 would be 
-  two hyperslabs in that dimension, with the second starting at start[n]+ 
+  two hyperslabs in that dimension, with the second starting at offset[n]+ 
   (count[n] * stride[n]) + 1.
   
   <p>A hyperslab can be used to access a sub-set of a large dataset. 
@@ -1714,8 +1716,8 @@ status = H5Sselect_hyperslab(memspace, H5S_SELECT_SET, offset_out, NULL,
 <!-- NEW PAGE -->
   <p>Figure 15 shows example code to write 48 elements from the 1D array to the 
   file dataset, starting with the second element in vector. The destination 
-  hyperslab has the following parameters: start=(0,1), stride=(4,3), count=(2,4), 
-  block=(3,2). The source has the parameters:  start=(1), stride=(1), count=(48), 
+  hyperslab has the following parameters: offset=(0,1), stride=(4,3), count=(2,4), 
+  block=(3,2). The source has the parameters:  offset=(1), stride=(1), count=(48), 
   block=(1). After these operations, the file dataspace will have the values shown 
   in Figure 14.  Notice that the values are inserted in the file dataset in 
   row-major order.</p>
@@ -1730,11 +1732,11 @@ status = H5Sselect_hyperslab(memspace, H5S_SELECT_SET, offset_out, NULL,
 /* Select hyperslab for the dataset in the file, using 3x2 blocks, (4,3) stride
  * (2,4) count starting at the position (0,1).
  */
-start[0]  = 0; start[1]  = 1;
+offset[0]  = 0; offset[1]  = 1;
 stride[0] = 4; stride[1] = 3;
 count[0]  = 2; count[1]  = 4;    
 block[0]  = 3; block[1]  = 2;
-ret = H5Sselect_hyperslab(fid, H5S_SELECT_SET, start, stride, count, block);
+ret = H5Sselect_hyperslab(fid, H5S_SELECT_SET, offset, stride, count, block);
 
 /*
  * Create dataspace for the first dataset.
@@ -1746,11 +1748,11 @@ mid1 = H5Screate_simple(MSPACE1_RANK, dim1, NULL);
  * We will use 48 elements of the vector buffer starting at the second element.
  * Selected elements are 1 2 3 . . . 48
  */
-start[0]  = 1;
+offset[0]  = 1;
 stride[0] = 1;
 count[0]  = 48;
 block[0]  = 1;
-ret = H5Sselect_hyperslab(mid1, H5S_SELECT_SET, start, stride, count, block);
+ret = H5Sselect_hyperslab(mid1, H5S_SELECT_SET, offset, stride, count, block);
  
 /*
  * Write selection from the vector buffer to the dataset in the file.
@@ -1851,19 +1853,19 @@ ret = H5Dwrite(dataset, H5T_NATIVE_INT, midd1, fid, H5P_DEFAULT, vector)
      * Select first hyperslab for the dataset in the file. 
      *   
      */ 
-    start[0] = 1; start[1] = 2;
+    offset[0] = 1; offset[1] = 2;
     block[0] = 1; block[1] = 1;
     stride[0] = 1; stride[1] = 1;
     count[0]  = 3; count[1]  = 4;
-    ret = H5Sselect_hyperslab(fid, H5S_SELECT_SET, start, stride, count, block); 
+    ret = H5Sselect_hyperslab(fid, H5S_SELECT_SET, offset, stride, count, block); 
     /*
      * Add second selected hyperslab to the selection.
      */
-    start[0] = 2; start[1] = 4;
+    offset[0] = 2; offset[1] = 4;
     block[0] = 1; block[1] = 1;
     stride[0] = 1; stride[1] = 1;
     count[0]  = 6; count[1]  = 5;
-    ret = H5Sselect_hyperslab(fid, H5S_SELECT_OR, start, stride, count, block);
+    ret = H5Sselect_hyperslab(fid, H5S_SELECT_OR, offset, stride, count, block);
 </code></pre>
     </td>
   </tr>
@@ -1908,16 +1910,16 @@ ret = H5Dwrite(dataset, H5T_NATIVE_INT, midd1, fid, H5P_DEFAULT, vector)
      * Select two hyperslabs in memory. Hyperslabs has the same
      * size and shape as the selected hyperslabs for the file dataspace.
      */
-    start[0] = 0; start[1] = 0;
+    offset[0] = 0; offset[1] = 0;
     block[0] = 1; block[1] = 1;
     stride[0] = 1; stride[1] = 1;
     count[0]  = 3; count[1]  = 4;
-    ret = H5Sselect_hyperslab(mid, H5S_SELECT_SET, start, stride, count, block);     
-    start[0] = 1; start[1] = 2;
+    ret = H5Sselect_hyperslab(mid, H5S_SELECT_SET, offset, stride, count, block);     
+    offset[0] = 1; offset[1] = 2;
     block[0] = 1; block[1] = 1;
     stride[0] = 1; stride[1] = 1;
     count[0]  = 6; count[1]  = 5;
-    ret = H5Sselect_hyperslab(mid, H5S_SELECT_OR, start, stride, count, block);
+    ret = H5Sselect_hyperslab(mid, H5S_SELECT_OR, offset, stride, count, block);
 
 ret = H5Dread(dataset, H5T_NATIVE_INT, mid, fid, H5P_DEFAULT, matrix_out);
 </code></pre>
@@ -2300,9 +2302,9 @@ document.writeln ("
     /*
      * Create a reference to the first hyperslab in the first Dataset.
      */
-    start[0] = 1; start[1] = 1; 
+    offset[0] = 1; offset[1] = 1; 
     count[0] = 3; count[1] = 2;
-    status =  H5Sselect_hyperslab(space_id, H5S_SELECT_SET, start, NULL, 
+    status =  H5Sselect_hyperslab(space_id, H5S_SELECT_SET, offset, NULL, 
           count, NULL);
     status = H5Rcreate(&amp;ref[0], file_id, "D1", H5R_DATASET_REGION, 
              space_id);
@@ -2312,14 +2314,14 @@ document.writeln ("
  * Dataset
 /*
 
-    start[0] = 5;  start[1] = 3; 
+    offset[0] = 5;  offset[1] = 3; 
     count[0] = 1; count[1] = 4;
     status = H5Sselect_none(space_id);
-    status = H5Sselect_hyperslab(space_id, H5S_SELECT_SET,start, 
+    status = H5Sselect_hyperslab(space_id, H5S_SELECT_SET,offset, 
                NULL, count, NULL);
-    start[0] = 6;   start[1] = 5; 
+    offset[0] = 6;   offset[1] = 5; 
     count[0] = 1;  count[1] = 2;
-    status = H5Sselect_hyperslab(space_id, H5S_SELECT_OR, start, NULL, 
+    status = H5Sselect_hyperslab(space_id, H5S_SELECT_OR, offset, NULL, 
           count, NULL);
     status = H5Rcreate(&amp;ref[1], file_id, "D1", H5R_DATASET_REGION, 
            space_id);
@@ -2341,9 +2343,9 @@ document.writeln ("
    /*
     * the third reference is to a hyperslab in the second Dataset
      */
-    start[0] = 0;  start[1] = 0; 
+    offset[0] = 0;  offset[1] = 0; 
     count[0] = 4; count[1] = 6;
-    status = H5Sselect_hyperslab(space_id2, H5S_SELECT_SET, start, NULL, 
+    status = H5Sselect_hyperslab(space_id2, H5S_SELECT_SET, offset, NULL, 
             count, NULL);
     status = H5Rcreate(&amp;ref[2], file_id, "D2", H5R_DATASET_REGION, 
             space_id2);
