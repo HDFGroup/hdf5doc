@@ -3608,28 +3608,32 @@ H5Tset_offset(nbit_datatype, 4);
 <p><b>Compound datatypes:</b>
   The n-bit filter will compress each data member of the compound datatype. 
   If the member datatype is of an integer or floating-point datatype, 
-  the n-bit filter will call the function described above in section 2.1.2. 
+  the n-bit filter will call the function described above<!-- in section 2.1.2-->. 
   If the member datatype is of a no-op datatype, 
-  the filter will call the function described above in section 2.1.1. 
+  the filter will call the function described above<!-- in section 2.1.1-->. 
   If the member datatype is of a compound datatype, the filter will make a 
-  recursive call to itself 
+  recursive call to itself. 
+<!--
   (i.e., to the function described in this section, 2.1.3). 
+-->
   If the member datatype is of an array datatype, the filter will call the 
-  function described below in section 2.1.4.
+  function described below<!-- in section 2.1.4.-->
 
 
 <p><b>Array datatypes:</b>
   The n-bit filter will use a loop to compress each array element in 
   the array. If the base datatype of array element is of an integer or 
   floating-point datatype, the n-bit filter will call the function described 
-  above in section 2.1.2. 
+  above<!-- in section 2.1.2.--> 
   If the base datatype is of a no-op datatype, the filter will call the
-  function described above in section 2.1.1. 
+  function described above<!-- in section 2.1.1.--> 
   If the base datatype is of a compound datatype, the filter will call the
-  function described above in section 2.1.3. 
+  function described above<!-- in section 2.1.3-->. 
   If the member datatype is of an array datatype, the filter will make a 
-  recursive call of itself 
+  recursive call of itself.
+<!--
   (i.e., to the function described in this section, 2.1.4).
+-->
   
 <h5><em>N-bit decompression</em></h5>
 
@@ -3648,7 +3652,7 @@ H5Tset_offset(nbit_datatype, 4);
   to another private function, 
   <code>H5Z_filter_nbit</code>, by the HDF5 Library. 
   
-<p>These parameters ar as follows:
+<p>These parameters are as follows:
   <ol>
     <li>Parameters related to the datatype
     <li>The number of elements within the chunk
@@ -3657,8 +3661,10 @@ H5Tset_offset(nbit_datatype, 4);
 
 <p>The first and second parameters can be obtained using the HDF5 dataspace
   and datatype interface calls. 
+<!--
   The third parameter is set during the storing process as described 
   in section 3.2.
+-->
 
 <p>A compound datatype can have members of array or compound datatype. 
   An array datatype's base datatype can be a complex compound datatype. 
@@ -3854,8 +3860,10 @@ H5Tset_offset(nbit_datatype, 4);
   <code>H5Z_filter_nbit</code>. Parameters are retrieved in exactly the 
   same order in which they are stored and lower-level compression and 
   decompression functions for different datatype classes are called. 
+<!--
   These functions are implementated according to the descriptions 
   in sections 2.1 and 2.2.
+-->
   
 <p>N-bit compression is not implemented in place. Due to the 
   difficulty of calculating actual output buffer size after compression, 
@@ -3892,7 +3900,7 @@ H5Tset_offset(nbit_datatype, 4);
 
 int main(void)
 {
-   hid_t   file, dataspace, dataset, datatype, mem_datatype, properties;
+   hid_t   file, dataspace, dataset, datatype, mem_datatype, dset_create_props;
    hsize_t dims[2], chunk_size[2];
    int     orig_data[NX][NY];
    int     new_data[NX][NY];
@@ -3960,11 +3968,11 @@ int main(void)
    */
    chunk_size[0] = CH_NX;
    chunk_size[1] = CH_NY;
-   if((properties = H5Pcreate (H5P_DATASET_CREATE))&lt;0) {
+   if((dset_create_props = H5Pcreate (H5P_DATASET_CREATE))&lt;0) {
       printf("Error: fail to create dataset property\n");
       return -1;
    }
-   if(H5Pset_chunk (properties, 2, chunk_size)&lt;0) {
+   if(H5Pset_chunk (dset_create_props, 2, chunk_size)&lt;0) {
       printf("Error: fail to set chunk\n");
       return -1;
    }
@@ -3977,7 +3985,7 @@ int main(void)
    * the H5Pset_nbit function in the HDF5 Reference Manual for more
    * information.
    */
-   if(H5Pset_nbit (properties)&lt;0) {
+   if(H5Pset_nbit (dset_create_props)&lt;0) {
       printf("Error: fail to set nbit filter\n");
       return -1;
    }
@@ -3989,8 +3997,9 @@ int main(void)
    * be different from the format used in the application's
    * memory.
    */
-   if((dataset = H5Dcreate (file, DATASET_NAME, datatype,
-                            dataspace, properties))&lt;0) {
+   if((dataset = H5Dcreate2 (file, DATASET_NAME, datatype,
+                            dataspace, H5P_DEFAULT, 
+                            dset_create_props, H5P_DEFAULT))&lt;0) {
       printf("Error: fail to create dataset\n");
       return -1;
    }
@@ -4012,7 +4021,7 @@ int main(void)
    H5Dclose (dataset);
 
 
-   if((dataset = H5Dopen(file, DATASET_NAME))&lt;0) {
+   if((dataset = H5Dopen2(file, DATASET_NAME, H5P_DEFAULT))&lt;0) {
       printf("Error: fail to open dataset\n");
       return -1;
    }
@@ -4036,7 +4045,7 @@ int main(void)
    H5Tclose (mem_datatype);
    H5Dclose (dataset);
    H5Sclose (dataspace);
-   H5Pclose (properties);
+   H5Pclose (dset_create_props);
    H5Fclose (file);
 
 
@@ -4077,7 +4086,7 @@ int main(void)
 
 int main(void)
 {
-   hid_t   file, dataspace, dataset, datatype, properties;
+   hid_t   file, dataspace, dataset, datatype, dset_create_props;
    hsize_t dims[2], chunk_size[2];
   /* orig_data[] are initialized to be within the range that can be
    * represented by dataset datatype (no precision loss during
@@ -4166,11 +4175,11 @@ int main(void)
    */
    chunk_size[0] = CH_NX;
    chunk_size[1] = CH_NY;
-   if((properties = H5Pcreate (H5P_DATASET_CREATE))&lt;0) {
+   if((dset_create_props = H5Pcreate (H5P_DATASET_CREATE))&lt;0) {
       printf("Error: fail to create dataset property\n");
       return -1;
    }
-   if(H5Pset_chunk (properties, 2, chunk_size)&lt;0) {
+   if(H5Pset_chunk (dset_create_props, 2, chunk_size)&lt;0) {
       printf("Error: fail to set chunk\n");
       return -1;
    }
@@ -4181,7 +4190,7 @@ int main(void)
    * of the H5Pset_nbit function in the HDF5 Reference Manual
    * for more information.
    */
-   if(H5Pset_nbit (properties)&lt;0) {
+   if(H5Pset_nbit (dset_create_props)&lt;0) {
       printf("Error: fail to set nbit filter\n");
       return -1;
    }
@@ -4193,8 +4202,9 @@ int main(void)
    * be different from the format used in the application's
    * memory.
    */
-   if((dataset = H5Dcreate (file, DATASET_NAME, datatype,
-                            dataspace, properties))&lt;0) {
+   if((dataset = H5Dcreate2 (file, DATASET_NAME, datatype,
+                            dataspace, H5P_DEFAULT, 
+                            dset_creat_plists, H5P_DEFAULT))&lt;0) {
       printf("Error: fail to create dataset\n");
       return -1;
    }
@@ -4216,7 +4226,7 @@ int main(void)
    H5Dclose (dataset);
 
 
-   if((dataset = H5Dopen(file, DATASET_NAME))&lt;0) {
+   if((dataset = H5Dopen2(file, DATASET_NAME, H5P_DEFAULT))&lt;0) {
       printf("Error: fail to open dataset\n");
       return -1;
    }
@@ -4237,7 +4247,7 @@ int main(void)
    H5Tclose (datatype);
    H5Dclose (dataset);
    H5Sclose (dataspace);
-   H5Pclose (properties);
+   H5Pclose (dset_create_props);
    H5Fclose (file);
 
 
@@ -4403,7 +4413,10 @@ int main(void)
   element whose value is equal to the maximum value that minimum-bits can 
   represent and adds the minimum value back to each data element whose value 
   is not equal to the maximum value  that minimum-bits can represent.
-  
+
+<a name="SO_FloatingPoint">&nbsp;</a>
+  </p>
+
 <h5><em>Floating-point type</em></h5>
 
 <p>The filter will do data transformation from floating-point type to 
@@ -4499,7 +4512,8 @@ int main(void)
       <li>For floating-point data, the minimum value of the dataset should 
         be calculated at first. Each data element value will then subtract 
         the minimum value to obtain the "offset" data. 
-        The offset data will then follow 2.2 <strong>(3.1.2??)</strong> 
+        The offset data will then follow the steps outlined above in the
+        discussion of <a href="#SO_FloatingPoint">floating-point types</a>
         to do data transformation to integer and rounding.
     </ol>
   </dd>
@@ -4531,7 +4545,7 @@ int main(void)
 <pre>
 int main(void)
 {
-   hid_t   file, dataspace, dataset, datatype, properties;
+   hid_t   file, dataspace, dataset, datatype, dset_create_props;
    hsize_t dims[2], chunk_size[2];
    int     orig_data[NX][NY];
    int     new_data[NX][NY];   
@@ -4570,18 +4584,18 @@ int main(void)
    */
    chunk_size[0] = CH_NX;
    chunk_size[1] = CH_NY;
-   if((properties = H5Pcreate (H5P_DATASET_CREATE))&lt;0) {
+   if((dset_create_props = H5Pcreate (H5P_DATASET_CREATE))&lt;0) {
       printf("Error: fail to create dataset property\n");
       return -1;
    }
-   if(H5Pset_chunk (properties, 2, chunk_size)&lt;0) {
+   if(H5Pset_chunk (dset_create_props, 2, chunk_size)&lt;0) {
       printf("Error: fail to set chunk\n");
       return -1;
    }
 
    /* Set the fill value of dataset */
    fill_val = 10000;
-   if (H5Pset_fill_value(properties, H5T_NATIVE_INT, 
+   if (H5Pset_fill_value(dset_create_props, H5T_NATIVE_INT, 
        &fill_val)&lt;0) {
       printf("Error: can not set fill value for dataset\n");
       return -1;
@@ -4592,8 +4606,8 @@ int main(void)
    * description of the H5Pset_scaleoffset function in the 
    * HDF5 Reference Manual for more information [3].
    */
-   if(H5Pset_scaleoffset (properties, H5_SO_INT, 
-                          H5_SO_INT_MINIMUMBITS_DEFAULT)&lt;0) {
+   if(H5Pset_scaleoffset (dset_create_props, H5Z_SO_INT, 
+                          H5Z_SO_INT_MINIMUMBITS_DEFAULT)&lt;0) {
       printf("Error: fail to set scaleoffset filter\n");
       return -1;
    }
@@ -4602,10 +4616,13 @@ int main(void)
    * Create a new dataset within the file. The datatype
    * and data space describe the data on disk, which may
    * or may not be different from the format used in the 
-   * application's memory.
+   * application's memory.  The link creation and 
+   * dataset access property list parameters are passed 
+   * with default values.
    */
-   if((dataset = H5Dcreate (file, DATASET_NAME, datatype,
-                            dataspace, properties))&lt;0) {
+   if((dataset = H5Dcreate2 (file, DATASET_NAME, datatype,
+                            dataspace, H5P_DEFAULT,
+                            dset_create_props, H5P_DEFAULT))&lt;0) {
       printf("Error: fail to create dataset\n");
       return -1;
    }
@@ -4623,7 +4640,7 @@ int main(void)
 
    H5Dclose (dataset);
 
-   if((dataset = H5Dopen(file, DATASET_NAME))&lt;0) {
+   if((dataset = H5Dopen2(file, DATASET_NAME, H5P_DEFAULT))&lt;0) {
       printf("Error: fail to open dataset\n");
       return -1;
    }   
@@ -4642,7 +4659,7 @@ int main(void)
    H5Tclose (datatype);
    H5Dclose (dataset);
    H5Sclose (dataspace);
-   H5Pclose (properties);
+   H5Pclose (dset_create_props);
    H5Fclose (file);
 
    return 0;
@@ -4684,7 +4701,7 @@ int main(void)
 <pre>
 int main(void)
 {
-   hid_t   file, dataspace, dataset, datatype, properties;
+   hid_t   file, dataspace, dataset, datatype, dset_create_props;
    hsize_t dims[2], chunk_size[2];
    float   orig_data[NX][NY];
    float   new_data[NX][NY];
@@ -4724,18 +4741,18 @@ int main(void)
    */
    chunk_size[0] = CH_NX;
    chunk_size[1] = CH_NY;
-   if((properties = H5Pcreate (H5P_DATASET_CREATE))&lt;0) {
+   if((dset_create_props = H5Pcreate (H5P_DATASET_CREATE))&lt;0) {
       printf("Error: fail to create dataset property\n");
       return -1;
    }
-   if(H5Pset_chunk (properties, 2, chunk_size)&lt;0) {
+   if(H5Pset_chunk (dset_create_props, 2, chunk_size)&lt;0) {
       printf("Error: fail to set chunk\n");
       return -1;
    }
 
    /* Set the fill value of dataset */
    fill_val = 10000.0;
-   if (H5Pset_fill_value(properties, H5T_NATIVE_FLOAT, 
+   if (H5Pset_fill_value(dset_create_props, H5T_NATIVE_FLOAT, 
        &fill_val)<0) {
       printf("Error: can not set fill value for dataset\n");
       return -1;
@@ -4747,7 +4764,7 @@ int main(void)
    * description of the H5Pset_scaleoffset function in the HDF5 
    * Reference Manual for more information [3].
    */
-   if(H5Pset_scaleoffset (properties, 3, H5_SO_FLOAT_DSCALE)&lt;0) {
+   if(H5Pset_scaleoffset (dset_create_props, H5Z_SO_FLOAT_DSCALE, 3)&lt;0) {
       printf("Error: fail to set scaleoffset filter\n");
       return -1;
    }
@@ -4758,8 +4775,9 @@ int main(void)
    * or may not be different from the format used in the 
    * application's memory.
    */
-   if((dataset = H5Dcreate (file, DATASET_NAME, datatype,
-                            dataspace, properties))&lt;0) {
+   if((dataset = H5Dcreate2 (file, DATASET_NAME, datatype,
+                            dataspace, H5P_DEFAULT, 
+                            dset_create_props, H5P_DEFAULT))&lt;0) {
       printf("Error: fail to create dataset\n");
       return -1;
    }
@@ -4777,7 +4795,7 @@ int main(void)
 
    H5Dclose (dataset);
 
-   if((dataset = H5Dopen(file, DATASET_NAME))&lt;0) {
+   if((dataset = H5Dopen2(file, DATASET_NAME, H5P_DEFAULT))&lt;0) {
       printf("Error: fail to open dataset\n");
       return -1;
    }   
@@ -4796,7 +4814,7 @@ int main(void)
    H5Tclose (datatype);
    H5Dclose (dataset);
    H5Sclose (dataspace);
-   H5Pclose (properties);
+   H5Pclose (dset_create_props);
    H5Fclose (file);
 
    return 0;
