@@ -95,7 +95,7 @@ TABLE.list TD { border:none; }
 	  <li><a href="#LocalHeap">Disk Format Level 1D - Local Heaps</a>
 	  <li><a href="#GlobalHeap">Disk Format Level 1E - Global Heap</a>
 	  <li><a href="#FractalHeap">Disk Format Level 1F - Fractal Heap</a>
-	  <li><a href="#FreeSpaceManager">Disk Format Level 1G - Free-Space Manager</a>
+	  <li><a href="#FreeSpaceManager">Disk Format Level 1G - Free-space Manager</a>
 	  <li><a href="#SOHMTable">Disk Format Level 1H - Shared Object Header Message Table</a>
 	</ol>
         </font>
@@ -152,7 +152,7 @@ TABLE.list TD { border:none; }
                   <li><a href="#DrvInfoMessage">Driver Info</a>                    		          <!-- 0x0014 -->
                   <li><a href="#AinfoMessage">Attribute Info</a>                    		          <!-- 0x0015 -->
                   <li><a href="#RefCountMessage">Object Reference Count</a>                    		  <!-- 0x0016 -->
-                  <li><a href="#FsinfoMessage">Free-space Manager Info </a>                    		  <!-- 0x0018 -->
+                  <li><a href="#FsinfoMessage">File Space Info </a>                    		  <!-- 0x0018 -->
                 </ol>
 	    </ol>
 	  <li><a href="#DataStorage">Disk Format: Level 2B - Data Object Data Storage</a>
@@ -326,7 +326,7 @@ TABLE.list TD { border:none; }
 
 	<tr>
 	  <td>Version # of Superblock</td>
-	  <td>Version # of File Free-space Storage</td>
+	  <td>Version # of File's Free Space Storage</td>
 	  <td>Version # of Root Group Symbol Table Entry</td>
 	  <td>Reserved (zero)</td>
 	</tr>
@@ -357,7 +357,7 @@ TABLE.list TD { border:none; }
 	</tr>
 
 	<tr>
-	  <td colspan=4><br>Address of File Free-space Info<sup>O</sup><br><br></td>
+	  <td colspan=4><br>Address of File Free space Info<sup>O</sup><br><br></td>
 	</tr>
 
 	<tr>
@@ -490,10 +490,10 @@ TABLE.list TD { border:none; }
 	</tr>
 
 	<tr>
-	  <td>Version Number of the File Free-Space Information</td>
+	  <td>Version Number of the File's Free Space Information</td>
 	  <td>
             <P>This value is used to determine the format of the
-	    information in the File Free-Space Information.
+	    file's free space information.
             </P>
             <P>The only value currently valid in this field is '0', which
             indicates that the file's free space is as described 
@@ -1234,8 +1234,8 @@ TABLE.list TD { border:none; }
 	<A href="#DrvInfoMessage">Driver Info message</A> containing information
         needed by the file driver in order to reopen a file.
 	<LI>
-	<A href="#FsinfoMessage">Free-space Manager Info message</A> containing addresses
-        of free-space managers for retrieving the file's free space.
+	<A href="#FsinfoMessage">File Space Info message</A> containing
+	information about file space handling in the file.
 	</UL>
 
     <BR>
@@ -13855,16 +13855,21 @@ TABLE.list TD { border:none; }
     </div>
     </P>
 
-    <h4><a name="FsinfoMessage">Name: Free-space Manager Info</a></h4>
+    <h4><a name="FsinfoMessage">Name: File Space Info</a></h4>
 
     <P class=item><B>Header Message Type:</B> 0x0018 </P>
     <P class=item><B>Length:</B> fixed </P>
     <P class=item><B>Status:</B> Optional, may not be repeated. </P>
 
-    <P class=item><B>Description:</B>This message stores the addresses of the file's
-	free-space managers which track free space for each allocation request.  
-	There are six basic types of allocation request: superblock, B-tree, raw data, global heap,
-	local heap and object header.
+    <P class=item><B>Description:</B>This message stores the file space management strategy
+	(see description below) that the library uses in handling file space request for the file.
+	It also contains the free-space section threshold used by the
+	library's free-space managers for the file.
+	If the strategy is 1,
+	this message also contains the addresses of the file's
+	free-space managers which track free space for each type of file space allocation.  
+	There are six basic types of file space allocation: superblock, B-tree, raw data,
+	global heap, local heap and object header.
 	See the description of <A href="#FreeSpaceManager">Free-space Manager</A>
 	as well the description of allocation types in <A href="#AppendixB">Appendix B</A>.
     </P>
@@ -13873,7 +13878,7 @@ TABLE.list TD { border:none; }
     <div align=center>
       <table class=format>
 	<caption>
-	  Free-space Manager Info
+	  File Space Info
 	</caption>
 
 	<tr>
@@ -13885,7 +13890,8 @@ TABLE.list TD { border:none; }
 
 	<tr>
 	  <td>Version</td>
-          <td colspan=3 bgcolor=#DDDDDD><em>This space inserted only to align table nicely</em></td>
+	  <td>Strategy</td>
+          <td colspan=2>Threshold<sup>L</sup></td>
 	</tr>
 	<tr>
 	  <td colspan=4>Super-block Free-space Manager Address<sup>O</sup></td>
@@ -13913,6 +13919,11 @@ TABLE.list TD { border:none; }
             <br>
 	    specified in "Size of Offsets" field in the superblock.)
         </td></tr>
+        <tr><td>
+            (Items marked with an 'L' in the above table are of the size
+            <br>
+	    specified in "Size of Lengths" field in the superblock.)
+        </td></tr>
       </table>
 
     </div>
@@ -13927,11 +13938,90 @@ TABLE.list TD { border:none; }
 
 	<tr>
 	  <td>Version</td>
-	  <td><P>The version number for this message. This document describes
+	  <td><P>This is the version number of this message. This document describes
             version 0.</P>
 	  </td>
 	</tr>
 
+	<tr>
+	  <td>Strategy</td>
+	  <td><P>This is the  file space management strategy for the file.
+		 There are four types of strategies:</P>
+            <table width=100% class=list>
+                <tr>
+                  <th width="30%">Value</th>
+                  <th align=left>Description</th>
+                </tr>
+
+                <tr>
+                  <td align=center><code>1</code></td>
+                  <td>With this strategy, the HDF5 library's free-space managers track the
+		      free space that results from the manipulation of HDF5 objects
+		      in the HDF5 file.  The free space information is saved when the
+		      file is closed, and reloaded when the file is reopened.
+		    <br>
+		      When space is needed for file metadata or raw data, 
+		      the HDF5 library first requests space from the library's free-space 
+		      managers. If the request is not satisfied, the library requests space 
+		      from the aggregators. If the request is still not satisfied, 
+		      the library requests space from the virtual file driver. 
+		      That is, the library will use all of the mechanisms for allocating
+		      space.
+                  </td>
+                </tr>
+
+                <tr>
+                  <td align=center><code>2</code></td>
+                  <td>This is the HDF5 library's default file space management strategy. 
+		      With this strategy, the library's free-space managers track the free space
+		      that results from the manipulation of HDF5 objects in the HDF5 file.
+		      The free space information is NOT saved when the file is closed and
+		      the free space that exists upon file closing becomes unaccounted
+		      space in the file.
+		    <br>
+		      As with strategy #1, the library will try all of the mechanisms 
+		      for allocating space.  When space is needed for file metadata or 
+		      raw data, the library first requests space from the free-space
+		      managers.  If the request is not satisfied, the library requests
+		      space from the aggregators.  If the request is still not satisfied,
+		      the library requests space from the virtual file driver.
+                  </td>
+                </tr>
+
+                <tr>
+                  <td align=center><code>3</code></td>
+                  <td>With this strategy, the HDF5 library does not track free space that results
+		      from the manipulation of HDF5 obejcts in the HDF5 file and
+		      the free space becomes unaccounted space in the file.
+		    <br>
+		      When space is needed for file metadata or raw data,
+		      the library first requests space from the aggregators. 
+		      If the request is not satisfied, the library requests space from 
+		      the virtual file driver. 
+                  </td>
+                </tr>
+                <tr>
+                  <td align=center><code>4</code></td>
+                  <td>With this strategy, the HDF5 library does not track free space that results
+		      from the manipulation of HDF5 obejcts in the HDF5 file and
+		      the free space becomes unaccounted space in the file.
+		    <br>
+		      When space is needed for file metadata or raw data,
+		      the library requests space from the virtual file driver. 
+                  </td>
+                </tr>
+            </table>
+	  </td>
+	</tr>
+
+	<tr>
+	  <td>Threshold</td>
+	  <td><P>This is the free-space section threshold.
+	    The library's free-space managers will track only free-space sections
+	    whose size is greater than or equal to <em>threshold</em>.
+	    The default is to track free-space sections of all sizes.</P>
+	  </td>
+	</tr>
 	<tr>
 	  <td>Superblock Free-space Manager Address</td>
 	  <td><P>This is the address of the free-space manager for H5FD_MEM_SUPER allocation type.
