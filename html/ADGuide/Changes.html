@@ -52,9 +52,146 @@ This document is intended to assist application developers who must keep
 an application synchronized with the HDF5 library or related software.
 
 
+<a name="184">
+<h2>Release 1.8.4 (current release) versus Release 1.8.3,
+    November 2009</h2> 
+</a>
+
+<dir>
+
+This section lists interface-level changes and 
+other user-visible changes in behavior 
+in the transition from HDF5 Release 1.8.3 to Release 1.8.4.
+
+
+    <h3>Embedded HDF5 Library Settings Information</h3>
+    
+        <dl>    
+            <dd>Library settings are now embedded in an HDF5 executable 
+                so that an &ldquo;orphaned&rdquo; executable can be queried 
+                (via the Unix strings command, for example) to display the 
+                library settings used to build it.   
+                The embedded settings information is the same as that
+                normally found in the <code>libhdf5.settings</code> file.
+                <p>
+                This capability may be disabled with the use of the
+                <code>--disable-embedded-libinfo</code> flag during configure. 
+        </dl>    
+
+    <h3>New Fortran Subroutine and Constant</h3>
+    
+        <dl>    
+            <dd>The following Fortran subroutine is new in this release:
+                    <dir>
+                    <code>h5oopen_by_addr_f</code>
+                    </dir>
+    
+            <dd>The following Fortran constant, corresponding to 
+                the C constant <code>H5T_ORDER_NONE</code>, has been added 
+                in this release:
+                    <dir>
+                    <code>H5T_ORDER_NONE_F</code>
+                    </dir>
+        </dl>    
+
+</dir>
+<dir>
+
+    <h3>New C++ Member Functions</h3>
+    
+        <dl>    
+            <dd>New C++ member functions are provided to 
+                determine a dataset&rsquo;s or attribute&rsquo;s 
+                data size in memory:
+                    <dir>
+                    <code>
+                    size_t DataSet::getInMemDataSize() const</code>
+                    <br>
+                    <code>
+                    size_t Attribute::getInMemDataSize() const</code>
+                    </dir>
+                The size in each case is in bytes.
+        </dl>    
+
+    <h3>Function with Changed Interface or Behavior</h3>
+    
+        <dl>    
+            <dd><a href="../RM_H5.html#Library-VersCheck">
+                <code>H5check_version</code></a> now displays
+                embedded library information (see above) 
+                if a version mismatch is detected.
+                <p>
+                The function has also been changed to suppress the 
+                warning message entirely if 
+                <code>$HDF5_DISABLE_VERSION_CHECK</code> is set to 
+                <code>2</code> or higher.
+        </dl>    
+
+</dir>
+<dir>
+
+    <h3>Fortran Subroutine with Changed Syntax</h3>
+    
+        <dl>    
+            <dd>The syntax of the following Fortran subroutine 
+                has changed in this release:
+                    <dir>
+                    <code>
+                    h5lget_info_by_idx_f (loc_id, group_name, index_field, order, n, &
+                    <br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;
+                    link_type, f_corder_valid, corder, cset, address, val_size, &
+                    <br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;
+                    hdferr, lapl_id)
+                    </code>
+                    </dir>
+                The parameters <code>link_type</code>, <code>address</code>, 
+                and <code>val_size</code> have been added;
+                the parameter <code>data_size</code> has been removed.
+        </dl>    
+
+</dir>
+<dir>
+
+    <h3>Tool with Changed Interface or Behavior</h3>
+    
+        <dl>    
+            <dd><a href="../Tools.html#Tools-Diff"><code>h5diff</code></a>
+                has one new option:
+                    <dir>
+                    <code>--use-system-epsilon</code>
+                    </dir>
+                With this option, <code>h5diff</code> returns a difference
+                if and only if the difference between two data values
+                exceeds the system value for epsilon
+                (that is, if <code>|a-b| &gt; <i>epsilon</i></code>).
+                <p>
+                The tool&rsquo;s default behavior has also changed; 
+                without this option, the tool now checks for strict equality.
+                Prior default behavior was to use an epsilon internally 
+                defined in HDF5.
+                <p>
+                This option has no short form.
+                <p>
+        </dl>    
+
+    <h3>Changed Library Configuration</h3>
+
+        <dl>
+            <dd>The following configuration flag is new with this release:
+                    <dir>
+                    <code>--disable-embedded-libinfo</code>
+                    </dir>
+                This flag disables the embedding of HDF5 library settings
+                in an HDF5 executable.
+        </dl>
+
+</dir>
+
+
 <a name="183">
-<h2>Release 1.8.3 (current release) versus Release 1.8.2,
-    May 2009</h2> 
+<h2>Release 1.8.3 versus Release 1.8.2, May 2009</h2> 
 </a>
 
 <dir>
@@ -232,9 +369,7 @@ in the transition from HDF5 Release 1.8.2 to Release 1.8.3.
                     avoid the performance penalty that NaN detection 
                     and comparison entalis.
                     (NaN detection and comparison became the default in 
-                    in HDF5 Release 1.6.8.  
-                    <font color=red><b><i>Correct?</b></i></font>
-                    )
+                    in HDF5 Release 1.6.8.)
                     <p>
                 <dd>This tool has two new options:
                     <p>&nbsp;&nbsp;&nbsp;&nbsp;
@@ -4748,6 +4883,524 @@ in the transition to HDF5 Release 1.8.0 from the Release 1.6.<i>x</i> series.
 
 
 
+<a name="1610">
+<h2>Release 1.6.10 versus Release 1.6.9,
+    November 2009</h2> 
+</a>
+
+<dir>
+
+This section lists interface-level changes and 
+other user-visible changes in behavior 
+in the transition from HDF5 Release 1.6.9 to Release 1.6.10.
+
+</dir>
+<dir>
+
+    <h3>Embedded HDF5 Library Settings Information</h3>
+    
+        <dl>    
+            <dd>Library settings are now embedded in an HDF5 executable 
+                so that an &ldquo;orphaned&rdquo; executable can be queried 
+                (via the Unix strings command, for example) to display the 
+                library settings used to build it.   
+                The embedded settings information is the same as that
+                normally found in the <code>libhdf5.settings</code> file.
+                <p>
+                This capability may be disabled with the use of the
+                <code>--disable-embedded-libin</code> flag during configure. 
+        </dl>    
+
+    <h3>Function with Changed Interface or Behavior</h3>
+    
+        <dl>    
+            <dd><a href="../RM_H5.html#Library-VersCheck">
+                <code>H5check_version</code></a> now displays
+                embedded library information (see above) 
+                if a version mismatch is detected.
+                <p>
+                The function has also been changed to suppress the 
+                warning message entirely if 
+                <code>$HDF5_DISABLE_VERSION_CHECK</code> is set to 
+                <code>2</code> or higher.
+        </dl>    
+
+</dir>
+<dir>
+
+    <h3>New C++ Member Function</h3>
+    
+        <dl>    
+          <dd>New C++ member functions are provided to 
+              determine a dataset&rsquo;s or attribute&rsquo;s 
+              data size in memory:
+              <p>
+              <code>
+              &nbsp;&nbsp;
+              size_t DataSet::getInMemDataSize() const</code>
+              <br>
+              <code>
+              &nbsp;&nbsp;
+              size_t Attribute::getInMemDataSize() const</code>
+              <p>
+              The size in each case is in bytes.
+        </dl>    
+
+</dir>
+<dir>
+
+    <h3>Tool with Changed Interface or Behavior</h3>
+    
+        <dl>    
+            <dd><a href="../Tools.html#Tools-Diff"><code>h5diff</code></a>
+                has one new option:
+                <p>
+                <code>&nbsp;&nbsp;&nbsp;&nbsp;--use-system-epsilon</code>
+                <p>
+                With this option, <code>h5diff</code> returns a difference
+                if and only if the difference between two data values
+                exceeds the system value for epsilon
+                (that is, if <code>|a-b| &gt; <i>epsilon</i></code>).
+                <p>
+                The tool&rsquo;s default behavior has also changed; 
+                without this option, the tool now checks for strict equality.
+                <p>
+                This option has no short form.
+                <p>
+        </dl>    
+
+</dir>
+
+
+
+<a name="169">
+<h2>Release 1.6.9 versus Release 1.6.8,
+    May 2009</h2> 
+</a>
+
+<dir>
+
+This section lists API-level changes and changes in behavior 
+in the transition from HDF5 Release 1.6.8 to Release 1.6.9.
+
+
+    <h3>API Compatibility Macros</h3>
+
+        To facilitate writing applications that work with 
+        both the HDF5 Release 1.6 series and the 1.8 series,
+        API compatibility macros analogous to those in 1.8
+        have been defined.  These macros map directly to the
+        relevant functions and typedefs.  Note that only the
+        1.6-style macros are supported in this branch.
+        <p>
+        Any program that is written using these macros
+        exculsively will work with both the 1.6 and 1.8
+        series HDF5 Libraries. The program will work without
+        having to use any special flags or definitions, as
+        long as the 1.8 library was compiled with support
+        for deprecated symbols, which is the default.
+        <p>
+        Following is a list of macros and the
+        symbols they alias:
+        <p>
+        <dl><dd><table width="90%">
+          <tr>
+            <td valign="top" align="left" width="20%">
+              <strong>Macro</strong></td>
+            <td valign="top" align="left">
+              <strong>Symbol</strong></td>
+          </tr>
+          <tr>
+            <td valign="top"><code>H5Acreate1</code></td>
+            <td valign="top"><code>H5Acreate</code></td>
+          </tr>
+          <tr>
+            <td valign="top"><code>H5Aiterate1</code></td>
+            <td valign="top"><code>H5Aiterate</code></td>
+          </tr>
+          <tr>
+            <td valign="top"><code>H5A_operator1_t</code></td>
+            <td valign="top"><code>H5A_operator_t</code></td>
+          </tr>
+          <tr>
+            <td valign="top"><code>H5Dcreate1</code></td>
+            <td valign="top"><code>H5Dcreate</code></td>
+          </tr>
+          <tr>
+            <td valign="top"><code>H5Dopen1</code></td>
+            <td valign="top"><code>H5Dopen</code></td>
+          </tr>
+          <tr>
+            <td valign="top"><code>H5Eclear1</code></td>
+            <td valign="top"><code>H5Eclear</code></td>
+          </tr>
+          <tr>
+            <td valign="top"><code>H5Eget_auto1</code></td>
+            <td valign="top"><code>H5Eget_auto</code></td>
+          </tr>
+          <tr>
+            <td valign="top"><code>H5Eprint1</code></td>
+            <td valign="top"><code>H5Eprint</code></td>
+          </tr>
+          <tr>
+            <td valign="top"><code>H5Epush1</code></td>
+            <td valign="top"><code>H5Epush</code></td>
+          </tr>
+          <tr>
+            <td valign="top"><code>H5Eset_auto1</code></td>
+            <td valign="top"><code>H5Eset_auto</code></td>
+          </tr>
+          <tr>
+            <td valign="top"><code>H5Ewalk1</code></td>
+            <td valign="top"><code>H5Ewalk</code></td>
+          </tr>
+          <tr>
+            <td valign="top"><code>H5E_walk1_t</code></td>
+            <td valign="top"><code>H5E_walk_t</code></td>
+          </tr>
+          <tr>
+            <td valign="top"><code>H5E_error1_t</code></td>
+            <td valign="top"><code>H5E_error_t</code></td>
+          </tr>
+          <tr>
+            <td valign="top"><code>H5Gcreate1</code></td>
+            <td valign="top"><code>H5Gcreate</code></td>
+          </tr>
+          <tr>
+            <td valign="top"><code>H5Gopen1</code></td>
+            <td valign="top"><code>H5Gopen</code></td>
+          </tr>
+          <tr>
+            <td valign="top"><code>H5Pget_filter1</code></td>
+            <td valign="top"><code>H5Pget_filter</code></td>
+          </tr>
+          <tr>
+            <td valign="top"><code>H5Pget_filter_by_id1</code></td>
+            <td valign="top"><code>H5Pget_filter_by_id</code></td>
+          </tr>
+          <tr>
+            <td valign="top"><code>H5Pinsert1</code></td>
+            <td valign="top"><code>H5Pinsert</code></td>
+          </tr>
+          <tr>
+            <td valign="top"><code>H5Pregister1</code></td>
+            <td valign="top"><code>H5Pregister</code></td>
+          </tr>
+          <tr>
+            <td valign="top"><code>H5Rget_obj_type1</code></td>
+            <td valign="top"><code>H5Rget_obj_type</code></td>
+          </tr>
+          <tr>
+            <td valign="top"><code>H5Tarray_create1</code></td>
+            <td valign="top"><code>H5Tarray_create</code></td>
+          </tr>
+          <tr>
+            <td valign="top"><code>H5Tcommit1</code></td>
+            <td valign="top"><code>H5Tcommit</code></td>
+          </tr>
+          <tr>
+            <td valign="top"><code>H5Tget_array_dims1</code></td>
+            <td valign="top"><code>H5Tget_array_dims</code></td>
+          </tr>
+          <tr>
+            <td valign="top"><code>H5Topen1</code></td>
+            <td valign="top"><code>H5Topen</code></td>
+          </tr>
+          <tr>
+            <td valign="top"><code>H5E_auto1_t</code></td>
+            <td valign="top"><code>H5E_auto_t</code></td>
+          </tr>
+          <tr>
+            <td valign="top"><code>H5Z_class1_t</code></td>
+            <td valign="top"><code>H5Z_class_t</code></td>
+          </tr>
+          </code>
+        </table></dl>
+        <p>
+        Note that for the 1.6 series, the numbered symbols are macros, 
+        while in the 1.8 series, the non-numbered symbols are
+        macros.  This was done because there is no need to
+        switch between different API versions in the 1.6 series.
+        <p>
+        <code>H5Z_class1_t</code> was introduced in Release 1.6.9 while all the
+        others were introduced in Release 1.6.8.  For more information see
+        <cite><a href="http://www.hdfgroup.org/HDF5/doc/RM/APICompatMacros.html">API
+        Compatibility Macros</a></cite>, an HDF5 Release 1.8-series document.
+        <p>
+
+
+</dir>
+<dir>
+
+    <h3>Tools with Changed Interface or Behavior</h3>
+    
+        <dl>    
+            <dt><a href="../Tools.html#Tools-Diff"><code>h5diff</code></a>
+                <dd>The default behavior of <code>h5diff</code> is now
+                    to detect and compare NaNs.  
+                    Use the <code>-N</code> or <code>--nan</code>
+                    option (below) to turn this behavior off and
+                    avoid the performance penalty that NaN detection 
+                    and comparison entalis.
+                    (NaN detection and comparison became the default in 
+                    in HDF5 Release 1.6.8.)
+                    <p>
+                <dd>This tool has two new options:
+                    <p>&nbsp;&nbsp;&nbsp;&nbsp;
+                    <code>-c</code>, <code>--compare</code>
+                    <code>&nbsp;&nbsp;&nbsp;&nbsp;</code>
+                    Lists objects that are not comparable.
+
+                    <p>&nbsp;&nbsp;&nbsp;&nbsp;
+                    <code>-N</code>, <code>--nan</code>
+                    <code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code>
+                    Avoids NaNs detection.
+                    <p>
+
+            <dt><a href="../Tools.html#Tools-Dump"><code>h5dump</code></a>
+                <dd><code>h5dump</code> now correctly specifies an XML DTD 
+                    or a schema URL.
+                    <p>
+                <dd><code>h5dump</code> binary output now defaults to 
+                    <code>NATIVE</code>.
+                    <p>
+                <dd>The new <code>-b</code>, <code>--binary</code> option
+                    can be used to specify alternate binary formats.
+                    <p>
+
+            <dt><a href="../Tools.html#Tools-Repack"><code>h5repack</code></a>
+                <dd>When a user does not specify a chunk size,
+                    <code>h5repack</code> now defines the default chunk size
+                    to be the same same as the size of the hyperslab used
+                    to read the chunks.
+                    <p>
+        </dl>    
+
+</dir>
+
+<!--
+<dir>
+
+
+    <h3>Deprecated Functions</h3>
+
+        The following functions are deprecated as of this release: 
+        <pre>        <a href="../RM_H5P.html#Property-SetPreserve">H5Pset_preserve</a>
+        <a href="../RM_H5P.html#Property-GetPreserve">H5Pget_preserve</a> </pre>
+        <p>
+        The original role of these functions is now 
+        part of the core HDF5 Library functionality.
+        <p>
+
+
+    <h3>Changed File Installation</h3>
+        The file <code>libhdf5_fortran.settings</code> is no longer
+        installed with the HDF5 Library;
+        the original content of that file is now included in 
+        <code>libhdf5.settings</code>.
+    
+</dir>
+-->
+
+
+
+<a name="168">
+<h2>Release 1.6.8 versus Release 1.6.7,
+    November 2008</h2> 
+</a>
+
+<dir>
+
+This section lists API-level changes and changes in behavior 
+in the transition from HDF5 Release 1.6.7 to Release 1.6.8.
+
+
+    <h3>Functions with Changed Syntax</h3>
+
+        The following function syntaxes have changed;
+        the affected return values and parameter are noted as 
+        <font color=red><u>underscored red text</u></font>.
+        <p>
+        <dl>
+        <dt><u>C function:</u>
+        <dt><a href="../RM_H5F.html#File-GetObjCount">
+          <code>H5Fget_obj_count</code></a>
+          <dd><code>
+              <font color=red><u>
+              ssize_t</u></font> H5Fget_obj_count(
+              <em>hid_t </em><code>file_id</code>,
+              <em>unsigned int</em> <code>types</code>
+              )
+              </code>
+        <p>
+        <dt><a href="../RM_H5F.html#File-GetObjIDs">
+            <code>H5Fget_obj_ids</code></a>
+          <dd><code>
+              <font color=red><u>
+              ssize_t</u></font> H5Fget_obj_ids(
+              <em>hid_t </em><code>file_id</code>,
+              <em>unsigned int</em> <code>types</code>,
+              <br>
+              &nbsp; &nbsp; &nbsp; &nbsp;
+              <font color=red><u>
+              <em>size_t</em> <code>max_objs</code></u></font>,
+              <em>hid_t *</em><code>obj_id_list</code>
+              )
+              </code>
+        </dl>
+        <p>
+
+</dir>
+<dir>
+
+    <h3>Tools with Changed Interface or Behavior</h3>
+    
+        <dl>    
+            <dt><a href="../Tools.html#Tools-Repack"><code>h5repack</code></a>
+                and <a href="../Tools.html#Tools-Diff"><code>h5diff</code></a>
+                <dd>The standard command-line syntax of both tools
+                    has been changed to parallel that of <code>h5dump</code>.
+                    The new syntax of each is as follows:
+                    <p>&nbsp;&nbsp;&nbsp;&nbsp;
+                    <code>
+                    h5repack [<i>OPTIONS</i>] <i>file1 file2</i> 
+                    </code>
+                    <p>&nbsp;&nbsp;&nbsp;&nbsp;
+                    <code>
+                    h5diff [<i>OPTIONS</i>] <i>file1 file2</i> 
+                           [<i>object1</i> [<i>object2</i>]]
+                    </code>
+                    <p>
+                    In each case, 
+                    the old syntax remains available (though undocumented)
+                    to avoid breaking existing scripts. 
+                    <p>
+        </dl>    
+
+</dir>
+<dir>
+                   
+        <dl>    
+            <dt><a href="../Tools.html#Tools-Diff"><code>h5diff</code></a>
+                <dd><code>h5diff</code> now returns <code>1</code>
+                    if the files differ in structure, 
+                    i.e., if the file graphs differ by any object. 
+                    <p>     
+                    The tool&rsquo;s error return code has been changed 
+                    to <code>2</code>.
+                    <p>     
+
+            <dt><a href="../Tools.html#Tools-Repack"><code>h5repack</code></a>
+                <dd>The following new options control the addition of
+                    user block data to an existing HDF5 file:
+                    <dir>
+                    <table>
+                    <tr valign=top><td>
+                          <code>-u <em>U</em></code>
+                          <br>
+                          <code>--ublock=<em>U</em></code>
+                        </td><td>&nbsp;&nbsp;&nbsp;&nbsp;</td><td>
+                          Specifies the name of the file containing the
+                          user block data to be added.
+                        </td></tr>
+                    <tr valign=top><td>
+                          <br>
+                          <code>-b <em>B</em></code>
+                          <br>
+                          <code>--block=<em>B</em></code>
+                        </td><td>&nbsp;&nbsp;&nbsp;&nbsp;</td><td>
+                          <br>
+                          Specifies the size of the block to be added.
+                        </td></tr>
+                    </table>
+                    </dir>
+                    <p>
+
+                <dd>The following new options set parameters
+                    governing the tool&rsquo;s use of
+                    <code>H5Pset_alignment</code>:
+                    <dir>
+                    <table>
+                    <tr valign=top><td>
+                          <code>-t <em>T</em></code>
+                          <br>
+                          <code>--threshold=<em>T</em></code>
+                        </td><td>&nbsp;&nbsp;&nbsp;&nbsp;</td><td>
+                          Specifies the threshold value for
+                          <code>H5Pset_alignment</code>.
+                        </td></tr>
+                    <tr valign=top><td>
+                          <br>
+                          <code>-a <em>A</em></code>
+                          <br>
+                          <code>--alignment=<em>A</em></code>
+                        </td><td>&nbsp;&nbsp;&nbsp;&nbsp;</td><td>
+                          <br>
+                          Specifies the alignment value for
+                          <code>H5Pset_alignment</code>.
+                        </td></tr>
+                    </table>
+                    </dir>
+                    <p>
+
+                <dd><code>h5repack</code> now supports multiple instances of
+                    the <code>'-f'</code> or <code>'--filter'</code> option, 
+                    allowing the use of multiple I/O filters with an object.
+                    <p>
+                <dd>With no change in the command-line syntax, 
+                    <code>h5repack</code> now retains an existing userblock
+                    when repacking an HDF5 file.
+                    <p>
+
+            <dt><a href="../Tools.html#Tools-Import"><code>h5import</code></a>
+                <dd>The floating point format flag <code>TEXTFPE</code>,
+                    for scientific notation, has been deprecated.
+                    The flag <code>TEXTFP</code>, which accepts
+                    scientific notation, should be used instead.
+                    <p>
+
+                <dd><code>h5import</code> now imports string data 
+                    with the <code>STR</code> keyword 
+                    in the <code>INPUT-CLASS</code> configuration field.
+                    <p>
+                   
+            <dt><a href="../Tools.html#Tools-Dump"><code>h5dump</code></a>
+                <dd>The new <code>'-m <i>T</i>'</code> or 
+                    <code>'--format <i>T</i>'</code> option 
+                    enables a user-defined formatting string 
+                    for printing floating-point numbers.
+                    <p>
+                <dd>With no change in the command-line syntax, 
+                    <code>h5dump</code> now prints a compression ratio
+                    when compression filters are in use.
+                    
+        </dl>    
+
+</dir>
+<dir>
+
+
+    <h3>Deprecated Functions</h3>
+
+        The following functions are deprecated as of this release: 
+        <pre>        <a href="../RM_H5P.html#Property-SetPreserve">H5Pset_preserve</a>
+        <a href="../RM_H5P.html#Property-GetPreserve">H5Pget_preserve</a> </pre>
+        <p>
+        The original role of these functions is now 
+        part of the core HDF5 Library functionality.
+        <p>
+
+
+    <h3>Changed File Installation</h3>
+        The file <code>libhdf5_fortran.settings</code> is no longer
+        installed with the HDF5 Library;
+        the original content of that file is now included in 
+        <code>libhdf5.settings</code>.
+    
+
+
+</dir>
+
 
 <a name="167">
 <h2>Release 1.6.7 versus Release 1.6.6</h2> 
@@ -7522,7 +8175,7 @@ Describes HDF5 Release 1.8.4, November 2009.
 </address>
 <!-- #EndLibraryItem --><!-- Created: Spring 1999 -->
 <!-- hhmts start -->
-Last modified: 21 April 2009 
+Last modified: 5 November 2009 
 <!-- hhmts end -->
 
 </body>
