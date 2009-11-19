@@ -1,54 +1,67 @@
 
 ================================================================================
-Process for Creating PDF Version of the HDF5 User's Guide from Source Files
+Process for Creating PDF Version of the HDF5 User's Guide (UG) from Source Files
 ================================================================================
 
-					              Last modified: 12 Nov 2004
+                                               Last modified: 19 November 2009
 
-The PDF version of the HDF5 User's Guide is created from scratch at each 
-release from the primary version of the documentation which is maintained in
-HTML. (Assuming, of course, that we continue to produce PDF versions.)
+PDF versions of the HDF5 Reference Manual (RM) and the new HDF5 User's Guide 
+(UG) are created from the HTML source at each release of the HDF5 Library.  
+The process is managed through two application environments, DreamWeaver (an 
+HTML editing environment) and HTMLdoc (a PDF conversion tool).  This document 
+describes the process in detail for the UG; the process for the RM is very 
+similar and is described in a separate document.
 
 
-1.  Using Macromedia Dreamweaver, define a site that contains all the documents
-    that will be included/necessary for PDF generation.
+Complete this process first for either the RM or UG, then for the other.
 
 
-2.  Wherever necessary throughout the source code:
+The HDF5 User's Guide
+-------------------------
+1.  Skip this step if you have already done it for the UG; you can use the 
+    same working copy for both tasks.
 
-      a) Switch between print and electronic versions of some elements by means
-         of switching which section is commented out. (For PDF generation make
-         sure the Print version of elements is uncommented)
-         NOTE: Look for:
-                 <!-- FOR USE WITH ELECTRONIC VERSION -->
-                 <!-- FOR USE WITH PRINT VERSION ------->
-				 
-3.  In the ed_libs directory:
+    Check out a fresh working copy of the minor release branch specifically
+    for this task. For example:
+      svn checkout https://svn.hdfgroup.uiuc.edu/hdf5doc/branches/hdf5_1_8_4  \
+          hdf5_1_8_4-PDFs
 
-      a) Assuming you have your libraries set up for electronic viewing (to
+    Using Macromedia Dreamweaver, define a site that contains all the 
+    documents within the subdirectory html/, including the .html, image, 
+    DreamWeaver library (in ed_libs/), and .book files.
+
+2.  Working in DreamWeaver...
+    In the ed_libs directory:
+
+      a) Assuming your libraries are set up for electronic viewing (to
          verify, check that there is nothing more than a commented note and
-         an '&nbsp;' in the _Null libraries) drop the code from the actual 
-         library into its respective Null lib, replacing the &nbsp;.
-           (EXAMPLE: Take all the code from Footer.lbi and insert it into
-            Footer_Null.lbi, taking care not to remove the commented note.)
-     
+         an '&nbsp;' in the ed_libs/*_Null.lbi libraries), move the code
+         from the relevant library files into the respective _Null library 
+         files, replacing the &nbsp;.
+           
+         For example, take all the code from Footer.lbi and insert it into
+         Footer_Null.lbi, taking care not to remove the commented note.
+
+         You can ignore any file in ed_libs/ that does not have a corresponding 
+         _Null file.
+
       b) In the now empty library file, add an &nbsp;.
-      
+
       c) Save the libraries and their respective Null files.
 
       d) With a library still open (not a Null one) choose 
-          Modify>Library>Update Pages...
-         Look in: Entire Site
-         Check 'Library Items' in the 'Update:' selection.
-         Hit start.
-		 
-	  NOTE:  There are one or two places where you might have to manually 
-	         swap the code within a library being called in a document
-		 because the files are not within the site you have defined
-		 within dreamweaver. They should be one level above the 
-		 defined site. The files in which this may be necessary are
-		 'Glossary.html' and 'ddl.html'.
-			 
+          Modify>Templates>Update Pages...
+         In 'Look in:', select 'Entire Site'.
+         In 'Update:', select 'Library Items' and 
+                       deselect 'Templates'.
+         Click on the 'Start' button.
+
+3.  If you have not yet generated the RM PDF, perform the task outlined in
+    step three of the RM process.txt file.  This is the step of converting 
+    the '!-- FOR USE WITH...' flags from the electronic form to the print form.
+
+         <!-- FOR USE WITH ELECTRONIC VERSION ---> 
+         <!-- FOR USE WITH PRINT VERSION ---> 
 
 4.  Using HTML DOC:  
       
@@ -74,7 +87,7 @@ HTML. (Assuming, of course, that we continue to produce PDF versions.)
 
       c) The Output tab:
            Output To: File
-           Output Path: H5_newUG.pdf
+           Output Path: HDF5_UG_body.pdf
            Output Format: PDF
            Output Options: JPEG Big Images
            Compression (not critical, change at will): Slider right above 'Fast'
@@ -118,11 +131,11 @@ HTML. (Assuming, of course, that we continue to produce PDF versions.)
 
       j) Save the book file.
      
-      k) Verify that the output file (H5_newUG.pdf) is not open.
+      k) Verify that the output file (HDF5_UG_body.pdf) is not open.
 
       l) Generate the document.
 
-5.  Open H5_newUG.pdf
+5.  Open HDF5_UG_body.pdf
     
       a) Scan through the document page by page to verify that there are no 
          elements that should have been eliminated via javascripts or swapped 
@@ -154,7 +167,6 @@ HTML. (Assuming, of course, that we continue to produce PDF versions.)
            Document Type: Web Page
            Input Files:
              H5_newUG_Title.html
-             Copyright.html
              H5_newUG_TOC.html
            Logo Image: none
            Title File/Image: none
@@ -208,3 +220,37 @@ HTML. (Assuming, of course, that we continue to produce PDF versions.)
       k) Verify that the output file (H5_newUG_Front.pdf) is not open.
 
       l) Generate the document.      
+
+
+8.  Following a procedure virtually identical to that outlined in (7) above, 
+    use the file PDF_CandL.book to generate a 1-page copyright and license 
+    statement.
+
+    This copyright page can be generated once and used in both the RM and 
+    UG PDFs.  
+
+
+9.  Using Adobe Acrobat Pro:
+
+      a) Insert the Copyright page into the frontmatter file and remove any 
+         blank pages that prevent the TOC or any subsequent material from 
+         appearing on a recto.
+
+         The resultiing page order should be as follows:
+
+             Title page            (recto)
+             Copyright page        (on the back of the title page)
+             TOC                   (starts on a recto; may be several pages)
+             additional material   (starts on a recto; may be several pages)
+
+         The resulting file is your final frontmatter file.
+
+      b) Insert the frontmatter file at the front of the previously-generated
+         body file.
+
+      c) Name the resulting file consistently with the names of UG and RM PDFs 
+         from prior releases.
+
+
+10. Commit the final UG and RM PDFs to the repository and update the website.
+
