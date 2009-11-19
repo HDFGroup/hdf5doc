@@ -1,57 +1,97 @@
 
 ==============================================================================
-Process for Creating PDF Versions of the HDF5 RM and UG from HTML Source Files
+Process for Creating PDF Versions of the HDF5 Reference Manual (RM)
+from HTML Source Files
 ==============================================================================
 
-                                                    Last modified: 24 Sep 2004
+                                               Last modified: 19 November 2009
 
 PDF versions of the HDF5 Reference Manual (RM) and the new HDF5 User's Guide 
 (UG) are created from the HTML source at each release of the HDF5 Library.  
-The process is managed through two application environments, Macromedia 
-DreamWeaver (an HTML editing environment) and HTML doc (a conversion tool).  
-This document describes the process in detail for the RM; the process for the 
-UG is very similar and will be described in a subsequent update.
+The process is managed through two application environments, DreamWeaver (an 
+HTML editing environment) and HTMLdoc (a PDF conversion tool).  This document 
+describes the process in detail for the RM; the process for the UG is very 
+similar and is described in a separate document.
+
+Complete this process first for either the RM or UG, then for the other.
 
 
 The HDF5 Reference Manual
 -------------------------
-1.  Using Macromedia Dreamweaver, define a site that contains all the 
-    documents within doc/html, including html, image, DreamWeaver library and 
-    .book files.
+1.  Skip this step if you have already done it for the UG; you can use the 
+    same working copy for both tasks.
 
-2.  In the ed_libs directory:
+    Check out a fresh working copy of the minor release branch specifically
+    for this task. For example:
+      svn checkout https://svn.hdfgroup.uiuc.edu/hdf5doc/branches/hdf5_1_8_4  \
+          hdf5_1_8_4-PDFs
 
-      a) Assuming you have your libraries set up for electronic viewing (to
+    Using Macromedia Dreamweaver, define a site that contains all the 
+    documents within the subdirectory html/, including the .html, image, 
+    DreamWeaver library (in ed_libs/), and .book files.
+
+2.  Working in DreamWeaver...
+    In the ed_libs directory:
+
+      a) Assuming your libraries are set up for electronic viewing (to
          verify, check that there is nothing more than a commented note and
-         an '&nbsp;' in the 3 aforementioned _Null libraries) drop the code
-         from the actual library into it's respective Null lib, replacing 
-         the &nbsp;.
-           (EXAMPLE: Take all the code from Footer.lbi and insert it into
-            Footer_Null.lbi, taking care not to remove the commented note.)
-     
+         an '&nbsp;' in the ed_libs/*_Null.lbi libraries), move the code
+         from the relevant library files into the respective _Null library 
+         files, replacing the &nbsp;.
+           
+         For example, take all the code from Footer.lbi and insert it into
+         Footer_Null.lbi, taking care not to remove the commented note.
+
+         You can ignore any file in ed_libs/ that does not have a corresponding 
+         _Null file.
+
       b) In the now empty library file, add an &nbsp;.
-      
-      c) Save the libraries and thier respective Null files.
+
+      c) Save the libraries and their respective Null files.
 
       d) With a library still open (not a Null one) choose 
-          Modify>Library>Update Pages...
-         Look in: Entire Site
-         Check 'Library Items' in the 'Update:' selection.
-         Hit start.
+          Modify>Templates>Update Pages...
+         In 'Look in:', select 'Entire Site'.
+         In 'Update:', select 'Library Items' and 
+                       deselect 'Templates'.
+         Click on the 'Start' button.
 
 3.  In RM_H5P.html:
 
       a) RM_H5P.html contains two versions of the 'C Interfaces' function 
-         list.  One is for print use and one is for electronic use.  
-         One should be visible and one should be commented out.  
-         Make sure that the section labelled with 
-         <!-- FOR USE WITH ELECTRONIC VERSION ---> is commented out.
-         (by removing the >s).
- 
+         list; one is for print use (in PDFs) and one is for electronic use 
+         (on the website).  
+         One version should be visible and one should be commented out.  
 
-4.  Using HTMLdoc:  
+         Make sure that the sections bracketed with 
+         <!-- FOR USE WITH ELECTRONIC VERSION ---> are commented out
+         (by removing the trailing '>' character from the first of each pair 
+         of labels).
+
+         Make sure that the sections bracketed with 
+         <!-- FOR USE WITH PRINT VERSION ---> are visible (by adding a 
+         trailing '>' character to the first of each pair of labels).
+
+         The same convention is used in a scattering of additional files.
+         You can locate them with a 'grep' across the doc tree.
+
+4.  Server-side includes:
+
+      a) The following files each contain a series of server-side includes:
+             RM_H5.html
+             RM_H5A.html, RM_H5D.html, RM_H5E.html, etc
+             Tools.html
+
+      b) Concatenate each set of included files into a single file and 
+         insert it in place of the server-side include commands.
+
+      c) Review the resulting files in a browser to ensure that everything 
+         has meshed well.
+
+
+5.  Using HTMLdoc:  
       
-      a) Open PDF_RM_body.book 
+      a) Open PDF_RM_BODY.book 
       
       b) The Input tab:
            Document Type: Web Page
@@ -64,6 +104,8 @@ The HDF5 Reference Manual
              RM_H5F.html
              RM_H5G.html
              RM_H5I.html
+             RM_H5L.html                 (new in Release 1.8)
+             RM_H5O.html                 (new in Release 1.8)
              RM_H5P.html
              RM_H5R.html
              RM_H5S.html
@@ -71,18 +113,20 @@ The HDF5 Reference Manual
              RM_H5Z.html
              Tools.html
              PredefDTypes.html
+             F90Flags.html
+             APICompatMacros.html        (new in Release 1.8)
              Glossary.html
            Logo Image: none
            Title File/Image: none
 
       c) The Output tab:
            Output To: File
-           Output Path: H5_RM_body.pdf
+           Output Path: HDF5_RM_body.pdf
            Output Format: PDF
            Output Options: JPEG Big Images
            Compression (not critical, change at will): Slider right above 'Fast'
            JPEG Quality (not critical, change at will): 60
-  
+
       d) The Page tab:
            Page Size: Letter, 2-Sided
              Top: 0.50in, Left: 1.00in, Right: 0.50in, Bottom: 0.50in
@@ -93,7 +137,7 @@ The HDF5 Reference Manual
       e) The Colors tab:
            Everything Blank
            Link Style: Plain
-    
+
       f) The Fonts tab:
            Base Font Size: 11.0
            Line Spacing: 1.2
@@ -120,28 +164,23 @@ The HDF5 Reference Manual
            GUI Option: Check all 3
 
       j) Save the book file.
-     
-      k) Verify that the output file (H5_RM_body.pdf) is not open.
+
+      k) Verify that the output file (HDF5_RM_body.pdf) is not open.
 
       l) Generate the document.
 
-5.  Open H5_RM_body.pdf
+5.  Open HDF5_RM_body.pdf
     
       a) Scan through the document page by page to verify that there are no 
          elements that should have been eliminated via javascripts or swapped 
          library contents.
 
       b) Scan through again looking only for places where page breaks need to 
-         be added, removed, or relocated.  I have found that re-generating the 
-         document after every pagination correction actually saves time in the 
-         long run.  This is because some pagination corrections that must be 
-         made may create other problems further down in the document.  
-         Re-generating the document ensures that every problem you focus on 
-         won't have to be re-done.
+         be added, removed, or relocated.  
 
-      c) When you are sure all the pagination is correct (don't forget to 
-         start each of the sections included in the Table of Contents on a 
-         recto) note page numbers for the beginning of each section in the TOC.
+      c) When you all the pagination is correct (don't forget to start each of 
+         the sections included in the Table of Contents on a recto), note page 
+         numbers for the beginning of each section in the TOC.
 
 6.  Open RM_TOC.html
 
@@ -149,19 +188,18 @@ The HDF5 Reference Manual
          (Note: Assuming the general format of RM_H5Front remains the same, 
           the 'Overview' listing in the TOC should always be on pg. 1, and 
           the 'Fortran90 and C++ APIs' listing should be on pg. 2, an 
-          exepction to the recto-rule.)
+          exception to the recto-rule.)
 
       b) Save.
 
 7.  Using HTMLdoc:
 
-      a) Open PDF_RM_front.book
+      a) Open PDF_RM_FRONT.book
 
       b) The Input tab:
            Document Type: Web Page
            Input Files:
              RM_Title.html
-             Copyright.html
              RM_TOC.html
            Logo Image: none
            Title File/Image: none
@@ -173,7 +211,7 @@ The HDF5 Reference Manual
            Output Options: JPEG Big Images
            Compression (not critical, change at will): Slider right above 'Fast'
            JPEG Quality (not critical, change at will): 60
-  
+
       d) The Page tab:
            Page Size: Letter, 2-Sided
              Top: 0.50in, Left: 1.00in, Right: 0.50in, Bottom: 0.50in
@@ -184,7 +222,7 @@ The HDF5 Reference Manual
       e) The Colors tab:
            Everything Blank
            Link Style: Plain
-    
+
       f) The Fonts tab:
            Base Font Size: 11.0
            Line Spacing: 1.2
@@ -211,8 +249,41 @@ The HDF5 Reference Manual
            GUI Options: Check all 3
 
       j) Save the book file.
-     
+
       k) Verify that the output file (H5_RM_front.pdf) is not open.
 
       l) Generate the document.      
+
+
+8.  Following a procedure virtually identical to that outlined in (7) above, 
+    use the file PDF_CandL.book to generate a 1-page copyright and license 
+    statement.
+
+    This copyright page can be generated once and used in both the RM and 
+    UG PDFs.  
+
+
+9.  Using Adobe Acrobat Pro:
+
+      a) Insert the Copyright page into the frontmatter file and remove any 
+         blank pages that prevent the TOC or any subsequent material from 
+         appearing on a recto.
+
+         The resultiing page order should be as follows:
+
+             Title page            (recto)
+             Copyright page        (on the back of the title page)
+             TOC                   (starts on a recto; may be several pages)
+             additional material   (starts on a recto; may be several pages)
+
+         The resulting file is your final frontmatter file.
+
+      b) Insert the frontmatter file at the front of the previously-generated
+         body file.
+
+      c) Name the resulting file consistently with the names of UG and RM PDFs 
+         from prior releases.
+
+
+10. Commit the final UG and RM PDFs to the repository and update the website.
 
