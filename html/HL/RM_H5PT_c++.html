@@ -67,7 +67,6 @@ And in this document, the
 <ul>
 <li><strong>PacketTable</strong> - functions shared by all packet tables
 <li><strong>FL_PacketTable</strong> - a packet table storing fixed-length packets
-<li><strong>VL_PacketTable</strong> - a packet table storing variable-length packets
 </ul>
 
   <strong>Functions</strong> (none are static; all must be called on an object):  
@@ -84,7 +83,7 @@ And in this document, the
   <dt><strong>Description:</strong></dt>
         <dd>The object created with this call will return false if IsValid() is
             called on it.  To create a valid packet table, use the
-            FL_Packet_Table or VL_Packet_Table constructors.
+            FL_Packet_Table constructors.
             This function does not make any change to the underlying HDF5 file.
     </dd>
   </dl>
@@ -138,22 +137,6 @@ And in this document, the
 	<dd>Returns true if this is an open packet table, false otherwise.</dd>
   </dl>
   <hr>	
-
-  <dl>
-  <dt style="background-color: #CCCCFF"><strong>Name:</strong> IsVariableLength
-  <dt><strong>Signature:</strong></dt>
-	<dd>int IsVariableLength()</dd>
-  <dt><strong>Purpose:</strong></dt>
-	<dd>Determines if this is a variable-length packet table.</dd>
-  <dt><strong>Description:</strong></dt>
-	<dd>The PacketTable class has no functions to read from or write to the file.  
-	However, this function can be used to determine whether an unknown packet 
-	table should be opened using the FL_PacketTable or VL_PacketTable class.</dd>
-  <dt><strong>Returns:</strong></dt>
-	<dd>Returns 1 if this is a variable-length packet table, 0 if it is fixed-length.  
-	If the table is invalid (not open), returns a negative value.</dd>
-  </dl>
-  <hr>
 
   <dl>
   <dt style="background-color: #CCCCFF"><strong>Name:</strong> ResetIndex
@@ -346,176 +329,6 @@ And in this document, the
 	<dd>Returns non-negative on success, negative on error.</dd>
   </dl>
   
-<!-- NEW PAGE -->
-<!-- HEADER RIGHT "VL_Packet_Table" -->
-  <hr>
-<strong>VL_Packet_Table:</strong><hr>
-
-  <dl>
-  <dt style="background-color: #CCCCFF"><strong>Name:</strong> "Create" Constructor
-  <dt><strong>Signature:</strong></dt>
-	<dd>VL_PacketTable(hid_t fileID, char* name, int chunkSize)</dd>
-  <dt><strong>Purpose:</strong></dt>
-	<dd>Creates a new packet table for storing variable-length packets.</dd>
-  <dt><strong>Description:</strong></dt>
-	<dd>This constructor creates and opens a packet table in the file 
-	    specified by <code>fileID</code> named <code>name</code>.</dd>
-  <dt><strong>Parameters:</strong></dt>
-	<dl>
-	<dt>hid_t fileID</dt>
-	<dd>IN: Identifier of the file or group to create the table within.</dd> 
-	<dt>const char * dset_name</dt>
-	<dd>IN: The name of the packet table to create.</dd>
-	<dt>hsize_t chunkSize</dt>
-	<dd>IN: The packet table uses HDF5 chunked storage to allow it to grow. 
-	    This value allows the user to set the size of a chunk. 
-	    The chunk size affects performance.</dd>
-	</dl>
-  </dl>
-  <hr>
-
-  <dl>
-  <dt style="background-color: #CCCCFF"><strong>Name:</strong> "Open" Constructor
-  <dt><strong>Signature:</strong></dt>
-	<dd>VL_PacketTable(hid_t fileID, char* name)</dd>
-  <dt><strong>Purpose:</strong></dt>
-	<dd>Opens a variable-length packet table.</dd>
-  <dt><strong>Description:</strong></dt>
-	<dd>This constructor opens an existing packet table named
-	    <code>name</code> in the location <code>fileID</code>.  This packet
-	    table must be variable-length.</dd>
-  <dt><strong>Parameters:</strong></dt>
-	<dl>
-	<dt>hid_t fileID</dt>
-	<dd>IN: Identifier of the file or group containing the packet table.</dd> 
-	<dt>const char * dset_name</dt>
-	<dd>IN: The name of the packet table to open.</dd>
-	</dl>
-  </dl>
-  <hr>
-
-  <dl>
-  <dt style="background-color: #CCCCFF"><strong>Name:</strong> AppendPacket (single packet)
-  <dt><strong>Signature:</strong></dt>
-	<dd>int AppendPacket(void * data, unsigned int length)</dd>
-  <dt><strong>Purpose:</strong></dt>
-	<dd>Appends a single variable-length packet to the packet table.</dd>
-  <dt><strong>Description:</strong></dt>
-	<dd>This function writes a packet to the end of the packet table.  
-	    The length of the packet must be specified, since it is not 
-	    known beforehand.</dd>
-  <dt><strong>Parameters:</strong></dt>
-	<dl>
-	<dt>void * data:</dt>
-	<dd>IN: Buffer holding a single packet to be written.</dd>
-	<dt>unsigned int length</dt>
-	<dd>IN: Length of the packet being added in bytes.</dd>
-	</dl>
-<!-- NEW PAGE -->
-  <dt><strong>Returns:</strong></dt>
-	<dd>Returns non-negative value on success, negative on error.</dd>
-  </dl>
-  <hr>
-
-  <dl>
-  <dt style="background-color: #CCCCFF"><strong>Name:</strong> AppendPackets(multiple packets)
-  <dt><strong>Signature:</strong></dt>
-	<dd>int AppendPackets(unsigned int numPackets, hvl_t *data)</dd>
-  <dt><strong>Purpose:</strong></dt>
-	<dd>Appends multiple variable-length packets to the packet table.</dd>
-  <dt><strong>Description:</strong></dt>
-	<dd>This function writes packets to the end of the packet table.  
-	    The packets must be packaged as an array of hvl_t structs, which contain 
-	    a pointer to the packet and its length.</dd>
-  <dt><strong>Parameters:</strong></dt>
-	<dl>
-	<dt>unsigned int numPackets</dt>
-	<dd>IN: Number of packets to append.</dd>
-	<dt>hvl_t* data:</dt>
-	<dd>IN: An array of hvl_t structs containing pointers to the packets to be written.</dd>
-	</dl>
-  <dt><strong>Returns:</strong></dt>
-	<dd>Returns non-negative value on success, negative on error.</dd>
-  </dl>
-  <hr>
-
-  <dl>
-  <dt style="background-color: #CCCCFF"><strong>Name:</strong> GetPacket
-  <dt><strong>Signatures:</strong></dt>
-	<dd>int GetPacket(unsigned int index, hvl_t * data)</dd>
-	<dd>int GetPackets(unsigned int startIndex, unsigned int endIndex, hvl_t * data)</dd>
-  <dt><strong>Purpose:</strong></dt>
-	<dd>Reads variable-length packets from the packet table.</dd>
-  <dt><strong>Description:</strong></dt>
-	<dd>This function fills a buffer of hvl_t structs with variable-length
-	    packets from the packet table.  A function can be called with one
-	    argument to retrieve a single packet at the given index, or the
-	    two-argument function can be used to read a range of packets
-	    (zero-indexed, inclusive).</dd>
-  <dt><strong>Parameters:</strong></dt>
-	<dl>
-	<dt>unsigned int index (single packet)</dt>
-	<dd>IN: Index of the single packet to be read</dd>
-	<dt>unsigned int startIndex (multiple packets)</dt>
-	<dd>IN: Index at which to start reading packets</dd>
-	<dt>unsigned int endIndex (multiple packets)</dt>
-	<dd>IN: Index at which to stop reading packets</dd>
-	<dt>hvl_t * data</dt>
-	<dd>OUT: Buffer of hvl_t structs for packets being retrieved</dd>
-	</dl>
-  <dt><strong>Returns:</strong></dt>
-	<dd>Returns non-negative on success, negative on error.</dd>
-  </dl>
-  <hr>
-
-  <dl>
-  <dt style="background-color: #CCCCFF"><strong>Name:</strong> GetNextPacket
-  <dt><strong>Signatures:</strong></dt>
-	<dd>int GetNextPacket(hvl_t * data)</dd>
-	<dd>int GetNextPacket(unsigned int numPackets, hvl_t * data)</dd>
-  <dt><strong>Purpose:</strong></dt>
-	<dd>Iterates through packets from the packet table.</dd>
-<!-- NEW PAGE -->
-  <dt><strong>Description:</strong></dt>
-	<dd>This function reads packets starting from the current index in the 
-	    packet table and updates the index.  It can be used with the 
-	    ResetIndex and SetIndex functions to iterate through the packet
-	    table.  Different versions of this function can be called with or
-	    without the numPackets argument; if this argument is not supplied,
-	    it defaults to one.</dd>
-  <dt><strong>Parameters:</strong></dt>
-	<dl>
-	<dt>unsigned int numPackets (optional)</dt>
-	<dd>IN:  How many packets to read.  Defaults to one.</dd>
-	<dt>hvl_t * data</dt>
-	<dd>OUT: Buffer of hvl_t structs to hold packets being read.</dd>
-	</dl>
-  <dt><strong>Returns:</strong></dt>
-	<dd>Returns non-negative on success, negative on error.</dd>
-  </dl>
-  <hr>
-
-  <dl>
-  <dt style="background-color: #CCCCFF"><strong>Name:</strong> FreeReadbuff
-  <dt><strong>Signature:</strong></dt>
-	<dd>int FreeReadbuff(unsigned int numStructs, hvl_t * buffer)</dd>
-  <dt><strong>Purpose:</strong></dt>
-	<dd>Frees buffers used to hold variable-length packets</dd>
-  <dt><strong>Description:</strong></dt>
-	<dd>When variable-length packets are read, memory must be allocated 
-	    to hold them; hvl_t structs hold pointers to this memory.  This memory 
-	    should be freed by passing the array of hvl_t structs used in reading 
-	    to this function, along with the size of the array.</dd>
-  <dt><strong>Parameters:</strong></dt>
-	<dl>
-	<dt>unsigned int numStructs</dt>
-	<dd>IN:  Number of hvl_t structs in the array.</dd>
-	<dt>hvl_t * buffer</dt>
-	<dd>IN:  Buffer used to read packets whose memory should now be freed.</dd>
-	</dl>
-  <dt><strong>Returns:</strong></dt>
-	<dd>Returns non-negative on success, negative on error.</dd>
-  </dl>
 
 <!-- #BeginLibraryItem "/ed_libs/NavBar_RMHL.lbi" -->
 <hr>
@@ -566,7 +379,7 @@ And in this document, the
 document.writeln(' \
 <address> \
   THG Help Desk: <img src="../Graphics/help.png" align=top height=16> <br> \
-  Last modified: 21 November 2005 <br> \
+  Last modified: 4 February 2010 <br> \
 </address> \
 ');
 -->
