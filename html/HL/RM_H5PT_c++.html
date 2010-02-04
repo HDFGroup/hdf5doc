@@ -155,7 +155,7 @@ And in this document, the
   <dl>
   <dt style="background-color: #CCCCFF"><strong>Name:</strong> SetIndex
   <dt><strong>Signature:</strong></dt>
-	<dd>int SetIndex(unsigned int index);</dd>
+	<dd>int SetIndex(hsize_t index);</dd>
   <dt><strong>Purpose:</strong></dt>
 	<dd>Sets a packet table's current index.</dd>
   <dt><strong>Description:</strong></dt>
@@ -164,7 +164,7 @@ And in this document, the
 	    so packet 0 is the first packet.</dd>
   <dt><strong>Parameters:</strong></dt>
 	<dl>
-	<dt>unsigned int index</dt>
+	<dt>hsize_t index</dt>
 		<dd>IN: The value to which the packet table's index should be set</dd>
 	</dl>
   <dt><strong>Returns:</strong></dt>
@@ -172,11 +172,40 @@ And in this document, the
   </dl>
   <hr>
 
+  <hr>
+  <dl>
+  <dt style="background-color: #CCCCFF"><strong>Name:</strong> GetIndex
+  <dt><strong>Signature:</strong></dt>
+	<dd>hsize_t GetIndex(int& error);</dd>
+  <dt><strong>Purpose:</strong></dt>
+	<dd>Returns the position of the current packet.</dd>
+  <dt><strong>Description:</strong></dt>
+	<dd>This function allows the user to determine the position 
+            of the current packet.
+            <p>
+            If <code>GetIndex</code> returns <code>0</code> (zero), 
+            you must then check the value of the parameter <code>error</code>.  
+            If <code>error</code> is negative, <code>GetIndex</code> has failed;
+            if <code>error</code> is <code>0</code> (zero), the position of
+            the current packet is <code>0</code> (zero).
+            </dd>
+  <dt><strong>Parameters:</strong></dt>
+	<dl>
+	<dt>int& error (optional)</dt>
+		<dd>OUT: Non-negative if index was successfully retrieved, 
+                    negative on failure.</dd>
+	</dl>
+  <dt><strong>Returns:</strong></dt>
+	<dd>Returns the position of the current packet on success, 
+            0 (zero) on error.</dd>
+  </dl>
+  <hr>
+
   <dl>
   <dt style="background-color: #CCCCFF"><strong>Name:</strong> GetPacketCount
   <dt><strong>Signatures:</strong></dt>
-	<dd>unsigned int GetPacketCount()</dd>
-	<dd>unsigned int GetPacketCount(int&amp; error)</dd>
+	<dd>hsize_t GetPacketCount()</dd>
+	<dd>hsize_t GetPacketCount(int&amp; error)</dd>
   <dt><strong>Purpose:</strong></dt>
 	<dd>Retrieves the number of packets in the packet table.</dd>
   <dt><strong>Description:</strong></dt>
@@ -204,7 +233,7 @@ And in this document, the
   <dl>
   <dt style="background-color: #CCCCFF"><strong>Name:</strong> "Create" Constructor
   <dt><strong>Signature:</strong></dt>
-	<dd>FL_PacketTable(hid_t fileID, char* name, hid_t dtypeID, int chunkSize)</dd>
+	<dd>FL_PacketTable(hid_t fileID, char* name, hid_t dtypeID, int chunkSize, int compression)</dd>
   <dt><strong>Purpose:</strong></dt>
 	<dd>Creates a new packet table for storing fixed-length packets.</dd>
   <dt><strong>Description:</strong></dt>
@@ -223,6 +252,9 @@ And in this document, the
 	<dd>IN: The packet table uses HDF5 chunked storage to allow it to grow. 
 	    This value allows the user to set the size of a chunk. 
 	    The chunk size affects performance.</dd>
+	<dt>int compression</dt> 
+	<dd>IN: Desired compression level: <code>0</code> (zero) through 
+            <code>9,</code> or <code>-1</code> for no compression.</dd>
     </dl>
   </dl>
   <hr>
@@ -252,7 +284,7 @@ And in this document, the
         AppendPackets
   <dt><strong>Signature:</strong></dt>
 	<dd>int AppendPacket(void * data)</dd>
-	<dd>int AppendPackets(unsigned int numPackets, void *data)</dd>
+	<dd>int AppendPackets(size_t numPackets, void *data)</dd>
   <dt><strong>Purpose:</strong></dt>
 	<dd>Appends fixed-length packets to the packet table.</dd>
   <dt><strong>Description:</strong></dt>
@@ -262,7 +294,7 @@ And in this document, the
 <!-- NEW PAGE -->
   <dt><strong>Parameters:</strong></dt>
 	<dl>
-	<dt>unsigned int numPackets (optional)</dt>
+	<dt>size_t numPackets (optional)</dt>
 	<dd>IN: Number of packets to add.  Default is one.</dd>
 	<dt>void * data:</dt>
 	<dd>IN: Data to write.  Must be a buffer of packets of the packet
@@ -277,8 +309,8 @@ And in this document, the
   <dt style="background-color: #CCCCFF"><strong>Name:</strong> GetPacket /
         GetPackets
   <dt><strong>Signatures:</strong></dt>
-	<dd>int GetPacket(unsigned int index, void * data)</dd>
-	<dd>int GetPackets(unsigned int startIndex, unsigned int endIndex, void * data)</dd>
+	<dd>int GetPacket(hsize_t index, void * data)</dd>
+	<dd>int GetPackets(hsize_t startIndex, hsize_t endIndex, void * data)</dd>
   <dt><strong>Purpose:</strong></dt>
 	<dd>Reads packets from the packet table.</dd>
   <dt><strong>Description:</strong></dt>
@@ -289,11 +321,11 @@ And in this document, the
             (zero-indexed, inclusive).</dd>
   <dt><strong>Parameters:</strong></dt>
 	<dl>
-	<dt>unsigned int index (single packet)</dt>
+	<dt>hsize_t index (single packet)</dt>
 		<dd>IN: Index of the single packet to be read</dd>
-	<dt>unsigned int startIndex (multiple packets)</dt>
+	<dt>hsize_t startIndex (multiple packets)</dt>
 		<dd>IN: Index at which to start reading packets</dd>
-	<dt>unsigned int endIndex (multiple packets)</dt>
+	<dt>hsize_t endIndex (multiple packets)</dt>
 		<dd>IN: Index at which to stop reading packets</dd>
 	<dt>void * data</dt>
 		<dd>OUT: Buffer for packets being retrieved</dd>
@@ -308,7 +340,7 @@ And in this document, the
         Get Next Packets
   <dt><strong>Signatures:</strong></dt>
 	<dd>int GetNextPacket(void * data)</dd>
-	<dd>int GetNextPackets(unsigned int numPackets, void * data)</dd>
+	<dd>int GetNextPackets(size_t numPackets, void * data)</dd>
   <dt><strong>Purpose:</strong></dt>
 	<dd>Iterates through packets from the packet table.</dd>
   <dt><strong>Description:</strong></dt>
@@ -320,7 +352,7 @@ And in this document, the
             not supplied, it defaults to one.</dd>
   <dt><strong>Parameters:</strong></dt>
 	<dl>
-	<dt>unsigned int numPackets (optional)</dt>
+	<dt>size_t numPackets (optional)</dt>
 		<dd>IN:  How many packets to read.  Defaults to one.</dd>
 	<dt>void * data</dt>
 		<dd>OUT: Buffer to hold packets being read.</dd>
