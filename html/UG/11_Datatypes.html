@@ -451,7 +451,8 @@ document.writeln ('\
   ] ] ]</span>
 -->
     </td>
-    <td class="ColumnRightCell"> <p>When stored, are packed into bytes 
+    <td class="ColumnRightCell"> <p>A sequence of bit values packed into 
+        one or more bytes.  
 <!-- editingComment
   <span class="editingComment">[ [ [
     Verify??
@@ -652,7 +653,7 @@ document.writeln ('\
 		      border-bottom-color: #008000;
 		      padding-right: 10px;
 		      padding-left: 10px;"> 
-        <p>&nbsp;</td>
+        <p>B</td>
     <td class="ColumnRightCell"
         width="150"
         style="border-top-style: Solid;
@@ -918,9 +919,29 @@ document.writeln ('\
     <td class="ColumnRightCell"> <p>herr_t</td>
   </tr>
   <tr valign=top> 
-    <td class="ColumnLeftBottom"> <p><code>H5T_NATIVE_HBOOL</code> </td>
-    <td class="ColumnRightBottom"> 
+    <td class="ColumnLeftCell"> <p><code>H5T_NATIVE_HBOOL</code> </td>
+    <td class="ColumnRightCell"> 
         <p>hbool_t</td>
+  </tr>
+  <tr valign=top> 
+    <td class="ColumnLeftCell"> <p><code>H5T_NATIVE_B8</code> </td>
+    <td class="ColumnRightCell"> 
+        <p>8-bit unsigned integer or 8-bit buffer in memory</td>
+  </tr>
+  <tr valign=top> 
+    <td class="ColumnLeftCell"> <p><code>H5T_NATIVE_B16</code> </td>
+    <td class="ColumnRightCell"> 
+        <p>16-bit unsigned integer or 16-bit buffer in memory</td>
+  </tr>
+  <tr valign=top> 
+    <td class="ColumnLeftCell"> <p><code>H5T_NATIVE_B32</code> </td>
+    <td class="ColumnRightCell"> 
+        <p>32-bit unsigned integer or 32-bit buffer in memory</td>
+  </tr>
+  <tr valign=top> 
+    <td class="ColumnLeftBottom"> <p><code>H5T_NATIVE_B64</code> </td>
+    <td class="ColumnRightBottom"> 
+        <p>64-bit unsigned integer or 64-bit buffer in memory</td>
   </tr>
 </table>
 
@@ -2058,7 +2079,7 @@ document.writeln ("
   'equal'. 
   
   <p>A datatype can be written to the file as a first class object (<code>H5Tcommit</code>). 
-  Named datatypes can be used in the same way as any other dataype. Named datatypes 
+  Named datatypes can be used in the same way as any other datatype. Named datatypes 
   are explained below. 
 <!-- editingComment
   <span class="editingComment">[ [ [
@@ -4946,7 +4967,7 @@ ret = H5Tset_size (tid1,H5T_VARIABLE);
 <h4>5.3 ENUM</h4>
   
   <p>The enum datatype implements a set of (name, value) pairs, similar 
-  to C/C++ enum.  The values are currently limited to integer dataype class.  
+  to C/C++ enum.  The values are currently limited to integer datatype class.  
   Each name can be the name of only one value, and each value can have only 
   one name.  There can be up to 2^16 different names for a given enumeration.
   
@@ -5139,15 +5160,23 @@ short val;
   integers that should be store in a single byte.
   
   <p>This data could be stored as integers, strings, or enumerations.  
-  However, these storage methods would likely have considerable wasted space.  
-  For example, storing a cloud mask with one byte per value would use 8 
-  times the space of a packed array of bits. 
+  However, these storage methods would likely result in considerable wasted 
+  space.  
+  For example, storing a cloud mask with one byte per value would use up to  
+  eight times the space of a packed array of bits. 
   
-  <p>The HDF5 bitfield dataype class defines a data element that is a 
+  <p>The HDF5 bitfield datatype class defines a data element that is a 
   contiguous sequence of bits, which are stored on disk in a packed array. 
-  The programming model is the same as for unsigned integers:  the dataype 
+  The programming model is the same as for unsigned integers:  the datatype 
   object is created by copying a predefined datatype, and then the 
   precision, offset, and padding are set.
+
+  <p>While the use of the bitfield datatype will reduce storage space 
+  substantially, there will still be wasted space if the bitfield as a 
+  whole does not match the 1-, 2-, 4-, or 8-byte unit in which it is 
+  written.  The remaining unused space can be removed by applying the 
+  <a href="10_Datasets.html#N-Bit">N-bit filter</a> to the dataset 
+  containing the bitfield data. 
 
 <!--
 <h4>5.6 Time</h4>
@@ -5435,7 +5464,7 @@ document.writeln ("
   <em>h5dump</em> utility is shown in Figure 48.
   
   <p>Each datatype is created as a separate datatype object. Figure 49 shows 
-  the storage layout for the four individual datatypes. Then the dataypes are 
+  the storage layout for the four individual datatypes. Then the datatypes are 
   inserted into the outer datatype at an appropriate offset. Figure 50 shows 
   the resulting storage layout. The combined record is 89 bytes long.
   
@@ -6633,8 +6662,10 @@ document.writeln ("
     </div>
   <p>Note that this functionality requires that the 
     HDF5 High-Level Library (H5LT) be installed. 
+<!-- editingComment
     See 
     <span class="editingComment">&lt; &lt; Quick Start &gt; &gt;</span>.
+-->
   <p>While <span class="codeText">H5LTtext_to_dtype</span> can be used to 
     generate any sort of datatype, it is particularly useful for 
     complex datatypes. 
