@@ -1,0 +1,232 @@
+
+<!-- NEW PAGE -->
+<!-- HEADER RIGHT "h5fix_swapped_ids" -->
+<hr>
+<dl>
+  <dt><div align=right><font color=999999 size=-1><i>
+      Last modified: 23 February 2010
+      </i></font></div>
+
+  <dt><strong>Tool Name:</strong> <a name="Tools-FixSwappedIds">h5fix_swapped_ids</a>
+
+  <dt><strong>Syntax:</strong>
+    <dd><code>h5fix_swapped_ids 
+            <em>old_file</em>
+            <em>new_file</em>
+            </code>
+
+  <p>
+  <dt><strong>Purpose:</strong>
+      <dd>Fixes files with incorrect fractal heap identifier encoding.
+
+
+<!--__ *** MOTIVATION ********************************************  -->
+<!--__ This an OPTIONAL section for tools that may need more than   -->
+<!--__ the simple statement in "Purpose:" to enable a user to       -->
+<!--__ understand the situations that might call for this tool's    -->
+<!--__ use and/or the types of problems it addresses.               -->
+<!--__                                                              -->
+<!--__ Update h5tool_name and the motivation text.                  -->
+<!--__ ***********************************************************  -->
+  <p>
+  <dt><strong>Motivation:</strong>
+    <dd><code>H5fix_swapped_ids</code> 
+      corrects a metadata corruption error that manifests as
+      incorrect encoding of fractal heap identifiers for attributes 
+      and shared object header messages in particular circumstances.  
+      This error causes some files created on a big-endian system 
+      to be unreadable on a little-endian system. 
+      <p>
+      <code>H5fix_swapped_ids</code> reverses the incorrect encoding.
+      <p>
+      This error existed in HDF5 Releases 1.8.0 through
+      1.8.4; it was fixed in HDF5 Release 1.8.4.1.
+      <p>
+
+
+  <p>
+  <dt><strong>Description:</strong>
+    <dd><code>h5fix_swapped_ids</code> corrects metadata encoding errors 
+      (the encoding of the fractal heap identifiers for attributes 
+      and shared object header messages)
+      in certain types of corrupted files.
+      <p>
+      <strong>To identify the class of potentially-corrupted files:</strong>
+      A file might have this problem only when all of the following 
+      conditions are met:
+      <ul>
+        <li>The file was created with a version of the HDF5 library
+            from HDF5 Release 1.8.0 (HDF5-1.8.0) 
+            through HDF5 Release 1.8.4 (HDF5-1.8.4).
+            (The bug was fixed in HDF5 Release 1.8.4.1 (HDF5-1.8.4.1).)
+        <li>The file was created on a big-endian platform (SPARC/Solaris, 
+            POWER/AIX, etc.).
+        <li>One of the following occurred:
+            <ul>
+              <li>NetCDF-4 was used to create the file.
+              <li>A <code>H5Pset_libver_bounds(fapl, H5F_LIBVER_LATEST, 
+                  H5F_LIBVER_LATEST)</code> call was made.
+              <li>Shared object header messages were enabled with 
+                  <code>H5Pset_shared_mesg_nindexes()</code> 
+                  when the file was created.        
+            </ul>
+        <li>And one of the following occurred:
+            <ul>
+              <li>More than 8 attributes were added to an object in 
+                  the file (in the case of using netCDF-4 or calling 
+                  <code>H5Pset_libver_bounds</code>).
+              <li>Messages of the type specified as being shared object
+                  header messages were stored in the file (in the case 
+                  of calling <code>H5Pset_shared_mesg_nindexes</code>).
+            </ul>
+      </ul>
+      <p>
+      If all of the above conditions are satisfied, a file may have 
+      this error.
+      A file created without meeting all of the above conditions will 
+      <i>not</i> be corrupted.
+      
+      <p>
+      <strong>To determine whether a specific file is corrupted:</strong>
+      Once you have determined that a file is a member of
+      the class that might be corrupted, assess the file as follows.
+      <p>
+      While there is no foolproof way to detect a file with these 
+      incorrectly encoded identifiers, if <code>h5dump</code> reports 
+      an error message similar to the foll owing when displaying 
+      information about the file, it's likely that you have a file 
+      with this problem:
+      <pre>
+        h5dump error: error getting attribute information.  
+      </pre>
+
+      <p>
+      For files created with netCDF-4, this message will generally 
+      display when dumping information about the root group.  
+      If your application is generating an error stack similar to this, 
+      it's also likely that the file has this problem:
+      <pre>
+        .
+        .
+        .        
+        #008: ../../hdf5_v1.8/src/H5B2int.c line 1951 in H5B2_iterate_node():   \
+              iterator function failed major: B-Tree node minor: Unable to list \
+              node
+        #009: ../../hdf5_v1.8/src/H5Adense.c line 1076 in                       \
+              H5A_dense_iterate_bt2_cb(): heap op callback failed major:        \
+              Attribute minor: Can't operate on object
+        #010: ../../hdf5_v1.8/src/H5HF.c line 680 in H5HF_op(): can't operate   \
+              on object from fractal heap major: Heap minor: Can't operate      \
+              on object
+        #011: ../../hdf5_v1.8/src/H5HFman.c line 462 in H5HF_man_op(): unable   \
+              to operate on heap object major: Heap minor: Can't operate on     \
+              object
+        #012: ../../hdf5_v1.8/src/H5HFman.c line 276 in H5HF_man_op_real():     \
+              fractal heap object offset too large major: Heap minor: Out of    \
+              range
+      </pre>
+
+      <p>
+      <strong>To correct the error:</strong>
+      This error can be corrected with <code>h5fix_swapped_ids</code>
+      on either a big- or little-endian machine.
+      <p>
+      The following invocation of <code>h5fix_swapped_ids</code>
+      reads the corrupted file <em>old_file</em> and
+      writes <em>new_file</em> with the corrected identifiers.
+      <pre>
+        <code>h5fix_swapped_ids <em>old_file</em> <em>new_file</em></code> 
+      </pre>
+
+      <p>
+      <strong>To acquire <code>h5fix_swapped_ids</code>:</strong>
+      The tool is available in both binary and source forms at 
+      <a href="URL">URL</a>.
+       
+      <p>
+      <strong>Note/Warning:</strong> 
+      As stated above, there is no definitive way to determine whether 
+      a specific file is corrupted.  You can only determine 
+      (a) whether a file is in a class of files that is subject to 
+          this corruption and
+      (b) whether it is probably corrupted.
+      It is therefore critical to verify that <em>new_file</em>
+      is indeed fixed before discarding <em>old_file</em>.
+
+
+  <p>
+  <dt><strong>Parameters:</strong>
+    <dd><dl>
+      <dt><code><em>old_file</em></code>
+          <dd>The corrupted file, as input.
+      <dt><code><em>new_file</em></code>
+          <dd>The corrected file, as output.
+      </dl>
+
+
+  <p>
+  <dt><strong>Example Usage:</strong>
+    <dd>The following usage generates a corrected file, <em>new_file</em>,
+      from <em>old_file</em>, a file containing encoding errors in 
+      fractal heap identifiers for attributes and shared object header 
+      messages, as described above:
+      <pre>
+      <code>h5fix_swapped_ids <em>old_file</em> <em>new_file</em></code> 
+      </pre>
+
+
+<!--__ *** SEE ALSO **********************************************  -->
+<!--__ Provide links to related documentation, such as related      -->
+<!--__ tools, functions, user guide sections, etc.                  -->
+<!--__                                                              -->
+<!--__ Ask a member of the documentation team if you need help      -->
+<!--__ identifying or locating references.                          -->
+<!--__                                                              -->
+<!--__ Edit the sample links provided, and delete unneeded text.    -->
+<!--__ The order is functions, callback or operator functions,      -->
+<!--__ HDF5 structures, tools, then other documents.                -->
+<!--__ Use a <p> between types of documents.                        -->
+<!--__ ***********************************************************  -->
+
+<!--
+  <p>
+  <dt><strong>See Also:</strong>
+    <dd><a href="../html/RM/RM_H5D.html#Dataset-Create">
+        <code>H5Dcreate</code></a>,
+        &nbsp;
+        <a href="../html/RM/RM_H5T.html#Datatype-Commit">
+        <code>H5Tcommit</code></a>
+        <p>
+
+        <a href="../html/RM/H5function.html#H5L_elink_traverse_t">
+        <code>H5L_elink_traverse_t</code></a>
+        <p>
+
+        <a href="../html/RM/Tools.html#h5dump"><code>h5dump</code></a>
+        <p>
+
+        &ldquo;Discovering Objects in a Group&rdquo; in the
+        &ldquo;<a href="../../html/UG/UG_frame09Groups.html">Groups</a>&rdquo; 
+        chapter of the
+        <a href="../../html/UG/index.html"><cite>HDF5 User&rsquo;s Guide</cite></a>
+-->
+
+
+  <p>
+  <dt><strong>History:</strong>
+    <dd><table width="90%">
+        <tr>
+          <td valign="top" align="left" width="10%">
+            <strong>Release</strong>&nbsp;&nbsp;&nbsp;&nbsp;</td>
+          <td valign="top" align="left">
+            <strong>Change</strong></td>
+        </tr>
+        <tr>
+          <td valign="top">1.8.4.1</td>
+          <td valign="top">
+            Tool introduced in this release.</td>
+        </tr>
+        </tr>
+        </table>
+</dl>
+
