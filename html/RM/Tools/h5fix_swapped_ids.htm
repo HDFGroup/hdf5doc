@@ -17,32 +17,23 @@
 
   <p>
   <dt><strong>Purpose:</strong>
-      <dd>Fixes files with incorrect fractal heap identifier encoding.
+      <dd>Fixes files with fractal heap identifier encoding errors.
 
-
-<!--__ *** MOTIVATION ********************************************  -->
-<!--__ This an OPTIONAL section for tools that may need more than   -->
-<!--__ the simple statement in "Purpose:" to enable a user to       -->
-<!--__ understand the situations that might call for this tool's    -->
-<!--__ use and/or the types of problems it addresses.               -->
-<!--__                                                              -->
-<!--__ Update h5tool_name and the motivation text.                  -->
-<!--__ ***********************************************************  -->
   <p>
   <dt><strong>Motivation:</strong>
     <dd><code>H5fix_swapped_ids</code> 
       corrects a metadata corruption error that manifests as
       incorrect encoding of fractal heap identifiers for attributes 
-      and shared object header messages in particular circumstances.  
-      This error causes some files created on a big-endian system 
+      and shared object header messages.  
+      This error occurs only in particular circumstances and
+      causes some files created on a big-endian system 
       to be unreadable on a little-endian system. 
       <p>
-      <code>H5fix_swapped_ids</code> reverses the incorrect encoding.
+      <code>H5fix_swapped_ids</code> corrects the incorrect encoding.
       <p>
       This error existed in HDF5 Releases 1.8.0 through
       1.8.4; it was fixed in HDF5 Release 1.8.4-patch1.
       <p>
-
 
   <p>
   <dt><strong>Description:</strong>
@@ -58,44 +49,37 @@
         <li>The file was created with a version of the HDF5 library
             from HDF5 Release 1.8.0 (HDF5-1.8.0) 
             through HDF5 Release 1.8.4 (HDF5-1.8.4).
+            <br>
             (The bug was fixed in HDF5 Release 1.8.4-patch1 (HDF5-1.8.4-patch1).)
         <li>The file was created on a big-endian platform (SPARC/Solaris, 
             POWER/AIX, etc.).
         <li>One of the following occurred:
             <ul>
-              <li>NetCDF-4 was used to create the file.
-              <li>A <code>H5Pset_libver_bounds(fapl, H5F_LIBVER_LATEST, 
-                  H5F_LIBVER_LATEST)</code> call was made.
+              <li>NetCDF-4 was used to create the file and
+                  more than 8 attributes were added to an object in the file.
+              <li>An <code>H5Pset_libver_bounds(fapl, H5F_LIBVER_LATEST, 
+                  H5F_LIBVER_LATEST)</code> call was made and
+                  more than 8 attributes were added to an object in the file.
               <li>Shared object header messages were enabled with 
                   <code>H5Pset_shared_mesg_nindexes()</code> 
-                  when the file was created.        
-            </ul>
-        <li>And one of the following occurred:
-            <ul>
-              <li>More than 8 attributes were added to an object in 
-                  the file (in the case of using netCDF-4 or calling 
-                  <code>H5Pset_libver_bounds</code>).
-              <li>Messages of the type specified as being shared object
-                  header messages were stored in the file (in the case 
-                  of calling <code>H5Pset_shared_mesg_nindexes</code>).
+                  when the file was created and
+                  messages of the type specified as being shared object
+                  header messages were stored in the file.        
             </ul>
       </ul>
       <p>
       If all of the above conditions are satisfied, a file may have 
-      this error.
-      A file created without meeting all of the above conditions will 
+      this error;
+      a file that does not meet all of the above conditions will 
       <i>not</i> be corrupted.
       
       <p>
       <strong>To determine whether a specific file is corrupted:</strong>
-      Once you have determined that a file is a member of
-      the class that might be corrupted, assess the file as follows.
-      <p>
       While there is no foolproof way to detect a file with these 
-      incorrectly encoded identifiers, if <code>h5dump</code> reports 
-      an error message similar to the foll owing when displaying 
-      information about the file, it's likely that you have a file 
-      with this problem:
+      incorrectly encoded identifiers, you can exmanine a suspect file 
+      with <code>h5dump</code>. 
+      If <code>h5dump</code> reports an error message similar to the
+      following, the file is likely to contain this error:
       <pre>
         h5dump error: error getting attribute information.  
       </pre>
@@ -128,31 +112,34 @@
 
       <p>
       <strong>To correct the error:</strong>
-      This error can be corrected with <code>h5fix_swapped_ids</code>
-      on either a big- or little-endian machine.
-      <p>
-      The following invocation of <code>h5fix_swapped_ids</code>
-      reads the corrupted file <em>old_file</em> and
-      writes <em>new_file</em> with the corrected identifiers.
+      This error can be corrected with the following 
+      <code>h5fix_swapped_ids</code> call:
       <pre>
         <code>h5fix_swapped_ids <em>old_file</em> <em>new_file</em></code> 
       </pre>
+      <p>
+      <code>h5fix_swapped_ids</code> will 
+      read the corrupted file, <em>old_file</em>, and 
+      write <em>new_file</em> with the corrected identifiers.
+      <p>
+      The fix can be performed on either a big-endian or little-endian 
+      machine.
+      <p>
 
       <p>
       <strong>To acquire <code>h5fix_swapped_ids</code>:</strong>
       The tool is available in both binary and source forms at 
-      <a href="URL">URL</a>.
+      <a href="URL">&lt;URL to be announced&gt;</a>.
        
       <p>
-      <strong>Note/Warning:</strong> 
+      <strong>Warning:</strong> 
       As stated above, there is no definitive way to determine whether 
       a specific file is corrupted.  You can only determine 
       (a) whether a file is in a class of files that is subject to 
           this corruption and
       (b) whether it is probably corrupted.
       It is therefore critical to verify that <em>new_file</em>
-      is indeed fixed before discarding <em>old_file</em>.
-
+      has indeed been fixed before discarding <em>old_file</em>.
 
   <p>
   <dt><strong>Parameters:</strong>
@@ -163,13 +150,12 @@
           <dd>The corrected file, as output.
       </dl>
 
-
   <p>
   <dt><strong>Example Usage:</strong>
     <dd>The following usage generates a corrected file, <em>new_file</em>,
       from <em>old_file</em>, a file containing encoding errors in 
       fractal heap identifiers for attributes and shared object header 
-      messages, as described above:
+      messages:
       <pre>
       <code>h5fix_swapped_ids <em>old_file</em> <em>new_file</em></code> 
       </pre>
@@ -211,12 +197,11 @@
         <a href="../../html/UG/index.html"><cite>HDF5 User&rsquo;s Guide</cite></a>
 -->
 
-
   <p>
   <dt><strong>History:</strong>
     <dd><table width="90%">
         <tr>
-          <td valign="top" align="left" width="10%">
+          <td valign="top" align="left" width="20%">
             <strong>Release</strong>&nbsp;&nbsp;&nbsp;&nbsp;</td>
           <td valign="top" align="left">
             <strong>Change</strong></td>
