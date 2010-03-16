@@ -3450,7 +3450,7 @@ H5Tset_offset(nbit_datatype, 4);
 <!-- NEW PAGE --> 
 <p>As before, let the <code>H5T_NATIVE_FLOAT</code> be 4 bytes long, 
   and let the memory byte order be little-endian. 
-  Per the IEEE standard [4], one value of <code>H5T_NATIVE_FLOAT</code> 
+  Per the IEEE standard, one value of <code>H5T_NATIVE_FLOAT</code> 
   is layed out in memory as follows:
   
 <table border="0" width="80%" align="center">
@@ -3482,8 +3482,10 @@ H5Tset_offset(nbit_datatype, 4);
   mantissa size of 13, mantissa position of 7, 
   exponent size of 6, exponent position of 20, 
   and sign position of 26. 
-  (Refer to [3] for details of how to create a user-defined 
-  floating-point datatype.)
+  (See &ldquo;Definition of Datatypes,&rdquo; section 4.3 of the 
+  &ldquo;<a href="UG_frame11Datatypes.html">Datatypes</a>&rdquo; chapter in the
+  <a href="index.html"><cite>HDF5 User&rsquo;s Guide</cite></a> 
+  for a discussion of creating and modifying datatypes.)
   
 <p>After HDF5 converts values from the memory datatype to the dataset datatype, 
   it passes something like the following to the n-bit filter for compression:
@@ -3711,8 +3713,8 @@ H5Tset_offset(nbit_datatype, 4);
   were written and are called by function <code>H5Z_filter_nbit</code>. 
   All these functions are included in the file <code>H5Znbit.c</code>.
 
-<p>The public function<code>H5Pset_nbit</code> is called by 
-  the application to sett up the use of the n-bit filter [2]. 
+<p>The public function <code>H5Pset_nbit</code> is called by 
+  the application to set up the use of the n-bit filter. 
   This function is included in the file <code>H5Pdcpl.c</code>. 
   The application does not need to supply any parameters.
   
@@ -4123,7 +4125,7 @@ int main(void)
    * Other properties can be set anytime. Derived type size cannot
    * be expanded bigger than original size but can be decreased.
    * There should be no holes among the significant bits. Exponent
-   * bias usually is set 2^(n-1)-1, where n is the exponent size [3].
+   * bias usually is set 2^(n-1)-1, where n is the exponent size.
 
 
 *-------------------------------------------------------------------*/
@@ -4298,14 +4300,14 @@ int main(void)
 
 <p>Generally speaking, scale-offset compression performs a scale and/or 
   offset operation on each data value and truncates the resulting value 
-  to a minimum number of bits (minimum-bits) before storing it [1]. 
+  to a minimum number of bits (minimum-bits) before storing it. 
 
 <p>The current scale-offset filter supports integer and floating-point 
   datatype only. For floating-point datatype, float and double are supported 
   while long double is not supported.
 
 <p>Integer data compression uses a straight-forward algorithm. Floating-point 
-  data compression adopts the GRiB data packing mechanism [2], which offers 
+  data compression adopts the GRiB data packing mechanism, which offers 
   two alternate methods: a fixed minimum-bits method, and a variable 
   minimum-bits method. Currently, only the variable minimum-bits method 
   is implemented.
@@ -4320,7 +4322,7 @@ int main(void)
   and the minimum value is 2970. Then the "span" of dataset values is 
   equal to(max-min+1),which is 4676. If no fill value is defined for the 
   dataset, the minimum-bits is: ceiling(log2(span)) = 12. With fill 
-  value set, the minimum-bits is: ceiling(log2(span+1)) = 13[1].
+  value set, the minimum-bits is: ceiling(log2(span+1)) = 13.
 
 <p>HDF5 user can also set the minimum-bits. However, if the user gives 
   a minimum-bits that is less than that calculated by the filter, 
@@ -4338,7 +4340,7 @@ int main(void)
 <p>Two methods of scaling the floating-point data are used, the so-called 
   D-scaling and E-scaling. D-scaling is more straightforward and easy to 
   understand. For HDF5 1.8 release, only D-scaling method is implemented. 
-  More information about D-scaling and E-scaling can be found from [2].
+  More information about D-scaling and E-scaling can be found from.
   
 <h4><em>Design</em></h4>
 
@@ -4362,11 +4364,11 @@ int main(void)
   and the minimum value need to be stored with the compressed data for 
   decompression and post-decompression.
   
+
 <h5><em>Integer type</em></h5>
 
-<h6><em>Pre-compression</em></h6>
-
-<p>During pre-compression Minimum-bits is calculated if it is not 
+<p><i>Pre-compression: </i>
+  During pre-compression Minimum-bits is calculated if it is not 
   set by the user. Calculation of Minimum-bits has already been 
   illustrated in section 1. 
  
@@ -4388,9 +4390,10 @@ int main(void)
 <p>After pre-compression, all values are non-negative and are within the range 
   that can be store by Minimum-bits.
   
-<h6><em>Compression</em></h6>
 
-<p>All modified data values after pre-compression are packed together 
+
+<p><i>Compression: </i>
+  All modified data values after pre-compression are packed together 
   into the compressed data buffer. The number of bit for each data value 
   decreases from the number of bit of integer (32 for most platforms) to 
   minimum-bits. The value of minimum-bits and minimum-value are added to 
@@ -4398,14 +4401,14 @@ int main(void)
   way, number of bit for each modified value is no more than 
   the size of minimum-bits.
   
-<h6><em>Decompression</em></h6>
 
-<p>In this stage, the number of bit for each data value is resumed from 
+<p><i>Decompression: </i>
+  In this stage, the number of bit for each data value is resumed from 
   minimum-bits to the number of bit of integer.
 
-<h6><em>Post-decompression</em></h6>
 
-<p>For the stage of the post-decompression the filter does the opposite 
+<p><i>Post-decompression: </i>
+  For the stage of the post-decompression the filter does the opposite 
   of what it does during pre-compression except that it does not calculate 
   the minimum-bits or the minimum value. 
  
@@ -4429,7 +4432,7 @@ int main(void)
   Since insignificant bits of floating-point data will be cut off 
   during data transformation, so this filter is a lossy compression method.
 
-<p>Two scaling methods are introduced by[2]; namely D-scaling and E-scaling. 
+<p>Two scaling methods are introduced by; namely D-scaling and E-scaling. 
   HDF5 1.8 release only supports D-scaling. In this document, we only 
   introduce D-scaling. E-scaling should be similar conceptually. D-scaling 
   means decimal scaling. In order to transform data from floating-point to 
@@ -4481,7 +4484,7 @@ int main(void)
 <p>The scale-offset filter implementation was written and included in the file 
   <code>H5Zscaleoffset.c</code>. Function <code>H5Pset_scaleoffset</code> was 
   written and included in the file "<code>H5Pdcpl.c</code>". The HDF5 user can 
-  supply minimum-bits by calling function <code>H5Pset_scaleoffset</code> [3].
+  supply minimum-bits by calling function <code>H5Pset_scaleoffset</code>.
 
 <!-- NEW PAGE -->
 <p>The scale-offset filter was implemented based on the design outlined in 
