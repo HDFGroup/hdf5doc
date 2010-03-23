@@ -2,6 +2,11 @@
 <!-- HEADER RIGHT "h5copy" -->
 <hr>
 <dl>
+
+<dt><div align=right><font color=999999 size=-1><i>
+    Last modified: 23 March 2010
+    </i></font></div>
+
 <dt><strong>Tool Name:</strong> <a name="Tools-Copy">h5copy</a>
 
 <dt><strong>Syntax:</strong>
@@ -10,14 +15,21 @@
     <dd><code>h5copy [OPTIONS] file/object new_file/object</code>
 -->
 
+<p>
 <dt><strong>Purpose:</strong>
     <dd>Copy an object from one HDF5 file to another HDF5 file.</dd>
+
+<p>
 <dt><strong>Description:</strong>
-    <dd><code>h5copy</code>&nbsp; copies an HDF5 object 
-    (dataset, named datatype, or group) 
-    from one HDF5 file to another HDF5 file, 
-    which may either already exist or not.</dd>
-        
+    <dd><code>h5copy</code>&nbsp; 
+    copies an HDF5 object (a dataset, named datatype, or group) 
+    from an input HDF5 file to an output HDF5 file.  
+    The output file may or may not already exist. 
+    If a group is specified as the input object, 
+    any objects in that group will be recursively copied.
+    </dd>
+
+<p>
 <dt><strong>Arguments:</strong>
     <dir>
     <dl>
@@ -68,9 +80,21 @@
                  </td></tr>
              <tr valign=top>
                  <td><code>ref</code>&nbsp;</td>
-                 <td>Copy objects that are pointed to by references.
-                     <br><i>(Default:</i>
-                     Update only the values of object references.<i>)</i>
+                 <td>Copy references and any referenced objects, 
+                     i.e., objects that the references point to.
+                     <p>
+                     Referenced objects are copied 
+                     in addition to the objects specified on the command line 
+                     and reference datasets are populated with correct 
+                     reference values.  Copies of referenced datasets outside 
+                     the copy range specified on the command line 
+                     will normally have a different name from the original.
+                     <p>
+                     <i>(Default:</i>Without this option, reference value(s) 
+                     in any reference datasets are set to NULL and
+                     referenced objects are not copied 
+                     unless they are otherwise within the copy range 
+                     specified on the command line.)
                  </td></tr>
              <tr valign=top>
                  <td><code>attr</code>&nbsp;</td>
@@ -114,14 +138,15 @@
      <dt><code>-s source_object</code>
          &nbsp; or &nbsp;
          <code>--source=source_object</code>
-         <dd>Input HDF5 object name within the source file
+         <dd>Input HDF5 object name within the input file
      <dt><code>-d destination_object</code>
          &nbsp; or &nbsp;
          <code>--destination=destination_object</code>
-         <dd>Output HDF5 object name within the destination file
+         <dd>Output HDF5 object name within the output file
   </dl></dir>
 <dd>&nbsp; </dd>
 
+<p>
 <dt><strong>Exit Status:</strong></dt>
     <dd><table border=0>
         <tr valign=top align=left>
@@ -136,6 +161,7 @@
 
 <!-- NEW PAGE -->
 
+<p>
 <dt><strong>Example Usage</strong></dt>
     <dd>In verbose mode, 
         create a new file, <code>test1.out.h5</code>, 
@@ -154,6 +180,7 @@
         <pre>    h5copy -v -f shallow -i "test1.h5" -s "/array" -o test1.out.h5" -d "/array"</pre>
 
 
+<p>
 <dt><strong>History:</strong>
   <ul><table width="90%" id="table1">
      <tr>
