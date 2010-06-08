@@ -3,7 +3,7 @@
 <hr>
 <dl>
 <dt><div align=right><font color=999999 size=-1><i>
-    Last modified: 26 May 2010
+    Last modified: 8 June 2010
     </i></font></div>
 
 <dt><strong>Tool Name:</strong> <a name="Tools-Diff">h5diff</a>  &nbsp;&nbsp;&nbsp;
@@ -16,6 +16,7 @@
                     [<em>OPTIONS</em>]
                     [<em>object1</em> [<em>object2</em> ] ]       
     -->
+
     <p>
     <dd><code>ph5diff </code> [<em>OPTIONS</em>]
                     <em>file1</em> <em>file2</em> 
@@ -25,9 +26,11 @@
                     [<em>OPTIONS</em>] 
                     [<em>object1</em> [<em>object2</em> ] ]       
     -->
+
     <p>
 <dt><strong>Purpose:</strong>
     <dd>Compare two HDF5 files and report the differences.
+
     <p>
 <dt><strong>Description:</strong>
     <dd><code>h5diff</code> and <code>ph5diff</code> are command line tools 
@@ -48,37 +51,45 @@
         with <em>object2</em> in <em>file2</em>.
         <p>
         <em>object1</em> and <em>object2</em> 
-        can be groups, datasets, named datatypes, or links
+        can be groups, datasets, named datatypes, or symbolic links 
+        (soft links or external links)
         and must be expressed as absolute 
         paths from the respective file&rsquo;s root group.
         <ul>
-            <li>If these objects are groups, the name string is compared.
+            <li>If these objects are groups, the names (absolute paths) are 
+                compared.
             <li>If these objects are datasets, array rank and dimensions, 
                 datatypes, and data values are compared.
             <li>If these objects are named datatypes, the comparison 
                 is based on the return value of
                 <code><a href="RM_H5T.html#Datatype-Equal">H5Tequal</a></code>.
-            <li>If these objects are links, the link value is compared.
+            <li>If these objects are symbolic links, the paths to the target 
+                objects are compared.
                 <br>
-                (The link value is the string that is often referred to 
-                as the name of the linked object.)
+                (The option <code>--follow-symlinks</code> overrides the default 
+                behavior when symbolic links are compared.)
         </ul>
+
         <p>
         <code>h5diff</code> and <code>ph5diff</code> 
         have the following output modes:
         <dir>
-        <table width=80% border=0>
+        <table border=0>
           <tr valign=top><td>Normal mode</td>
+              <td><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code></td>
               <td>Prints the number of differences found 
                   and where they occurred.
           </td></tr>
-          <tr valign=top><td>Report mode (<code>-r</code>)</td>
+          <tr valign=top><td>Report mode</td>
+              <td><code>-r</code></td>
               <td>Prints the above plus the differences.
           </td></tr>
-          <tr valign=top><td>Verbose&nbsp;mode&nbsp;(<code>-v</code>)&nbsp;&nbsp;&nbsp;&nbsp;</td>
+          <tr valign=top><td>Verbose&nbsp;mode&nbsp;&nbsp;&nbsp;&nbsp;</td>
+              <td><code>-v</code></td>
               <td>Prints all of the above plus a list of objects and warnings.
           </td></tr>
-          <tr valign=top><td>Quiet mode (<code>-q</code>)</td>
+          <tr valign=top><td>Quiet mode</td>
+              <td><code>-q</code></td>
               <td>Prints no output. 
                   <br>
                   (<code>h5diff</code> always returns an exit code of
@@ -86,6 +97,7 @@
           </td></tr>
         </table>
         </dir>
+
         <p>
         <a name="NaNs">
         <b><code>h5diff</code> and NaNs:</b>
@@ -101,10 +113,11 @@
         Note that NaN detection is computationally expensive and slows
         <code>h5diff</code> performance dramatically.
         If you do not have NaNs in your files, or do not care about NaNs,
-        use the <code>-N</code> option below to turn off NaN detection.
+        use the <code>-N</code> option to turn off NaN detection.
         Similarly, if <code>h5diff -N</code> produces unexpected differences,
         running <code>h5diff</code> without <code>-N</code> should reveal 
         whether any of the differences are associated with NaN values.
+
         <p>
         <b>Difference between <code>h5diff</code> and <code>ph5diff</code>:</b>
         <br>
@@ -112,14 +125,18 @@
         <code>h5diff</code> and <code>ph5diff</code> behave identically.
         With <code>ph5diff</code>, the comparison of objects is shared across 
         multiple processors, with the comparison of each pair of objects 
-        assigned to a single processor.  I.e., the comparison of a single
-        object, even a very large dataset, in each file is not shared.
+        assigned to a single processor. This work assignment means that 
+        <code>ph5diff</code> will not speed up the comparison of any 
+        given pair of datasets,
+        as the comparison of the pair will still occur on a single processor.
+
 <!--
-	Additional information, with several sample cases, 
-	can be found in the document 
-	<a href="http://www.hdfgroup.org/HDF5/h5diff/h5diff_design.html">
-	<cite>H5diff Examples</cite></a>.
+        Additional information, with several sample cases, 
+        can be found in the document 
+        <a href="http://www.hdfgroup.org/HDF5/h5diff/h5diff_design.html">
+        <cite>H5diff Examples</cite></a>.
 -->
+
     <p>
 <dt><strong>Options and Parameters:</strong>
     <ul><table>
@@ -161,7 +178,7 @@
                 being compared, then determine whether the target of each 
                 link is an existing object (dataset, group, or named datatype) 
                 or the link is a dangling link (a soft or external link 
-                pointing to a target object that does not yet exist). 
+                pointing to a target object that does not exist). 
                 <ul>
                   <li>If both symbolic links are dangling links, 
                     they are treated as being the same; by default, 
@@ -193,9 +210,9 @@
                 otherwise, h5diff shows error message and 
                 returns an exit code of <code>2</code>.
                 <p>
-                Check for any symbolic links (soft links or external links) 
+                Check for symbolic links (soft links or external links) 
                 that do not resolve to an existing object (dataset, group, 
-                or named datatype).  If any dangling link is found, this 
+                or named datatype).  If a dangling link is found, this 
                 situation is treated as an error and <code>h5diff</code> 
                 returns an exit code of <code>2</code>.
                 </td></tr>
@@ -224,7 +241,7 @@
                 The comparison criterion is whether the absolute value of the 
                 difference of two corresponding values is greater than 
                 <em>delta</em> 
-                (e.g.,&nbsp;<code>&nbsp;|a&ndash;b|&nbsp;&gt;&nbsp;<em>delta</em></code>,
+                (i.e.,&nbsp;<code>&nbsp;|a&ndash;b|&nbsp;&gt;&nbsp;<em>delta</em></code>,
                 where <code>a</code> is a value in <em>file1</em> and
                 <code>b</code> is a value in <em>file2</em>).</td></tr>
         <tr>
@@ -237,7 +254,7 @@
                 The comparison criterion is whether the absolute value of the 
                 difference <code>1</code> and the ratio of two corresponding 
                 values is greater than <em>relative</em> 
-                (e.g.,&nbsp;<code>|1&ndash;(b/a)|&nbsp;&gt;&nbsp;<em>relative</em></code>
+                (i.e.usebsp;<code>|1&ndash;(b/a)|&nbsp;&gt;&nbsp;<em>relative</em></code>
                 where <code>a</code> is a value in <em>file1</em> and
                 <code>b</code> is a value in <em>file2</em>).</td></tr>
         <tr>
@@ -257,8 +274,6 @@
                 <br>
                 <em>Default:</em> Without this option, 
                 <code>h5diff</code> checks for strict equality.
-                <br>
-                This option has no single-letter short form.
                 </td></tr>
         <tr>
             <td valign="top"><em>file1</em>
@@ -270,7 +285,8 @@
                 &nbsp;&nbsp;
                 <em>object2</em></td>
             <td valign="top">Specific object(s) within the files 
-                to be compared.</td></tr>
+                to be compared, expressed as absolute paths 
+                from the respective file&rsquo;s root group.</td></tr>
     </table></ul>
     <p>
 <dt><strong>Exit Status:</strong></dt>
@@ -291,18 +307,17 @@
 
     <p>
 <dt><strong>Examples:</strong>
-    <dd>The following <code>h5diff</code> call compares
-        the object <code>/a/b</code> in <code>file1</code> 
+    <dd>Compare the object <code>/a/b</code> in <code>file1</code> 
         with the object <code>/a/c</code> in <code>file2</code>:<br>
         <code>&nbsp;&nbsp;&nbsp;&nbsp;h5diff file1 file2 /a/b /a/c</code>
+
         <p>
-        This <code>h5diff</code> call compares
-        the object <code>/a/b</code> in <code>file1</code> 
+        Compare the object <code>/a/b</code> in <code>file1</code> 
         with the same object in <code>file2</code>:<br>
         <code>&nbsp;&nbsp;&nbsp;&nbsp;h5diff file1 file2 /a/b</code>
+
         <p>
-        And this <code>h5diff</code> call compares
-        all objects in both files:<br>
+        Compare all objects in both files:<br>
         <code>&nbsp;&nbsp;&nbsp;&nbsp;h5diff file1 file2</code>
 
 <!-- NEW PAGE -->
@@ -334,19 +349,21 @@
             are now supported.</td></tr>
 -->
         <tr>
-          <td valign="top">1.8.2&nbsp;and&nbsp;1.6.8</td>
+          <td valign="top">1.8.2 and 1.6.8</td>
           <td valign="top">
             Return value on failure changed in this release.</td></tr>
         <tr>
-          <td valign="top">1.8.4&nbsp;and&nbsp;1.6.10&nbsp;&nbsp;</td>
+          <td valign="top">1.8.4&nbsp;and&nbsp;1.6.10&nbsp;&nbsp;&nbsp;&nbsp;</td>
           <td valign="top">
-            <code>--use-system-epsilon</code>
-            option added in this release.</td></tr>
+            <code>--use-system-epsilon</code> option added in this release.
+            </td></tr>
         <tr>
           <td valign="top">1.8.5</td>
           <td valign="top">
-            <code>--follow-symlink</code>
-            option added in this release.</td></tr>
+            <code>--follow-symlinks</code> option added in this release.
+            <br>
+            <code>--no-dangling-links</code> option added in this release.
+            </td></tr>
     </table></dd>
 <!--
     <p>
@@ -357,5 +374,7 @@
     <dd>
 -->
 </dl>
+
+
 
 
