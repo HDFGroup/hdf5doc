@@ -2,26 +2,43 @@
 <!-- HEADER RIGHT "H5Pset_filter" -->
 <hr>
 <dl>
+
+  <dt><div align=right><font color=999999 size=-1><i>
+      Last modified: 9 June 2010
+      </i></font></div>
+
   <dt><strong>Name:</strong> <a name="Property-SetFilter">H5Pset_filter</a>
+
   <dt><strong>Signature:</strong>
-    <dd><em>herr_t</em> <code>H5Pset_filter</code>(<em>hid_t</em> <code>plist</code>,
+    <dd><em>herr_t</em> <code>H5Pset_filter</code>(<em>hid_t</em> <code>plist_id</code>,
         <em>H5Z_filter_t</em> <code>filter_id</code>,
         <em>unsigned int</em> <code>flags</code>,
         <em>size_t</em> <code>cd_nelmts</code>,
         <em>const unsigned int</em> <code>cd_values[]</code>
     )
+
   <p>
   <dt><strong>Purpose:</strong>
     <dd>Adds a filter to the filter pipeline.
+
   <p>
   <dt><strong>Description:</strong>
     <dd><code>H5Pset_filter</code> adds the specified 
         <code>filter_id</code> and corresponding properties to the 
         end of an output filter pipeline.
-        If <code>plist</code> is a dataset creation property list, 
-        the filter is added to the permanent filter pipeline; 
-        if <code>plist</code> is a dataset transfer property list, 
-        the filter is added to the transient filter pipeline.
+        <p>
+        <em>plist_id</em> must be either a dataset creation property list 
+        or group creation property list identifier.
+        If <code>plist_id</code> is a dataset creation property list identifier, 
+        the filter is added to the raw data filter pipeline.
+        <p>
+        If <code>plist_id</code> is a group creation property list identifier,
+        the filter is added to the link filter pipeline, which filters the
+        fractal heap used to store the most of link metadata 
+        in certain types of groups.  The only predefined filters 
+        that can be set in a group creation property list are the
+        gzip filter (<code>H5Z_FILTER_DEFLATE</code>) and the
+        Fletcher32 error detection filter (<code>H5Z_FILTER_FLETCHER32</code>).
         <p>
         The array <code>cd_values</code> contains
         <code>cd_nelmts</code> integers which are auxiliary data 
@@ -47,16 +64,16 @@
               uncompressed data is stored in the file.  If this bit is
               clear and a filter fails, then <code>H5Dwrite</code> 
               or <code>H5Dread</code> also fails.
-	      <p>
-	      This flag should not be set for the Fletcher32 checksum 
-	      filter as it will bypass the checksum filter without 
-	      reporting checksum errors to an application.</td>
+              <p>
+              This flag should not be set for the Fletcher32 checksum 
+              filter as it will bypass the checksum filter without 
+              reporting checksum errors to an application.</td>
           </tr>
         </table>
         </center>
-	<p>
-	The <code>filter_id</code> parameter specifies the filter to be set.  
-	Valid filter identifiers are as follows:
+        <p>
+        The <code>filter_id</code> parameter specifies the filter to be set.  
+        Valid pre-defined filter identifiers are as follows:
 
         <center>
         <table width=75%>
@@ -74,64 +91,108 @@
             <code>H5Z_FILTER_FLETCHER32&nbsp;&nbsp;</code> 
             </td><td>
             Error detection filter, employing the Fletcher32 checksum algorithm 
-        </td></tr>	
+        </td></tr> 
         <tr valign=top align=left><td>
             <code>H5Z_FILTER_SZIP</code> 
             </td><td>
             Data compression filter, employing the SZIP algorithm 
         </td></tr>
-	</table>
-	</center>
-	<p>
-	Also see <a href="#Property-SetEdcCheck">H5Pset_edc_check</a> and
-	<a href="#Property-SetFilterCallback">H5Pset_filter_callback</a>.
-	
+        <tr valign=top align=left><td>
+            <code>H5Z_FILTER_NBIT</code> 
+            </td><td>
+            Data compression filter, employing the N-Bit algorithm 
+        </td></tr>
+        <tr valign=top align=left><td>
+            <code>H5Z_FILTER_SCALEOFFSET</code> 
+            </td><td>
+            Data compression filter, employing the scale-offset algorithm 
+        </td></tr>
+        </table>
+        </center>
+        <p>
+        Also see 
+        <a href="#Property-SetEdcCheck"><code>H5Pset_edc_check</code></a> and
+        <a href="#Property-SetFilterCallback">
+        <code>H5Pset_filter_callback</code></a>.
+        
 <!-- NEW PAGE -->
   <p>
   <dt><strong>Notes:</strong>
-    <dd>This function currently supports only the permanent filter
-        pipeline; <code>plist</code> must be a dataset creation 
-        property list.
-	<p>
-	If multiple filters are set for a property list, they will be 
-	applied to each chunk in the order in which they were set.
+    <dd>When a non-empty filter pipeline is used with a group creation property
+        list, the group will be created with the new group file format (see
+        &ldquo;<a href="RM_H5G.html#Group-GroupStyles">Group Implementations
+        in HDF5</a>&rdquo;). The filters will come into play only when dense
+        storage is used (see <a href="#Property-SetLinkPhaseChange">
+        <code>H5Pset_link_phase_change</code></a>)
+        and will be applied to the group&rsquo;s fractal heap.
+        The fractal heap will contain most of the the group&rsquo;s 
+        link metadata, including link names.
+        <p>
+        If multiple filters are set for a property list, they will be applied to
+        each chunk of raw data for datasets or 
+        each block of the fractal heap for groups
+        in the order in which they were set.
+
   <p>
   <dt><strong>See Also:</strong>
     <dd>For a discussion of optional versus required filter behavior, see 
         &ldquo;<a href="#Property-FilterBehavior">Filter Behavior in 
         HDF5</a>.&rdquo;
+        <p>
+        For a discussion of the various types of HDF5 groups, see
+        &ldquo;<a href="RM_H5G.html#Group-GroupStyles">Group Implementations
+        in HDF5</a>.&rdquo; 
+        <p>
+        Related functions:
+        <a href="#Property-SetLinkPhaseChange">
+            <code>H5Pset_link_phase_change</code></a>,
+        <a href="#Property-SetEdcCheck"><code>H5Pset_edc_check</code></a>,
+        <a href="#Property-SetFilterCallback">
+            <code>H5Pset_filter_callback</code></a>,
+        <a href="#Property-SetDeflate"><code>H5Pset_deflate</code></a>,
+        <a href="#Property-SetShuffle"><code>H5Pset_shuffle</code></a>,
+        <a href="#Property-SetFletcher32"><code>H5Pset_fletcher32</code></a>,
+        <a href="#Property-SetSzip"><code>H5Pset_szip</code></a>,
+        <a href="#Property-SetNbit"><code>H5Pset_nbit</code></a>,
+        <a href="#Property-SetScaleoffset"><code>H5Pset_scaleoffset</code></a>
+        
+
   <p>
   <dt><strong>Parameters:</strong>
     <ul><table>
         <tr>
-		    <td valign="top"><em>hid_t</em> <code>plist</code></td>
-            <td valign="top">IN: Property list identifier.</td></tr>
+            <td valign="top"><em>hid_t</em> <code>plist_id</code></td>
+            <td valign="top">IN: Dataset or group creation property list
+                             identifier.</td></tr>
         <tr>
-		    <td valign="top"><em>H5Z_filter_t</em> <code>filter_id</code></td>
+            <td valign="top"><em>H5Z_filter_t</em> <code>filter_id</code></td>
             <td valign="top">IN: Filter identifier for the filter  
                              to be added to the pipeline.</td></tr>
         <tr>
-		    <td valign="top"><em>unsigned int</em> <code>flags</code></td>
+            <td valign="top"><em>unsigned int</em> <code>flags</code></td>
             <td valign="top">IN:  Bit vector specifying certain general properties
                 of the filter.</td></tr>
         <tr>
-		    <td valign="top"><em>size_t</em> <code>cd_nelmts</code></td>
+            <td valign="top"><em>size_t</em> <code>cd_nelmts</code></td>
             <td valign="top">IN: Number of elements in <code>cd_values</code>.</td></tr>
         <tr>
-		    <td valign="top"><em>const&nbsp;unsigned&nbsp;int</em>&nbsp;<code>cd_values[]&nbsp;&nbsp;&nbsp;&nbsp;</code></td>
+            <td valign="top"><em>const&nbsp;unsigned&nbsp;int</em>&nbsp;<code>cd_values[]&nbsp;&nbsp;&nbsp;&nbsp;</code></td>
             <td valign="top">IN: Auxiliary data for the filter.</td></tr>
     </table></ul>
+
   <p>
   <dt><strong>Returns:</strong>
     <dd>Returns a non-negative value if successful;
         otherwise returns a negative value.
+
   <p>
   <dt><strong>Fortran90 Interface:</strong> h5pset_filter_f
     <dd>
-	<pre>
+        <pre>
 SUBROUTINE h5pset_filter_f(prp_id, filter, flags, cd_nelmts, cd_values,  hdferr)
   IMPLICIT NONE
-  INTEGER(HID_T), INTENT(IN) :: prp_id  ! Property list identifier
+  INTEGER(HID_T), INTENT(IN) :: prp_id  ! Gropu or dataset creation property 
+                                        ! list identifier
   INTEGER, INTENT(IN) :: filter         ! Filter to be added to the pipeline
   INTEGER, INTENT(IN) :: flags          ! Bit vector specifying certain 
                                         ! general properties of the filter
@@ -142,20 +203,24 @@ SUBROUTINE h5pset_filter_f(prp_id, filter, flags, cd_nelmts, cd_values,  hdferr)
   INTEGER, INTENT(OUT) :: hdferr        ! Error code
                                         ! 0 on success and -1 on failure
 END SUBROUTINE h5pset_filter_f
-	</pre>		
-		
+        </pre>
+
   <p>
   <dt><strong>History:</strong>
     <ul><table width="90%">
         <tr>
-		  <td valign="top" align="left" width="10%">
-		    <strong>Release</strong>&nbsp;&nbsp;&nbsp;&nbsp;</td>
+          <td valign="top" align="left" width="10%">
+            <strong>Release</strong>&nbsp;&nbsp;&nbsp;&nbsp;</td>
           <td valign="top" align="left">
-		    <strong>C</strong></td></tr>
+            <strong>Change</strong></td></tr>
         <tr>
-		  <td valign="top">1.6.0</td>
+          <td valign="top">1.6.0</td>
           <td valign="top">
-		    Function introduced in this release.</td></tr>
+            Function introduced in this release.</td></tr>
+        <tr>
+          <td valign="top">1.8.5</td>
+          <td valign="top">
+            Function applied to group creation property lists.</td></tr>
     </table></ul>
 </dl>
 
