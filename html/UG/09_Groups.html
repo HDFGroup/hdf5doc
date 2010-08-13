@@ -726,6 +726,168 @@ document.writeln ("
   parent directory, to indicate a parent group.
 
 
+<!-- *** BEGIN _topic/group_implementations.htm NEAR DUPLICATE *** -->
+<!-- *** SEE editingComment FOLLOWING SECTION HEADING          *** -->
+
+<a name="GroupStyles">
+
+<!-- NEW PAGE -->
+<h4>2.4 Group Implementations in HDF5</h4></a>
+
+<!-- editingComment
+  <span class="editingComment">  
+       [ [ [ 
+       This section is a close copy of but not identical to 
+       _topic/group_implementations.htm, which is sourced into the RM.
+       If/when the UG is broken into smaller files, re-unifying these 
+       sections should be considered.
+       ] ] ]
+       </span>
+-->
+       
+  <p>
+  The original HDF5 group implementation provided 
+  a single indexed structure for link storage.
+  A new group implementation, in HDF5 Release 1.8.0,
+  enables more efficient compact storage for very small groups,
+  improved link indexing for large groups,
+  and other advanced features.
+  <ul>
+    <li>The <i>original indexed</i> format remains the default.
+        Links are stored in a B-tree in the group&rsquo;s local heap.
+    <li>Groups created in the new <i>compact-or-indexed</i> format, 
+        the implementation introduced with Release 1.8.0,
+        can be tuned for performance, 
+        switching between the compact and indexed formats 
+        at thresholds set in the user application.
+    <ul>
+        <li>The <i>compact</i> format will conserve file space
+            and processing overhead when working with small groups and 
+            is particularly valuable when a group contains no links.
+            Links are stored as a list of messages in the group&rsquo;s
+            header.
+        <li>The <i>indexed</i> format will yield improved performance
+            when working with large groups, e.g., groups containing
+            thousands to millions of members.
+            Links are stored in a fractal heap and 
+            indexed with an improved B-tree.
+    </ul>
+    <li>The new implementation also enables the use of link names 
+        consisting of non-ASCII character sets 
+        (see <a href="../RM/RM_H5P.html#Property-SetCharEncoding">
+        <code>H5Pset_char_encoding</code></a>) 
+        and is required for all link types other than hard or soft links,
+        e.g., external and user-defined links
+        (see the <a href="../RM/RM_H5L.html">H5L APIs</a>).
+  </ul>
+
+  <!--
+  <p>
+  The original group structure and the newer structures 
+  are not directly interoperable. 
+  HDF5 groups can be created in either of the two formats. 
+  Once created, a group in the original indexed format can be changed 
+  to a compact-or-indexed format if the need arises; 
+  there is no capability to change back.
+  As stated above, once in the compact-or-indexed format, 
+  a group can switch between compact and indexed as needed.
+
+  <p>
+  By default, a group will be created in the original indexed format.
+  Groups will be created in the compact-or-indexed format
+  under the following circumstances:  
+  -->
+
+  <p>
+  The original group structure and the newer structures 
+  are not directly interoperable. 
+  By default, a group will be created in the original indexed format.
+  An existing group can be changed to a compact-or-indexed format 
+  if the need arises; there is no capability to change back.
+  As stated above, once in the compact-or-indexed format, 
+  a group can switch between compact and indexed as needed.
+
+  <p>
+  Groups will be initially created in the compact-or-indexed format
+  only when one or more of the following conditions is met:
+  <ul>
+    <li>The <i>low version bound</i> value of 
+        the <i>library version bounds</i> property 
+        has been set to Release 1.8.0 or later 
+        in the file access property list
+        (see <a href="../RM/RM_H5P.html#Property-SetLibverBounds">
+        <code>H5Pset_libver_bounds</code></a>).
+        Currently, that would require an <code>H5Pset_libver_bounds</code>
+        call with the <em>low</em> parameter set to
+        <code>H5F_LIBVER_LATEST</code>.
+        <p>
+        When this property is set for an HDF5 file, all objects in the file 
+        will be created using the latest available format; no effort will
+        be made to create a file that can be read by older libraries.
+    <li>The creation order tracking property, 
+        <code>H5P_CRT_ORDER_TRACKED</code>, has been set  
+        in the group creation property list
+        (see <a href="../RM/RM_H5P.html#Property-SetLinkCreationOrder">
+        <code>H5Pset_link_creation_order</code></a>).
+  </ul>
+
+  <p>
+  <!--
+  The compact-or-indexed format also enables completely new capabilities:
+  user-defined and external links and non-ASCII link names.
+  -->
+  An existing group, currently in the original indexed format, 
+  will be converted to the compact-or-indexed format 
+  upon the occurrence of any of the following events:
+  <ul>
+    <li>An external or user-defined link is inserted into the group.
+    <li>A link named with a string composed of non-ASCII characters 
+        is inserted into the group.
+
+  <!-- QUESTION -- REVEAL THIS CIRCUMSTANCE ONLY AFTER (AND IF!) 
+                -- IT IS IMPLEMENTED, THEN DELETE THE COMMENT
+
+    <li>The <code>max_compact</code> and <code>min_dense</code>
+        properties have been set in the group creation property list
+        (see <a href="../RM/RM_H5P.html#Property-SetLinkPhaseChange">
+        <code>H5Pset_link_phase_change</code></a>).
+                                                         <br><i><b>
+                                                              [ [ [
+                                  Masked bullet, immediately above:
+                                         Not currently implemented.  
+                                                  -- June 2007, FMB
+                    Confirmed with NF that H5Pset_link_phase_change 
+                       still does not trigger a group style change.
+                                                -- August 2010, FMB
+                                                              ] ] ]
+                                                           </b></i>
+  -->
+  </ul>
+
+  <p>
+  The compact-or-indexed format offers performance improvements 
+  that will be most notable at the extremes, 
+  i.e., in groups with zero members 
+  and in groups with tens of thousands of members.  
+  But measurable differences may sometimes appear 
+  at a threshold as low as eight group members.
+  Since these performance thresholds and criteria differ from
+  application to application, tunable settings are provided to 
+  govern the switch between the compact and indexed formats
+  (see <a href="../RM/RM_H5P.html#Property-SetLinkPhaseChange">
+  <code>H5Pset_link_phase_change</code></a>).
+  Optimal thresholds will depend on the application and the 
+  operating environment.
+
+  <p>
+  Future versions of HDF5 will retain the ability to 
+  create, read, write, and manipulate 
+  all groups stored in either the original indexed format or
+  the compact-or-indexed format.
+
+<!-- *** END _topic/group_implementations.htm NEAR DUPLICATE *** -->
+
+
 <SCRIPT language="JavaScript">
 <!--
 document.writeln ("
