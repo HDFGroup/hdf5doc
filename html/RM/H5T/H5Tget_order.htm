@@ -4,7 +4,7 @@
 <dl>
 
 <dt><div align=right><font color=999999 size=-1><i>
-    Last modified: 18 August 2010
+    Last modified: 24 September 2010
     </i></font></div>
 
 <dt><strong>Name:</strong> <a name="Datatype-GetOrder">H5Tget_order</a>
@@ -12,9 +12,11 @@
     <dd><em>H5T_order_t </em><code>H5Tget_order</code>(
         <em>hid_t </em><code>dtype_id</code>
     )
+
     <p>
 <dt><strong>Purpose:</strong>
     <dd>Returns the byte order of an atomic datatype.
+
     <p>
 <dt><strong>Description:</strong>
     <dd><code>H5Tget_order</code> returns the byte order of an 
@@ -27,12 +29,27 @@
             <dt><code>H5T_ORDER_BE</code> (<code>1</code>)
                 <dd>Big-endian byte order
             <dt><code>H5T_ORDER_VAX</code> (<code>2</code>)
-                <dd>VAX mixed byte order (not currently supported)
-            <dt><code>H5T_ORDER_NONE</code> (<code>3</code>)
+                <dd>VAX mixed byte order 
+            <dt><code>H5T_ORDER_MIXED</code> (<code>3</code>)
+                <dd>Mixed byte order among members of a compound datatype
+                    (see below)
+            <dt><code>H5T_ORDER_NONE</code> (<code>4</code>)
                 <dd>No particular order 
                     (fixed-length strings, object and region references)
         </dl></ul>
-        <p></p>
+    <p>
+    Members of a compound datatype need not have the same byte order.
+    If members of a compound datatype have more than one of 
+    little endian, big endian, or VAX byte order, 
+    <code>H5Tget_order</code> will return <code>H5T_ORDER_MIXED</code>
+    for the compound datatype.
+    A byte order of <code>H5T_ORDER_NONE</code> will, however, be 
+    ignored; for example, if one or more members of a compound datatype 
+    have byte order <code>H5T_ORDER_NONE</code> but all other members 
+    have byte order <code>H5T_ORDER_LE</code>, 
+    <code>H5Tget_order</code> will return <code>H5T_ORDER_LE</code>
+    for the compound datatype.
+
     <p>
 <dt><strong>Parameters:</strong>
     <dd><table>
@@ -40,10 +57,12 @@
             <td valign="top"><em>hid_t</em>&nbsp;<code>dtype_id&nbsp;&nbsp;&nbsp;&nbsp;</code></td>
             <td valign="top">IN: Identifier of datatype to query.</td></tr>
     </table></dd>
+
     <p>
 <dt><strong>Returns:</strong>
     <dd>Returns a byte order constant if successful;
         otherwise <code>H5T_ORDER_ERROR</code> (-1).
+
     <p>
 <dt><strong>Fortran90 Interface:</strong> h5tget_order_f
     <dd>
@@ -56,10 +75,35 @@ SUBROUTINE h5tget_order_f(type_id, order, hdferr)
                                         !    H5T_ORDER_LE_F 
                                         !    H5T_ORDER_BE_F 
                                         !    H5T_ORDER_VAX_F  
+                                        !    H5T_ORDER_MIXED_F  
+                                        !      (not implemented)
                                         !    H5T_ORDER_NONE_F  
   INTEGER, INTENT(OUT) :: hdferr        ! Error code
                                         ! 0 on success and -1 on failure
 END SUBROUTINE h5tget_order_f
     </pre>
+
+    <p>
+<dt><strong>History:</strong>
+    <dd><table width="90%">
+        <tr>
+          <td valign="top" align="left" width="10%">
+            <strong>Release</strong>&nbsp;&nbsp;&nbsp;&nbsp;</td>
+          <td valign="top" align="left">
+            <strong>Change</strong></td>
+        </tr>
+
+        <tr>
+          <td valign="top">1.8.6</td>
+          <td valign="top">
+            Function modified to work with all datatypes.
+            <br>
+            <code>H5T_ORDER_MIXED</code> added to 
+            <code><i>H5T_order_t</i></code>.</td>
+        </tr>
+
+        </tr>
+        </table>
+</dl>
 </dl>
 

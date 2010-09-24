@@ -4,7 +4,7 @@
 <dl>
 
 <dt><div align=right><font color=999999 size=-1><i>
-    Last modified: 19 August 2010
+    Last modified: 24 September 2010
     </i></font></div>
 
 <dt><strong>Name:</strong> <a name="Datatype-SetOrder">H5Tset_order</a>
@@ -13,27 +13,52 @@
         <em>hid_t </em><code>dtype_id</code>,
         <em>H5T_order_t</em> <code>order</code>
     )
+
     <p>
 <dt><strong>Purpose:</strong>
-    <dd>Sets the byte order of an atomic datatype.
+    <dd>Sets the byte order of a datatype.
+
     <p>
 <dt><strong>Description:</strong>
-    <dd><code>H5Tset_order</code> sets the byte order of an atomic datatype.
+    <dd><code>H5Tset_order</code> sets the byte order of a datatype.
         <p>
-        Byte orders currently supported are:
+        Byte order can currently be set to any of the following:
         <ul><dl>
             <dt><code>H5T_ORDER_LE</code> (<code>0</code>)
                 <dd>Little-endian byte order
             <dt><code>H5T_ORDER_BE</code> (<code>1</code>)
                 <dd>Big-endian byte order
             <dt><code>H5T_ORDER_VAX</code> (<code>2</code>)
-                <dd>VAX mixed byte order (not currently supported)
+                <dd>VAX mixed byte order 
         </dl></ul>
         <p>
-        <code>H5T_ORDER_NONE</code> (<code>3</code>) is also a valid value 
+        <code>H5T_ORDER_MIXED</code> (<code>3</code>) is a valid value
+        for <code>order</code> only when returned by the function 
+        <code>H5Tget_order</code>; 
+        it cannot be set with <code>H5Tset_order</code>.
+        <p>
+        <code>H5T_ORDER_NONE</code> (<code>4</code>) is a valid value 
         for <code>order</code>, but it has no effect.
         It is valid only for fixed-length strings and object and region references
         and specifies &ldquo;no particular order.&rdquo; 
+        <p>
+        The byte order of a derived datatype is initially the same as that 
+        of the parent type, but can be changed with <code>H5Tset_order</code>.  
+        <p>
+        This function cannot be used with a datatype after it has been 
+        committed.
+        <p>
+        <strong>Special considerations:</strong>
+        <br>
+        ENUM datatypes: Byte order must be set before any member
+        on an ENUM is defined.
+        <p>
+        Compound datatypes: Byte order is set individually on each 
+        member of a compound datatype;  
+        members of a compound datatype need not have the same byte order.  
+        <p>
+        Opaque datatypes: Byte order can be set but has no effect.
+
     <p>
 <dt><strong>Parameters:</strong>
     <dd><table>
@@ -44,10 +69,12 @@
             <td valign="top"><em>H5T_order_t</em>&nbsp;<code>order&nbsp;&nbsp;&nbsp;&nbsp;</code></td>
             <td valign="top">IN: Byte order constant.</td></tr>
     </table></dd>
+
     <p>
 <dt><strong>Returns:</strong>
     <dd>Returns a non-negative value if successful;
         otherwise returns a negative value.
+
     <p>
 <dt><strong>Fortran90 Interface:</strong> h5tset_order_f
     <dd>
@@ -65,5 +92,27 @@ SUBROUTINE h5tset_order_f(type_id, order, hdferr)
                                           ! 0 on success and -1 on failure
 END SUBROUTINE h5tset_order_f
     </pre>
+
+    <p>
+<dt><strong>History:</strong>
+    <dd><table width="90%">
+        <tr>
+          <td valign="top" align="left" width="10%">
+            <strong>Release</strong>&nbsp;&nbsp;&nbsp;&nbsp;</td>
+          <td valign="top" align="left">
+            <strong>Change</strong></td>
+        </tr>
+
+        <tr>
+          <td valign="top">1.8.6</td>
+          <td valign="top">
+            Function modified to work with all datatypes.
+            <br>
+            <code>H5T_ORDER_MIXED</code> added to 
+            <code><i>H5T_order_t</i></code>.</td>
+        </tr>
+
+        </tr>
+        </table>
 </dl>
 
