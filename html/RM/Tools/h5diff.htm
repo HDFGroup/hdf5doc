@@ -3,7 +3,7 @@
 <hr>
 <dl>
 <dt><div align=right><font color=999999 size=-1><i>
-    Last modified: 8 June 2010
+    Last modified: 24 September 2010
     </i></font></div>
 
 <dt><strong>Tool Name:</strong> <a name="Tools-Diff">h5diff</a>  &nbsp;&nbsp;&nbsp;
@@ -56,8 +56,11 @@
         and must be expressed as absolute 
         paths from the respective file&rsquo;s root group.
         <ul>
-            <li>If these objects are groups, the names (absolute paths) are 
-                compared.
+            <li>If these objects are groups, <code>h5diff</code>
+                first compares the names of member objects (the relative path 
+                from the specified group) and generates a report of objects 
+                that appear in only one group or in both groups. 
+                Common objects are then compared recursively.
             <li>If these objects are datasets, array rank and dimensions, 
                 datatypes, and data values are compared.
             <li>If these objects are named datatypes, the comparison 
@@ -252,11 +255,12 @@
             <td valign="top">Print only differences that are greater than a 
                 relative error. <em>relative</em> must be a positive number.
                 The comparison criterion is whether the absolute value of the 
-                difference <code>1</code> and the ratio of two corresponding 
-                values is greater than <em>relative</em> 
-                (i.e.usebsp;<code>|1&ndash;(b/a)|&nbsp;&gt;&nbsp;<em>relative</em></code>
+                difference between <code>1</code> and the ratio of two 
+                corresponding values is greater than <em>relative</em> (that is, 
+                <code>|1&ndash;(b/a)|&nbsp;&gt;&nbsp;<em>relative</em></code>
                 where <code>a</code> is a value in <em>file1</em> and
-                <code>b</code> is a value in <em>file2</em>).</td></tr>
+                <code>b</code> is the corresponding value in <em>file2</em>).
+                </td></tr>
         <tr>
             <td valign="top">
                 <code>--use-system-epsilon</code>
@@ -274,6 +278,40 @@
                 <br>
                 <em>Default:</em> Without this option, 
                 <code>h5diff</code> checks for strict equality.
+                </td></tr>
+        <tr>
+            <td valign="top">
+                <code>--exclude-path "<em>path</em>"</code>
+                </td>
+            <td valign="top">Exclude the specified <em>path</em> to an object 
+                     when comparing files or groups.  If a group is excluded, 
+                     all member objects will also be excluded. 
+                     <p>
+                     The specified path is excluded wherever it occurs.
+                     This flexibility enables the same option to exclude 
+                     either objects that exist only in one file
+                     or common objects that are known to differ.
+                     <p>
+                     When comparing files, <em>path</em> is the 
+                     absolute path to the excluded object; when comparing  
+                     groups, <em>path</em> is similar to the relative path 
+                     from the group to the excluded object.  
+                     This <em>path</em> can be taken from the first section of 
+                     the output of the <code>--verbose</code> option. 
+                     For example, if you are comparing the group 
+                     <code>/groupA</code> in two files and you want to exclude 
+                     <code>/groupA/groupB/groupC</code> in both files, 
+                     the exclude option would read as follows:
+                     <br>
+                     <code>&nbsp;&nbsp;&nbsp;&nbsp;</code>
+                     <code>--exclude-path "/groupB/groupC"</code>
+                     <p>
+                     If there are multiple paths to an object, only the 
+                     specified path(s) will be excluded; the comparison
+                     will include any path not explicitly excluded.
+                     <p>
+                     This option can be used repeatedly to exclude 
+                     multiple paths.
                 </td></tr>
         <tr>
             <td valign="top"><em>file1</em>
@@ -320,6 +358,8 @@
         Compare all objects in both files:<br>
         <code>&nbsp;&nbsp;&nbsp;&nbsp;h5diff file1 file2</code>
 
+<!-- NEW PAGE -->
+
     <p>
 <dt><strong>History:</strong>
     <dd><table width="90%">
@@ -361,6 +401,11 @@
             <code>--follow-symlinks</code> option added in this release.
             <br>
             <code>--no-dangling-links</code> option added in this release.
+            </td></tr>
+        <tr>
+          <td valign="top">1.8.6</td>
+          <td valign="top">
+            <code>--exclude-path</code> option added in this release.
             </td></tr>
     </table></dd>
 <!--
