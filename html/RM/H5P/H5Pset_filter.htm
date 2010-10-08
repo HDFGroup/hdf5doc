@@ -4,7 +4,7 @@
 <dl>
 
   <dt><div align=right><font color=999999 size=-1><i>
-      Last modified: 11 June 2010
+      Last modified: 8 October 2010
       </i></font></div>
 
   <dt><strong>Name:</strong> <a name="Property-SetFilter">H5Pset_filter</a>
@@ -49,9 +49,9 @@
         the following fields specifying certain general properties 
         of the filter:  
         <center>
-        <table align=center width="75%">
+        <table align=center width="90%">
           <tr valign=top>
-            <td valign=top><code>H5Z_FLAG_OPTIONAL</code>&nbsp;&nbsp;</td>
+            <td valign=top><code>H5Z_FLAG_OPTIONAL</code></td>
             <td valign=top>If this bit is set then the filter is 
               optional.  If the filter fails (see below) during an
               <code>H5Dwrite</code> operation then the filter is
@@ -61,13 +61,47 @@
               This is commonly used for compression filters: if the
               filter result would be larger than the input, then
               the compression filter returns failure and the
-              uncompressed data is stored in the file.  If this bit is
-              clear and a filter fails, then <code>H5Dwrite</code> 
-              or <code>H5Dread</code> also fails.
+              uncompressed data is stored in the file.  
               <p>
               This flag should not be set for the Fletcher32 checksum 
               filter as it will bypass the checksum filter without 
-              reporting checksum errors to an application.</td>
+              reporting checksum errors to an application.
+              </td>
+          </tr>
+          <tr valign=top>
+            <td valign=top><code>H5Z_FLAG_MANDATORY&nbsp;&nbsp;&nbsp;</code></td>
+            <td valign=top>If the filter is required, that is, set to 
+              mandatory, and the filter fails, 
+              the library&rsquo;s behavior depends on whether 
+              the chunk cache is in use:  
+              <ul><li>If the chunk cache is enabled, data chunks will be 
+                      flushed to the file during <code>H5Dclose</code> and  
+                      the library will return the failure in 
+                      <code>H5Dclose</code>.  
+                  <li>When the chunk cache is disabled or not big enough,
+                      or the chunk is being evicted from the cache, 
+                      the failure will happen during <code>H5Dwrite</code>.  
+              </ul>
+              In each case, the library will still write to the file 
+              all data chunks that were processed by the filter 
+              before the failure occured.
+              <p>
+              For example, assume that an application creates a dataset 
+              of four chunks, the chunk cache is enabled and is big enough 
+              to hold all four chunks, and the filter fails when it tries 
+              to write the fourth chunk.  
+              The actual flush of the chunks will happen during 
+              <code>H5Dclose</code>, not <code>H5Dwrite</code>.  
+              By the time <code>H5Dclose</code> fails, the first three 
+              chunks will have been written to the file.  
+              Even though <code>H5Dclose</code> fails, 
+              all the resources will be released and 
+              the file can be closed properly.    
+              <p>
+              If, however, the filter fails on the second chunk,
+              only the first chunk will be written to the file
+              as nothing further can be written once the filter fails.
+            </td>
           </tr>
         </table>
         </center>
@@ -78,7 +112,7 @@
         Valid pre-defined filter identifiers are as follows:
 
         <center>
-        <table width=75%>
+        <table width=90%>
         <tr valign=top align=left><td>
             <code>H5Z_FILTER_DEFLATE</code> 
             </td><td>
@@ -143,9 +177,12 @@
 
   <p>
   <dt><strong>See Also:</strong>
-    <dd>For a discussion of optional versus required filter behavior, see 
-        &ldquo;<a href="#Property-FilterBehavior">Filter Behavior in 
-        HDF5</a>.&rdquo;
+    <dd>For a discussion of optional versus required (mandatory) 
+        filter behavior, see &ldquo;<a href="#Property-FilterBehavior">Filter 
+        Behavior in HDF5</a>.&rdquo;
+        <p>
+        For a discussion of the chunk cache, see
+        <a href="#Property-SetCache"><code>H5Pset_cache</code></a>.
         <p>
         For a discussion of the various types of HDF5 groups, see
         &ldquo;<a href="RM_H5G.html#Group-GroupStyles">Group Implementations
