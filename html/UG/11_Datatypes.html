@@ -1046,7 +1046,7 @@ document.writeln ("
   hid_t dt;
   dt = H5Tcopy(H5T_STD_I32BE);
   dataset_id = H5Dcreate(file_id, &ldquo;/dset&rdquo;, dt, dataspace_id,   
-      H5P_DEFAULT);
+      H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
 </code></pre>
 </td></tr>
 <tr>
@@ -2231,7 +2231,7 @@ document.writeln ("
   </tr>
   <tr valign="top"> 
     <td class="ColumnLeftCell"> <p><code>hid_t H5Topen (hid_t <em>location</em>, 
-        const char *<em>name</em>)</code></td>
+        const char *<em>name</em>, H5P_DEFAULT)</code></td>
     <td class="ColumnRightCell"> <p>Open a named datatype. The named datatype 
         returned by this function is read-only.</td>
   </tr>
@@ -2251,7 +2251,8 @@ document.writeln ("
   </tr>
   <tr valign="top"> 
     <td class="ColumnLeftCell"> <p><code>herr_t H5Tcommit (hid_t 
-    <em>location</em>, const char *<em>name</em>, hid_t <em>type</em>)
+    <em>location</em>, const char *<em>name</em>, hid_t <em>type</em>, 
+    H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT)
     </code></td>
     <td class="ColumnRightCell"> <p>Commit a transient datatype (not immutable) 
         a file to become a named datatype. Named datatypes can be shared.</td>
@@ -2570,7 +2571,7 @@ document.writeln ("
   </tr>
   <tr valign="top"> 
     <td class="ColumnLeftCell"> <p><code>int H5Tget_array_dims
-    ( hid_t adtype_id, hsize_t *dims[], int *perm[] )</code></td>
+    ( hid_t adtype_id, hsize_t *dims[] )</code></td>
     <td class="ColumnRightCell"> <p><strong>(ARRAY)</strong> The sizes of 
       the dimensions and the dimension permutations of the array datatype 
       object.</td>
@@ -3568,7 +3569,7 @@ typedef struct {
   CALL h5tget_size_f(H5T_NATIVE_DOUBLE, re_size, error)
   CALL h5tget_size_f(H5T_NATIVE_DOUBLE, im_size, error)
   complex_t_size = re_size + im_size
-  CALL h5tcreaet_f(H5T_COMPOUND_F, complex_t_size, type_id)
+  CALL h5tcreate_f(H5T_COMPOUND_F, complex_t_size, type_id)
   offset = 0
   CALL h5tinsert_f(type_id, &ldquo;real&rdquo;, offset, H5T_NATIVE_DOUBLE, error)
   offset = offset + re_size
@@ -4059,7 +4060,7 @@ typedef struct {
      H5Tinsert(s1_tid, &ldquo;c_name&rdquo;, HOFFSET(s1_t, c), H5T_NATIVE_DOUBLE);
      ...
      dataset_id = H5Dcreate(file_id, &ldquo;SDScompound.h5&rdquo;, s1_t, space_id, 
-H5PDEFAULT);
+                    H5PDEFAULT, H5P_DEFAULT, H5P_DEFAULT);
      H5Dwrite (dataset_id,s1_tid, H5S_ALL, H5S_ALL, H5P_DEFAULT, data);
     </code></pre> </td>
   </tr>
@@ -4304,7 +4305,7 @@ GROUP &ldquo;/&rdquo; {
       ! Create the dataset with compound datatype.
       !
       CALL h5dcreate_f(file_id, dsetname, dtype_id, dspace_id, &amp;
-                       dset_id, error)
+                       dset_id, error, H5P_DEFAULT_F, H5P_DEFAULT_F, H5P_DEFAULT_F)
       !
      ...
       ! Create memory types. We have to create a compound datatype
@@ -4422,7 +4423,7 @@ GROUP &ldquo;/&rdquo; {
      H5Tinsert(s1_tid, &ldquo;b_name&rdquo;, HOFFSET(s1_t, b), H5T_NATIVE_FLOAT);
      H5Tinsert(s1_tid, &ldquo;c_name&rdquo;, HOFFSET(s1_t, c), H5T_NATIVE_DOUBLE);
      ...
-     dataset_id = H5Dopen(file_id, &ldquo;SDScompound.h5&rdquo;);
+     dataset_id = H5Dopen(file_id, &ldquo;SDScompound.h5&rdquo;, H5P_DEFAULT);
      ...
      data = (s1_t *) malloc (sizeof(s1_t)*LENGTH);
      H5Dread(dataset_id,s1_tid, H5S_ALL, H5S_ALL, H5P_DEFAULT, data);
@@ -4455,7 +4456,7 @@ GROUP &ldquo;/&rdquo; {
      s1_t *data;
      hid_t file_s1_t, mem_s1_t;
      ...
-     dataset_id = H5Dopen(file_id, &ldquo;SDScompound.h5&rdquo;);
+     dataset_id = H5Dopen(file_id, &ldquo;SDScompound.h5&rdquo;, H5P_DEFAULT);
      /* Discover datatype in the file */
      file_s1_t  = H5Dget_type(dataset_id);
      /* Find corresponding memory datatype */
@@ -4495,7 +4496,7 @@ GROUP &ldquo;/&rdquo; {
      sf_tid = H5Tcreate(H5T_COMPOUND, sizeof(sf_t));
      H5Tinsert(s1_tid, &ldquo;b_name&rdquo;, HOFFSET(sf_t, b), H5T_NATIVE_FLOAT);
      ...
-     dataset_id = H5Dopen(file_id, &ldquo;SDScompound.h5&rdquo;);
+     dataset_id = H5Dopen(file_id, &ldquo;SDScompound.h5&rdquo;, H5P_DEFAULT);
      ...
      data = (sf_t *) malloc (sizeof(sf_t)*LENGTH);
      H5Dread(dataset_id,sf_tid, H5S_ALL, H5S_ALL, H5P_DEFAULT, data);
@@ -4535,7 +4536,7 @@ GROUP &ldquo;/&rdquo; {
      H5Tinsert(sdf_tid, &ldquo;b_name&rdquo;, HOFFSET(sdf_t, b), H5T_NATIVE_FLOAT);
      H5Tinsert(sdf_tid, &ldquo;c_name&rdquo;, HOFFSET(sdf_t, c), H5T_NATIVE_DOUBLE);
      ...
-     dataset_id = H5Dopen(file_id, &ldquo;SDScompound.h5&rdquo;);
+     dataset_id = H5Dopen(file_id, &ldquo;SDScompound.h5&rdquo;, H5P_DEFAULT);
      ...
      data = (sdf_t *) malloc (sizeof(sdf_t)*LENGTH);
      H5Dread(dataset_id,sdf_tid, H5S_ALL, H5S_ALL, H5P_DEFAULT, data);
@@ -4722,8 +4723,8 @@ GROUP &ldquo;/&rdquo; {
      
      datatype = H5Tarray_create(H5T_NATIVE_INT, 2, adims, NULL);
 
-     dataset = H5Dcreate(file, DATASETNAME, datatype, dataspace,
-           <strong>H5P_DEFAULT);</strong>
+     dataset = H5Dcreate(file, datasetname, datatype, dataspace,
+           H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
     </code></pre> 
     </td>
   </tr>
@@ -4802,7 +4803,8 @@ GROUP &ldquo;/&rdquo; {
     <td class="fullImgTableImgCell"> <pre><code>
     tid1 = H5Tvlen_create (H5T_NATIVE_UINT);
 
-    dataset=H5Dcreate(fid1,&ldquo;Dataset1&rdquo;,tid1,sid1,H5P_DEFAULT);
+    dataset=H5Dcreate(fid1, &ldquo;Dataset1&rdquo;, tid1, sid1, H5P_DEFAULT, 
+              H5P_DEFAULT, H5P_DEFAULT);
     </code></pre> </td>
   </tr>
   <tr> 
@@ -4876,7 +4878,7 @@ GROUP &ldquo;/&rdquo; {
              ((unsigned int *)wdata[i].p)[j]=i*10+j;
      }
 
-     ret=H5Dwrite(dataset,tid1,H5S_ALL,H5S_ALL,H5P_DEFAULT,wdata);
+     ret=H5Dwrite(dataset, tid1, H5S_ALL, H5S_ALL, H5P_DEFAULT, wdata);
     </code></pre> </td>
   </tr>
   <tr> 
@@ -4896,7 +4898,7 @@ GROUP &ldquo;/&rdquo; {
   <tr valign="top"> 
     <td class="fullImgTableImgCell"> <pre><code>
     hvl_t rdata[SPACE1_DIM1];      
-    ret=H5Dread(dataset,tid1,H5S_ALL,H5S_ALL,xfer_pid,rdata);
+    ret=H5Dread(dataset, tid1, H5S_ALL, H5S_ALL, xfer_pid, rdata);
 
     for(i=0; i&lt;SPACE1_DIM1; i++) {
       printf(&ldquo;%d: len %d &rdquo;,rdata[i].len);
@@ -4904,7 +4906,7 @@ GROUP &ldquo;/&rdquo; {
          printf(&ldquo; value: %u\n&rdquo;,((unsigned int *)rdata[i].p)[j]);
       }
     } 
-    ret=H5Dvlen_reclaim(tid1,sid1,xfer_pid,rdata);
+    ret=H5Dvlen_reclaim(tid1, sid1, xfer_pid, rdata);
     </code></pre> </td>
   </tr>
   <tr> 
@@ -5171,7 +5173,7 @@ document.writeln ("
     <pre><code>
  tid1 = H5Tcopy (H5T_C_S1); 
                     
-ret = H5Tset_size (tid1,H5T_VARIABLE);
+ ret = H5Tset_size (tid1, H5T_VARIABLE);
     </code></pre>
     </td>
   </tr>
@@ -5196,13 +5198,13 @@ ret = H5Tset_size (tid1,H5T_VARIABLE);
     <pre><code>
    char *rdata[SPACE1_DIM1];  
 
-   ret=H5Dread(dataset,tid1,H5S_ALL,H5S_ALL,xfer_pid,rdata);
+   ret=H5Dread(dataset, tid1, H5S_ALL, H5S_ALL, xfer_pid, rdata);
 
    for(i=0; i&lt;SPACE1_DIM1; i++) {   
             printf(&ldquo;%d: len: %d, str is: %s\n&rdquo;, strlen(rdata[i]),rdata[I]);
    } 
 
-   ret=H5Dvlen_reclaim(tid1,sid1,xfer_pid,rdata);
+   ret=H5Dvlen_reclaim(tid1, sid1, xfer_pid, rdata);
     </code></pre>
     </td>
   </tr>
@@ -5245,29 +5247,30 @@ ret = H5Tset_size (tid1,H5T_VARIABLE);
   <tr valign="top"> 
     <td class="fullImgTableImgCell">
     <pre><code>
-  dataset=H5Dcreate(fid1,&ldquo;Dataset3&rdquo;,H5T_STD_REF_OBJ,sid1,H5P_DEFAULT);
+  dataset=H5Dcreate(fid1, &ldquo;Dataset3&rdquo;, H5T_STD_REF_OBJ, sid1,
+            H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
 
     /* Create reference to dataset */
-    ret = H5Rcreate(&wbuf[0],fid1,&ldquo;/Group1/Dataset1&rdquo;,H5R_OBJECT,-1);
+    ret = H5Rcreate(&wbuf[0], fid1,&ldquo;/Group1/Dataset1&rdquo;, H5R_OBJECT, -1);
 
     /* Create reference to dataset */
-    ret = H5Rcreate(&wbuf[1],fid1,&ldquo;/Group1/Dataset2&rdquo;,H5R_OBJECT,-1);
+    ret = H5Rcreate(&wbuf[1], fid1, &ldquo;/Group1/Dataset2&rdquo;, H5R_OBJECT, -1);
 
     /* Create reference to group */
-    ret = H5Rcreate(&wbuf[2],fid1,&ldquo;/Group1&rdquo;,H5R_OBJECT,-1);
+    ret = H5Rcreate(&wbuf[2], fid1, &ldquo;/Group1&rdquo;, H5R_OBJECT, -1);
 
     /* Create reference to named datatype */
-    ret = H5Rcreate(&wbuf[3],fid1,&ldquo;/Group1/Datatype1&rdquo;,H5R_OBJECT,-1);
+    ret = H5Rcreate(&wbuf[3], fid1, &ldquo;/Group1/Datatype1&rdquo;, H5R_OBJECT, -1);
 
     /* Write selection to disk */
       
-  ret=H5Dwrite(dataset,H5T_STD_REF_OBJ,H5S_ALL,H5S_ALL,H5P_DEFAULT,wbuf);
+  ret=H5Dwrite(dataset, H5T_STD_REF_OBJ, H5S_ALL, H5S_ALL, H5P_DEFAULT, wbuf);
     </code></pre>
     </td>
   </tr>
   <tr> 
     <td align="left" class="fullImgTableCapCell"> 
-    <span class="figureNumber">Example 30. Create object references and 
+    <span class="figureNumber">Example 31. Create object references and 
     write to a dataset<!-- formerly Figure 37 --></span></td>
   </tr>
 </table>
@@ -5282,19 +5285,19 @@ ret = H5Tset_size (tid1,H5T_VARIABLE);
   <tr valign="top"> 
     <td class="fullImgTableImgCell">
     <pre><code>
-   rbuf = malloc(sizeof(hobj_ref_t)*SPACE1_DIM1);
+    rbuf = malloc(sizeof(hobj_ref_t)*SPACE1_DIM1);
 
-  /* Read selection from disk */
- ret=H5Dread(dataset,H5T_STD_REF_OBJ,H5S_ALL,H5S_ALL,H5P_DEFAULT,rbuf);
+    /* Read selection from disk */
+    ret=H5Dread(dataset, H5T_STD_REF_OBJ, H5S_ALL, H5S_ALL, H5P_DEFAULT, rbuf);
 
     /* Open dataset object */
-    dset2 = H5Rdereference(dataset,H5R_OBJECT,&rbuf[0]);
+    dset2 = H5Rdereference(dataset, H5R_OBJECT, &rbuf[0]);
     </code></pre>
     </td>
   </tr>
   <tr> 
     <td align="left" class="fullImgTableCapCell"> 
-    <span class="figureNumber">Example 31. Read a dataset with a reference 
+    <span class="figureNumber">Example 32. Read a dataset with a reference 
     datatype<!-- formerly Figure 38 --></span></td>
   </tr>
 </table>
@@ -5329,13 +5332,14 @@ short val;
      H5Tenum_insert(hdf_en_colors, &ldquo;WHITE&rdquo;, (val=3,&val));
      H5Tenum_insert(hdf_en_colors, &ldquo;BLACK&rdquo;, (val=4,&val));
 
-    H5Dcreate(fileid,spaceid,hdf_en_colors,H5P_DEFAULT);
+    H5Dcreate(fileid, datasetname, hdf_en_colors, spaceid, H5P_DEFAULT, 
+        H5P_DEFAULT, H5P_DEFAULT);
     </code></pre>
     </td>
   </tr>
   <tr> 
     <td align="left" class="fullImgTableCapCell"> 
-    <span class="figureNumber">Example 32. Create an enumeration with five 
+    <span class="figureNumber">Example 33. Create an enumeration with five 
     elements<!-- formerly Figure 39 --></span></td>
   </tr>
 </table>
@@ -5592,16 +5596,17 @@ document.writeln ("
 
    filler = -1;
    plist_id = H5Pcreate(H5P_DATASET_CREATE);
-   H5Pset_fill_value(plist,H5T_NATIVE_INT,&filler);
+   H5Pset_fill_value(plist, H5T_NATIVE_INT, &filler);
 
    /* Create the dataset with fill value &lsquo;-1&rsquo;. */
-   dataset_id = H5Dcreate(file_id, &ldquo;/dset&rdquo;, H5T_STD_I32BE, dataspace_id, plist);
+   dataset_id = H5Dcreate(file_id, &ldquo;/dset&rdquo;, H5T_STD_I32BE, 
+       dataspace_id, H5P_DEFAULT, plist, H5P_DEFAULT);
     </code></pre>
     </td>
   </tr>
   <tr> 
     <td align="left" class="fullImgTableCapCell"> 
-    <span class="figureNumber">Example 33. Create a dataset with a 
+    <span class="figureNumber">Example 34. Create a dataset with a 
     fill value of -1<!-- formerly Figure 41 --></span></td>
   </tr>
 </table>
@@ -5636,13 +5641,14 @@ document.writeln ("
     H5Pset_fill_value(plist_id, s1_tid, &filler);
 
     /* Create the dataset with fill value (-1, &lsquo;*&rsquo;, -2.0). */
-    dataset = H5Dcreate(file, DATASETNAME, s1_tid, space, plist_id);
+    dataset = H5Dcreate(file, datasetname, s1_tid, space, H5P_DEFAULT, 
+        plist_id, H5P_DEFAULT);
     </code></pre>
     </td>
   </tr>
   <tr> 
     <td align="left" class="fullImgTableCapCell"> 
-    <span class="figureNumber">Example 34. Create a fill value for a 
+    <span class="figureNumber">Example 35. Create a fill value for a 
     compound datatype<!-- formerly Figure 42 --></span></td>
   </tr>
 </table>
@@ -5678,7 +5684,7 @@ document.writeln ("
    hid_t plist2;
    int filler;
    
-   dataset_id = H5Dopen(file_id, &ldquo;/dset&rdquo; );
+   dataset_id = H5Dopen(file_id, &ldquo;/dset&rdquo;, H5P_DEFAULT);
    plist2 = H5Dget_create_plist(dataset_id);
 
    H5Pget_fill_value(plist, H5T_NATIVE_INT, &filler);
@@ -5689,7 +5695,7 @@ document.writeln ("
   </tr>
   <tr> 
     <td align="left" class="fullImgTableCapCell"> 
-    <span class="figureNumber">Example 35. Retrieve a fill value
+    <span class="figureNumber">Example 36. Retrieve a fill value
     <!-- formerly Figure 43 --></span></td>
   </tr>
 </table>
@@ -5714,7 +5720,7 @@ document.writeln ("
     <pre><code>
     char *       fillbuf;
     int sz;
-    dataset = H5Dopen( file, DATASETNAME);
+    dataset = H5Dopen( file, DATASETNAME, H5P_DEFAULT);
 
     s1_tid = H5Dget_type(dataset);
 
@@ -5734,7 +5740,7 @@ document.writeln ("
   </tr>
   <tr> 
     <td align="left" class="fullImgTableCapCell"> 
-    <span class="figureNumber">Example 36. Read the fill value for a 
+    <span class="figureNumber">Example 37. Read the fill value for a 
     compound datatype<!-- formerly Figure 44 --></span></td>
   </tr>
 </table>
@@ -5887,7 +5893,7 @@ document.writeln ("
     H5Tinsert(s2_tid, &ldquo;f2&rdquo;, HOFFSET(s2_t, f2), H5T_NATIVE_FLOAT);
 
     /* Create a datatype for an Array of integers */
-    s3_tid = H5Tarray_create(H5T_NATIVE_INT, RANK, dim, NULL);
+    s3_tid = H5Tarray_create(H5T_NATIVE_INT, RANK, dim);
 
     /* Create a datatype for a String of 25 characters */
     s4_tid = H5Tcopy(H5T_C_S1);
@@ -5915,13 +5921,14 @@ document.writeln ("
     /* 
      * Create the dataset with this datatype.
      */
-    dataset = H5Dcreate(file, DATASETNAME, s5_tid, space, H5P_DEFAULT);
+    dataset = H5Dcreate(file, DATASETNAME, s5_tid, space, H5P_DEFAULT, 
+        H5P_DEFAULT, H5P_DEFAULT);
     </code></pre>
     </td>
   </tr>
   <tr> 
     <td align="left" class="fullImgTableCapCell"> <span class="figureNumber">
-    Example 36. Create a compound datatype with four members
+    Example 38. Create a compound datatype with four members
     <!-- formerly Figure 46 --></span></td>
   </tr>
 </table>
@@ -5978,7 +5985,7 @@ document.writeln ("
   </tr>
   <tr> 
     <td align="left" class="fullImgTableCapCell"> 
-    <span class="figureNumber">Example 37. Output from h5dump for the 
+    <span class="figureNumber">Example 39. Output from h5dump for the 
     compound datatype<!-- formerly Figure 48 --></span></td>
   </tr>
 </table>
@@ -6284,7 +6291,7 @@ document.writeln ("
                   H5Tget_member_name(s1_tid,i),
                   H5Tget_member_offset(s1_tid,i),
                    sz2);
-                  H5Tget_array_dims(s2_tid,dim,NULL);
+                  H5Tget_array_dims(s2_tid,dim);
                    s3_tid = H5Tget_super(s2_tid);
                   /* Etc., analyze the base type of the array */
         	} else {
@@ -6301,7 +6308,7 @@ document.writeln ("
   </tr>
   <tr> 
     <td align="left" class="fullImgTableCapCell"> 
-    <span class="figureNumber">Example 38. Analyzing a compound datatype 
+    <span class="figureNumber">Example 40. Analyzing a compound datatype 
     and its members<!-- formerly Figure 52--></span></td>
   </tr>
 </table>
@@ -6439,19 +6446,23 @@ document.writeln ("
     <td class="fullImgTableImgCell"> <pre><code>
  hid_t t1 = ...some transient type...;
  H5Tcommit (file, &ldquo;shared_type&rdquo;, t1);
- hid_t dset1 = H5Dcreate (file, &ldquo;dset1&rdquo;, t1, space, H5P_DEFAULT);
- hid_t dset2 = H5Dcreate (file, &ldquo;dset2&rdquo;, t1, space, H5P_DEFAULT);
+ hid_t dset1 = H5Dcreate (file, &ldquo;dset1&rdquo;, t1, space, H5P_DEFAULT, 
+     H5P_DEFAULT, H5P_DEFAULT);
+ hid_t dset2 = H5Dcreate (file, &ldquo;dset2&rdquo;, t1, space, H5P_DEFAULT, 
+     H5P_DEFAULT, H5P_DEFAULT);
                
 
- hid_t dset1 = H5Dopen (file, &ldquo;dset1&rdquo;);
+ hid_t dset1 = H5Dopen (file, &ldquo;dset1&rdquo;, H5P_DEFAULT);
  hid_t t2 = H5Dget_type (dset1);
- hid_t dset3 = H5Dcreate (file, &ldquo;dset3&rdquo;, t2, space, H5P_DEFAULT);
- hid_t dset4 = H5Dcreate (file, &ldquo;dset4&rdquo;, t2, space, H5P_DEFAULT);
+ hid_t dset3 = H5Dcreate (file, &ldquo;dset3&rdquo;, t2, space, H5P_DEFAULT, 
+     H5P_DEFAULT, H5P_DEFAULT);
+ hid_t dset4 = H5Dcreate (file, &ldquo;dset4&rdquo;, t2, space, H5P_DEFAULT, 
+     H5P_DEFAULT, H5P_DEFAULT);
     </code></pre> </td>
   </tr>
   <tr> 
     <td align="left" class="fullImgTableCapCell"> <span class="figureNumber">
-    Example 39. Create a shareable datatype
+    Example 41. Create a shareable datatype
     <!-- formerly Figure 55 --></span></td>
   </tr>
 </table>
@@ -6486,7 +6497,8 @@ document.writeln ("
   </tr>
   <tr valign="top"> 
     <td class="ColumnLeftCell"> <p><code>herr_t H5Tcommit (hid_t location, 
-    const char *name, hid_t type)</code></td>
+    const char *name, hid_t type, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT)
+    </code></td>
     <td class="ColumnRightCell"> <p>A transient datatype (not immutable) can 
     be committed to a file and turned into a named datatype by calling this 
     function. The location is either a file or group identifier and when 
@@ -6634,7 +6646,7 @@ document.writeln ("
   </tr>
   <tr> 
     <td align="left" class="fullImgTableCapCell"> 
-    <span class="figureNumber">Example 40. Specify the destination datatype 
+    <span class="figureNumber">Example 42. Specify the destination datatype 
     with <code>H5Dread</code>
     <!-- formerly Figure 56 --></span></td>
   </tr>
@@ -6931,7 +6943,7 @@ document.writeln ("
   <tr> 
     <td align="left" class="fullImgTableCapCell"> 
     <span class="figureNumber">
-    Example 41. Create an aligned and packed compound datatype 
+    Example 43. Create an aligned and packed compound datatype 
     <!-- formerly Figure 59 --></span></td>
   </tr>
 </table>
@@ -7003,7 +7015,7 @@ document.writeln ("
   <tr> 
     <td align="left" class="fullImgTableCapCell"> 
     <span class="figureNumber">
-    Example 42. Transfer some fields of a compound datatype
+    Example 44. Transfer some fields of a compound datatype
     <!-- formerly Figure 61 --></span></td>
   </tr>
 </table>
@@ -7161,7 +7173,7 @@ opq_tag ::= “&lt;string&gt;”
   <tr> 
     <td align="left" class="fullImgTableCapCell"> 
     <span class="figureNumber">
-    Example 43. 
+    Example 45. 
     <!-- formerly Figure 63: -->
     The definition of HDF5 datatypes from the 
     <a href="../ddl.html" target="ExtWin"><cite>HDF5 DDL</cite></a></span></td>
@@ -7191,7 +7203,7 @@ opq_tag ::= “&lt;string&gt;”
   <tr> 
     <td align="left" class="fullImgTableCapCell"> 
     <span class="figureNumber">
-    Example 44. 
+    Example 46. 
     <!-- formerly Figure 64: -->
     Old definitions of the opaque and compound datatypes 
     </span></td>
@@ -7225,7 +7237,7 @@ if((dtype = H5LTtext_to_dtype(&ldquo;H5T_STRING {
   <tr> 
     <td align="left" class="fullImgTableCapCell"> 
     <span class="figureNumber">
-    Example 45. 
+    Example 47. 
     <!-- formerly Figure 65: -->
     Creating a variable-length string datatype from a text description</span></td>
   </tr>
@@ -7261,7 +7273,7 @@ if((dtype = H5LTtext_to_dtype(&ldquo;H5T_ARRAY { [5][7][13] H5T_ARRAY
   <tr> 
     <td align="left" class="fullImgTableCapCell"> 
     <span class="figureNumber">
-    Example 46. 
+    Example 48. 
     <!-- formerly Figure 66: -->
     Creating a complex array datatype from a text description</span></td>
   </tr>
