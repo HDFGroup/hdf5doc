@@ -1526,9 +1526,9 @@ document.writeln ("
   hid_t file;
   file = H5Fopen(....);
 
-  group = H5Gcreate(file, "/Data", 0);
-  group_new1 = H5Gcreate(file, "/Data/Data_new1", 0);
-  group_new2 = H5Gcreate(group, "Data_new2", 0);
+  group = H5Gcreate(file, "/Data", H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+  group_new1 = H5Gcreate(file, "/Data/Data_new1", H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+  group_new2 = H5Gcreate(group, "Data_new2", H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
 </pre>
 </td></tr>
 <tr>
@@ -1597,10 +1597,10 @@ document.writeln ("
 		<tr valign="top">
 <td class="fullImgTableImgCell">
 <pre>
-  group = H5Gopen(file, "Data");
-  dataset1 = H5Dopen(group, "CData");
+  group = H5Gopen(file, "Data", H5P_DEFAULT);
+  dataset1 = H5Dopen(group, "CData", H5P_DEFAULT);
   
-  dataset2 = H5Dopen(file, "/Data/CData");
+  dataset2 = H5Dopen(file, "/Data/CData", H5P_DEFAULT);
 </pre>
 </td></tr>
 <tr>
@@ -1630,11 +1630,11 @@ document.writeln ("
 <pre>
    dataspace = H5Screate_simple(RANK, dims, NULL);
    dataset1 = H5Dcreate(file, "/Data/CData", H5T_NATIVE_INT,
-                     dataspace, H5P_DEFAULT);
+                     dataspace, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
 
-   group = H5Gopen(file, "Data");
+   group = H5Gopen(file, "Data", H5P_DEFAULT);
    dataset2 = H5Dcreate(group, "Cdata2", H5T_NATIVE_INT,
-                     dataspace, plist);
+                     dataspace, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
 </pre>
 </td></tr>
 <tr>
@@ -1737,10 +1737,11 @@ document.writeln ("
 		<tr valign="top">
 <td class="fullImgTableImgCell">
 <pre>
-    status = H5Lcreate_hard(Data_loc_id, "Data", DataLink_loc_id, "Data_link", H5P_DEFAULT, H5P_DEFAULT)
+    status = H5Lcreate_hard(Data_loc_id, "Data", DataLink_loc_id, "Data_link", 
+               H5P_DEFAULT, H5P_DEFAULT)
 
-    dataset1 = H5Dopen(file, "/Data_link/CData");
-    dataset2 = H5Dopen(file, "/Data/CData");
+    dataset1 = H5Dopen(file, "/Data_link/CData", H5P_DEFAULT);
+    dataset2 = H5Dopen(file, "/Data/CData", H5P_DEFAULT);
 </pre>
 </td></tr>
 <tr>
@@ -1776,9 +1777,9 @@ document.writeln ("
 <pre>
     status = H5Ldelete(Data_loc_id, "Data", H5P_DEFAULT);
 
-    dataset1 = H5Dopen(file, "/Data_link/CData");
+    dataset1 = H5Dopen(file, "/Data_link/CData", H5P_DEFAULT);
                /*  This call should succeed; all path component still exist*/
-    dataset2 = H5Dopen(file, "/Data/CData");  
+    dataset2 = H5Dopen(file, "/Data/CData", H5P_DEFAULT);  
                /*  This call will fail; the path component '/Data' has been deleted*/
 </pre>
 </td></tr>
@@ -1857,7 +1858,7 @@ document.writeln ("
     status = H5Lcreate_soft(path_to_target, link_loc_id, "Soft2", H5P_DEFAULT, H5P_DEFAULT);
     status = H5Lcreate_soft(path_to_target, link_loc_id, "Soft3", H5P_DEFAULT, H5P_DEFAULT);
 
-    dataset = H5Dopen(file, "/Soft2/CData");
+    dataset = H5Dopen(file, "/Soft2/CData", H5P_DEFAULT);
 </pre>
 </td></tr>
 <tr>
