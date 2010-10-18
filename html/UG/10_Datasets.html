@@ -1270,7 +1270,8 @@ document.writeln ("
       * Create a new dataset within the file using defined 
       * dataspace and datatype. No properties are set.
       */
-     dataset = H5Dcreate(file, "/dset", datatype, dataspace, H5P_DEFAULT);
+     dataset = H5Dcreate(file, "/dset", datatype, dataspace, H5P_DEFAULT, 
+                  H5P_DEFAULT, H5P_DEFAULT);
 
      H5Dclose(dataset);
      H5Sclose(dataspace);
@@ -1316,7 +1317,8 @@ document.writeln ("
      status = H5Pset_fill_value(plist,datatype, &fillval);
 
     /* Same as above, but use the property list */
-     dataset = H5Dcreate(file, "/dset", datatype, dataspace, plist);
+     dataset = H5Dcreate(file, "/dset", datatype, dataspace, H5P_DEFAULT, 
+                 plist, H5P_DEFAULT);
 
      H5Dclose(dataset);
      H5Sclose(dataspace);
@@ -1552,7 +1554,7 @@ document.writeln ("
    file_id = H5Fopen("dset.h5", H5F_ACC_RDWR, H5P_DEFAULT);
 
    /* Open an existing dataset. */
-   dataset_id = H5Dopen(file_id, "/dset");
+   dataset_id = H5Dopen(file_id, "/dset", H5P_DEFAULT);
 
    /* Write the entire dataset, using 'dset_data': 
          memory type is 'native int'
@@ -1600,7 +1602,7 @@ document.writeln ("
 
    file_id = H5Fopen("dset.h5", H5F_ACC_RDWR, H5P_DEFAULT);
 
-   dataset_id = H5Dopen(file_id, "/dset");
+   dataset_id = H5Dopen(file_id, "/dset", H5P_DEFAULT);
 
    /*
      * Example: set type conversion buffer to 64MB
@@ -1683,7 +1685,7 @@ document.writeln ("
    file_id = H5Fopen("dset.h5", H5F_ACC_RDWR, H5P_DEFAULT);
 
    /* Open an existing dataset. */
-   dataset_id = H5Dopen(file_id, "/dset");
+   dataset_id = H5Dopen(file_id, "/dset", H5P_DEFAULT);
 
    /* read the entire dataset, into 'dset_data': 
          memory type is 'native int'
@@ -1773,7 +1775,7 @@ document.writeln ("
    file_id = H5Fopen("dset.h5", H5F_ACC_RDWR, H5P_DEFAULT);
 
    /* Open an existing dataset. */
-   dataset_id = H5Dopen(file_id, "/dset");
+   dataset_id = H5Dopen(file_id, "/dset", H5P_DEFAULT);
 
    dspace_id = H5Dget_space(dataset_id);
    dtype_id = H5Dget_type(dataset_id);
@@ -2725,7 +2727,7 @@ document.writeln ("
    file_id = H5Fopen("dset.h5", H5F_ACC_RDWR, H5P_DEFAULT);
 
    /* Open an existing dataset. */
-   dataset_id = H5Dopen(file_id, "/dset");
+   dataset_id = H5Dopen(file_id, "/dset", H5P_DEFAULT);
 
    /* Example:  dataset is 2 x 3, each dimension is UNLIMITED */
    /* extend to 2 x 7 */
@@ -4152,9 +4154,9 @@ int main(void)
    * be different from the format used in the application's
    * memory.
    */
-   if((dataset = H5Dcreate2 (file, DATASET_NAME, datatype,
-                            dataspace, H5P_DEFAULT, 
-                            dset_create_props, H5P_DEFAULT))&lt;0) {
+   if((dataset = H5Dcreate(file, DATASET_NAME, datatype,
+                          dataspace, H5P_DEFAULT, 
+                          dset_create_props, H5P_DEFAULT))&lt;0) {
       printf("Error: fail to create dataset\n");
       return -1;
    }
@@ -4176,7 +4178,7 @@ int main(void)
    H5Dclose (dataset);
 
 
-   if((dataset = H5Dopen2(file, DATASET_NAME, H5P_DEFAULT))&lt;0) {
+   if((dataset = H5Dopen(file, DATASET_NAME, H5P_DEFAULT))&lt;0) {
       printf("Error: fail to open dataset\n");
       return -1;
    }
@@ -4357,9 +4359,9 @@ int main(void)
    * be different from the format used in the application's
    * memory.
    */
-   if((dataset = H5Dcreate2 (file, DATASET_NAME, datatype,
-                            dataspace, H5P_DEFAULT, 
-                            dset_creat_plists, H5P_DEFAULT))&lt;0) {
+   if((dataset = H5Dcreate(file, DATASET_NAME, datatype,
+                          dataspace, H5P_DEFAULT, 
+                          dset_creat_plists, H5P_DEFAULT))&lt;0) {
       printf("Error: fail to create dataset\n");
       return -1;
    }
@@ -4381,7 +4383,7 @@ int main(void)
    H5Dclose (dataset);
 
 
-   if((dataset = H5Dopen2(file, DATASET_NAME, H5P_DEFAULT))&lt;0) {
+   if((dataset = H5Dopen(file, DATASET_NAME, H5P_DEFAULT))&lt;0) {
       printf("Error: fail to open dataset\n");
       return -1;
    }
@@ -4791,9 +4793,9 @@ int main(void)
    * dataset access property list parameters are passed 
    * with default values.
    */
-   if((dataset = H5Dcreate2 (file, DATASET_NAME, datatype,
-                            dataspace, H5P_DEFAULT,
-                            dset_create_props, H5P_DEFAULT))&lt;0) {
+   if((dataset = H5Dcreate (file, DATASET_NAME, datatype,
+                           dataspace, H5P_DEFAULT,
+                           dset_create_props, H5P_DEFAULT))&lt;0) {
       printf("Error: fail to create dataset\n");
       return -1;
    }
@@ -4811,7 +4813,7 @@ int main(void)
 
    H5Dclose (dataset);
 
-   if((dataset = H5Dopen2(file, DATASET_NAME, H5P_DEFAULT))&lt;0) {
+   if((dataset = H5Dopen(file, DATASET_NAME, H5P_DEFAULT))&lt;0) {
       printf("Error: fail to open dataset\n");
       return -1;
    }   
@@ -4947,7 +4949,7 @@ int main(void)
    * or may not be different from the format used in the 
    * application's memory.
    */
-   if((dataset = H5Dcreate2 (file, DATASET_NAME, datatype,
+   if((dataset = H5Dcreate (file, DATASET_NAME, datatype,
                             dataspace, H5P_DEFAULT, 
                             dset_create_props, H5P_DEFAULT))&lt;0) {
       printf("Error: fail to create dataset\n");
@@ -4967,7 +4969,7 @@ int main(void)
 
    H5Dclose (dataset);
 
-   if((dataset = H5Dopen2(file, DATASET_NAME, H5P_DEFAULT))&lt;0) {
+   if((dataset = H5Dopen(file, DATASET_NAME, H5P_DEFAULT))&lt;0) {
       printf("Error: fail to open dataset\n");
       return -1;
    }   
