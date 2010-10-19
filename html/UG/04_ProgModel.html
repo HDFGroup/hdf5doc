@@ -539,6 +539,39 @@ document.writeln ("
   </tr>
 </table>
 
+<a name="ClosingAFileNotes">
+<h4>How Closing a File Effects Other Open Structural Elements</h4></a>
+<p>Every structural element in an HDF5 file can be opened, and these 
+elements can be opened more than once. Elements range in size from 
+the entire file down to attributes. When an element is opened, the 
+HDF5 Library returns a unique identifier to the application. Every 
+element that is opened must be closed. If an element was opened more 
+than once, each identifier that was returned to the application must 
+be closed. For example, if a dataset was opened twice, both dataset 
+identifiers must be released (closed) before the dataset can be 
+considered closed. Suppose an application has opened a file, a group in 
+the file, and two datasets in the group. In order for the file to be 
+totally closed, the file, group, and datasets must each be closed. 
+Closing the file before the group or the datasets will not effect the 
+state of the group or datasets: the group and datasets will still be 
+open.</p>
+
+<p>There are several exceptions to the above general rule. One is when 
+the <code>H5close</code> function is used. <code>H5close</code> causes a 
+general shutdown of the library: all data is written to disk, all 
+identifiers are closed, and all memory used by the library is 
+cleaned up. Another exception occurs on parallel processing systems. 
+Suppose on a parallel system an application has opened a file, a 
+group in the file, and two datasets in the group. If the application 
+uses the <code>H5Fclose</code> function to close the file, the call 
+will fail with an error. The open group and datasets must be closed 
+before the file can be closed. A third exception is when the file 
+access property list includes the property <code>H5F_CLOSE_STRONG</code>. 
+This property closes any open elements when the file is closed with 
+<code>H5Fclose</code>. For more information, see the 
+<a href="../RM/RM_H5P.html#Property-SetFcloseDegree">
+<code>H5Pset_fclose_degree</code></a> function in the 
+<cite>HDF5 Reference Manual</cite>.</a></p>
 
 <a name="WriteRead">
 <h4>2.4. Writing or Reading a Dataset to or from a File</h4></a>
