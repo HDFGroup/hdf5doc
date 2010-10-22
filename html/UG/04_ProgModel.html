@@ -418,7 +418,7 @@ document.writeln ("
   <tr valign="top"> 
     <td class="fullImgTableImgCell">
     <pre><code>
-    Hid_t       file;                 /* declare file identifier */
+    hid_t       file;                 /* declare file identifier */
     /*
     * Create a new file using H5ACC_TRUNC 
     * to truncate and overwrite any file of the same name,
@@ -1411,13 +1411,13 @@ This property closes any open elements when the file is closed with
   <tr valign="top"> 
     <td class="fullImgTableImgCell">
     <pre><code>
-    Hid_t cparms; 
+    hid_t cparms; 
     hsize_t chunk_dims[2] ={2, 5};
     /* 
      * Modify dataset creation properties to enable chunking.
      */
     cparms = H5Pcreate (H5P_DATASET_CREATE);
-    status = H5Pset_chunk( cparms, RANK, chunk_dims);
+    status = H5Pset_chunk(cparms, RANK, chunk_dims);
     </code></pre></td>
   </tr>
   <tr> 
@@ -1442,7 +1442,7 @@ This property closes any open elements when the file is closed with
      * creation properties.
      */
     dataset = H5Dcreate(file, DATASETNAME, H5T_NATIVE_INT, dataspace,
-                cparms, H5P_DEFAULT, H5P_DEFAULT);
+                H5P_DEFAULT, cparms, H5P_DEFAULT);
     </code></pre></td>
   </tr>
   <tr> 
@@ -1602,7 +1602,7 @@ This property closes any open elements when the file is closed with
    dataspace = H5Screate_simple(RANK, dims, NULL);
    plist     = H5Pcreate(H5P_DATASET_CREATE);
                H5Pset_chunk(plist, 2, cdims);
-               H5Pset_deflate( plist, 6);
+               H5Pset_deflate(plist, 6);
    dataset = H5Dcreate(file, "/Data/Compressed_Data", 
                  H5T_NATIVE_INT, dataspace, H5P_DEFAULT, plist, H5P_DEFAULT);
     </code></pre></td>
@@ -1670,7 +1670,7 @@ This property closes any open elements when the file is closed with
     /*
      * Open the dataset "Compressed_Data" in the "Data" group. 
      */
-    dataset = H5Dopen(file, "/Data/Compressed_Data");
+    dataset = H5Dopen(file, "/Data/Compressed_Data", H5P_DEFAULT);
     </code></pre></td>
   </tr>
   <tr> 
@@ -1752,7 +1752,7 @@ This property closes any open elements when the file is closed with
      */
     aid2  = H5Screate(H5S_SCALAR);
     attr2 = H5Acreate(dataset, "Integer attribute", H5T_NATIVE_INT, aid2,
-                      H5P_DEFAULT);
+                      H5P_DEFAULT, H5P_DEFAULT);
 
     /*
      * Write scalar attribute.
@@ -1779,7 +1779,7 @@ This property closes any open elements when the file is closed with
 
   <p>To read a scalar attribute whose name and datatype 
   are known, first open the attribute using 
-  <code>H5Aopen_name</code>, and then use <code>H5Aread</code> 
+  <code>H5Aopen_by_name</code>, and then use <code>H5Aread</code> 
   to get its value. For example, the code shown below reads a scalar 
   attribute called <code>Integer_attribute</code> whose 
   datatype is a native integer and whose parent dataset 
@@ -1797,7 +1797,8 @@ This property closes any open elements when the file is closed with
      * Attach to the scalar attribute using attribute name, then read and 
      * display its value.
      */
-    attr = H5Aopen_name(dataset,"Integer attribute");
+    attr = H5Aopen_by_name(file_id, dataset_name, "Integer attribute",
+                          H5P_DEFAULT, H5P_DEFAULT);
     ret  = H5Aread(attr, H5T_NATIVE_INT, &point_out);
     printf("The value of the attribute \"Integer attribute\" is %d \n", point_out); 
     ret =  H5Aclose(attr);
@@ -1816,7 +1817,7 @@ This property closes any open elements when the file is closed with
   obtain information about the attribute such as its name, 
   datatype, rank, and dimensions, and then read the attribute. The 
   following code opens an attribute by its index value using 
-  <code>H5Aopen_index</code>, and then it reads in information about 
+  <code>H5Aopen_by_idx</code>, and then it reads in information about 
   the datatype with <code>H5Aread</code>.</p> 
 
 <table x-use-null-cells
@@ -1829,7 +1830,8 @@ This property closes any open elements when the file is closed with
     /*
      * Attach to the string attribute using its index, then read and display the value.
      */
-    attr =  H5Aopen_idx(dataset, 2);
+    attr =  H5Aopen_by_idx(file_id, dataset_name, index_type, iter_order, 2,
+                          H5P_DEFAULT, H5P_DEFAULT);
     atype = H5Tcopy(H5T_C_S1);
             H5Tset_size(atype, 4);
     ret   = H5Aread(attr, atype, string_out);
