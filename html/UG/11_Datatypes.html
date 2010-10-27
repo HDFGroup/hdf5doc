@@ -157,7 +157,7 @@ document.writeln ('\
 </a>
 
 
-<h4>1.1 Introduction and Definitions</h4>
+<h4>1.1. Introduction and Definitions</h4>
 
   <p>An HDF5 dataset is an array of data elements, arranged according to the 
   specifications of the dataspace.  In general, a data element is the smallest 
@@ -201,7 +201,8 @@ document.writeln ('\
 <!-- NEW PAGE -->
   <p>An HDF5 datatype describes one specific layout of bits. A dataset has a 
   single datatype which applies to every data element. When a dataset is 
-  created, the storage datatype is defined, the datatype cannot be changed.</p>
+  created, the storage datatype is defined. After the dataset or attribute 
+  is created, the datatype cannot be changed.</p>
   
 <ul>
     <li>The datatype describes the storage layout of a single data element</li>
@@ -243,22 +244,23 @@ document.writeln ('\
   <!-- date-times, 
             (TIME REFERENCES COMMENTED OUT 6 FEB 2006,
             UNTIL TIME DATATYPE IS PROPERLY SUPPORTED IN THE LIBRARY) -->
-  enumerations, strings, 
-  bit strings, and references (pointers to objects in the HDF5 file). 
-  HDF5 supports several classes of composite datatypes, which are compose 
-  one or more other datatypes. In addition to the standard predefined datatypes, 
-  users can define new datatypes within the datatype classes.</p>
+  enumerations, strings, bit strings, and references (pointers to objects 
+  in the HDF5 file). HDF5 supports several classes of composite datatypes 
+  which are combinations of one or more other datatypes. In addition to 
+  the standard predefined datatypes, users can define new datatypes 
+  within the datatype classes.</p>
 
   <p>The HDF5 datatype model is very general and flexible:</p>
   
 <ul>
     <li>For common simple purposes, only predefined types will be needed</li>
-    <li>Datatypes can be composed to create complex structured datatypes</li>
+    <li>Datatypes can be combined to create complex structured datatypes</li>
     <li>If needed, users can define custom atomic datatypes</li>
+    <li>Committed datatypes can be shared by datasets or attributes</li>
 </ul>
 
 <!-- NEW PAGE -->
-<h4>1.2 HDF5 Datatype Model</h4>
+<h4>1.2. HDF5 Datatype Model</h4>
 
   <p>The HDF5 Library implements an object-oriented model of datatypes. 
   HDF5 datatypes are organized as a logical set of base types, or datatype 
@@ -279,32 +281,33 @@ document.writeln ('\
   <p>A datatype is derived from one datatype class: a given datatype has 
   a specific value for the datatype properties defined by the class. 
   For example, for 32-bit signed integers, stored big-endian, the HDF5 
-  datatype is a sub-type of integer, with the properties set to: 
-  signed=1, size=4 (bytes), byte-order=BE.</p>
+  datatype is a sub-type of integer with the properties set to 
+  <code>signed=1</code>, <code>size=4</code> (bytes), and 
+  <code>byte-order=BE</code>.</p>
   
-  <p>The HDF5 datatype API provides methods to create datatypes of different 
-  datatype classes, to set the datatype properties of a new datatype, and to 
-  discover the datatype properties of an existing datatype.</p>
+  <p>The HDF5 datatype API (H5T functions) provides methods to create 
+  datatypes of different datatype classes, to set the datatype properties 
+  of a new datatype, and to discover the datatype properties of an 
+  existing datatype.</p>
   
   <p>The datatype for a dataset is stored in the HDF5 file as part of 
-  the metadata for the dataset.  A datatype can be shared by more 
-  than one dataset 
-<!-- editingComment
-  <span class="editingComment">[ [ [
-  (Attribute?) 
-  ] ] ]</span>
--->
-  in the file. A datatype can optionally be stored as a named object in the file.</p>
+  the metadata for the dataset.</p>
   
-  <p>When transferring data (e.g., a read or write), the data elements of the 
-  source and destination storage must have compatible types.  As a general rule, 
-  data elements with the same datatype class are compatible, while elements from 
-  different datatype classes are not compatible. When transferring data of one 
-  datatype to another compatible datatype, the HDF5 Library uses the datatype 
-  properties of the source and destination to automatically transform each data 
-  element.  For example, when reading from data stored as 32-bit signed integers, 
-  big-endian into 32-bit signed integers, little-endian, the HDF5 Library will 
-  automatically swap the bytes.</p>
+  <p>A datatype can be shared by more than one dataset in the file if the 
+  datatype is saved to the file with a name. This shareable datatype is known
+  as a committed datatype. In the past, this kind of datatype was called 
+  a named datatype. </p>
+  
+  <p>When transferring data (e.g., a read or write), the data elements of 
+  the source and destination storage must have compatible types.  As a 
+  general rule, data elements with the same datatype class are compatible 
+  while elements from different datatype classes are not compatible. When 
+  transferring data of one datatype to another compatible datatype, the 
+  HDF5 Library uses the datatype properties of the source and 
+  destination to automatically transform each data element.  For 
+  example, when reading from data stored as 32-bit signed integers, 
+  big-endian into 32-bit signed integers, little-endian, the HDF5 
+  Library will automatically swap the bytes.</p>
   
   <p>Thus, data transfer operations (<code>H5Dread</code>, 
   <code>H5Dwrite</code>, <code>H5Aread</code>, <code>H5Awrite</code>) require 
@@ -363,7 +366,7 @@ document.writeln ('\
 </table>
 
 <!-- NEW PAGE -->
-<h4><em>1.2.1 Datatype Classes and Properties</em></h4>
+<h4><em>1.2.1. Datatype Classes and Properties</em></h4>
 
   <p>The figure below shows the HDF5 datatype classes. Each class is 
   defined to have a set of properties which describe the layout of the 
@@ -524,7 +527,7 @@ document.writeln ('\
   <tr valign="top"> 
     <td class="ColumnLeftBottom"> <p>Compound</td>
     <td class="ColumnBottom"> 
-        <p>A Datatype composed of a sequence of Datatypes</td>
+        <p>A Datatype file:///c:/1%20mee/working/hdf5_trunk/html/UG/13_Attributes.html#SpecIssues of a sequence of Datatypes</td>
     <td class="ColumnBottom"> <p>Number of members, member names, member types, 
         member offset, member class, member size, byte order </td>
     <td class="ColumnRightBottom"> <p>&nbsp;</td>
@@ -539,7 +542,7 @@ document.writeln ('\
   ] ] ]</span>
 -->
   
-<h4><em>1.2.2 Predefined Datatypes</em></h4>
+<h4><em>1.2.2. Predefined Datatypes</em></h4>
 
   <p>The HDF5 library predefines a modest number of commonly used datatypes. 
   These types have standard symbolic names of the form 
@@ -976,7 +979,7 @@ document.writeln ("
 <h3 class=pagebefore>2. How Datatypes are Used</h3>
 </a>
 
-<h4>2.1 The Datatype Object and the HDF5 Datatype API</h4>
+<h4>2.1. The Datatype Object and the HDF5 Datatype API</h4>
 
   <p>The HDF5 Library manages datatypes as objects. The HDF5 datatype API 
   manipulates the datatype objects through C function calls.  New datatypes 
@@ -1027,7 +1030,7 @@ document.writeln ("
   </tr>
 </table>
 
-<h4>2.2 Dataset Creation</h4>
+<h4>2.2. Dataset Creation</h4>
 
   <p>All the data elements of a dataset have the same datatype. When a dataset 
   is created, the datatype for the data elements must be specified. The 
@@ -1056,7 +1059,7 @@ document.writeln ("
 </td></tr>
 </table>
 
-<h4>2.3 Data Transfer (Read and Write)</h4>
+<h4>2.3. Data Transfer (Read and Write)</h4>
 
   <p>Probably the most common use of datatypes is to write or read data from a 
   dataset or attribute. In these operations, each data element is transferred 
@@ -1126,7 +1129,7 @@ document.writeln ("
 </td></tr>
 </table>
 
-<h4>2.4 Discovery of Data Format</h4>
+<h4>2.4. Discovery of Data Format</h4>
 
   <p>The HDF5 Library enables a program to determine the datatype class and 
   properties for any datatype. In order to discover the storage format of data 
@@ -1178,7 +1181,7 @@ document.writeln ("
 </td></tr>
 </table>
 
-<h4>2.5 Creating and Using User-defined Datatypes</h4>
+<h4>2.5. Creating and Using User-defined Datatypes</h4>
 
   <p>Most programs will primarily use the predefined datatypes described above, 
   possibly in composite datatypes such as compound or array datatypes.  
@@ -1259,7 +1262,7 @@ document.writeln ("
 	<code>H5Topen<br>h5topen_f</code> 
     </td>
     <td class="functTableCell">
-	Opens a named datatype. The C function is a 
+	Opens a committed datatype. The C function is a 
         macro: see <a href="../RM/APICompatMacros.html">&ldquo;API 
         Compatibility Macros in HDF5.&rdquo;</a>
     </td>
@@ -1269,8 +1272,8 @@ document.writeln ("
 	<code>H5Tcommit<br>h5tcommit_f</code> 
     </td>
     <td class="functTableCell">
-	Commits a transient datatype to a file, creating a new named datatype. 
-        The C function is a 
+	Commits a transient datatype to a file. The datatype is now a 
+        committed datatype. The C function is a 
         macro: see <a href="../RM/APICompatMacros.html">&ldquo;API 
         Compatibility Macros in HDF5.&rdquo;</a>
     </td>
@@ -1280,8 +1283,8 @@ document.writeln ("
 	<code>H5Tcommit_anon<br>h5tcommit_anon_f</code> 
     </td>
     <td class="functTableCell">
-	Commits a transient datatype to a file, creating a new named 
-        datatype, but does not link it into the file structure. 
+	Commits a transient datatype to a file. The datatype is now a 
+        committed datatype, but it is not linked into the file structure. 
     </td>
   </tr>
   <tr valign="top"> 
@@ -1289,7 +1292,7 @@ document.writeln ("
 	<code>H5Tcommitted<br>h5tcommitted_f</code> 
     </td>
     <td class="functTableCell">
-	Determines whether a datatype is a named type or a transient type.
+	Determines whether a datatype is a committed or a transient type.
     </td>
   </tr>
   <tr valign="top"> 
@@ -1388,7 +1391,7 @@ document.writeln ("
     </td>
     <td class="functTableCell">
 	Decode a binary object description of datatype and return a new 
-        object handle. 
+        object identifier. 
     </td>
   </tr>
 
@@ -2150,7 +2153,7 @@ document.writeln ("
 <h3 class=pagebefore>4. The Programming Model</h3>
 </a>
  
-<h4>4.1 Introduction</h4>
+<h4>4.1. Introduction</h4>
 
   <p>The HDF5 Library implements an object-oriented model of datatypes. HDF5 
   datatypes 
@@ -2210,8 +2213,8 @@ document.writeln ("
     <td class="ColumnRightHdr" width="50%"> <p><span class="TableHead">
     Description</span></td>
   <tr valign="top"> 
-    <td class="ColumnLeftCell"> <p><code>hid_t H5Tcreate (H5T_class_t <
-    em>class</em>, size_t <em>size</em>)</code></td>
+    <td class="ColumnLeftCell"> <p><code>hid_t H5Tcreate (H5T_class_t 
+    <em>class</em>, size_t <em>size</em>)</code></td>
     <td class="ColumnRightCell"> <p>Create a new datatype object of 
     datatype class <em>class</em>. The following datatype classes are 
     supported with this function: 
@@ -2233,8 +2236,8 @@ document.writeln ("
   <tr valign="top"> 
     <td class="ColumnLeftCell"> <p><code>hid_t H5Topen (hid_t <em>location</em>, 
         const char *<em>name</em>, H5P_DEFAULT)</code></td>
-    <td class="ColumnRightCell"> <p>Open a named datatype. The named datatype 
-        returned by this function is read-only.</td>
+    <td class="ColumnRightCell"> <p>Open a committed datatype. The 
+        committed datatype returned by this function is read-only.</td>
   </tr>
   <tr valign="top"> 
     <td class="ColumnLeftCell"> <p><code>htri_t H5Tequal (hid_t <em>type1</em>, 
@@ -2256,13 +2259,13 @@ document.writeln ("
     H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT)
     </code></td>
     <td class="ColumnRightCell"> <p>Commit a transient datatype (not immutable) 
-        a file to become a named datatype. Named datatypes can be shared.</td>
+    to a file to become a committed datatype. Committed datatypes can be shared.</td>
   </tr>
   <tr valign="top"> 
     <td class="ColumnLeftCell"> <p><code>htri_t H5Tcommitted (hid_t 
     <em>type</em>)</code></td>
-    <td class="ColumnRightCell"> <p>Test whether the datatype is transient or 
-        commited (named).</td>
+    <td class="ColumnRightCell"> <p>Test whether the datatype is 
+        transient or committed (named).</td>
   </tr>
   <tr valign="top"> 
     <td class="ColumnLeftBottom"> <p><code>herr_t H5Tlock (hid_t 
@@ -2291,22 +2294,17 @@ document.writeln ("
   datatype properties), they will not be considered &lsquo;equal&rsquo;.</p>
   
   <p>A datatype can be written to the file as a first class object 
-  (<code>H5Tcommit</code>). Named datatypes can be used in the same 
-  way as any other datatype. Named datatypes are explained below. </p>
-<!-- editingComment
-  <span class="editingComment">[ [ [
-  in section ?? 
-  ] ] ]</span>
--->
+  (<code>H5Tcommit</code>). This is a committed datatype and can be used 
+  in the same way as any other datatype.</p>
 
 <!-- NEW PAGE -->
-<h4>4.2 Discovery of Datatype Properties</h4>
+<h4>4.2. Discovery of Datatype Properties</h4>
   
   <p>Any HDF5 datatype object can be queried to discover all of its 
   datatype properties. For each datatype class, there are a set of 
   API functions to retrieve the datatype properties for this class. </p>
 
-<h4>4.2.1 Properties of Atomic Datatypes</h4>
+<h4>4.2.1. Properties of Atomic Datatypes</h4>
   
   <p>Table 9 lists the functions to discover the properties of atomic 
   datatypes. Table 10 lists the queries relevant to specific numeric 
@@ -2512,7 +2510,7 @@ document.writeln ("
 <br>
 
 <!-- NEW PAGE -->
-<h4><em>4.2.2 Properties of Composite Datatypes</em></h4>
+<h4><em>4.2.2. Properties of Composite Datatypes</em></h4>
 
   <p>The composite datatype classes can also be analyzed to discover their 
   datatype properties and the datatypes that are members or base types 
@@ -2604,7 +2602,7 @@ document.writeln ("
 </table>
 
 <!-- NEW PAGE -->
-<h4>4.3 Definition of Datatypes</h4>
+<h4>4.3. Definition of Datatypes</h4>
   
   <p>The HDF5 Library enables user programs to create and modify datatypes. The 
   essential steps are: 
@@ -2696,7 +2694,7 @@ document.writeln ("
   User-defined datatypes may also be locked using <code>H5Tlock</code>. </p>
 
 <!-- NEW PAGE -->
-<h4><em>4.3.1 User-defined Atomic Datatypes</em></h4>
+<h4><em>4.3.1. User-defined Atomic Datatypes</em></h4>
   
   <p>Table 15 summarizes the API methods that set properties of atomic 
   types. Table 16 shows properties specific to numeric types, Table 17 
@@ -3458,17 +3456,17 @@ document.writeln ("
   precision first; when decreasing the size one should set the field 
   positions and sizes first. </p>
 
-<h4>4.3.2 Composite Datatypes</h4>
+<h4>4.3.2. Composite Datatypes</h4>
   
   <p>All composite datatypes must be user-defined; 
     there are no predefined composite datatypes. </p>
 
-<h4>4.3.2.1 Compound Datatypes</h4>
+<h4>4.3.2.1. Compound Datatypes</h4>
 
   <p>The subsections below describe how to create a compound datatype 
     and how to write and read data of a compound datatype.
 
-<h4>4.3.2.1.1 Defining Compound Datatypes</h4>
+<h4>4.3.2.1.1. Defining Compound Datatypes</h4>
   
   <p>Compound datatypes are conceptually similar to a C struct or 
     Fortran 95 derived types. The compound datatype defines a contiguous 
@@ -4021,7 +4019,7 @@ typedef struct {
   </tr>
 </table>
 
-<h4>4.3.2.1.2 Creating and Writing Datasets with Compound Datatypes</h4>
+<h4>4.3.2.1.2. Creating and Writing Datasets with Compound Datatypes</h4>
 
   <p>Creating datasets with compound datatypes is similar 
     to creating datasets with any other HDF5 datatypes. But 
@@ -4340,7 +4338,7 @@ GROUP &ldquo;/&rdquo; {
 </table>
 
 <!-- NEW PAGE -->
-<h4>4.3.2.1.3 Reading Datasets with Compound Datatypes</h4>
+<h4>4.3.2.1.3. Reading Datasets with Compound Datatypes</h4>
 
   <p>Reading datasets with compound datatypes may be a 
     challenge. For general applications there is no way to 
@@ -4354,7 +4352,7 @@ GROUP &ldquo;/&rdquo; {
   <dl>    
   <dt>
   <ol>
-    <li>Get the handle of the compound datatype in the file 
+    <li>Get the identifier of the compound datatype in the file 
       with the <code>H5Dget_type</code> call</li>
     <li>Find the number of the compound datatype members 
       with the <code>H5Tget_nmembers</code> call</li>
@@ -4551,7 +4549,7 @@ GROUP &ldquo;/&rdquo; {
 </table>
 
 <!-- NEW PAGE -->
-<h4>4.3.2.2 Array</h4>
+<h4>4.3.2.2. Array</h4>
   
   <p>Many scientific datasets have multiple measurements for each point 
   in a space. There are several natural ways to represent this data, 
@@ -4756,7 +4754,7 @@ GROUP &ldquo;/&rdquo; {
 </table>
 <br />
 <!-- NEW PAGE -->
-<h4>4.3.2.3 Variable-length Datatypes</h4>
+<h4>4.3.2.3. Variable-length Datatypes</h4>
   
   <p>A variable-length (VL) datatype is a one-dimensional sequence of a 
   datatype which are not fixed in length from one dataset location to 
@@ -4981,7 +4979,7 @@ document.writeln ("
 
   <p>Several datatype classes define special types of objects.</p>
   
-<h4>5.1 Strings</h4>
+<h4>5.1. Strings</h4>
 
   <p>Text data is represented by arrays of characters, called strings. 
   Many programming languages support different conventions for storing strings, 
@@ -5216,13 +5214,13 @@ document.writeln ("
   </tr>
 </table>
 <br />
-<h4>5.2 Reference</h4>
+<h4>5.2. Reference</h4>
   
-  <p>In HDF5, objects (i.e. groups, datasets, and named datatypes) are usually 
-  accessed by name. There is another way to access stored objects -- by 
-  reference. There are two reference datatypes, object reference and region 
-  reference. Object reference objects are created with the 
-  <code>H5Rcreate</code> and other calls (cross reference). These 
+  <p>In HDF5, objects (i.e. groups, datasets, and committed datatypes) 
+  are usually accessed by name. There is another way to access stored 
+  objects - by reference. There are two reference datatypes: object 
+  reference and region reference. Object reference objects are created 
+  with <code>H5Rcreate</code> and other calls (cross reference). These 
   objects can be stored and retrieved in a dataset as elements with 
   reference datatype. The first example below <!-- formerly Figure 37 -->
   shows an example of code that creates references to four objects, 
@@ -5260,7 +5258,7 @@ document.writeln ("
     /* Create reference to group */
     ret = H5Rcreate(&wbuf[2], fid1, &ldquo;/Group1&rdquo;, H5R_OBJECT, -1);
 
-    /* Create reference to named datatype */
+    /* Create reference to committed datatype */
     ret = H5Rcreate(&wbuf[3], fid1, &ldquo;/Group1/Datatype1&rdquo;, H5R_OBJECT, -1);
 
     /* Write selection to disk */
@@ -5304,7 +5302,7 @@ document.writeln ("
 </table>
 <br />
 <!-- NEW PAGE -->
-<h4>5.3 ENUM</h4>
+<h4>5.3. ENUM</h4>
   
   <p>The enum datatype implements a set of (name, value) pairs, similar 
   to C/C++ enum.  The values are currently limited to native integer datatypes.  
@@ -5491,7 +5489,7 @@ short val;
   ENUM base datatype and use <code>H5Tconvert</code> on values as they 
   are read from or written to a dataset. </p>
   
-<h4>5.4 Opaque</h4>
+<h4>5.4. Opaque</h4>
   
   <p>In some cases, a user may have data objects that should be stored and 
   retrieved as blobs with no attempt to interpret them.  For example, 
@@ -5507,7 +5505,7 @@ short val;
   a tag to indicate the encryption and the certificate standard.</p>
 
 <!-- NEW PAGE -->
-<h4>5.5 Bitfield</h4>
+<h4>5.5. Bitfield</h4>
   
   <p>Some data is represented as bits, where the number of bits is not an 
   integral byte and the bits are not necessarily interpreted as a standard 
@@ -5534,7 +5532,7 @@ short val;
   containing the bitfield data. </p>
 
 <!--
-<h4>5.6 Time</h4>
+<h4>5.6. Time</h4>
 
   <p>The HDF5 time datatype defines storage layout for various date and 
   time standards. Currently, only Unix "time" and "timeval" structs are 
@@ -5814,7 +5812,7 @@ document.writeln ("
 </table>
 
 <!-- NEW PAGE -->
-<h4>7.1 Creating a Complicated Compound Datatype</h4>
+<h4>7.1. Creating a Complicated Compound Datatype</h4>
   
   <p>To construct a complicated compound datatype, each component is 
   constructed, and then added to the enclosing datatype description. 
@@ -6250,7 +6248,7 @@ document.writeln ("
 </table>
 
 <!-- NEW PAGE -->
-<h4>7.2 Analyzing and Navigating a Compound Datatype</h4>
+<h4>7.2. Analyzing and Navigating a Compound Datatype</h4>
   
   <p>A complicated compound datatype can be analyzed piece by piece to 
   discover the exact storage layout. In the example above, the outer 
@@ -6332,53 +6330,54 @@ document.writeln ("
 <h3 class=pagebefore>8. Life Cycle of the Datatype Object</h3>
 </a>
 
-  <p>Applications programs access HDF5 datatypes through handles. Handles are 
-  obtained by creating a new datatype or by copying or opening an existing 
-  datatype. The handle can be used until it is closed, or the program 
-  exits. See items a and b in the figure below. 
-  <!-- formerly Figure 53a,b --> By default, a datatype object is 
-  <em>transient</em>, and it disappears when it is closed. </p>
+  <p>Application programs access HDF5 datatypes through identifiers. 
+  Identifiers are obtained by creating a new datatype or by copying 
+  or opening an existing datatype. The identifier can be used until 
+  it is closed or until the library shuts down. See items a and b in 
+  the figure below. <!-- formerly Figure 53a,b --> By default, a 
+  datatype is <em>transient</em>, and it disappears when it is closed. </p>
   
   <p>When a dataset or attribute is created (<code>H5Dcreate</code> or 
-  <code>H5Acreate</code>), its datatype object is stored in the HDF5 
-  file as part of the HDF5 dataset or attribute object. See item c in 
+  <code>H5Acreate</code>), its datatype is stored in the HDF5 
+  file as part of the dataset or attribute object. See item c in 
   the figure below. Once an object created, its datatype cannot 
   be changed or deleted. The datatype can be accessed by calling 
   <code>H5Dget_type</code>, <code>H5Aget_type</code>, 
   <code>H5Tget_super</code>, or <code>H5Tget_member_type</code>. 
-  See item d in the figure below. These calls return a handle to a 
+  See item d in the figure below. These calls return an identifier to a 
   <em>transient</em> copy of the datatype of the dataset or attribute 
-  unless the datatype is a named datatype as explained below. </p>
+  unless the datatype is a committed datatype. </p>
   
   <p>Note that when an object is created, the stored datatype is a copy 
   of the transient datatype. If two objects are created with the same 
   datatype, the information is stored in each object with the same 
   effect as if two different datatypes were created and used. </p>
   
-  <p>A transient datatype can be stored (<code>H5Tcommit</code>) in the 
-  HDF5 file as an independent, named object, called a named datatype. 
-  See item e in the figure below. Subsequently, when a named datatype 
+  <p>A transient datatype can be stored using <code>H5Tcommit</code> in the 
+  HDF5 file as an independent, named object, called a committed datatype. 
+  Committed datatypes were formerly known as named datatypes. 
+  See item e in the figure below. Subsequently, when a committed datatype 
   is opened with <code>H5Topen</code> (item f), or is obtained with 
   <code>H5Tget_type</code> or similar call (item k), the return 
-  is a handle to a transient copy of the stored datatype. The handle 
-  can be used in the same way as other datatype handles except that 
-  the named datatype cannot be modified. When a named datatype is 
+  is an identifier to a transient copy of the stored datatype. The identifier 
+  can be used in the same way as other datatype identifiers except that 
+  the committed datatype cannot be modified. When a committed datatype is 
   copied with <code>H5Tcopy</code>, the return is a new, modifiable, 
   transient datatype object (item f). </p>
   
-  <p>When an object is created using a named datatype (<code>H5Dcreate</code>, 
+  <p>When an object is created using a committed datatype (<code>H5Dcreate</code>, 
   <code>H5Acreate</code>), the stored datatype is used without copying 
   it to the object. See item j in the figure below. In this case, if 
-  multiple objects are created using the same named datatype, they 
+  multiple objects are created using the same committed datatype, they 
   all share the exact same datatype object. This saves space and makes 
-  clear that the datatype is shared. Note that a named datatype can 
+  clear that the datatype is shared. Note that a committed datatype can 
   be shared by objects within the same HDF5 file, but not by objects 
   in other files. </p>
   
-  <p>A named datatype can be deleted from the file by calling 
+  <p>A committed datatype can be deleted from the file by calling 
   <code>H5Ldelete</code> which replaces <code>H5Gunlink</code>. 
   See item i in the figure below.  If one or more objects are still using the 
-  datatype, the named datatype cannot be accessed with <code>H5Topen</code>, 
+  datatype, the committed datatype cannot be accessed with <code>H5Topen</code>, 
   but will not be removed from the file until it is no longer used. 
   <code>H5Tget_type</code> and similar calls will return a transient 
   copy of the datatype.</p>
@@ -6400,21 +6399,20 @@ document.writeln ("
   </tr>
 </table>
   
-  <p>Transient datatypes are initially <em>modifiable</em>, its properties 
-  can be changed. Note that when a datatype is copied or when it is written 
-  to the file (when an object is created) or the datatype is used to create 
-  a composite datatype, a copy of the current state of the datatype is 
-  used. If the datatype is then modified, the changes have no effect on 
+  <p>Transient datatypes are initially modifiable. Note that 
+  when a datatype is copied or when it is written to the file (when an 
+  object is created) or the datatype is used to create a composite 
+  datatype, a copy of the current state of the datatype is used. If 
+  the datatype is then modified, the changes have no effect on 
   datasets, attributes, or datatypes that have already been created. 
   See the figure below.</p>
 
   <p>A transient datatype can be made <em>read-only</em> 
-  (<code>H5Tlock</code>), after which it can no longer be changed. 
-  Note that the datatype is still transient, and otherwise does not 
-  change. A datatype that is <em>immutable</em> is <em>read-only</em> 
-  but cannot be closed except when the entire library is closed. 
-  The predefined types such as <code>H5T_NATIVE_INT</code> are 
-  <em>immutable transient</em> types.</p>
+  (<code>H5Tlock</code>). Note that the datatype is still transient, 
+  and otherwise does not change. A datatype that is <em>immutable</em> 
+  is <em>read-only</em> but cannot be closed except when the entire 
+  library is closed. The predefined types such as 
+  <code>H5T_NATIVE_INT</code> are <em>immutable transient</em> types.</p>
   
 <table x-use-null-cells
 		width="600"
@@ -6434,9 +6432,8 @@ document.writeln ("
 </table>
 
   <p>To create two or more datasets that share a common datatype, 
-  one first commits the datatype, giving it a name, 
-  then uses that datatype to create the datasets. 
-  See the example below.</p>
+  first commit the datatype, and then use that datatype to create the 
+  datasets. See the example below.</p>
   
 <table x-use-null-cells
 		width="600"
@@ -6490,29 +6487,29 @@ document.writeln ("
   <tr valign="top"> 
     <td class="ColumnLeftCell"> <p><code>hid_t H5Topen (hid_t location, const 
         char *name)</code></td>
-    <td class="ColumnRightCell"> <p>A named datatype can be opened by calling 
-        this function, which returns a datatype identifier. The identifier 
-        should eventually be released by calling <code>H5Tclose()</code> 
-        to release resources. The named datatype returned by this function 
-        is read-only or a negative value is returned for failure. The 
-        location is either a file or group identifier.</td>
+    <td class="ColumnRightCell"> <p>A committed datatype can be opened by 
+        calling this function, which returns a datatype identifier. The 
+        identifier should eventually be released by calling 
+        <code>H5Tclose()</code> to release resources. The committed 
+        datatype returned by this function is read-only or a negative 
+        value is returned for failure. The location is either a file or 
+        group identifier.</td>
   </tr>
   <tr valign="top"> 
     <td class="ColumnLeftCell"> <p><code>herr_t H5Tcommit (hid_t location, 
     const char *name, hid_t type, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT)
     </code></td>
     <td class="ColumnRightCell"> <p>A transient datatype (not immutable) can 
-    be committed to a file and turned into a named datatype by calling this 
+    be written to a file and turned into a committed datatype by calling this 
     function. The location is either a file or group identifier and when 
-    combined with name refers to a new named datatype.</td>
+    combined with name refers to a new committed datatype.</td>
   </tr>
   <tr valign="top"> 
     <td class="ColumnLeftBottom"> <p><code>htri_t H5Tcommitted 
     (hid_t type)</code></td>
     <td class="ColumnRightBottom"> <p>A type can be queried to determine 
-    if it is a named type or a transient type. If this function returns a 
-    positive value then the type is named (that is, it has been committed 
-    perhaps by some other application). Datasets which return committed 
+    if it is a committed type or a transient type. If this function returns a 
+    positive value then the type is committed. Datasets which return committed 
     datatypes with <code>H5Dget_type()</code> are able to share the 
     datatype with other datasets in the same file.</td>
   </tr>
