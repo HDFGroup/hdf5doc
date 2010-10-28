@@ -132,7 +132,7 @@ document.writeln ('\
  a small metadata object describing the nature and/or 
  intended usage of a 
  <span class="termdefinition">primary data object</span>.
- A primary data object may be a dataset, group, or named datatype.
+ A primary data object may be a dataset, group, or committed datatype.
 </p>
  
 <p>Attributes are assumed to be very small as data objects go, so 
@@ -221,20 +221,20 @@ As such, attributes are opened, read, or written only with H5A functions.
 
 <p>But there are some very important differences:</p>
  <ul>
-    <li>There is no provision for special storage 
-        such as compression or chunking</li>
+    <li>There is no provision for special storage such as 
+    compression or chunking</li>
     <li>There is no partial I/O or sub-setting capability for attribute 
     data</li>
     <li>Attributes cannot be shared</li>
+    <li>Attributes cannot have attributes</li>
     <li>Being small, an attribute is stored in the object header 
         of the object it describes and is thus attached directly to 
         that object</li>
  </ul>
 
- <span class="termemphasis">Large attributes</span>,
- described below in &ldquo;<a href="#SpecIssues">Special Issues</a>&rdquo;, 
- are best stored as separate HDF5 datasets and are not subject to the above 
- limitations.
+ The &ldquo;<a href="#SpecIssues">Special Issues</a>&rdquo; section below
+ describes how to handle attributes that are large in size and how to handle
+ large numbers of attributes.
 
 <!-- NEW PAGE -->
 <p>This chapter discusses or lists the following:</p>
@@ -259,7 +259,7 @@ As such, attributes are opened, read, or written only with H5A functions.
 
 <p>In the following discussions, attributes are generally 
  attached to datasets.  Attributes attached to other 
- primary data objects, i.e., groups or named datatypes, 
+ primary data objects, i.e., groups or committed datatypes, 
  are handled in exactly the same manner.</p>
 
 <!--( Comment box )=================================================-->
@@ -574,7 +574,7 @@ that can be used with property lists (H5P functions) are listed below.</p>
     <code>h5acreate_f</code></td>
     <td class="functTableCell">
     Creates a dataset as an attribute of another group, dataset, 
-    or named datatype. 
+    or committed datatype. 
     The C function is a macro: see <a href="../RM/APICompatMacros.html">
     &ldquo;API Compatibility Macros in HDF5.&rdquo;</a>
     </td></tr>
@@ -916,7 +916,7 @@ that can be used with property lists (H5P functions) are listed below.</p>
           hid_t <em>access_plist</em>)</code>
 </dl>
  
-<p><code>loc_id</code> identifies the object (dataset, group, or named 
+<p><code>loc_id</code> identifies the object (dataset, group, or committed 
 datatype) to which the attribute is to be attached. 
  
  <code>name</code>, 
@@ -1153,7 +1153,7 @@ is complete.
 
 <p><code>H5Adelete</code> removes the attribute 
  <code>name</code> from the group, dataset, or 
- named datatype specified in <code>loc_id</code>.
+ committed datatype specified in <code>loc_id</code>.
 </p>
 
 <p><code>H5Adelete</code> must not be called if there are 
@@ -1199,43 +1199,49 @@ is complete.
         <img src="Images/Shared_Attribute.jpg" 
         alt="Model for a large or shared HDF5 attribute"></td></tr>
     <tr><td class="figurecaption" align="left">
-        <font class="figurenumber">Figure 2. A large or shared HDF5 attribute 
-    and its associated dataset(s)</font>
-        A large or shared HDF5 attribute and its associated dataset(s). 
-        <br /><code>DatasetA</code> is an attribute of 
-        <code>Dataset1</code> that may have been too large 
-        to store as an attribute.  
-        It is associated with <code>Dataset1</code> 
-        by means of an object reference pointer attached as an 
-        attribute to <code>Dataset1</code>.
-        Such an attribute can be shared among multiple datasets by 
-        means of addtional object reference pointers attached
-        to addtional datasets.</td>
-    </tr></td>
-</table>
+    <span class="figurenumber">Figure 2. A large or shared HDF5 attribute 
+    and its associated dataset(s)</span>
+    <!-- formerly Figure 3: -->
+    <!-- <br /><code>DatasetA</code> is an attribute of 
+    <code>Dataset1</code> that is too large 
+    to store in <code>Dataset1's</code> header.  
+    <code>DatasetA</code> is associated with <code>Dataset1</code> 
+    by means of an object reference pointer attached as an 
+    attribute to <code>Dataset1</code>. The attribute in 
+    <code>DatasetA</code> can be shared among multiple datasets by 
+    means of additional object reference pointers attached
+    to additional datasets.</td>
+    </tr>
+</table> -->
 <!-- FOR USE WITH PRINT VERSION -------------------------------------->
 <!--( End large or shared attribute )===============================-->
 
 
 <h4>Large Attributes</h4>
-<p>Attributes are intended to be small objects. 
-A large dataset intended as metadata for another dataset 
-can be stored as a supplemental dataset.
-An attribute would then be attached to the original dataset indicating 
-the relationship as an object reference pointer.
-This approach is illustrated in the figure below<!-- formerly Figure 3 -->.
-</p>
-<p>How small is <i>small</i> and how large is <i>large</i> 
-are not defined by the library;
-it is left to the user&rsquo;s interpretation.
-The HDF5 development team generally considers the maximum size of
-attributes to be 16K bytes, but this has never been 
-set as a design or implementation limit.</p>
-<!-- editingComment
-  <span class="editingComment">[ [ [
-  Is this an appropirate comment?  (I think it is.)
-  ] ] ]</span>
--->
+<p>For most datasets, groups, and committed datatypes, the HDF5 Library 
+sets aside sufficient resources to handle most attributes. Once in awhile,
+an attribute will be very large or a dataset or other object will have a 
+large number of attributes. The library has additional schemes to handle 
+large attributes and to handle more quickly large numbers of attributes. 
+A scheme for handling large attributes is described in this section. 
+A scheme for quickly handling a large number of attributes is described 
+in the "Large Numbers of Attributes" section below.</p>
+
+<p>One scheme to handle a large attribute is to set up a separate dataset
+to hold the attribute. In the figure below, DatasetA holds an attribute
+that is too large for the object header in Dataset1. By putting a pointer
+to DatasetA as an attribute in Dataset1, the attribute becomes 
+available to those working with Dataset1.</p>
+<!-- formerly Figure 3 -->
+
+<p>The HDF5 development team generally considers the maximum size of
+an attribute to be 64K bytes.</p>
+
+<p>This way of handling large attributes can be used in situations where
+backward compatibility is important and where compression is important. 
+Applications built with versions before 1.8.x can read large 
+attributes stored in separate datasets. Datasets can be compressed 
+while attributes cannot. </p>
 
 <!--( Large or shared attribute )===================================-->
 <!-- FOR USE WITH ELECTRONIC VERSION ---------------------------------->
@@ -1256,34 +1262,86 @@ set as a design or implementation limit.</p>
     and its associated dataset(s)</span>
     <!-- formerly Figure 3: -->
     <br /><code>DatasetA</code> is an attribute of 
-    <code>Dataset1</code> that may have been too large 
-    to store as an attribute.  
-    It is associated with <code>Dataset1</code> 
+    <code>Dataset1</code> that is too large 
+    to store in <code>Dataset1's</code> header.  
+    <code>DatasetA</code> is associated with <code>Dataset1</code> 
     by means of an object reference pointer attached as an 
-    attribute to <code>Dataset1</code>.
-    Such an attribute can be shared among multiple datasets by 
-    means of addtional object reference pointers attached
-    to addtional datasets.</td>
+    attribute to <code>Dataset1</code>. The attribute in 
+    <code>DatasetA</code> can be shared among multiple datasets by 
+    means of additional object reference pointers attached
+    to additional datasets.</td>
     </tr>
 </table>
 <!-- FOR USE WITH ELECTRONIC VERSION --------------------------------->
 
 
 
+<h4>Large Numbers of Attributes</h4>
+<p>The dense attribute storage scheme was added in version 1.8 so that
+datasets, groups, and committed datatypes that have large numbers 
+attributes could be processed more quickly.</p> 
+
+<p>Attributes start out being stored in an object's header. This is 
+known as compact storage. See the <a href="UG_frame10Datasets.html">
+&ldquo;Datasets&rdquo;</a> chapter for more information on compact, 
+contiguous, and chunked storage.</p>
+
+<p>As the number of attributes grows, attribute-related performance 
+slows. To improve performance, dense attribute storage can be initiated 
+with the <code>H5Pset_attr_phase_change</code> function. See the 
+<a href=http://www.hdfgroup.org/HDF5/doc/RM/RM_H5Front.html>
+<cite>HDF5 Reference Manual</cite></a> for more information. </p>
+
+<p>When dense attribute storage is enabled, a threshold is defined for
+the number of attributes kept in compact storage. When the number
+is exceeded, the library moves all of the attributes into dense 
+storage at another location. The library handles the movement of
+attributes and the pointers between the locations automatically. 
+If some of the attributes are deleted so that the number falls below
+the threshold, then the attributes are moved back to compact storage
+by the library.</p> 
+
+<p>The improvements in performance from using dense attribute storage 
+are the result of holding attributes in a heap and indexing the heap
+with a B-tree.</p>
+
+<p>Note that there are some disadvantages to using dense attribute 
+storage. One is that this is a new feature. Datasets, 
+groups, and committed datatypes that use dense storage cannot be read 
+by applications built with earlier versions of the library. Another 
+disadvantage is that attributes in dense storage cannot be compressed.</p>
+
+<p>Dense attribute storage can also be used to handle large 
+attributes. To do this, set the number of attributes that will be
+stored in compact storage to 0 with the 
+<code>H5Pset_attr_phase_change</code> function. This will force 
+all attributes to be put into dense attribute storage and will avoid 
+the 64KB size limitation for a single attribute in compact attribute 
+storage.</p>
+
 <h4>Shared Attributes</h4>
-<p>Attributes written and managed through the H5A interface 
-     cannot be shared.  
-     If shared attributes are required, they must be handled 
-     in the manner described above for large attributes 
-     and illustrated in the figure above<!-- formerly Figure 3 -->.
-     </p>
+<p>Attributes written and managed through the H5A interface cannot 
+be shared. If shared attributes are required, they must be handled 
+in the manner described above for large attributes and illustrated 
+in the figure above<!-- formerly Figure 3 -->.</p>
 
 <h4>Attribute Names</h4>
-<p>While an attribute name may include any valid ASCII character 
-such as blanks, users should keep readability issues in mind. 
-In C, the name must be terminated with a null character, 
-     <code>\0</code>.
-     </p>
+<p>While any ASCII or UTF-8 character may be used in the name given 
+to an attribute, it is usually wise to avoid the following kinds of 
+characters:</p>
+<ul>
+    <li>Commonly used separators or delimiters such as slash, backslash, 
+    colon, and semi-colon (\, /, :, ;)</li>
+    <li>Escape characters</li>
+    <li>Wild cards such as asterisk and question mark (*, ?)</li>
+</ul>
+<p>NULL can be used within a name, but HDF5 names are terminated with 
+a NULL: whatever comes after the NULL will be ignored by HDF5.</p>
+
+<p>The use of ASCII or UTF-8 characters is determined by the character 
+encoding property. See <code>H5Pset_char_encoding</code> in the 
+<a href="http://www.hdfgroup.org/HDF5/doc/RM/RM_H5Front.html">
+<cite>HDF5 Reference Manual</cite></a>.</p>
 
 <h4>No Special I/O or Storage</h4>
 <p>HDF5 attributes have all the characteristics of HDF5 datasets 
