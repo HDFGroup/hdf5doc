@@ -169,8 +169,8 @@ document.writeln ('\
   mechanism for managing HDF5 datasets including the transfer of data 
   between memory and disk and the description of dataset properties. </p>
 
-  <p>A dataset is used by other HDF5 APIs, either by name or by a handle (e.g., 
-  returned by <code>H5Dopen</code>).</p>
+  <p>A dataset is used by other HDF5 APIs, either by name or by an 
+  identifier (e.g., returned by <code>H5Dopen</code>).</p>
 
 <!-- NEW PAGE -->
 <h4><em>Link/Unlink</em></h4>
@@ -193,19 +193,19 @@ document.writeln ('\
 
   <p>An object reference can be accessed by a call to <code>H5Rdereference</code>. When the 
   reference is to a dataset or dataset region, the <code>H5Rdeference</code> 
-  call returns a handle to the dataset just as if <code>H5Dopen</code> has 
-  been called.</p>
+  call returns an identifier to the dataset just as if <code>H5Dopen</code> 
+  has been called.</p>
 
 <h4><em>Adding attributes</em></h4>
 
   <p>A dataset may have user-defined attributes which are created with 
   <code>H5Acreate</code> and accessed through the H5A API. To create an 
-  attribute for a dataset, the dataset must be open, and the handle is 
+  attribute for a dataset, the dataset must be open, and the identifier is 
   passed to <code>H5Acreate</code>. The attributes of a dataset are 
   discovered and opened using <code>H5Aopen_name</code>, 
   <code>H5Aopen_idx</code>, or <code>H5Aiterate</code>; these functions 
-  use the handle of the dataset. An attribute can be deleted with 
-  <code>H5Adelete</code> which also uses the handle of the dataset.</p>
+  use the identifier of the dataset. An attribute can be deleted with 
+  <code>H5Adelete</code> which also uses the identifier of the dataset.</p>
 
 <!-- editingComment
   <span class="editingComment">
@@ -962,24 +962,25 @@ document.writeln ("
 
   <p>This section explains the programming model for datasets.</p>
 <br />
-<h4>3.1 General Model</h4>
+<h4>3.1. General Model</h4>
 
   <p>The programming model for using a dataset has three main phases:</p>
   
   <ul>
     <li>Obtain access to the dataset </li>
-    <li>Operate on the dataset using the dataset handle returned above </li>
+    <li>Operate on the dataset using the dataset identifier returned 
+    at access </li>
     <li>Release the dataset</li>
   </ul>
   <p>These three phases or steps are described in more detail below the 
   figure.</p>
   
-  <p>A dataset may be opened several times and 
-  operations performed with several different handles to the same dataset. 
-  All the operations affect the dataset, although the calling program must 
+  <p>A dataset may be opened several times and operations performed 
+  with several different identifiers to the same dataset. All the 
+  operations affect the dataset although the calling program must 
   synchronize if necessary to serialize accesses.</p>
 
-  <p>Note that the dataset remains open until the last handle is closed. 
+  <p>Note that the dataset remains open until every identifier is closed. 
   The figure below shows the basic sequence of operations.</p>
 
 <table x-use-null-cells
@@ -1014,10 +1015,10 @@ document.writeln ("
 <h4><em>Step 1. Obtain Access</em></h4>
 
   <p>A new dataset is created by a call to <code>H5Dcreate</code>. If 
-  successful, the call returns a handle for the newly created dataset.</p>
+  successful, the call returns an identifier for the newly created dataset.</p>
 
   <p>Access to an existing dataset is obtained by a call to <code>H5Dopen</code>. This call 
-  returns a handle for the existing dataset.</p>
+  returns an identifier for the existing dataset.</p>
 
   <p>An object reference 
 <!-- editingComment
@@ -1025,35 +1026,35 @@ document.writeln ("
   (Chapter ???) 
   ] ] ]</span>
 -->
-  may be dereferenced to obtain a handle to 
+  may be dereferenced to obtain an identifier to 
   the dataset it points to.</p>
   
-  <p>In each of these cases, the successful call returns a handle to the 
-  dataset. The handle is used in subsequent operations until the dataset 
-  is closed.</p>
+  <p>In each of these cases, the successful call returns an identifier 
+  to the dataset. The identifier is used in subsequent operations until 
+  the dataset is closed.</p>
 
 <h4><em>Step 2. Operate on the Dataset</em></h4>
 
-  <p>The dataset handle can be used to write and read data to the dataset, 
+  <p>The dataset identifier can be used to write and read data to the dataset, 
   to query and set properties, and to perform other operations such as 
   adding attributes, linking in groups, and creating references.</p>
 
-  <p>The dataset handle can be used for any number of 
+  <p>The dataset identifier can be used for any number of 
   operations until the dataset is closed.</p>
 
 <h4><em>Step 3. Close the Dataset</em></h4>
 
-  <p>When all operations are completed, the dataset handle should be closed. 
-  This releases the dataset. </p>
+  <p>When all operations are completed, the dataset identifier should 
+  be closed. This releases the dataset. </p>
 <!-- editingComment
   <span class="editingComment">[ [ [
   { and writes all metadata to the file? }
   ] ] ]</span>
 -->
 
-  <p>After the handle is closed, it cannot be used for further operations.</p>
+  <p>After the identifier is closed, it cannot be used for further operations.</p>
 
-<h4>3.2 Create Dataset</h4>
+<h4>3.2. Create Dataset</h4>
 
   <p>A dataset is created and initialized with a call to <code>H5Dcreate</code>. The dataset 
   create operation sets permanent properties of the dataset:</p>
@@ -1344,7 +1345,7 @@ document.writeln ("
   ] ] ]</span>
 -->
 
-<h4>3.3 Data Transfer Operations on a Dataset</h4>
+<h4>3.3. Data Transfer Operations on a Dataset</h4>
 
   <p>Data is transferred between memory and the raw data array of the dataset 
   through <code>H5Dwrite</code> and <code>H5Dread</code> operations. A data 
@@ -1528,7 +1529,7 @@ document.writeln ("
   with <code>H5Dopen</code>.</p>
 
   <p>The data is written with <code>H5Dwrite</code>. The arguments are the 
-  dataset handle, the memory datatype (<code>H5T_NATIVE_INT</code>), the 
+  dataset identifier, the memory datatype (<code>H5T_NATIVE_INT</code>), the 
   memory and file selections (<code>H5S_ALL</code> in this case: 
   the whole array), and the default (empty) property list. The last argument 
   is the data to be transferred.</p>
@@ -1659,7 +1660,7 @@ document.writeln ("
   The <code>H5Dread</code> call has parameters:</p>
   
   <ul>
-      <li>The dataset handle (from <code>H5Dopen</code>)</li>
+      <li>The dataset identifier (from <code>H5Dopen</code>)</li>
       <li>The memory datatype (<code>H5T_NATVE_INT</code>)</li>
       <li>The memory and file dataspace (<code>H5S_ALL</code>, the whole array)</li>
       <li>A default (empty) property list</li>
@@ -1704,7 +1705,7 @@ document.writeln ("
   </tr>
 </table>
 <br />
-<h4>3.4 Retrieve the Properties of a Dataset</h4>
+<h4>3.4. Retrieve the Properties of a Dataset</h4>
 
   <p>
   The functions listed below allow the user to retrieve 
@@ -1808,7 +1809,7 @@ document.writeln ("
 
 <!-- NEW PAGE -->
 <a name="DTransfer">
-<h3 class=pagebefore>4. Data Transfer. Raw data I/O</h3>
+<h3 class=pagebefore>4. Data Transfer</h3>
 </a>
 
   <p>The HDF5 Library implements data transfers through a pipeline which 
@@ -1877,7 +1878,7 @@ document.writeln ("
   properties should or must be used to pass additional parameters such as 
   MPI/IO directives when used the parallel file driver.</p>
 
-<h4>4.1 The Data Pipeline</h4>
+<h4>4.1. The Data Pipeline</h4>
 
   <p>When data is written or read to or from an HDF5 file, the HDF5 
   Library passes the data through a sequence of processing steps which 
@@ -1995,7 +1996,7 @@ document.writeln ("
   processed by the pipeline. When data is read, the elements from a buffer 
   are scattered to the data blocks of the file.</p>
 
-<h4>4.2 Data Pipeline Filters</h4>
+<h4>4.2. Data Pipeline Filters</h4>
 
   <p>In addition to the standard pipeline, optional stages, called filters, 
   can be inserted in the pipeline. 
@@ -2088,7 +2089,7 @@ document.writeln ("
   and <a href="#ScaleOffset">Using the Scale-offset Filter</a>,
   respectively.</p>
 
-<h4>4.3 File Drivers</h4>
+<h4>4.3. File Drivers</h4>
 
   <p>I/O is performed by the HDF5 virtual file layer. The file driver 
   interface writes and reads blocks of data; each driver module implements 
@@ -2175,7 +2176,7 @@ document.writeln ("
   I/O may perform considerably differently from serial drivers depending 
   on chunking and other settings.</p>
 
-<h4>4.4 Data Transfer Properties to Manage the Pipeline</h4>
+<h4>4.4. Data Transfer Properties to Manage the Pipeline</h4>
 
   <p>Data transfer properties set optional parameters that control parts of the 
   data pipeline. The function listing below shows transfer properties 
@@ -2274,7 +2275,7 @@ document.writeln ("
   that contains all the properties.</p>
 
 <!-- NEW PAGE -->
-<h4>4.5 Storage Strategies</h4>
+<h4>4.5. Storage Strategies</h4>
 
   <p>The raw data is conceptually a multi-dimensional array of elements that 
   is stored as a contiguous array of bytes. The data may be physically stored 
@@ -2350,10 +2351,13 @@ document.writeln ("
 
 
   <p>Contiguous storage is the simplest model. It has several limitations. 
-  First, the dataset must be a fixed-size: it is not possible to extend the 
-  limit of dataset, or to have unlimited dimensions. Second, because data is 
-  passed through the pipeline as fixed-size blocks, compression and other 
-  filters cannot be used with contiguous data.</p>
+  First, the dataset must be a fixed-size: it is not possible to extend 
+  the limit of the dataset or to have unlimited dimensions. In other 
+  words, if the number of dimensions of the array might change over 
+  time, then chunking storage must be used instead of contiguous. 
+  Second, because data is passed through the pipeline as fixed-size 
+  blocks, compression and other filters cannot be used with contiguous 
+  data.</p>
 
 <h4><em>Chunked</em></h4>
 
@@ -2444,7 +2448,7 @@ document.writeln ("
 <br />
 
 <!-- NEW PAGE -->
-<h4>4.6 Partial I/O Sub-setting and Hyperslabs</h4>
+<h4>4.6. Partial I/O Sub-setting and Hyperslabs</h4>
 
   <p>Data transfers can write or read some of the data elements of the dataset. 
   This is controlled by specifying two selections: one for the source and 
@@ -2747,7 +2751,7 @@ document.writeln ("
   </tr>
 </table>
   <br />
-<h4>5.1 Storage Allocation in the File: Early, Incremental, Late</h4>
+<h4>5.1. Storage Allocation in the File: Early, Incremental, Late</h4>
 
   <p>The HDF5 Library implements several strategies for when storage is 
   allocated if and when it is filled with fill values for elements not 
@@ -3098,7 +3102,7 @@ document.writeln ("
   filled according to the fill value.</p>
   
 
-<h4>5.2  Deleting a Dataset from a File and Reclaiming Space</h4>
+<h4>5.2.  Deleting a Dataset from a File and Reclaiming Space</h4>
 
   <p>HDF5 does not at this time provide an easy mechanism to remove a dataset 
   from a file or to reclaim the storage space occupied by a deleted object. </p>
@@ -3121,7 +3125,7 @@ document.writeln ("
   <p>See the chapter &ldquo;<a href="09_Groups.html">HDF5 Groups</a>&rdquo; for 
   further discussion of HDF5 file structures and the use of links. </p>
 
-<h4>5.3 Releasing Memory Resources</h4>
+<h4>5.3. Releasing Memory Resources</h4>
 
   <p>The system resources required for HDF5 objects such as datasets, 
   datatypes, and dataspaces should be released once access to the object is 
@@ -3169,7 +3173,7 @@ document.writeln ("
   by the HDF5 Library during a read, the <code>H5Dvlen_reclaim</code> 
   function can be used to perform this operation.</p>
 
-<h4>5.4 External Storage Properties</h4>
+<h4>5.4. External Storage Properties</h4>
 
   <p>The external storage format allows data to be stored across a set of 
   non-HDF5 files. A set of segments (offsets and sizes) in one or more files 
