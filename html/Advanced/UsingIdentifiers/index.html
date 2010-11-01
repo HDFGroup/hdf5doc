@@ -1,0 +1,134 @@
+<html>
+<head>
+<title>Using Identifiers</title>
+</head>
+
+<body>
+<br />
+<p>Return to the <a href="../../Advanced.html">"Advanced Topics"</a> page.
+<br /><hr>
+
+<h1>Using Identifiers</h1>
+
+  <p>The purpose of this topic is to describe how identifiers behave 
+  and how they should be treated by application programs.</p>
+
+  <p>When an application program uses the HDF5 library to create or 
+  open an item, a unique identifier is returned. The items that return 
+  a unique identifier when they are created or opened include the 
+  following: dataset, group, datatype, dataspace, file, attribute, 
+  property list, referenced object, error stack, and error message.</p>
+
+  <p>An application may open one of the items listed above more than 
+  once at the same time. For example, an application might open a group 
+  twice, receiving two identifiers. Information from one dataset in the 
+  group could be handled through one identifier, and the information 
+  from another dataset in the group is handled by a different identifier.</p>
+
+  <p>An application program should track every identifier it receives 
+  as a result of creating or opening one of the items listed above. In 
+  order for an application to close properly, it must release every 
+  identifier it has opened. If an application opened a group twice for 
+  example, it would need to issue two <code>H5Gclose</code> commands, 
+  one for each identifier. Not releasing identifiers causes resource 
+  leaks. Until an identifier is released, the item associated with 
+  the identifier is still open.</p>
+
+  <p>The library considers a file open until all of the identifiers 
+  associated with the file and with the file’s various items have been 
+  released. The identifiers associated with these open items must be 
+  released separately. This means that an application can close a file 
+  and still work with one or more portions of the file. Suppose an 
+  application opened a file, a group within the file, and two datasets 
+  within the group. If the application closed the file with 
+  <code>H5Fclose</code>, 
+then the file would be considered closed to the application, but the 
+group and two datasets would still be open.</p>
+
+<p>There are several exceptions to the above file closing rule. One 
+is when the <code>H5close</code> function is used instead of <code>H5Fclose</code>. 
+<code>H5close</code> 
+causes a general shutdown of the library: all data is written to disk, 
+all identifiers are closed, and all memory used by the library is 
+cleaned up. Another exception occurs on parallel processing systems. 
+Suppose on a parallel system an application has opened a file, a group 
+in the file, and two datasets in the group. If the application uses 
+the <code>H5Fclose</code> function to close the file, the call will fail with an 
+error. The open group and datasets must be closed before the file can 
+be closed. A third exception is when the file access property list 
+includes the property <code>H5F_CLOSE_STRONG</code>. This property causes the closing 
+of all of the file’s open items when the file is closed with <code>H5Fclose</code>.</p>
+
+<p>For more information about <code>H5close</code>, <code>H5Fclose</code>, 
+and <code>H5Pset_fclose_degree</code>, 
+see the <a href="../../RM/RM_H5Front.html">
+<cite>HDF5 Reference Manual</cite></a></p>
+
+
+
+
+<!--
+---------1---------2---------3---------4---------5---------6---------7---------8
+-->
+
+<h2>Functions that Return Identifiers</h2>
+
+<p>Some of the functions that return identifiers are listed below.
+
+<ul>
+<li><code>H5Acreate</code></li>
+<li><code>H5Acreate_by_name</code></li>
+<li><code>H5Aget_type</code></li>
+<li><code>H5Aopen</code></li>
+<li><code>H5Aopen_by_idx</code></li>
+<li><code>H5Aopen_by_name</code></li>
+<li><code>H5Dcreate</code></li>
+<li><code>H5Dcreate_anon</code></li>
+<li><code>H5Dget_access_plist</code></li>
+<li><code>H5Dget_create_plist</code></li>
+<li><code>H5Dget_space</code></li>
+<li><code>H5Dget_type</code></li>
+<li><code>H5Dopen</code></li>
+<li><code>H5Ecreate_msg</code></li>
+<li><code>H5Ecreate_stack</code></li>
+<li><code>H5Fcreate</code></li>
+<li><code>H5Fopen</code></li>
+<li><code>H5Freopen</code></li>
+<li><code>H5Gcreate</code></li>
+<li><code>H5Gcreate_anon</code></li>
+<li><code>H5Gopen</code></li>
+<li><code>H5Oopen</code></li>
+<li><code>H5Oopen_by_addr</code></li>
+<li><code>H5Oopen_by_idx</code></li>
+<li><code>H5Pcreate</code></li>
+<li><code>H5Rdereference</code></li>
+<li><code>H5Rget_region</code></li>
+<li><code>H5Screate</code></li>
+<li><code>H5Screate_simple</code></li>
+<li><code>H5Tcopy</code></li>
+<li><code>H5Tcreate</code></li>
+<li><code>H5Tdecode</code></li>
+<li><code>H5Tget_member_type</code></li>
+<li><code>H5Tget_super</code></li>
+<li><code>H5Topen</code></li>
+</ul>
+
+<hr><br />
+<p>Return to the <a href="../../Advanced.html">"Advanced Topics"</a> page.
+<br /><br />
+
+<hr>
+<!-- #BeginLibraryItem "/ed_libs/Footer.lbi" -->
+<address>
+The HDF Group Help Desk: <img src="../../Graphics/help.png" align=top height=16>
+<br>
+Describes HDF5 Release 1.8.5, June 2010.
+</address>
+<!-- #EndLibraryItem --><html><SCRIPT LANGUAGE="JAVASCRIPT">
+<!--
+document.writeln("Last modified: 5 October 2010");
+-->
+</SCRIPT>
+ 
+</body>
+</html>
