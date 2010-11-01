@@ -1217,25 +1217,64 @@ is complete.
 <!--( End large or shared attribute )===============================-->
 
 
-<h4>Large Attributes</h4>
-<p>For most datasets, groups, and committed datatypes, the HDF5 Library 
-sets aside sufficient resources to handle most attributes. Once in awhile,
-an attribute will be very large or a dataset or other object will have a 
-large number of attributes. The library has additional schemes to handle 
-large attributes and to handle more quickly large numbers of attributes. 
-A scheme for handling large attributes is described in this section. 
-A scheme for quickly handling a large number of attributes is described 
-in the "Large Numbers of Attributes" section below.</p>
+<h4>Large Numbers of Attributes Stored in Dense Attribute Storage</h4>
+<p>The dense attribute storage scheme was added in version 1.8 so that
+datasets, groups, and committed datatypes that have large numbers of 
+attributes could be processed more quickly.</p> 
 
-<p>One scheme to handle a large attribute is to set up a separate dataset
-to hold the attribute. In the figure below, DatasetA holds an attribute
-that is too large for the object header in Dataset1. By putting a pointer
-to DatasetA as an attribute in Dataset1, the attribute becomes 
+<p>Attributes start out being stored in an object's header. This is 
+known as compact storage. See the <a href="UG_frame10Datasets.html">
+&ldquo;Datasets&rdquo;</a> chapter for more information on compact, 
+contiguous, and chunked storage.</p>
+
+<p>As the number of attributes grows, attribute-related performance 
+slows. To improve performance, dense attribute storage can be initiated 
+with the <code>H5Pset_attr_phase_change</code> function. See the 
+<a href=http://www.hdfgroup.org/HDF5/doc/RM/RM_H5Front.html>
+<cite>HDF5 Reference Manual</cite></a> for more information. </p>
+
+<p>When dense attribute storage is enabled, a threshold is defined for
+the number of attributes kept in compact storage. When the number
+is exceeded, the library moves all of the attributes into dense 
+storage at another location. The library handles the movement of
+attributes and the pointers between the locations automatically. 
+If some of the attributes are deleted so that the number falls below
+the threshold, then the attributes are moved back to compact storage
+by the library.</p> 
+
+<p>The improvements in performance from using dense attribute storage 
+are the result of holding attributes in a heap and indexing the heap
+with a B-tree.</p>
+
+<p>Note that there are some disadvantages to using dense attribute 
+storage. One is that this is a new feature. Datasets, groups, and 
+committed datatypes that use dense storage cannot be read by 
+applications built with earlier versions of the library. Another 
+disadvantage is that attributes in dense storage cannot be compressed.</p>
+
+<h4>Large Attributes Stored in Dense Attribute Storage</h4>
+
+<p>We generally consider the maximum size of an attribute to be 64K 
+bytes. The library has two ways of storing attributes larger than 64K 
+bytes: in dense attribute storage or in a separate dataset. Using dense
+attribute storage is described in this section, and storing in a 
+separate dataset is described in the next section.</p>
+
+<p>To use dense attribute storage to store large attributes, set the 
+number of attributes that will be stored in compact storage to 0 with 
+the <code>H5Pset_attr_phase_change</code> function. This will force 
+all attributes to be put into dense attribute storage and will avoid 
+the 64KB size limitation for a single attribute in compact attribute 
+storage.</p>
+
+<h4>Large Attributes Stored in a Separate Dataset</h4>
+
+<p>In addition to dense attribute storage (see above), a large attribute 
+can be stored in a separate dataset. In the figure below, DatasetA holds 
+an attribute that is too large for the object header in Dataset1. By putting 
+a pointer to DatasetA as an attribute in Dataset1, the attribute becomes 
 available to those working with Dataset1.</p>
 <!-- formerly Figure 3 -->
-
-<p>The HDF5 development team generally considers the maximum size of
-an attribute to be 64K bytes.</p>
 
 <p>This way of handling large attributes can be used in situations where
 backward compatibility is important and where compression is important. 
@@ -1275,49 +1314,6 @@ while attributes cannot. </p>
 <!-- FOR USE WITH ELECTRONIC VERSION --------------------------------->
 
 
-
-<h4>Large Numbers of Attributes</h4>
-<p>The dense attribute storage scheme was added in version 1.8 so that
-datasets, groups, and committed datatypes that have large numbers 
-attributes could be processed more quickly.</p> 
-
-<p>Attributes start out being stored in an object's header. This is 
-known as compact storage. See the <a href="UG_frame10Datasets.html">
-&ldquo;Datasets&rdquo;</a> chapter for more information on compact, 
-contiguous, and chunked storage.</p>
-
-<p>As the number of attributes grows, attribute-related performance 
-slows. To improve performance, dense attribute storage can be initiated 
-with the <code>H5Pset_attr_phase_change</code> function. See the 
-<a href=http://www.hdfgroup.org/HDF5/doc/RM/RM_H5Front.html>
-<cite>HDF5 Reference Manual</cite></a> for more information. </p>
-
-<p>When dense attribute storage is enabled, a threshold is defined for
-the number of attributes kept in compact storage. When the number
-is exceeded, the library moves all of the attributes into dense 
-storage at another location. The library handles the movement of
-attributes and the pointers between the locations automatically. 
-If some of the attributes are deleted so that the number falls below
-the threshold, then the attributes are moved back to compact storage
-by the library.</p> 
-
-<p>The improvements in performance from using dense attribute storage 
-are the result of holding attributes in a heap and indexing the heap
-with a B-tree.</p>
-
-<p>Note that there are some disadvantages to using dense attribute 
-storage. One is that this is a new feature. Datasets, 
-groups, and committed datatypes that use dense storage cannot be read 
-by applications built with earlier versions of the library. Another 
-disadvantage is that attributes in dense storage cannot be compressed.</p>
-
-<p>Dense attribute storage can also be used to handle large 
-attributes. To do this, set the number of attributes that will be
-stored in compact storage to 0 with the 
-<code>H5Pset_attr_phase_change</code> function. This will force 
-all attributes to be put into dense attribute storage and will avoid 
-the 64KB size limitation for a single attribute in compact attribute 
-storage.</p>
 
 <h4>Shared Attributes</h4>
 <p>Attributes written and managed through the H5A interface cannot 
