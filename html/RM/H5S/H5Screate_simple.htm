@@ -3,15 +3,15 @@
 <hr>
 <dl>
 <dt><div align=right><font color=999999 size=-1><i>
-      Last modified: 17 August 2010
+      Last modified: 16 November 2010
       </i></font></div>
 
 <dt><strong>Name:</strong> <a name="Dataspace-CreateSimple">H5Screate_simple</a>
 <dt><strong>Signature:</strong>
     <dd><em>hid_t</em> <code>H5Screate_simple</code>(
         <em>int</em> <code>rank</code>,
-        <em>const hsize_t *</em> <code>dims</code>,
-        <em>const hsize_t *</em> <code>maxdims</code>
+        <em>const hsize_t *</em> <code>current_dims</code>,
+        <em>const hsize_t *</em> <code>maximum_dims</code>
     )
 
 <p>
@@ -25,21 +25,23 @@
         <p>
         <code>rank</code> is the number of dimensions used in the dataspace.  
         <p>
-        <code>dims</code> is a one-dimensional array of size <code>rank</code>
-        specifying the size of each dimension of the dataset. 
-        <code>maxdims</code> is an array of the same size 
+        <code>current_dims</code> is a one-dimensional array of size 
+        <code>rank</code> specifying the size of each dimension of the dataset. 
+        <code>maximum_dims</code> is an array of the same size 
         specifying the upper limit on the size of each dimension.  
-        <code>maxdims</code> may be the null pointer, in which case the 
-        upper limit is the same as <code>dims</code>.  
+        <code>maximum_dims</code> may be the null pointer, in which case the 
+        upper limit is the same as <code>current_dims</code>.  
         <p>
-        If an element of <code>maxdims</code> is <code>H5S_UNLIMITED</code>,
+        If an element of <code>maximum_dims</code> is <code>H5S_UNLIMITED</code>,
         the maximum size of the corresponding dimension is unlimited.
-        Otherwise, no element of <code>maxdims</code> should be 
-        smaller than the corresponding element of <code>dims</code>.  
+        Otherwise, no element of <code>maximum_dims</code> should be 
+        smaller than the corresponding element of <code>current_dims</code>.  
         <p>
         Note that any dataset with an unlimited dimension must also
         be chunked; see 
         <a href="RM_H5P.html#Property-SetChunk"><code>H5Pset_chunk</code></a>.
+        Similarly, a dataset must be chunked if <code>current_dims</code> 
+        does not equal <code>maximum_dims</code>.
         <p>
         The dataspace identifier returned from this function must be 
         released with <code>H5Sclose</code> or resource leaks will occur.
@@ -49,14 +51,15 @@
     <dd><table>
             <tr>
                 <td valign="top"><em>int</em> <code>rank</code></td>
-                <td valign="top">IN: Number of dimensions of dataspace.</td></tr>
+                <td valign="top">IN: Number of dimensions of dataspace.
+                    </td></tr>
             <tr>
-
-                <td valign="top"><em>const hsize_t *</em> <code>dims</code></td>
+                <td valign="top"><em>const hsize_t *</em> 
+                    <code>current_dims</code></td>
                 <td valign="top">IN: Array specifying the size of each 
                     dimension.</td></tr>
             <tr>
-                <td valign="top"><em>const&nbsp;hsize_t&nbsp;*</em>&nbsp;<code>maxdims&nbsp;&nbsp;&nbsp;&nbsp;</code></td>
+                <td valign="top"><em>const&nbsp;hsize_t&nbsp;*</em>&nbsp;<code>maximum_dims&nbsp;&nbsp;&nbsp;&nbsp;</code></td>
                 <td valign="top">IN: Array specifying the maximum size of each
                     dimension.</td></tr>
         </table>
@@ -77,7 +80,7 @@
 SUBROUTINE h5screate_simple_f(rank, dims, space_id, hdferr, maxdims) 
   IMPLICIT NONE
   INTEGER, INTENT(IN) :: rank             ! Number of dataspace dimensions 
-  INTEGER(HSIZE_T), INTENT(IN) :: dims(*) ! Array with the dimension sizes 
+  INTEGER(HSIZE_T), INTENT(IN) :: dims(*) ! Array with current dimension sizes 
   INTEGER(HID_T), INTENT(OUT) :: space_id ! Dataspace identifier 
   INTEGER, INTENT(OUT) :: hdferr          ! Error code
                                           ! 0 on success and -1 on failure
