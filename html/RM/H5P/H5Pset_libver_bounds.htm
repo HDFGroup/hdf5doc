@@ -2,25 +2,36 @@
 <!-- HEADER RIGHT "H5Pset_libver_bounds" -->
 <hr>
 <dl>
+
+  <dt><div align=right><font color=999999 size=-1><i>
+      Last modified: 7 January 2011
+      </i></font></div>
+
   <dt><strong>Name:</strong> <a name="Property-SetLibverBounds">H5Pset_libver_bounds</a>
   <dt><strong>Signature:</strong>
     <dd><em>herr_t</em> <code>H5Pset_libver_bounds</code>(
             <em>hid_t</em> <code>fapl_id</code>,
-            <em>H5F_libver_t</em> <code>low</code>,
-            <em>H5F_libver_t</em> <code>high</code>
+            <em>H5F_libver_t</em> <code>libver_low</code>,
+            <em>H5F_libver_t</em> <code>libver_high</code>
     )
   <p>
   <dt><strong>Purpose:</strong>
-    <dd>Sets bounds on library versions, and indirectly format versions, to be used 
-        when creating objects.
+    <dd>Sets bounds on library versions, and indirectly format versions, 
+        to be used when creating objects.
   <p>
   <dt><strong>Description:</strong>
-    <dd><code>H5Pset_libver_bounds</code> controls the versions of the object formats
-        that will be used when creating objects in a file.  The object format versions 
-        are determined indirectly from the HDF5 Library versions specified in the call.
+    <dd><code>H5Pset_libver_bounds</code> controls the versions of the object 
+        formats that will be used when creating objects in a file.  
+        The object format versions are determined indirectly from the 
+        HDF5 Library versions specified in the call.
         <p>
         This property is set in the file access property list specified
         by <code>fapl_id</code>. 
+        <p>
+        When bounds have been set through an <code>H5Pset_libver_bounds</code>
+        call, a function that creates an object will fail if the object 
+        cannot be created within the boundaries set in
+        <code>libver_low</code> and <code>libver_high</code>.
   <p>
   <dt><strong>Parameters:</strong>
     <dd><table>
@@ -30,62 +41,84 @@
         <td valign="top">IN: File access property list identifier
         </td></tr>
       <tr>
-        <td valign="top"><em>H5F_libver_t</em>&nbsp;<code>low</code>&nbsp;&nbsp;&nbsp;&nbsp;
+        <td valign="top"><em>H5F_libver_t</em> <code>libver_low</code>
         </td>
-        <td valign="top">IN: The earliest version of the library that will be used
-            for writing objects.  The library version indirectly specifies the earliest object 
-            format version that can be used when creating objects in the file.
+        <td valign="top">IN: The earliest version of the library that 
+            will be used for writing objects, indirectly specifying 
+            the earliest object format version that can be used when 
+            creating objects in the file.
             <p>
-            Currently, <code>low</code> must be one of two pre-defined values:
+            Valid values of <code>libver_low</code> are as follows:
+            <table border="0">
+              <tr valign="top"><td>&nbsp;&nbsp;&nbsp;&nbsp;</td><td>
+                  <code>H5F_LIBVER_EARLIEST</code> &nbsp; <i>(Default)</i>
+              </td></tr><tr valign="top"><td>&nbsp;</td><td>
+                <code>H5F_LIBVER_18</code>
+              </td></tr><tr valign="top"><td>&nbsp;</td><td>
+                <code>H5F_LIBVER_LATEST</code>
+              </td></tr>
+            </table>
             <p>
-            Setting <code>low</code> to <code>H5F_LIBVER_EARLIEST</code> will result in 
-            objects being created using the <em>earliest possible</em> format 
-            for each object. 
+            <p>
+            Setting <code>libver_low</code> to <code>H5F_LIBVER_EARLIEST</code> 
+            will result in objects being created using the 
+            <em>earliest possible</em> format for each object. 
             Note that <em>earliest possible</em> is different from 
             <em>earliest</em>, as some features introduced in library versions
             later than 1.0.0 resulted in updates to object formats.  
-            With <code>low</code>=<code>H5F_LIBVER_EARLIEST</code>, 
+            With <code>libver_low</code>=<code>H5F_LIBVER_EARLIEST</code>, 
             if the application creates an object that requires a feature introduced
             in library versions later than 1.0.0, the earliest possible version
             that supports the requested feature will be used. 
             <p>
-            The upper bound
-            on the range of possible library versions used to create the object
-            is controlled by the <code>high</code> parameter.
-            <p>
-            This is the default behavior of the library if 
-            <code>H5Pset_libver_bounds</code> is not called.
-            <p>
-            Setting <code>low</code> to <code>H5F_LIBVER_LATEST</code> will result in 
-            objects being created using the <em>latest available</em> format for each object.   
-            This setting means that objects will be created with the latest format versions 
-            available (within the range of library versions specified in the call),
-            and can take advantage of the latest features and performance enhancements.
-            
+            Setting <code>libver_low</code> to <code>H5F_LIBVER_LATEST</code> 
+            will result in objects being created using the 
+            <em>latest available</em> format for each object.   
+            This setting means that objects will be created with the latest 
+            format versions available (within the range of library versions 
+            specified in the call), and can take advantage of the latest 
+            features and performance enhancements.
             Objects written with the <code>H5F_LIBVER_LATEST</code> setting for 
-            <code>low</code> may be accessible to a smaller range of library versions 
-            than would be the case if the <code>H5F_LIBVER_EARLIEST</code> value had been used.
+            <code>libver_low</code> may be accessible to a smaller range of 
+            library versions than would be the case if the 
+            <code>H5F_LIBVER_EARLIEST</code> value had been used.
             <p>
-            The upper bound
-            on the range of possible library versions used to create the object
-            is controlled by the <code>high</code> parameter.
-            <p>
+            Setting <code>libver_low</code> to the intermediate value
+            <code>H5F_LIBVER_18</code> specifies that created or modifed objects 
+            must be readable by the HDF5 Release 1.8 series 
+            but do not need to be readable by earlier versions.
+            <p />
         </td></tr>
 <!-- NEW PAGE -->
       <tr>
-        <td valign="top"><em>H5F_libver_t</em>&nbsp;<code>high</code>&nbsp;&nbsp;&nbsp;&nbsp;
+        <td valign="top"><em>H5F_libver_t</em>&nbsp;<code>libver_high</code>&nbsp;&nbsp;&nbsp;&nbsp;
         </td>
         <td valign="top">IN: The latest version of the library that will be used
-            for writing objects.  The library version indirectly specifies the latest object 
-            format version that can be used when creating objects in the file.
+            for writing objects, indirectly specifying the latest object format 
+            version that can be used when creating objects in the file.
             <p>
-            Currently, <code>high</code> must be set to the pre-defined value 
-            <code>H5F_LIBVER_LATEST</code>.   <code>H5F_LIBVER_LATEST</code> corresponds
-            to the version of the HDF5 Library in use.
-            <br>
+            Valid values of <code>libver_high</code> are as follows:
+            <table border="0">
+              <tr valign="top"><td>&nbsp;&nbsp;&nbsp;&nbsp;</td><td>
+                <code>H5F_LIBVER_18</code>
+              </td></tr><tr valign="top"><td>&nbsp;</td><td>
+                <code>H5F_LIBVER_LATEST</code> &nbsp; <i>(Default)</i>
+              </td></tr>
+            </table>
+            <p>
+            <code>H5F_LIBVER_18</code> specifies that objects may be
+            created in a format used by releases up to and including the
+            HDF5 Release 1.8 series. 
+            Object formats introduced in later releases may not be used.
+            <p>
+            <code>H5F_LIBVER_LATEST</code> specifies that objects may be
+            created in the latest format available; there is no requirement
+            that earlier versions of the HDF5 library be able to read all
+            objects in the file.
         </td></tr>
     </table>
-  <p>
+
+  <p />
   <dt><strong>Returns:</strong>
     <dd>Returns a non-negative value if successful;
         otherwise returns a negative value.
@@ -123,6 +156,11 @@ END SUBROUTINE h5pset_libver_bounds_f
           <td valign="top">1.8.0</td>
           <td valign="top">
             Function introduced in this release.</td></tr>
+        <tr>
+          <td valign="top">1.8.6</td>
+          <td valign="top">
+            <code>H5F_LIBVER_18</code> version boundary setting added 
+            in this release.</td></tr>
     </table>
 </dl>
 
