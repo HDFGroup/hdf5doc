@@ -7,7 +7,7 @@
     <dd><em>herr_t</em> <code>H5Pset_fapl_log</code>(
                         <em>hid_t</em> <code>fapl_id</code>,
                         <em>const char *</em><code>logfile</code>,
-                        <em>unsigned int</em> <code>flags</code>,
+                        <em>unsigned long long</em> <code>flags</code>,
                         <em>size_t</em> <code>buf_size</code>
     )
   <dt><strong>Purpose:</strong>
@@ -118,7 +118,7 @@
             <code>0x0040</code>-->
             </td><td rowspan="3">
             <hr>
-            Track the total number of read, write, or seek operations that occur. 
+            Track the total number of read, write, seek, or truncate operations that occur. 
         </td></tr>
         <tr valign=top align=left><td>
             <code>H5FD_LOG_NUM_WRITE</code> 
@@ -127,6 +127,10 @@
         </td></tr>
         <tr valign=top align=left><td>
             <code>H5FD_LOG_NUM_SEEK</code> 
+            <!--</td><td>
+            <code>0x0100</code>-->
+        <tr valign=top align=left><td>
+            <code>H5FD_LOG_NUM_TRUNCATE</code> 
             <!--</td><td>
             <code>0x0100</code>-->
         </td></tr>
@@ -141,7 +145,7 @@
         <tr valign=top align=left><td>
             <code>&nbsp;</code> 
             </td><td>
-            <code>(H5FD_LOG_NUM_READ | H5FD_LOG_NUM_WRITE | H5FD_LOG_NUM_SEEK)</code>
+            <code>(H5FD_LOG_NUM_READ | H5FD_LOG_NUM_WRITE | H5FD_LOG_NUM_SEEK | H5FD_LOG_NUM_TRUNCATE)</code>
         </td></tr>
 	
 <!-- NEW PAGE -->
@@ -152,16 +156,12 @@
             <code>0x0200</code>-->
             </td><td rowspan="5">
             <hr>
-            Track the time spent in open, read, write, seek, or close operations. 
-	    <dir>
-	    <span class="termEmphasis"><i>
-	    Not implemented in this release: open and read
-	    <br> 
-	    Partially implemented: write and seek
-	    <br> 
-	    Fully implemented: close</i></span>
-	    </dir>
+            Track the time spent in open, stat, read, write, seek, or close operations. 
         </td></tr>
+        <tr valign=top align=left><td>
+	    <code>H5FD_LOG_TIME_STAT</code> 
+            <!--</td><td>
+            <code>0x0400</code>-->
         <tr valign=top align=left><td>
 	    <code>H5FD_LOG_TIME_READ</code> 
             <!--</td><td>
@@ -193,8 +193,8 @@
         <tr valign=top align=left><td>
             <code>&nbsp;</code> 
             </td><td>
-            <code>(H5FD_LOG_TIME_OPEN | H5FD_LOG_TIME_READ | H5FD_LOG_TIME_WRITE 
-	                              | H5FD_LOG_TIME_SEEK | H5FD_LOG_TIME_CLOSE)</code>
+            <code>(H5FD_LOG_TIME_OPEN | H5FD_LOG_TIME_STAT | H5FD_LOG_TIME_READ
+                | H5FD_LOG_TIME_WRITE | H5FD_LOG_TIME_SEEK | H5FD_LOG_TIME_CLOSE)</code>
         </td></tr>
 
         <tr valign=top align=left><td>
@@ -252,7 +252,7 @@
 		    <td valign="top"><em>char *</em><code>logfile</code></td>
             <td valign="top">IN: Name of the log file.</td></tr>
         <tr>
-		    <td valign="top"><em>unsigned&nbsp;int</em>&nbsp;<code>flags&nbsp;&nbsp;&nbsp;&nbsp;</code></td>
+		    <td valign="top"><em>unsigned&nbsp;long&nbsp;long</em>&nbsp;<code>flags&nbsp;&nbsp;&nbsp;&nbsp;</code></td>
             <td valign="top">IN: Flags specifying the types of logging activity.</td></tr>
         <tr>
 		    <td valign="top"><em>size_t</em> <code>buf_size</code></td>
@@ -278,24 +278,39 @@ SUBROUTINE
   <dt><strong>History:</strong>
     <ul><table width="90%">
         <tr>
-		  <td valign="top" align="left" width="10%">
+              <td valign="top" align="left" width="10%">
 		    <strong>Release</strong>&nbsp;&nbsp;&nbsp;&nbsp;</td>
-          <td valign="top" align="left">
-		    <strong>C</strong></td></tr>
+              <td valign="top" align="left">
+		    <strong>C</strong></td>
+        </tr>
         <tr>
-		  <td valign="top">1.6.0</td>
-          <td valign="top">
-		    The <code>verbosity</code> parameter 
-			has been removed.<br>
-			Two new parameters have been added: 
-			<code>flags</code> of type <em>unsigned</em> 
-			and <code>buf_size</code> of type 
-			<em>size_t</em>.
-			</td></tr>
-		<tr>
-		  <td valign="top">1.4.0</td>
-		  <td valign="top">Function introduced in this release.</td>
-		</tr>
+            <td valign="top">1.8.7</td>
+            <td valign="top">
+                The <code>flags</code> parameter has been changed from
+                <em>unsigned int</em> to <em>unsigned long long</em>.<br>
+
+                The implementation of the <code>H5FD_LOG_TIME_OPEN</code>,
+                <code>H5FD_LOG_TIME_READ</code>, <code>H5FD_LOG_TIME_WRITE</code>,
+                <code>H5FD_LOG_TIME_SEEK</code> and <code>H5FD_LOG_TIME_CLOSE</code>
+                flags has been finished.<br>
+
+                New flags were added: <code>H5FD_LOG_NUM_TRUNCATE</code> and
+                <code>H5FD_LOG_TIME_STAT</code>.<br>
+            </td>
+        </tr>
+        <tr>
+              <td valign="top">1.6.0</td>
+              <td valign="top">
+		    The <code>verbosity</code> parameter has been removed.<br>
+                    Two new parameters have been added: 
+                        <code>flags</code> of type <em>unsigned</em> 
+                        and <code>buf_size</code> of type <em>size_t</em>.
+                    </td>
+        </tr>
+        <tr>
+          <td valign="top">1.4.0</td>
+          <td valign="top">Function introduced in this release.</td>
+        </tr>
     </table></ul>
 </dl>
 
