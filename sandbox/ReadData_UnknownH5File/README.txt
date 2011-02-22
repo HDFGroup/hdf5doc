@@ -8,11 +8,12 @@ Original author and date:
     March 2008
 
 Files:
-    HowToRead080324.txt        Notes from preliminary conversations.
+    README.txt                 This file
+    HowToRead080324.txt        Notes from preliminary conversations
     Notes.080325CC-prep        Notes in preparation for conversation 
-                                   with Cheryl Craig.
+                                   with Cheryl Craig
     Notes_080327CC.txt         Notes from conversation with Cheryl Craig
-                                   on 27 March 2008.
+                                   on 27 March 2008
 
 Status:
     What Cheryl had in mind at the time of the original conversation with 
