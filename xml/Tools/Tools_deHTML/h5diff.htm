@@ -1,0 +1,309 @@
+<!-- NEW PAGE -->
+<!-- HEADER RIGHT "h5diff" -->
+<hr>
+<dl>
+<dt><div align=right><font color=999999 size=-1><i>
+    Last modified: 30 October 2009
+    </i></font></div>
+
+<dt><strong>Tool Name:</strong> <a name="Tools-Diff">h5diff</a>  &nbsp;&nbsp;&nbsp;
+<dt><strong>Syntax:</strong>
+    <dd><code>h5diff </code> [<em>OPTIONS</em>]
+                    <em>file1</em> <em>file2</em> 
+                    [<em>object1</em> [<em>object2</em> ] ]       
+    <!--
+    <dd><code>h5diff </code> <em>file1</em> <em>file2</em> 
+                    [<em>OPTIONS</em>]
+                    [<em>object1</em> [<em>object2</em> ] ]       
+    -->
+    <p>
+    <dd><code>ph5diff </code> [<em>OPTIONS</em>]
+                    <em>file1</em> <em>file2</em> 
+                    [<em>object1</em> [<em>object2</em> ] ]       
+    <!--
+    <dd><code>ph5diff </code> <em>file1</em> <em>file2</em> 
+                    [<em>OPTIONS</em>] 
+                    [<em>object1</em> [<em>object2</em> ] ]       
+    -->
+    <p>
+<dt><strong>Purpose:</strong>
+    <dd>Compare two HDF5 files and report the differences.
+    <p>
+<dt><strong>Description:</strong>
+    <dd><code>h5diff</code> and <code>ph5diff</code> are command line tools 
+        that compare two HDF5 files, <em>file1</em> and <em>file2</em>, 
+        and report the differences between them.
+        <code>h5diff</code> is for serial use while
+        <code>ph5diff</code> is for use in parallel environments.
+        <p>
+        Optionally, <code>h5diff</code> and <code>ph5diff</code> 
+        will compare two objects within these files.
+        If only one object, <em>object1</em>, is specified, 
+        <code>h5diff</code> will compare 
+        <em>object1</em> in <em>file1</em>
+        with <em>object1</em> in <em>file2</em>.
+        If two objects, <em>object1</em> and <em>object2</em>, 
+        are specified, <code>h5diff</code> will compare 
+        <em>object1</em> in <em>file1</em>
+        with <em>object2</em> in <em>file2</em>.
+        <p>
+        <em>object1</em> and <em>object2</em> 
+        can be groups, datasets, named datatypes, or links
+        and must be expressed as absolute 
+        paths from the respective file&rsquo;s root group.
+        <ul>
+            <li>If these objects are groups, the name string is compared.
+            <li>If these objects are datasets, array rank and dimensions, 
+                datatypes, and data values are compared.
+            <li>If these objects are named datatypes, the comparison 
+                is based on the return value of
+                <code><a href="RM_H5T.html#Datatype-Equal">H5Tequal</a></code>.
+            <li>If these objects are links, the link value is compared.
+                <br>
+                (The link value is the string that is often referred to 
+                as the name of the linked object.)
+        </ul>
+        <p>
+        <code>h5diff</code> and <code>ph5diff</code> 
+        have the following output modes:
+        <dir>
+        <table width=80% border=0>
+          <tr valign=top><td>Normal mode</td>
+              <td>Prints the number of differences found 
+                  and where they occurred.
+          </td></tr>
+          <tr valign=top><td>Report mode (<code>-r</code>)</td>
+              <td>Prints the above plus the differences.
+          </td></tr>
+          <tr valign=top><td>Verbose&nbsp;mode&nbsp;(<code>-v</code>)&nbsp;&nbsp;&nbsp;&nbsp;</td>
+              <td>Prints all of the above plus a list of objects and warnings.
+          </td></tr>
+          <tr valign=top><td>Quiet mode (<code>-q</code>)</td>
+              <td>Prints no output. 
+                  <br>
+                  (<code>h5diff</code> always returns an exit code of
+                  <code>1</code> when differences are found.)
+          </td></tr>
+        </table>
+        </dir>
+        <p>
+        <a name="NaNs">
+        <b><code>h5diff</code> and NaNs:</b>
+        </a>
+        <br>
+        <code>h5diff</code> detects when a value in a dataset is a NaN 
+        (a "not a number" value), but does not differentiate among various 
+        types of NaNs.
+        Thus, when one NaN is compared with another NaN, <code>h5diff</code> 
+        treats them as equal; when a NaN is compared with a valid number,
+        <code>h5diff</code> treats them as not equal.
+        <p>
+        Note that NaN detection is computationally expensive and slows
+        <code>h5diff</code> performance dramatically.
+        If you do not have NaNs in your files, or do not care about NaNs,
+        use the <code>-N</code> option below to turn off NaN detection.
+        Similarly, if <code>h5diff -N</code> produces unexpected differences,
+        running <code>h5diff</code> without <code>-N</code> should reveal 
+        whether any of the differences are associated with NaN values.
+        <p>
+        <b>Difference between <code>h5diff</code> and <code>ph5diff</code>:</b>
+        <br>
+        With the following exception, 
+        <code>h5diff</code> and <code>ph5diff</code> behave identically.
+        With <code>ph5diff</code>, the comparison of objects is shared across 
+        multiple processors, with the comparison of each pair of objects 
+        assigned to a single processor.  I.e., the comparison of a single
+        object, even a very large dataset, in each file is not shared.
+<!--
+	Additional information, with several sample cases, 
+	can be found in the document 
+	<a href="http://www.hdfgroup.org/HDF5/h5diff/h5diff_design.html">
+	<cite>H5diff Examples</cite></a>.
+-->
+    <p>
+<dt><strong>Options and Parameters:</strong>
+    <ul><table>
+        <tr>
+            <td valign="top"><code>-h</code>
+                &nbsp;&nbsp;or&nbsp;
+                <code>--help</code></td>
+            <td valign="top">Print help message.</td></tr>
+        <tr>
+            <td valign="top"><code>-V</code>
+                &nbsp;&nbsp;or&nbsp;
+                <code>--version</code></td>
+            <td valign="top">Print version number and exit.</td></tr>
+        <tr>
+            <td valign="top"><code>-r</code>
+                &nbsp;&nbsp;or&nbsp;
+                <code>--report</code></td>
+            <td valign="top">Report mode &mdash; 
+                Print the differences.</td></tr>
+        <tr>
+            <td valign="top"><code>-v</code>
+                &nbsp;&nbsp;or&nbsp;
+                <code>--verbose</code></td>
+            <td valign="top">Verbose mode &mdash; 
+                Print the differences, a list of objects, 
+                and warnings.</td></tr>
+        <tr>
+            <td valign="top"><code>-q</code>
+                &nbsp;&nbsp;or&nbsp;
+                <code>--quiet</code></td>
+            <td valign="top">Quiet mode &mdash; 
+                Do not print output.</td></tr>
+        <tr>
+            <td valign="top"><code>-N</code>
+                &nbsp;&nbsp;or&nbsp;
+                <code>--nan</code></td>
+            <td valign="top">Disables NaN detection;
+                see &ldquo;<code>h5diff</code> and NaNs&rdquo; above.
+                </td></tr>
+        <tr>
+            <td valign="top"><code>-n</code> <em>count</em>
+                &nbsp;&nbsp;or
+                <br>
+                <code>&nbsp;&nbsp;--count=</code><em>count</em></td>
+            <td valign="top">Print difference up to <em>count</em> 
+                differences, then stop. 
+                <em>count</em> must be a positive integer.</td></tr>
+        <tr>
+            <td valign="top"><code>-d</code> <em>delta</em>
+                &nbsp;&nbsp;or
+                <br>
+                <code>&nbsp;&nbsp;--delta=</code><em>delta</em></td>
+            <td valign="top">Print only differences that are greater than the 
+                limit <em>delta</em>. <em>delta</em> must be a positive number.
+                The comparison criterion is whether the absolute value of the 
+                difference of two corresponding values is greater than 
+                <em>delta</em> 
+                (e.g.,&nbsp;<code>&nbsp;|a&ndash;b|&nbsp;&gt;&nbsp;<em>delta</em></code>,
+                where <code>a</code> is a value in <em>file1</em> and
+                <code>b</code> is a value in <em>file2</em>).</td></tr>
+        <tr>
+            <td valign="top"><code>-p</code> <em>relative</em>
+                &nbsp;&nbsp;or
+                <br>
+                <code>&nbsp;&nbsp;--relative=</code><em>relative</em></td>
+            <td valign="top">Print only differences that are greater than a 
+                relative error. <em>relative</em> must be a positive number.
+                The comparison criterion is whether the absolute value of the 
+                difference <code>1</code> and the ratio of two corresponding 
+                values is greater than <em>relative</em> 
+                (e.g.,&nbsp;<code>|1&ndash;(b/a)|&nbsp;&gt;&nbsp;<em>relative</em></code>
+                where <code>a</code> is a value in <em>file1</em> and
+                <code>b</code> is a value in <em>file2</em>).</td></tr>
+        <tr>
+            <td valign="top">
+                <code>--use-system-epsilon</code>
+                <br>
+                <code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code>
+                </td>
+            <td valign="top">Return a difference if and only if the difference
+                between two data values exceeds the system value for epsilon.
+                That is, if <code><i>a</i></code> is a data value in one dataset,
+                <code><i>b</i></code> is the corresponding data value in the 
+                dataset with which the first dataset is being compared, and 
+                <code><i>epsilon</i></code> is the system epsilon,
+                return a difference if and only if 
+                <code>|<i>a</i>-<i>b</i>| > <i>epsilon</i></code>.
+                <br>
+                <em>Default:</em> Without this option, 
+                <code>h5diff</code> checks for strict equality.
+                <br>
+                This option has no single-letter short form.
+                </td></tr>
+        <tr>
+            <td valign="top"><em>file1</em>
+                &nbsp;&nbsp;
+                <em>file2</em></td>
+            <td valign="top">The HDF5 files to be compared.</td></tr>
+        <tr>
+            <td valign="top"><em>object1</em>
+                &nbsp;&nbsp;
+                <em>object2</em></td>
+            <td valign="top">Specific object(s) within the files 
+                to be compared.</td></tr>
+    </table></ul>
+    <p>
+<dt><strong>Exit Status:</strong></dt>
+    <dd><table border=0>
+        <tr valign=top align=left>
+            <td>0</td>
+            <td>No differences were found.</td>
+        </tr>
+        <tr valign=top align=left>
+            <td>1</td>
+            <td>Some differences were found.</td>
+        </tr>
+        <tr valign=top align=left>
+            <td>&gt;1&nbsp;&nbsp;&nbsp;&nbsp;</td>
+            <td>An error occurred.</td>
+        </tr>
+    </table>
+
+    <p>
+<dt><strong>Examples:</strong>
+    <dd>The following <code>h5diff</code> call compares
+        the object <code>/a/b</code> in <code>file1</code> 
+        with the object <code>/a/c</code> in <code>file2</code>:<br>
+        <code>&nbsp;&nbsp;&nbsp;&nbsp;h5diff file1 file2 /a/b /a/c</code>
+        <p>
+        This <code>h5diff</code> call compares
+        the object <code>/a/b</code> in <code>file1</code> 
+        with the same object in <code>file2</code>:<br>
+        <code>&nbsp;&nbsp;&nbsp;&nbsp;h5diff file1 file2 /a/b</code>
+        <p>
+        And this <code>h5diff</code> call compares
+        all objects in both files:<br>
+        <code>&nbsp;&nbsp;&nbsp;&nbsp;h5diff file1 file2</code>
+
+<!-- NEW PAGE -->
+
+    <p>
+<dt><strong>History:</strong>
+    <dd><table width="90%">
+        <tr>
+          <td valign="top" align="left" width="10%">
+            <strong>Release</strong>&nbsp;&nbsp;&nbsp;&nbsp;</td>
+          <td valign="top" align="left">
+            <strong>Change</strong></td></tr>
+        <tr>
+          <td valign="top">1.6.0</td>
+          <td valign="top">
+            <code>h5diff</code> introduced in this release.</td></tr>
+        <tr>
+          <td valign="top">1.8.0</td>
+          <td valign="top">
+            <code>ph5diff</code> introduced in this release.
+            <br>
+            <code>h5diff</code> command line syntax changed in this 
+            release.</td></tr>
+<!--
+        <tr>
+          <td valign="top">1.8.1</td>
+          <td valign="top">
+            Original syntax restored; both the original and the new syntax
+            are now supported.</td></tr>
+-->
+        <tr>
+          <td valign="top">1.8.2&nbsp;and&nbsp;1.6.8</td>
+          <td valign="top">
+            Return value on failure changed in this release.</td></tr>
+        <tr>
+          <td valign="top">1.8.4&nbsp;and&nbsp;1.6.10&nbsp;&nbsp;</td>
+          <td valign="top">
+            <code>--use-system-epsilon</code>
+            option added in this release.</td></tr>
+    </table></dd>
+<!--
+    <p>
+<dt><strong>Current Status:</strong>
+    <dd>
+    <p>
+<dt><strong>See Also:</strong>
+    <dd>
+-->
+</dl>
+
+
