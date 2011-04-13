@@ -1,0 +1,137 @@
+
+
+<!--
+  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+  * Copyright by The HDF Group.                                               *
+  * Copyright by the Board of Trustees of the University of Illinois.         *
+  * All rights reserved.                                                      *
+  *                                                                           *
+  * This file is part of HDF5.  The full HDF5 copyright notice, including     *
+  * terms governing use, modification, and redistribution, is contained in    *
+  * the files COPYING and Copyright.html.  COPYING can be found at the root   *
+  * of the source code distribution tree; Copyright.html can be found at the  *
+  * root level of an installed copy of the electronic HDF5 document set and   *
+  * is linked from the top-level documents page.  It can also be found at     *
+  * http://hdfgroup.org/HDF5/doc/Copyright.html.  If you do not have          *
+  * access to either file, you may request a copy from help@hdfgroup.org.     *
+  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+ -->
+
+
+<!-- NEW PAGE -->
+<!-- HEADER RIGHT "H5version_ge" -->
+<hr />
+<dl>
+
+<dt><div align=right><font color=999999 size=-1><i>
+    Last modified: 13 April 2011
+    </i></font></div></dt>
+
+<dt><strong>Name:</strong> <a name="Library-VersionGE">H5_VERSION_GE</a></dt>
+<br />
+<dt><strong>Signature:</strong></dt>
+    <dd><code>H5_VERSION_GE(maj,min,rel)</code></dd>
+<br />
+<dt><strong>Purpose:</strong></dt>
+    <dd>Determines whether the version of the library being used is 
+        greater than or equal to the specified version.</dd>
+<br />
+<dt><strong>Description:</strong></dt>
+    <dd>
+      <p>The H5_VERSION_GE macro compares the version of the HDF5 library 
+      being used against the version number specified in the parameters. </p>
+      <p>At compile time, this macro conditionally includes or excludes 
+      code based on the library’s version.</p>
+      <p>H5_VERSION_GE expects non-negative integer values as the 
+      parameters.</p>
+      <p>For more information, see &ldquo;HDF5 Versions&rdquo; at 
+      <a href="http://www.hdfgroup.org/HDF5/doc/TechNotes/Version.html">
+      www.hdfgroup.org/HDF5/doc/TechNotes/Version.html.</a></p>
+      </dd>
+<br />
+
+<dt><strong>Parameters:</strong></dt>
+    <dd><table>
+        <tr>
+            <td valign="top" width="70"><em>int</em> <code>maj</code></td>
+            <td valign="top" width="600">IN: Major version number</td></tr>
+        <tr>
+            <td valign="top"><em>int</em> <code>min</code></td>
+            <td valign="top">IN: Minor version number</td></tr>
+        <tr>
+            <td valign="top"><em>int</em> <code>rel</code></td>
+            <td valign="top">IN: Release number</td></tr>
+        </table></dd>
+<br />
+
+<dt><strong>Returns:</strong></dt>
+    <dd><table>
+        <tr>
+            <td width="70">TRUE</td>
+            <td width="600">If the library’s version is 
+            greater than or equal to the version number specified</td>
+            </tr>
+        <tr>
+            <td>FALSE</td>
+            <td>If the library’s version is less than the 
+            version number specified</td>
+            </tr>
+        </table></dd>
+
+    <blockquote>A version is greater than the version number specified if its 
+    minor version is larger than the minor version number of the 
+    specified version. If the minor version numbers are the same, 
+    then a version would be greater than the version number 
+    specified if its release number is larger than the release 
+    number of the specified version.</blockquote>
+
+<br />
+
+<dt><strong>Fortran Interface:</strong></dt>
+    <dd>None</dd>
+<br />
+
+<dt><strong>Example Usage:</strong></dt>
+    <dd>
+    <p>Suppose an application wants to call different functions based 
+    on the version of the HDF5 library to which an application will be 
+    linked. For example, the link functions, H5Lxxx, are new in the 1.8 
+    versions of HDF5, and some group functions, H5Gxxx, are deprecated 
+    in the 1.8 versions. The following code uses H5Ldelete if the 
+    library version is 1.8.0 or greater or uses H5Gunlink if the 
+    library version is not greater than 1.8.0. Similarly, the code 
+    calls H5Lexists or H5Gopen to make sure the group has been deleted. </p>
+    
+    <pre>
+    #if H5_VERSION_GE(1,8,0)
+        ret = H5Ldelete(file, "Group", H5P_DEFAULT);
+        CHECK(ret, FAIL, "H5Lunlink");
+
+        status = H5Lexists(file, "Group", H5P_DEFAULT);
+        VERIFY(status, FALSE, "H5Lexists");
+    #else
+        ret = H5Gunlink(file, "Group");
+        CHECK(ret, FAIL, "H5Gunlink");
+
+        H5E_BEGIN_TRY {
+            grp = H5Gopen(file, "Group");
+        } H5E_END_TRY;
+        VERIFY(grp, FAIL, "H5Gopen");
+    #endif
+    </pre></dd>
+<br />
+
+<dt><strong>History:</strong></dt>
+    <dd><table>
+        <tr>
+          <td width="70">
+            <strong>Release</strong></td>
+          <td width="600">
+            <strong>Change</strong></td></tr>
+        <tr>
+          <td>1.8.7</td>
+          <td>C macro introduced in this release.</td></tr>
+        </table></dd>
+</dl>
+<br />
+
