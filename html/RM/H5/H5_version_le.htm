@@ -1,0 +1,154 @@
+
+
+<!--
+  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+  * Copyright by The HDF Group.                                               *
+  * Copyright by the Board of Trustees of the University of Illinois.         *
+  * All rights reserved.                                                      *
+  *                                                                           *
+  * This file is part of HDF5.  The full HDF5 copyright notice, including     *
+  * terms governing use, modification, and redistribution, is contained in    *
+  * the files COPYING and Copyright.html.  COPYING can be found at the root   *
+  * of the source code distribution tree; Copyright.html can be found at the  *
+  * root level of an installed copy of the electronic HDF5 document set and   *
+  * is linked from the top-level documents page.  It can also be found at     *
+  * http://hdfgroup.org/HDF5/doc/Copyright.html.  If you do not have          *
+  * access to either file, you may request a copy from help@hdfgroup.org.     *
+  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+ -->
+
+
+<!-- NEW PAGE -->
+<!-- HEADER RIGHT "H5_VERSION_LE" -->
+<hr />
+<dl>
+
+<dt><div align=right><font color=999999 size=-1><i>
+    Last modified: 20 April 2011
+    </i></font></div></dt>
+
+<dt><strong>Name:</strong> <a name="Library-VersionLE">H5_VERSION_LE</a></dt>
+<dt><strong>Signature:</strong></dt>
+    <dd><code>H5_VERSION_LE( 
+        <em>int</em> maj, 
+        <em>int</em> min, 
+        <em>int</em> rel
+        )</code></dd>
+
+<p />
+<dt><strong>Purpose:</strong></dt>
+    <dd>Determines whether the version of the library being used is 
+        less than or equal to the specified version.</dd>
+
+<p />
+<dt><strong>Motivation:</strong></dt>
+    <dd>The <a href="#Library-VersionGE"><code>H5_VERSION_GE</code></a>
+        and <a href="#Library-VersionLE"><code>H5_VERSION_LE</code></a>
+        macros are used at compile time to conditionally include or exclude 
+        code based on the version of the HDF5 library against which 
+        an application will be linked.</p>
+
+<p />
+<dt><strong>Description:</strong></dt>
+    <dd>The <code>H5_VERSION_LE</code> macro compares the version of 
+        the HDF5 library being used against the version number specified 
+        in the parameters.</p>
+        <p>
+        For more information, see &ldquo;HDF5 Versions&rdquo; at 
+        <a href="http://www.hdfgroup.org/HDF5/doc/TechNotes/Version.html">
+        <code>www.hdfgroup.org/HDF5/doc/TechNotes/Version.html</code></a>.</p>
+        </dd>
+
+<p />
+<dt><strong>Parameters:</strong></dt>
+    <dd><table>
+        <tr>
+            <td valign="top"><em>int</em>&nbsp;<code>maj&nbsp;&nbsp;&nbsp;&nbsp;</code></td>
+            <td valign="top">IN: Major version number<br>
+                             A non-negative integer value</td></tr>
+        <tr>
+            <td valign="top"><em>int</em> <code>min</code></td>
+            <td valign="top">IN: Minor version number<br>
+                             A non-negative integer value</td></tr>
+        <tr>
+            <td valign="top"><em>int</em> <code>rel</code></td>
+            <td valign="top">IN: Release number<br>
+                             A non-negative integer value</td></tr>
+        </table></dd>
+
+<p />
+<dt><strong>Returns:</strong></dt>
+    <dd><table>
+        <tr>
+            <td><code>TRUE</code></td>
+            <td>If the library version is 
+            less than or equal to the version number specified </td>
+            </tr>
+        <tr>
+            <td><code>FALSE&nbsp;&nbsp;&nbsp;&nbsp;</code></td>
+            <td>If the library version is greater than the 
+            version number specified</td>
+            </tr>
+        </table>
+
+        <p>
+        A library version is less than the specified version number if its
+        major version is smaller than the specified major version number.
+        If the major version numbers are the same, it is less than the 
+        specified version number if its minor version is smaller than the
+        specified minor version number.  If the minor version numbers are 
+        the same, then a library version would be less than the specified
+        version number if its release number is smaller than the specified
+        release number.
+        </dd>
+
+<p />
+<dt><strong>Fortran Interface:</strong></dt>
+    <dd>None</dd>
+
+<p />
+<dt><strong>Example Usage:</strong></dt>
+    <dd>
+        Suppose an application wants to call different functions based 
+        on the version of the HDF5 library to which an application will be 
+        linked. For example, the link functions, <code>H5Lxxx</code>, 
+        are new in the 1.8 versions of HDF5, and some group functions, 
+        <code>H5Gxxx</code>, are deprecated in the 1.8 versions. 
+        The following code uses <code>H5Gunlink</code> if the 
+        library version is 1.6.10 or earlier or uses <code>H5Ldelete</code> 
+        if the library version is not 1.6.10 or earlier. Similarly, the code 
+        calls <code>H5Gopen</code> or <code>H5Lexists</code> 
+        to make sure the group has been deleted. </p>
+
+        <pre>
+    #if H5_VERSION_LE(1,6,10)
+        ret = H5Gunlink(file, "Group");
+        CHECK(ret, FAIL, "H5Gunlink");
+
+        H5E_BEGIN_TRY {
+            grp = H5Gopen(file, "Group");
+        } H5E_END_TRY;
+        VERIFY(grp, FAIL, "H5Gopen");
+    #else
+        ret = H5Ldelete(file, "Group", H5P_DEFAULT);
+        CHECK(ret, FAIL, "H5Lunlink");
+
+        status = H5Lexists(file, "Group", H5P_DEFAULT);
+        VERIFY(status, FALSE, "H5Lexists");
+    #endif
+        </pre></dd>
+
+<p />
+<dt><strong>History:</strong></dt>
+    <dd><table>
+        <tr>
+          <td>
+            <strong>Release<code>&nbsp;&nbsp;&nbsp;&nbsp;</code></strong></td>
+          <td>
+            <strong>Change</strong></td></tr>
+        <tr>
+          <td>1.8.7</td>
+          <td>C macro introduced in this release.</td></tr>
+        </table></dd>
+</dl>
+
