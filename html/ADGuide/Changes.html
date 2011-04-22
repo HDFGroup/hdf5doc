@@ -61,8 +61,200 @@ This document is provided to assist application developers who must keep
 an application synchronized with the HDF5 Library or related software.
 
 
-<a name="185">
-<h2>Release 1.8.6 (current release) versus Release 1.8.5,
+<a name="187">
+<h2>Release 1.8.7 (current release) versus Release 1.8.6,
+    May 2011</h2> 
+</a>
+<dir>
+
+This section lists interface-level changes and 
+other user-visible changes in behavior 
+in the transition from HDF5 Release 1.8.6 to Release 1.8.7.
+
+
+    <h3>New C Functions and Macros</h3>
+    
+        <dl>    
+            <dd>Three new functions enable a cache of files opened through 
+                external links.  This cache can improve the performance of 
+                external links, particularly in heavy use cases:
+                <ul>
+                    <li><a href="../RM/RM_H5P.html#Property-SetElinkFileCacheSize">
+                        <code>H5Pset_elink_file_cache_size</code></a></li>
+                    <li><a href="../RM/RM_H5P.html#Property-GetElinkFileCacheSize">
+                        <code>H5Pget_elink_file_cache_size</code></a></li>
+                    <li><a href="../RM/RM_H5F.html#File-clearElinkFileCache">
+                        <code>H5Fclear_elink_file_cache</code></a></li>
+                </ul>
+
+                &nbsp;<br>
+                Two new macros enable compile-time inclusion or exclusion
+                of code, depending on the version of the HDF5 library 
+                against which an application is to be linked:
+                <ul>
+                    <li><a href="../RM/RM_H5.html#Library-VersionGE">
+                        <code>H5_VERSION_GE</code></a></li>
+                    <li><a href="../RM/RM_H5.html#Library-VersionLE">
+                        <code>H5_VERSION_LE</code></a></li>
+                </ul>
+        </dl>    
+
+
+    <h3>C Functions with Changed Capability</h3>
+    
+        <dl>    
+            <dd>HDF5 now allows the size of any dataspace dimension to be 
+                <code>0</code> (zero).  This was previously allowed
+                only if the maximum size of the dimension was unlimited.  
+                Though their signatures have not changed, the range of valid
+                parameter values is affected for the following functions:
+                <ul>
+                    <li><a href="../RM/RM_H5D.html#Dataspace-CreateSimple">
+                        <code>H5Screate_simple</code></a></li>
+                    <li><a href="../RM/RM_H5D.html#Dataspace-SetExtentSimple">
+                        <code>H5Sset_extent_simple</code></a></li>
+                    <li><a href="../RM/RM_H5P.html#Property-SetExternal">
+                        <code>H5Pset_external</code></a></li>
+                </ul>
+                Note that no data can be written to a dataset in which any
+                dimension size is set to zero.
+                <br>&nbsp;<br>
+                All logging file driver options have now been implemented:
+                <ul>
+                    <li><a href="../RM/RM_H5P.html#Property-SetFaplLog">
+                        <code>H5Pset_fapl_log</code></a></li>
+                </ul>
+        </dl>    
+</dir>
+
+<dir>
+    <h3>Command-line Utilities with New Options</h3>
+    
+        <dl>    
+            <dd><a href="../RM/Tools.html#Tools-Diff"><code>h5diff</code></a>
+                has a new <i>verbose with levels</i> option:
+                <ul>
+                  <li><code>-v<em>n</em>, --verbose=<em>n</em></code></li>
+                </ul>
+                &nbsp;<br>
+                <a href="../RM/Tools.html#Tools-Dump"><code>h5dump</code></a>
+                has one new option:
+                <ul>
+                  <li><code>--enable-error-stack</code></li>
+                </ul>
+        </dl>    
+</dir>
+
+<dir>
+    <h3>Command-line Utilities with Changed Option Name</h3>
+    
+        <dl>    
+            <dd><a href="../RM/Tools.html#Tools-Ls"><code>h5ls</code></a>
+                has one changed option name:
+                <ul>
+                  <li><code>--enable-error-stack</code>
+                  replaces <code>--error</code></li>
+                </ul>
+        </dl>    
+</dir>
+
+
+<dir>
+    <h3>Command-line Utilities with Changed Behavior</h3>
+    
+        <dir>
+            <a href="../RM/Tools.html#Tools-Diff"><code>h5diff</code></a>
+            now compares attributes more appropriately and, with the new
+            <i>verbose with levels</i> option, provides additional attribute 
+            information at levels <code>1</code> and <code>2</code>.
+
+            <p>
+            <a href="../RM/Tools.html#Tools-Diff"><code>h5diff
+            --use-system-epsilon</code></a>
+            now employs a faster formula, <code>'|a - b|'</code> instead 
+            of <code>'|a - b| / b'</code>.
+
+            <p>
+            <a href="../RM/Tools.html#Tools-Copy"><code>h5copy</code></a>
+            now accepts the same file as the source and target file, 
+            enabling object copying within a file.
+
+            <p>
+            <a href="../RM/Tools.html#Tools-Dump"><code>h5dump</code></a>
+            now displays reference types correctly:
+            <table>
+                <tr valign="top"><td>
+                    <code>&nbsp;&nbsp;&nbsp;&nbsp;</code> 
+                </td><td>
+                    <code>H5T_REFERENCE {H5T_STD_REF_OBJ}</code> 
+                </td><td>
+                    Object reference 
+                </td></tr>
+                <tr valign="top"><td>
+                    <code>&nbsp;</code> 
+                </td><td>
+                    <code>H5T_REFERENCE {H5T_STD_REF_DSETREG}&nbsp;&nbsp;</code> 
+                </td><td>
+                    Dataset region reference
+                </td></tr>
+            </table>
+        </dir>
+</dir>
+
+<dir>
+    <h3>Configure, Compiler, and Build Changes</h3>
+    
+        <dir>
+            Configure now generates Makefiles that build in 
+            <i>silent make mode</i> by default.  
+            In this mode, compile and link lines are significantly 
+            simplified for clarity. You can opt out of this default 
+            with either of the following approaches:
+            <ul>
+                <li>Use the <code>--disable-silent-rules</code> flag at 
+                    configure time to override the default and view actual 
+                    compile and link lines during the build.</li>
+                <li>Use the <code>make</code> command with the <code>V=1</code> 
+                    option to run a verbose make. </li>
+            </ul>
+
+            <p>
+            The new configure option <code>--enable-unsupported</code> 
+            can be used to stop <code>configure</code> from preventing the 
+            use of unsupported configure option combinations, such as 
+            C++ in parallel or Fortran with threadsafe. 
+            <ul>
+                <li><i><b>WARNING: 
+                   <br>
+                   Use &nbsp;
+                   </i><code>--enable-unsupported</code><i> &nbsp; 
+                   at your own risk!</b></i> 
+                   <br>
+                   This option may result in a library that does not compile 
+                   or does not run as expected.</li>
+            </ul>
+
+        </dir>
+</dir>
+
+
+<dir>
+    <h3>Parallel HDF5</h3>
+    
+        <dir>
+            <code>mpicc</code> and <code>mpif90</code> are now the default 
+            C and Fortran compilers on Linux systems when 
+            <code>--enable-parallel</code> is specified but no 
+            <code>$CC</code> or <code>$FC</code> is defined.
+        </dir>
+</dir>
+
+
+
+
+
+<a name="186">
+<h2>Release 1.8.6 versus Release 1.8.5,
     February 2011</h2> 
 </a>
 <dir>
@@ -214,9 +406,6 @@ in the transition from HDF5 Release 1.8.5 to Release 1.8.6.
 </dir>
 
 
-<!--
-<h2>&nbsp;</h2> 
--->
 
 
 <a name="185">
@@ -8618,7 +8807,7 @@ Describes HDF5 Release 1.8.7, targeted for May 2011.
 </address>
 <!-- #EndLibraryItem --><!-- Created: Spring 1999 -->
 <!-- hhmts start -->
-Last modified: 17 February 2011 
+Last modified: 22 April 2011 
 <!-- hhmts end -->
 
 </body>
