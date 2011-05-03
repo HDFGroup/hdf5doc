@@ -24,7 +24,7 @@
 <dl>
 
   <dt><div align=right><font color=999999 size=-1><i>
-      Last modified: 21 October 2010
+      Last modified: 3 May 2011
       </i></font></div>
 
   <dt><strong>Name:</strong> <a name="Datatype-Commit2">H5Tcommit2</a>
@@ -66,6 +66,43 @@
         <p>
         Once commited, this datatype may be used to define the 
 	datatype of any other dataset or attribute in the file.  
+        <p>
+        This function will not accept a datatype that cannot actually
+        hold data.  This currently includes
+        compound datatypes with no fields and
+        enumerated datatypes with no members.
+<!--
+FOR "FULL AND FINAL" FIX, 
+ADD FULL EXPLANATION IN H5Tcreate_enum AND H5Tcreate
+THAT HDF5 DOES NOT ALLOW THE USE OF UNUSABLE DATATYPES, AS DEFINED BELOW.
+
+ONE FIRST CREATES A COMPOUND OR AN ENUM THEN POPULATES IT; ONLY THEN
+CAN THE DATATYPE BE COMMITTED OR USED TO CREATE A DATASET OR ATTRIBUTE.
+
+ALSO NOTE IN H5Tcreate THAT AN ENUM WILL BE A NATIVE INTEGER TYPE.
+
+ADD POINTERS FROM H5Tcommit*, H5Dcreate*, and H5Acreate* TO THE
+H5Tcreate_enum AND H5Tcreate EXPLANATIONS.
+IN H5Tcommit1, H5Tcommit2, & H5Tcommit_anon, THAT LINK WILL REPLACE THE 
+ABOVE PARAGRAPH.
+
+QUESTIONS FOR QK:  
+    1) CAN ENUM BE ANY SIZE NATIVE INTEGER (E.G., LONG LONG)?
+    2) WHAT IS THE DIFFERENCE BETWEEN THESE TWO FUNCTIONS?
+            H5Tcreate (H5T_ENUM, <size>)
+            H5Tenum_create (<datatype>)
+
+ADD HISTORY SECTIONS TO DATASET AND ATTRIBUTE CREATE FUNCTIONS 
+THAT HDF5 WAS MODIFIED IN 1.4.? (1.4.0?) TO NOT ACCEPT 'UNUSABLE' DTYPEs.
+
+        HDF5 does not support the use of datatypes that are constructed 
+        such that they will not accomodate actual data.  
+        For example, any <code>H5Tcommit*</code>, <code>H5Dcreate*</code>,
+        or <code>H5Acreate*</code> command will fail 
+        if the specified datatype is 
+        a compound datatype with no fields or 
+        an enumerated datatype with no members.
+-->
   <p>
   <dt><strong>Parameters:</strong>
     <dd><table>
@@ -109,7 +146,6 @@
   <p>
   <dt><strong>Fortran90 Interface:</strong><!--h5tcommit2_f--> 
     <dd>None.
-
 <!--
     <pre>
   
@@ -127,6 +163,13 @@
           <td valign="top">1.8.0</td>
           <td valign="top">
             Function introduced in this release.</td></tr>
+        <tr>
+          <td valign="top">1.8.7</td>
+          <td valign="top">
+            Function modified in this release to reject
+            datatypes that will not accomodate actual data, such as 
+            a compound datatype with no fields or 
+            an enumerated datatype with no members.</td></tr>
     </table>
 </dl>
 
