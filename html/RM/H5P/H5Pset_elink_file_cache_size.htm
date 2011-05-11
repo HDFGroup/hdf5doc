@@ -24,82 +24,102 @@
 <dl>
 
   <dt><div align=right><font color=999999 size=-1><i>
-      Last modified: 14 April 2011
+      Last modified: 11 May 2011
       </i></font></div>
 
-  <dt><strong>Name:</strong> <a name="Property-SetELinkFileCacheSize">H5Pset_elink_file_cache_size</a>
+  <dt><strong>Name:</strong> 
+      <a name="Property-SetELinkFileCacheSize">H5Pset_elink_file_cache_size</a>
 
   <dt><strong>Signature:</strong>
-    <dd><em>herr_t </em><code>H5Pset_elink_file_cache_size</code>(
-            <em>hid_t </em><code>plist_id</code>,
-            <em>unsigned </em><code>efc_size</code>
-        )
+      <dd><em>herr_t </em><code>H5Pset_elink_file_cache_size</code>(
+                     <em>hid_t </em><code>fapl_id</code>,
+                     <em>unsigned </em><code>efc_size</code>
+          )
 
   <p>
   <dt><strong>Purpose:</strong>
-    <dd>Sets the size of the external link open file cache in a file access
-        property list.
+      <dd>Sets the number of files that can be held open in an 
+          external link open file cache. 
 
   <p>
   <dt><strong>Motivation:</strong>
-    <dd><code>H5Pset_elink_file_cache_size</code>
-      is used to adjust the size of the cache of open files reached through
-      external links.  This will reduce the number of times such files are
-      opened if external links are accessed repeatedly, improving performance if
-      low-level file opens or closes are expensive.
+      <dd>The <em>external link open file cache</em> holds files open after
+          they have been accessed via an external link.
+          This cache reduces the number of times such files are opened 
+          when external links are accessed repeatedly and can siginificantly 
+          improves performance in certain heavy-use situations and
+          when low-level file opens or closes are expensive.
+          <p>
+          <code>H5Pset_elink_file_cache_size</code> sets the number of files 
+          that will be held open in an external link open file cache;
+          <a href="RM_H5P.html#Property-GetELinkFileCacheSize">
+          <code>H5Pget_elink_file_cache_size</code></a> retrieves the size
+          of an existing cache; and
+          <a href="RM_H5F.html#File-ClearELinkFileCache">
+          <code>H5Fclear_elink_file_cache</code></a> clears an existing cache
+          without closing it.
 
   <p>
   <dt><strong>Description:</strong>
-    <dd><code>H5Pset_elink_file_cache_size</code>
-      specifies the size of the external link open file cache.  Files are placed
-      in this cache when they are opened via an external link from the parent
-      file (i.e. the file opened with <code>plist_id</code> as its FAPL).  Files
-      in the cache are held open until they are evicted from the cache or the
-      parent file is closed.  This can improve performance if external links are
-      repeatedly accessed.  The default size of the external file cache is 0.
-      <p>
-      When the cache is full, files will be evicted using a LRU (least recently
-      used) scheme: the file which has gone the longest time without being
-      accessed through the parent file will be evicted and closed (if nothing
-      else is holding that file open).  When child files contain external file
-      caches of their own, they can form a graph of cached external files.
-      Closing the last external reference to such a graph will recursively close
-      all files in the graph, even if cycles are present.  Note that files
-      opened through external links inherit the parent's file access property
-      list by default, and therefore inheret the parent's external file cache
-      settings.
+      <dd><code>H5Pset_elink_file_cache_size</code>
+          specifies the number of files that will be held open in an 
+          external link open file cache.  
+          <p>
+          The default external link open file cache size is 0 (zero), 
+          meaning that files accessed via an external link are not held open.
+          Setting the cache size to a positive integer turns on the cache;
+          setting the size back to zero turns it off.
+          <p>
+          With this property set, files are placed in the external link open 
+          file cache cache when they are opened via an external link.
+          Files are then held open until either they are evicted from the cache
+          or the parent file is closed.
+          This property setting can improve performance when external links 
+          are repeatedly accessed.  
+          <p>
+          When the cache is full, files will be evicted using a least recently
+          used (LRU) scheme; the file which has gone the longest time without 
+          being accessed through the parent file will be evicted and closed 
+          if nothing else is holding that file open.  
+          <p>
+          Files opened through external links inherit the parent file&rsquo;s 
+          file access property list by default, and therefore inherit the 
+          parent file&rsquo;s external link open file cache setting.
+          <p>
+          When child files contain external links of their own, the caches can 
+          form a graph of cached external files.
+          Closing the last external reference to such a graph will recursively 
+          close all files in the graph, even if cycles are present.  
 
   <p>
   <dt><strong>Parameters:</strong>
     <dd>
     <table>
       <tr valign="top">
-        <td><em>hid_t </em><code>plist_id</code>
-            </td><td>&nbsp;&nbsp;&nbsp;&nbsp;</td>
-        <td>IN: File access property list identifier
-            </td></tr>
+          <td><em>hid_t </em><code>fapl_id</code>
+              </td><td>&nbsp;&nbsp;&nbsp;&nbsp;</td>
+          <td>IN: File access property list identifier
+              </td></tr>
       <tr valign="top">
-        <td><em>unsigned&nbsp;</em><code>efc_size</code>
-            </td><td>&nbsp;</td>
-        <td>IN: External link open file cache size.
-            </td></tr>
+          <td><em>unsigned&nbsp;</em><code>efc_size</code>
+              </td><td>&nbsp;</td>
+          <td>IN: External link open file cache size in number of files.
+              <br>
+              <i>Default setting is <code>0</code> (zero).</i>
+              </td></tr>
     </table>
 
   <p>
   <dt><strong>Returns:</strong>
-    <dd>Returns a non-negative value if successful;
-        otherwise returns a negative value.
+      <dd>Returns a non-negative value if successful;
+          otherwise returns a negative value.
 
   <p>
   <dt><strong>Example Usage:</strong>
-
-    <dd>The following code sets the file access property list
-        <code>fapl_id</code> to cache (hold open) up to 8 files reached through
-        external links:
-<dir><pre>
-status = H5Pset_elink_file_cache_size(fapl_id, 8);
-</pre></dir>
-    <p>
+      <dd>The following code sets up an external link open file cache that
+          will hold open up to 8 files reached through external links:
+          <pre>
+    status = H5Pset_elink_file_cache_size(fapl_id, 8);        </pre>
 
 
 <!--__ *** FORTRAN90 INTERFACE  **********************************  -->
@@ -109,22 +129,26 @@ status = H5Pset_elink_file_cache_size(fapl_id, 8);
 <!--__ See the file h5fortran_f_insert.htm for a template and       -->
 <!--__ instructions.                                                -->
 <!--__ ***********************************************************  -->
-  <p>
 
   <p>
   <dt><strong>See Also:</strong>
-    <dd><a href="RM_H5P.html#Property-GetELinkFileCacheSize">
-        <code>H5Pget_elink_file_cache_size</code></a>,
-        &nbsp;
-        <a href="RM_H5F.html#Property-ClearELinkFileCache">
-        <code>H5Fclear_elink_file_cache</code></a>,
-        &nbsp;
-        <a href="RM_H5P.html#Property-SetELinkFapl">
-        <code>H5Pset_elink_fapl</code></a>,
-        &nbsp;
-        <a href="RM_H5L.html#Link-CreateExternal">
-        <code>H5Lcreate_external</code></a>
-        <p>
+      <dd>
+      <table width="90%">
+        <tr valign="top">
+            <td width="50%">
+                <a href="RM_H5P.html#Property-GetELinkFileCacheSize">
+                <code>H5Pget_elink_file_cache_size</code></a>
+                <br>
+                <a href="RM_H5F.html#File-ClearELinkFileCache">
+                <code>H5Fclear_elink_file_cache</code></a>
+            </td><td width="50%">
+                <a href="RM_H5L.html#Link-CreateExternal">
+                <code>H5Lcreate_external</code></a>
+                <br>
+                <a href="RM_H5P.html#Property-SetELinkFapl">
+                <code>H5Pset_elink_fapl</code></a>
+        </tr>
+      </table>
 
   <p>
   <dt><strong>History:</strong>
