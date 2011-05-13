@@ -62,8 +62,7 @@ an application synchronized with the HDF5 Library or related software.
 
 
 <a name="187">
-<h2>Release 1.8.7 (current release) versus Release 1.8.6,
-    May 2011</h2> 
+<h2>Release 1.8.7 of May 2011 (current release) versus Release 1.8.6</h2>
 </a>
 <dir>
 
@@ -75,7 +74,7 @@ in the transition from HDF5 Release 1.8.6 to Release 1.8.7.
     <h3>New C Functions and Macros</h3>
     
         <dl>    
-            <dd>Three new functions enable a cache of files opened through 
+            <dd>Three new functions enable the caching of files opened through 
                 external links.  This cache can improve the performance of 
                 external links in heavy use cases:
                 <ul>
@@ -116,14 +115,26 @@ in the transition from HDF5 Release 1.8.6 to Release 1.8.7.
                     <li><a href="../RM/RM_H5P.html#Property-SetExternal">
                         <code>H5Pset_external</code></a></li>
                 </ul>
-                Note that no data can be written to a dataset in which any
-                dimension size is set to zero.
+                Note that no data can be written to a dataset in which 
+                the size of any dimension is set to zero.
+
                 <br>&nbsp;<br>
-                All logging file driver options have now been implemented:
+                In the logging file driver, 
+                implementation of the following flags has been completed:
+                <code>H5FD_LOG_TIME_OPEN</code>,
+                <code>H5FD_LOG_TIME_READ</code>, 
+                <code>H5FD_LOG_TIME_WRITE</code>, and
+                <code>H5FD_LOG_TIME_SEEK</code> 
+                <br>
+                Two new flags have been added: 
+                <code>H5FD_LOG_NUM_TRUNCATE</code> and
+                <code>H5FD_LOG_TIME_STAT</code>.
+                <br>
                 <ul>
                     <li><a href="../RM/RM_H5P.html#Property-SetFaplLog">
                         <code>H5Pset_fapl_log</code></a></li>
                 </ul>
+
                 &nbsp;<br>
                 HDF5 now blocks committing a datatype that cannot hold
                 any data.  This currently includes
@@ -137,6 +148,8 @@ in the transition from HDF5 Release 1.8.6 to Release 1.8.7.
                     <li><a href="../RM/RM_H5T.html#Datatype-CommitAnon">
                         <code>H5Tcommit_anon</code></a></li>
                 </ul>
+                HDF5 has long blocked creating a dataset or attribute 
+                with such a datatype.
         </dl>    
 </dir>
 
@@ -182,13 +195,15 @@ in the transition from HDF5 Release 1.8.6 to Release 1.8.7.
     
         <dl>    
             <dd><a href="../RM/Tools.html#Tools-Diff"><code>h5diff</code></a>
-                has a new <i>verbose with levels</i> option:
+                has a new <i>verbose with levels</i> option to display
+                additional attribute information: 
                 <ul>
                   <li><code>-v<em>n</em>, --verbose=<em>n</em></code></li>
                 </ul>
                 &nbsp;<br>
                 <a href="../RM/Tools.html#Tools-Dump"><code>h5dump</code></a>
-                has one new option:
+                has one new option to enable reporting of the 
+                HDF5 library&rsquo;s error stack:
                 <ul>
                   <li><code>--enable-error-stack</code></li>
                 </ul>
@@ -207,8 +222,10 @@ in the transition from HDF5 Release 1.8.6 to Release 1.8.7.
                 has one changed option name:
                 <ul>
                   <li><code>--enable-error-stack</code>
-                  replaces <code>--error</code></li>
+                  replaces <code>--error</code>.</li>
                 </ul>
+                The <code>--error</code> option is deprecated 
+                but remains available.</li>
         </dl>    
 </dir>
 
@@ -217,16 +234,22 @@ in the transition from HDF5 Release 1.8.6 to Release 1.8.7.
     <h3>Command-line Utilities with Changed Behavior</h3>
     
         <dir>
+            Attribute comparison with 
             <a href="../RM/Tools.html#Tools-Diff"><code>h5diff</code></a>
-            now compares attributes more appropriately and, with the new
-            <i>verbose with levels</i> option, provides additional attribute 
-            information at levels <code>1</code> and <code>2</code>.
+            has been corrected to compare all attributes with common names 
+            when comparing objects.  
+            Previously, <code>h5diff</code> compared attributes correctly 
+            only when two objects had the same number of attributes 
+            and all attribute names were identical; if there was either a 
+            value or name difference between two attributes, 
+            subsequent attributes were not compared.
 
             <p>
             <a href="../RM/Tools.html#Tools-Diff"><code>h5diff
             --use-system-epsilon</code></a>
-            now employs a faster formula, <code>'|a - b|'</code> instead 
-            of <code>'|a - b| / b'</code>.
+            now employs the formula 
+            <code>'|a - b|'</code> instead of
+            <code>'|a - b| / b'</code>.
 
             <p>
             <a href="../RM/Tools.html#Tools-Copy"><code>h5copy</code></a>
@@ -235,7 +258,8 @@ in the transition from HDF5 Release 1.8.6 to Release 1.8.7.
 
             <p>
             <a href="../RM/Tools.html#Tools-Dump"><code>h5dump</code></a>
-            now displays reference types correctly:
+            now displays reference types as described in 
+            <a href="../ddl.html"><cite>DDL in BNF for HDF5</cite></a>:
             <table>
                 <tr valign="top"><td>
                     <code>&nbsp;&nbsp;&nbsp;&nbsp;</code> 
@@ -256,7 +280,7 @@ in the transition from HDF5 Release 1.8.6 to Release 1.8.7.
 </dir>
 
 <dir>
-    <h3>Configure, Compiler, and Build Changes</h3>
+    <h3>Configure and Build Changes</h3>
     
         <dir>
             Configure now generates Makefiles that build in 
@@ -306,6 +330,7 @@ in the transition from HDF5 Release 1.8.6 to Release 1.8.7.
             <code>$CC</code> or <code>$FC</code> is defined.
         </dir>
 </dir>
+
 
 
 
@@ -8877,7 +8902,7 @@ V1.4.0
 </table>
 <!-- #EndLibraryItem --><!-- Created: Spring 1999 -->
 <!-- hhmts start -->
-Last modified: 6 May 2011 
+Last modified: 12 May 2011 
 <!-- hhmts end -->
 
 </body>
