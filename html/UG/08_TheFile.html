@@ -2867,7 +2867,117 @@ offsets and lengths.</p>
         <hr color="green" size="3"/></td>
         </tr>
 </table>
- 
-<br /><br /><br />
+<br />
+
+
+
+<a name=”MountingFiles”>
+<h3>3.10. Working with Multiple HDF5 Files</h3>
+</a>
+<p>Multiple HDF5 files can be associated so that the files can be worked 
+with as though all the information is in a single HDF5 file. A temporary 
+association can be set up by means of the <code>H5Fmount</code> function. 
+A permanent association can be set up by means of the external link 
+function <code>H5Lcreate_external</code>. </p>
+
+<p>The purpose of this section is to describe what happens when the 
+<code>H5Fmount</code> function is used to mount one file on another. </p>
+
+<p>When a file is mounted on another, the mounted file is mounted at 
+a group, and the root group of the mounted file takes the place of that 
+group until the mounted file is unmounted or until the files are closed. </p>
+
+<p>The figure below shows two files before one is mounted on the other. 
+File1 has two groups and three datasets. The group that is the target of 
+the A link has links, Z and Y, to two of the datasets. The group that is 
+the target of the B link has a link, W, to the other dataset. File2 has 
+three groups and three datasets. The groups in File2 are the targets of 
+the AA, BB, and CC links. The datasets in File2 are the targets of the 
+ZZ, YY, and WW links. </p>
+
+<table width="600" cellspacing="0" align="center">
+    <tr valign="top"> 
+        <td align="center">
+        <hr color="green" size="3"/>
+        <img height="300"src="Images/Files_fig3.jpg">
+        </td></tr>
+<tr><td><hr color="green" size="1" /></td></tr>
+<tr valign="top">
+    <td align="left" >
+        <b>Figure 3. Two separate files</b>
+        <hr color="green" size="3"/></td></tr>
+</table>
+<br />
+
+
+
+<p>The figure below shows the two files after File2 has been mounted 
+File1 at the group that is the target of the B link.</p>
+
+<table width="600" cellspacing="0" align="center">
+    <tr valign="top"> 
+        <td align="center">
+        <hr color="green" size="3"/>
+        <img height="300" src="Images/Files_fig4.jpg">
+        </td></tr>
+<tr><td><hr color="green" size="1" /></td></tr>
+<tr valign="top">
+    <td align="left" >
+        <b>Figure 4. File2 mounted on File1 </b>
+
+        <hr color="green" size="3"/></td></tr>
+</table>
+<br />
+
+
+
+<p>Note that the dataset that is the target of the W link is not shown 
+in the figure above. That dataset is masked by the mounted file. </p>
+
+<p>If a file is mounted on a group that has members, those members are 
+hidden until the mounted file is unmounted. There are two ways around this 
+if you need to work with a group member. One is to mount the file on an 
+empty group. Another is to open the group member before you mount the 
+file. Opening the group member will return an identifier that you can 
+use to locate the group member. </p>
+
+<p>The example below shows how <code>H5Fmount</code> might be used to 
+mount File2 onto File1. </p>
+
+<table width="600" cellspacing="0" align="center">
+    <tr valign="top"> 
+        <td align="left">
+        <hr color="green" size="3"/>
+    <pre>
+  herr_t H5Fmount(hid_t <i>loc_id</i>, const char <i>B</i>, 
+          hid_t <i>child_id</i>, hid_t <i>plist_id</i> ) </pre></td>
+        </tr>
+    <tr><td><hr color="green" size="1" /></td></tr>
+
+    <tr valign="top">
+        <td align="left">
+        <b>Example 17.Using <code>H5Fmount</code> </b><br />
+        loc_id is the file identifier for File1, B is the link to the 
+        group where File2 is mounted, child_id is the file identifier 
+        for File2, and plist_id is a property list identifier.
+        <hr color="green" size="3"/></td>
+        </tr>
+</table>
+<br />
+
+
+
+<p>For more information, see the the 
+&ldquo;<a href="09_Groups.html">HDF5 Groups</a>.&rdquo; chapter, and the 
+<code>H5Fmount</code>, <code>H5Funmount</code>, and 
+<code>H5Lcreate_external</code> functions in the 
+<a href="../RM/RM_H5Front.html"><cite>HDF5 Reference Manual</cite></a>.</p>
+
+
+
+
+
+
+<br /><br />
 </body>
 </html>
