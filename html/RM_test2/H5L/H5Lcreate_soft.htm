@@ -1,0 +1,156 @@
+
+
+<!--
+  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+  * Copyright by The HDF Group.                                               *
+  * Copyright by the Board of Trustees of the University of Illinois.         *
+  * All rights reserved.                                                      *
+  *                                                                           *
+  * This file is part of HDF5.  The full HDF5 copyright notice, including     *
+  * terms governing use, modification, and redistribution, is contained in    *
+  * the files COPYING and Copyright.html.  COPYING can be found at the root   *
+  * of the source code distribution tree; Copyright.html can be found at the  *
+  * root level of an installed copy of the electronic HDF5 document set and   *
+  * is linked from the top-level documents page.  It can also be found at     *
+  * http://hdfgroup.org/HDF5/doc/Copyright.html.  If you do not have          *
+  * access to either file, you may request a copy from help@hdfgroup.org.     *
+  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+ -->
+
+
+<!-- NEW PAGE -->
+<!-- HEADER RIGHT "H5Lcreate_soft" -->
+<hr>
+<dl>
+
+  <dt><div align=right><font color=999999 size=-1><i>
+      Last modified: 13 April 2011
+      </i></font></div>
+
+  <dt><strong>Name:</strong> <a name="Link-CreateSoft">H5Lcreate_soft</a> 
+  <dt><strong>Signature:</strong>
+    
+  <dd><em>herr_t</em> <code>H5Lcreate_soft</code>(
+      <em>const char *</em><code>target_path</code>,
+      <em>hid_t</em> <code>link_loc_id</code>, 
+      <em>const char *</em><code>link_name</code>,
+      <em>hid_t</em> <code>lcpl_id</code>, 
+      <em>hid_t</em> <code>lapl_id</code> 
+      ) 
+      <p></p>
+  <dt><strong>Purpose:</strong>
+    <dd>Creates a soft link to an object.
+      <p></p>
+  <dt><strong>Description:</strong>  
+    <dd><code>H5Lcreate_soft</code> creates a new soft link 
+      to an object in an HDF5 file.  
+      The new link may be one of many that point to that object.
+      <p>
+      <code>target_path</code> specifies the path to the target object, 
+      i.e., the object that the new soft link points to.
+      <code>target_path</code> can be anything and is interpreted at 
+      lookup time.  This path may be absolute in the file or relative 
+      to <code>link_loc_id</code>.  
+      <p>
+      <code>link_loc_id</code> and <code>link_name</code> specify the 
+      location and name, respectively, of the new soft link.
+      <code>link_name</code> is interpreted relative to 
+      <code>link_loc_id</code> 
+      <p> 
+      <code>lcpl_id</code> and <code>lapl_id</code> are the
+      link creation and access property lists associated with the 
+      new link.
+      <p>
+      For instance, if <code>target_path</code> is <code>./foo</code>,  
+      <code>link_loc_id</code> specifies <code>./x/y/bar</code>, 
+      and the name of the new link is <code>new_link</code>, then
+      a subsequent request for <code>./x/y/bar/new_link</code> will 
+      return same the object as would be found at <code>./foo<code>.
+      <p> 
+      <code>H5Lcreate_soft</code> is for use only if the target object 
+      is in the current file.  
+      If the desired target object is in a different file from the 
+      new link, use 
+      <a href="#Link-External"><code>H5Lcreate_external</code></a>
+      to create an external link.
+      <p>
+      Soft links and external links are also known as symbolic links
+      as they use a name to point to an object; hard links employ an 
+      object&rsquo;s address in the file.
+      <p> 
+      Unlike hard links, a soft link in an HDF5 file is allowed
+      to <i>dangle</i>, meaning that the target object need not exist
+      at the time that the link is created.
+      <p> 
+      The HDF5 library does not keep a count of soft links as it
+      does of hard links.
+      </p>
+  <dt><strong>Parameters:</strong>
+    <dd><table>
+          <tr>
+            <td valign="top"><em>const&nbsp;char&nbsp;*</em><code>target_path&nbsp;&nbsp;&nbsp;&nbsp;</code></td>
+            <td valign="top">IN: Path to the target object, 
+                which is not required to exist.</td></tr>
+          <tr>
+            <td valign="top"><em>hid_t</em> <code>link_loc_id</code></td>
+            <td valign="top">IN: The file or group identifier for the 
+                new link.</td></tr>
+          <tr>
+            <td valign="top"><em>const char *</em> <code>link_name </code></td>
+            <td valign="top">IN: The name of the new link.</td></tr>
+          <tr>
+            <td valign="top"><em>hid_t</em> <code>lcpl_id</code></td> 
+            <td valign="top">IN: Link creation property list identifier.</td></tr>
+          <tr>
+            <td valign="top"><em>hid_t</em> <code>lapl_id</code></td> 
+            <td valign="top">IN: Link access property list identifier.</td></tr>
+    </table>
+       <p></p>
+ <dt><strong>Returns:</strong>
+    <dd>Returns a non-negative value if successful;
+        otherwise returns a negative value.
+<!-- NEW PAGE -->
+       <p></p>
+ <dt><strong>Fortran90 Interface:</strong> h5lcreate_soft_f
+    <dd>
+    <pre>
+SUBROUTINE h5lcreate_soft_f(target_path, link_loc_id, link_name, hdferr, &
+                            lcpl_id, lapl_id)
+  IMPLICIT NONE
+  CHARACTER(LEN=*), INTENT(IN) :: target_path
+                                 ! Path to the target object, 
+                                 ! which is not required to exist.
+  INTEGER(HID_T), INTENT(IN) :: link_loc_id     
+                                 ! The file or group identifier for the new link.
+  CHARACTER(LEN=*), INTENT(IN) :: link_name       
+                                 ! The name of the new link.
+  INTEGER, INTENT(OUT) :: hdferr ! Error code: 
+                                 ! 0 on success and -1 on failure
+  INTEGER(HID_T), OPTIONAL, INTENT(IN) :: lcpl_id
+                                 ! Link creation property list identifier.
+  INTEGER(HID_T), OPTIONAL, INTENT(IN) :: lapl_id
+                                 ! Link access property list identifier.
+END SUBROUTINE h5lcreate_soft_f
+    </pre>
+        <!--<dt><strong>Non-C API(s):</strong>
+    	<dd>
+        
+        <img src="Graphics/Java.gif"> 
+        <img src="Graphics/C++.gif">
+        -->
+<p></p>
+<dt><strong>History:</strong>
+    <dd><table width="90%">
+        <tr>
+          <td valign="top" align="left" width="10%">
+            <strong>Release</strong>&nbsp;&nbsp;&nbsp;&nbsp;</td>
+          <td valign="top" align="left">
+            <strong>C</strong></td></tr>
+        <tr>
+          <td valign="top">1.8.0</td>
+          <td valign="top">
+            Function introduced in this release.</td></tr>
+    </table>
+</dl>
+
+

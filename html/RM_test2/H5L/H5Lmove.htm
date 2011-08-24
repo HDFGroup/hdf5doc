@@ -1,0 +1,157 @@
+
+
+<!--
+  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+  * Copyright by The HDF Group.                                               *
+  * Copyright by the Board of Trustees of the University of Illinois.         *
+  * All rights reserved.                                                      *
+  *                                                                           *
+  * This file is part of HDF5.  The full HDF5 copyright notice, including     *
+  * terms governing use, modification, and redistribution, is contained in    *
+  * the files COPYING and Copyright.html.  COPYING can be found at the root   *
+  * of the source code distribution tree; Copyright.html can be found at the  *
+  * root level of an installed copy of the electronic HDF5 document set and   *
+  * is linked from the top-level documents page.  It can also be found at     *
+  * http://hdfgroup.org/HDF5/doc/Copyright.html.  If you do not have          *
+  * access to either file, you may request a copy from help@hdfgroup.org.     *
+  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+ -->
+
+
+<!-- NEW PAGE -->
+<!-- HEADER RIGHT "H5Lmove" -->
+<hr>
+<dl>
+  <dt><strong>Name:</strong> <a name="Link-Move">H5Lmove</a> 
+  <dt><strong>Signature:</strong> 
+  <dd><em>herr_t</em> <code>H5Lmove</code>( 
+      <em>hid_t</em> <code>src_loc_id</code>, 
+      <em>const char *</em><code>src_name</code>, 
+      <em>hid_t</em> <code>dest_loc_id</code>, 
+      <em>const char *</em><code>dest_name</code>, 
+      <em>hid_t</em> <code>lcpl</code>, 
+      <em>hid_t</em> <code>lapl</code> 
+      )
+      <p></p>
+  <dt><strong>Purpose:</strong> 
+  <dd>Renames a link within an HDF5 file. 
+      <p></p>
+  <dt><strong>Description:</strong> 
+  <dd><code>H5Lmove</code> renames a link within an HDF5 file. 
+      The original link, <code>src_name</code>, is removed from the 
+      group graph and the new link, <code>dest_name</code>, 
+      is inserted; this change is accomplished as an atomic operation. 
+      <p>
+      <code>src_loc_id</code> and <code>src_name</code> identify the 
+      existing link.  
+      <code>src_loc_id</code> is either a file or group identifier;
+      <code>src_name</code> is the path to the link and is interpreted
+      relative to <code>src_loc_id</code>.
+      <p>
+      <code>dest_loc_id</code> and <code>dest_name</code> identify the 
+      new link.  
+      <code>dest_loc_id</code> is either a file or group identifier;
+      <code>dest_name</code> is the path to the link and is interpreted
+      relative to <code>dest_loc_id</code>.
+      <p>
+      <code>lcpl</code> and <code>lapl</code> are the link creation 
+      and link access property lists, respectively, associated with
+      the new link, <code>dest_name</code>.
+      <p>
+      Through these property lists, several properties are available to 
+      govern the behavior of <code>H5Lmove</code>.
+      The property controlling creation of missing intermediate groups 
+      is set in the link creation property list with 
+      <a href="RM_H5P.html#Property-SetCreateIntermediateGroup">
+          <code>H5Pset_create_intermediate_group</code></a>; 
+      <code>H5Lmove</code> ignores any other properties in the link creation 
+      property list.
+      Properties controlling character encoding, link traversals, and
+      external link prefixes are set in the link access property list with 
+      <a href="RM_H5P.html#Property-SetCharEncoding">
+          <code>H5Pset_char_encoding</code></a>,
+      <a href="RM_H5P.html#Property-SetNLinks">
+          <code>H5Pset_nlinks</code></a>, and
+      <a href="RM_H5P.html#Property-SetELinkPrefix">
+          <code>H5Pset_elink_prefix</code></a>, respectively.
+      </p>
+  <dt><strong>Warning:</strong> 
+  <dd>Exercise care in moving links as it is possible to render data in 
+      a file inaccessible with <code>H5Lmove</code>. 
+      If the link being moved is on the only path leading to an HDF5 object, 
+      that object may become permanently inaccessible in the file.
+      <p>
+  <dt><strong>Parameters:</strong> 
+    <dd><table>
+      <tr>
+        <td valign="top"><em>hid_t</em> <code>src_loc_id</code></td> 
+        <td valign="top">IN: Original file or group identifier.</td></tr>
+      <tr>
+        <td valign="top"><em>const&nbsp;char</em>&nbsp;<code>*src_name&nbsp;&nbsp;&nbsp;&nbsp;</code></td> 
+        <td valign="top">IN: Original link name.</td></tr>
+      <tr>
+        <td valign="top"><em>hid_t</em> <code>dest_loc_id</code></td> 
+        <td valign="top">IN: Destination file or group identifier.</td></tr>
+      <tr>
+        <td valign="top"><em>const char</em> <code>*dest_name</code></td> 
+        <td valign="top">IN: New link name.</td></tr>
+      <tr>
+        <td valign="top"><em>hid_t</em> <code>lcpl_id</code></td> 
+        <td valign="top">IN: Link creation property list identifier 
+            to be associated with the new link.</td></tr>
+      <tr>
+        <td valign="top"><em>hid_t</em> <code>lapl_id</code></td> 
+        <td valign="top">IN: Link access property list identifier 
+            to be associated with the new link.</td></tr>
+    </table>
+      <p></p>
+  <dt><strong>Returns:</strong> 
+  <dd>Returns a non-negative value if successful; otherwise returns a negative 
+    value. 
+      <p></p>
+  <dt><strong>Fortran90 Interface:</strong> h5lmove_f
+    <dd>
+    <pre>
+SUBROUTINE h5lmove_f(src_loc_id, src_name, dest_loc_id, dest_name, hdferr, &
+    lcpl_id, lapl_id)
+  IMPLICIT NONE
+  INTEGER(HID_T), INTENT(IN) :: src_loc_id  
+                                        ! Original file or group identifier.
+  CHARACTER(LEN=*), INTENT(IN) :: src_name  
+                                        ! Original link name.
+  INTEGER(HID_T), INTENT(IN) :: dest_loc_id 
+                                        ! Destination file or group identifier.
+  CHARACTER(LEN=*), INTENT(IN) :: dest_name 
+                                        ! new link name.
+  INTEGER(HID_T), INTENT(OUT) :: hdferr ! Error code:
+                                        ! 0 on success and -1 on failure
+  INTEGER(HID_T), OPTIONAL, INTENT(IN) :: lcpl_id 
+                                        ! Link creation property list identifier 
+                                        ! to be associated with the new link.
+  INTEGER(HID_T), OPTIONAL, INTENT(IN) :: lapl_id 
+                                        ! Link access property list identifier 
+                                        ! to be associated with the new link.
+END SUBROUTINE h5lmove_f
+    </pre>
+    	<!--<dt><strong>Non-C API(s):</strong>
+    	<dd>
+        
+        <img src="Graphics/Java.gif"> 
+        <img src="Graphics/C++.gif">
+        -->
+<p></p>
+<dt><strong>History:</strong>
+    <dd><table width="90%">
+        <tr>
+    	  <td valign="top" align="left" width="10%">
+    	    <strong>Release</strong>&nbsp;&nbsp;&nbsp;&nbsp;</td>
+          <td valign="top" align="left">
+    	    <strong>C</strong></td></tr>
+        <tr>
+    	  <td valign="top">1.8.0</td>
+          <td valign="top">
+    	    Function introduced in this release.</td></tr>
+    </table>
+</dl>
+
+

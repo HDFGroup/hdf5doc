@@ -1,0 +1,162 @@
+
+
+<!--
+  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+  * Copyright by The HDF Group.                                               *
+  * Copyright by the Board of Trustees of the University of Illinois.         *
+  * All rights reserved.                                                      *
+  *                                                                           *
+  * This file is part of HDF5.  The full HDF5 copyright notice, including     *
+  * terms governing use, modification, and redistribution, is contained in    *
+  * the files COPYING and Copyright.html.  COPYING can be found at the root   *
+  * of the source code distribution tree; Copyright.html can be found at the  *
+  * root level of an installed copy of the electronic HDF5 document set and   *
+  * is linked from the top-level documents page.  It can also be found at     *
+  * http://hdfgroup.org/HDF5/doc/Copyright.html.  If you do not have          *
+  * access to either file, you may request a copy from help@hdfgroup.org.     *
+  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+ -->
+
+
+<!-- NEW PAGE -->
+<!-- HEADER RIGHT "H5Lget_val_by_idx" -->
+<hr>
+<dl>
+
+  <dt><div align=right><font color=999999 size=-1><i>
+      Last modified: 4 December 2010
+      </i></font></div>
+
+  <dt><strong>Name:</strong> <a name="Link-GetValByIdx">H5Lget_val_by_idx</a>
+  <dt><strong>Signature:</strong>
+    <dd><em>herr_t</em> <code>H5Lget_val_by_idx</code>(
+        <em>hid_t</em> <code>loc_id</code>,
+        <em>const char *</em><code>group_name</code>,
+        <em>H5_index_t</em> <code>index_type</code>,
+        <em>H5_iter_order_t</em> <code>order</code>,
+        <em>hsize_t</em> <code>n</code>,
+        <em>void</em> *<code>link_val</code>,
+        <em>size_t</em> <code>size</code>,
+        <em>hid_t</em> <code>lapl_id</code>
+    )
+  <p>
+  <dt><strong>Purpose:</strong>
+    <dd>Retrieves value of the <i>n</i>th link in a group, 
+        according to the order within an index.
+  <p>
+  <dt><strong>Description:</strong>
+    <dd><code>H5Lget_val_by_idx</code> retrieves the value of the <i>n</i>th 
+        link in a group, according to the specified order, <code>order</code>,
+        within an index, <code>index</code>.
+        <ul>
+            <li>For soft links, the value is the path name 
+                of the object pointed to.
+            <li>For external links, this is a compound value containing 
+                file and path name information; to use this external link 
+                information, it must first be decoded with 
+                <a href="#Link-UnpackELinkVal"><code>H5Lunpack_elink_val</code></a>
+            <li>For user-defined links, this value will be described in the
+                definition of the user-defined link type.
+            <li>This function will fail if called on a hard link.
+        </ul>
+        <p>
+        <code>loc_id</code> specifies the file or group in which the group 
+        specified by <code>group_name</code> is located.
+        <p>
+        <code>group_name</code> specifies the group in which the link exists.
+        If <code>loc_id</code> already specifies the group in which the link 
+        exists, <code>group_name</code> must be a dot (.).
+        <p>
+        The size in bytes of <code>group_name</code> is specified in 
+        <code>size</code>.
+        If <code>size</code> is unknown, it can be determined via an
+        initial <code>H5Lget_val_by_idx</code> call with <code>size</code>
+        set to <code>NULL</code>; <code>size</code> will be returned with
+        the actual size of <code>group_name</code>.
+        <p>
+        If the type of the link is unknown or uncertain,
+        <code>H5Lget_val_by_idx</code> should be called only after the type
+        has been determined via a call to 
+        <a href="#Link-GetInfoByIdx"><code>H5Lget_info_by_idx</code></a>.
+        
+  <p>
+  <dt><strong>Parameters:</strong>
+    <dd><table>
+      <tr>
+        <td valign="top"><em>hid_t</em> <code>loc_id</code></td>
+        <td valign="top">IN: File or group identifier specifying location 
+            of subject group</td></tr>
+      <tr>
+        <td valign="top"><em>const&nbsp;char&nbsp;*</em><code>group_name&nbsp;&nbsp;&nbsp;&nbsp;</code></td>
+        <td valign="top">IN: Name of subject group</td></tr>
+      <tr>
+        <td valign="top"><em>H5_index_t</em> <code>index_type</code></td>
+        <td valign="top">IN: Type of index; valid values include:
+            <br>
+            <code>&nbsp;&nbsp;&nbsp;&nbsp;NAME&nbsp;&nbsp;&nbsp;&nbsp;</code>
+            Indexed by name
+            <br>
+            <code>&nbsp;&nbsp;&nbsp;&nbsp;CORDER&nbsp;&nbsp;</code>
+            Indexed by creation order
+            </td></tr>
+      <tr>
+        <td valign="top"><em>H5_iter_order_t</em> <code>order</code></td>
+        <td valign="top">IN: Order within field or index; valid values include:
+            <br>
+            <code>&nbsp;&nbsp;&nbsp;&nbsp;H5_ITER_INC&nbsp;&nbsp;&nbsp;&nbsp;</code>
+            Iterate in increasing order
+            <br>
+            <code>&nbsp;&nbsp;&nbsp;&nbsp;H5_ITER_DEC&nbsp;&nbsp;&nbsp;&nbsp;</code>
+            Iterate in decreasing order
+            <br>
+            <code>&nbsp;&nbsp;&nbsp;&nbsp;H5_ITER_NATIVE&nbsp;</code>
+            Iterate in fastest order
+            </td></tr>
+      <tr>
+        <td valign="top"><em>hsize_t</em> <code>n</code></td>
+        <td valign="top">IN: Link for which to retrieve information</td></tr>
+      <tr>
+        <td valign="top"><em>void</em> *<code>link_val</code></td>
+        <td valign="top">OUT: Pointer to buffer in which 
+            link value is returned</td></tr>
+      <tr>
+        <td valign="top"><em>size_t</em> <code>size</code></td>
+        <td valign="top">IN: Size in bytes of <code>group_name</code></td></tr>
+      <tr>
+        <td valign="top"><em>hid_t</em> <code>lapl_id</code></td>
+        <td valign="top">IN: Link access property list</td></tr>
+    </table>
+  <p>
+  <dt><strong>Returns:</strong>
+    <dd>Returns a non-negative value if successful;
+        otherwise returns a negative value.
+  <p>
+  <dt><strong>Fortran90 Interface:</strong> <!-- h5lget_info_by_idx_f -->
+    <dd>None.
+<!--
+    <pre>
+  
+    </pre>
+-->
+        <!--<dt><strong>Non-C API(s):</strong>
+    	<dd>
+        
+        <img src="Graphics/Java.gif"> 
+        <img src="Graphics/C++.gif">
+        -->
+  <p>
+  <dt><strong>History:</strong>
+    <dd><table width="90%">
+        <tr>
+          <td valign="top" align="left" width="10%">
+            <strong>Release</strong>&nbsp;&nbsp;&nbsp;&nbsp;</td>
+          <td valign="top" align="left">
+            <strong>C</strong></td></tr>
+        <tr>
+          <td valign="top">1.8.0</td>
+          <td valign="top">
+            Function introduced in this release.</td></tr>
+    </table>
+</dl>
+
+

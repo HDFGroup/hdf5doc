@@ -1,0 +1,251 @@
+
+
+<!--
+  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+  * Copyright by The HDF Group.                                               *
+  * Copyright by the Board of Trustees of the University of Illinois.         *
+  * All rights reserved.                                                      *
+  *                                                                           *
+  * This file is part of HDF5.  The full HDF5 copyright notice, including     *
+  * terms governing use, modification, and redistribution, is contained in    *
+  * the files COPYING and Copyright.html.  COPYING can be found at the root   *
+  * of the source code distribution tree; Copyright.html can be found at the  *
+  * root level of an installed copy of the electronic HDF5 document set and   *
+  * is linked from the top-level documents page.  It can also be found at     *
+  * http://hdfgroup.org/HDF5/doc/Copyright.html.  If you do not have          *
+  * access to either file, you may request a copy from help@hdfgroup.org.     *
+  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+ -->
+
+
+<!-- NEW PAGE -->
+<!-- HEADER RIGHT "H5Lget_info" -->
+<hr>
+<dl>
+
+  <dt><div align=right><font color=999999 size=-1><i>
+      Last modified: 11 January 2010
+      </i></font></div>
+
+  <dt><strong>Name:</strong> <a name="Link-GetInfo">H5Lget_info</a>
+  <dt><strong>Signature:</strong>
+    <dd><em>herr_t</em> <code>H5Lget_info</code>(
+        <em>hid_t</em> <code>link_loc_id</code>,
+        <em>const char *</em><code>link_name</code>,
+        <em>H5L_info_t *</em><code>link_buff</code>,
+        <em>hid_t</em> <code>lapl_id</code>
+    )
+  <p></p>
+  <dt><strong>Purpose:</strong>
+    <dd>Returns information about a link.  
+  <p></p>
+  <dt><strong>Description:</strong>
+    <dd><code>H5Lget_info</code> returns information about the 
+        specified link through the <code>link_buff</code> argument. 
+        <p>
+        A file or group identifier, <code>link_loc_id</code>, specifies the
+        location of the link.
+        A link name, <code>link_name</code>, interpreted relative to 
+        <code>loc_id</code>, specifies the link being queried.
+        <p>
+        <code>lapl_id</code> is the link access property list associated 
+        with the link <code>link_name</code>.
+        In the general case, when default link access properties are 
+        acceptable, this can be passed in as <code>H5P_DEFAULT</code>.
+        An example of a situation that requires a non-default link access 
+        property list is when the link is an external link; an external link 
+        may require that a link prefix be set in a link access property list
+        (see <a href="RM_H5P.html#Property-SetELinkPrefix">
+        <code>H5Pset_elink_prefix</code></a>).
+        <p>
+        <code>H5Lget_info</code> returns information about  
+        <code>link_name</code> in the data structure 
+        <code>H5L_info_t</code>,
+        which is described below and defined in <code>H5Lpublic.h</code>.
+        This structure is returned in the buffer <code>link_buff</code>.
+        <pre>
+    typedef struct {
+        H5L_type_t     type;
+        hbool_t        corder_valid;
+        int64_t        corder;
+        H5T_cset_t     cset;
+        union {
+            haddr_t    address;
+            size_t     val_size;
+        } u;
+    } H5L_info_t;
+        </pre>
+
+        <p>
+        In the above struct,
+        <code>type</code> specifies the link class.  
+        Valid values include the following:
+        <table border=0>
+          <tr><td>
+            &nbsp;&nbsp;&nbsp;&nbsp;
+            </td><td>
+            <code>H5L_TYPE_HARD</code>
+            </td><td>
+            Hard link
+          </td></tr><tr><td>
+            &nbsp;&nbsp;&nbsp;&nbsp;
+            </td><td>
+            <code>H5L_TYPE_SOFT</code>
+            </td><td>
+            Soft link
+          </td></tr><tr><td>
+            &nbsp;&nbsp;&nbsp;&nbsp;
+            </td><td>
+            <code>H5L_TYPE_EXTERNAL&nbsp;&nbsp;&nbsp;&nbsp;</code>
+            </td><td>
+            External link
+          </td></tr><tr><td>
+            &nbsp;&nbsp;&nbsp;&nbsp;
+            </td><td>
+            <code>H5L_TYPE_ERROR</code>
+            </td><td>
+            Error
+          </td></tr>
+        </table>
+        There will be additional valid values if user-defined links 
+        have been registered.
+
+        <p>
+        <code>corder</code> specifies the link&rsquo;s creation order 
+        position while  <code>corder_valid</code> indicates whether 
+        the value in <code>corder</code> is valid.
+        <p>
+        If <code>corder_valid</code> is <code>TRUE</code>,
+        the value in <code>corder</code> is known to be valid;
+        if <code>corder_valid</code> is <code>FALSE</code>,
+        the value in <code>corder</code> is presumed to be invalid;
+        <p>
+        <code>corder</code> starts at zero (<code>0</code>) 
+        and is incremented by one (<code>1</code>) as new links are created. 
+        But higher-numbered entries are not adjusted when a lower-numbered 
+        link is deleted; the deleted link&rsquo;s creation order position is 
+        simply left vacant.  
+        In such situations, the value of <code>corder</code> for the 
+        last link created will be larger than the number of links remaining 
+        in the group.
+
+        <p>
+        <code>cset</code> specifies the character set in which the link name
+        is encoded.  Valid values include the following:
+        <table border=0>
+          <tr><td>
+            &nbsp;&nbsp;&nbsp;&nbsp;
+            </td><td>
+            <code>H5T_CSET_ASCII</code>
+            </td><td>
+            US ASCII
+          </td></tr><tr><td>
+            &nbsp;&nbsp;&nbsp;&nbsp;
+            </td><td>
+            <code>H5T_CSET_UTF8&nbsp;&nbsp;&nbsp;&nbsp;</code>
+            </td><td>
+            UTF-8 Unicode encoding
+          </td></tr>
+        </table>
+        <p>
+        <code>address</code> and <code>val_size</code> are returned
+        for hard and symbolic links, respectively. 
+        Symbolic links include soft and external links and 
+        some user-defined links. 
+        <p>
+        If the link is a hard link, <code>address</code> specifies 
+        the file address that the link points to.
+        <p>
+        If the link is a symbolic link, <code>val_size</code> will be 
+        the length of the link value, e.g., the length of the name of 
+        the pointed-to object with a null terminator.
+        <p>
+  <dt><strong>Parameters:</strong>
+    <dd><table>
+      <tr>
+        <td valign="top"><em>hid_t</em> <code>link_loc_id</code></td>
+        <td valign="top">IN: File or group identifier.</td></tr>
+      <tr>
+        <td valign="top"><em>const char</em> <code>*link_name</code></td>
+        <td valign="top">IN: Name of the link for which information is being 
+            sought.</td></tr>
+      <tr>
+        <td valign="top"><em>H5L_info_t</em>&nbsp;<code>*link_buff&nbsp;&nbsp;&nbsp;&nbsp;</code></td>
+        <td valign="top">OUT: Buffer in which link information is 
+            returned.</td></tr>
+      <tr>
+        <td valign="top"><em>hid_t</em> <code>lapl_id</code></td>
+        <td valign="top">IN: Link access property list identifier.</td></tr>
+    </table>
+  <p>
+  <dt><strong>Returns:</strong>
+    <dd> Returns a non-negative value if successful, with the fields of 
+         <code>link_buff</code> (if non-null) initialized.
+         Otherwise returns a negative value.
+  <p></p>
+  <dt><strong>Fortran90 Interface:</strong> h5lget_info_f
+    <dd>
+
+    <pre>
+SUBROUTINE h5lget_info_f(link_loc_id, link_name, &
+     cset, corder, f_corder_valid, link_type, address, val_size, &
+     hdferr, lapl_id)
+  IMPLICIT NONE
+  INTEGER(HID_T), INTENT(IN) :: link_loc_id 
+                        ! File or group identifier.
+  CHARACTER(LEN=*), INTENT(IN) :: link_name 
+                        ! Name of the link for which information is being sought.
+  INTEGER, INTENT(OUT) :: cset 
+                        ! Indicates the character set used for the link&rsquo;s name. 
+  INTEGER, INTENT(OUT) :: corder 
+                        ! Specifies the link&rsquo;s creation order position.
+  LOGICAL, INTENT(OUT) :: f_corder_valid 
+                        ! Indicates whether the value in corder is valid.
+  INTEGER, INTENT(OUT) :: link_type 
+                        ! Specifies the link class:
+                        !  H5L_TYPE_HARD_F      - Hard link
+                        !  H5L_TYPE_SOFT_F      - Soft link
+                        !  H5L_TYPE_EXTERNAL_F  - External link
+                        !  H5L_TYPE_ERROR_F     - Error
+  INTEGER(HADDR_T), INTENT(OUT) :: address  
+                        ! If the link is a hard link, address specifies the file
+                        ! address that the link points to
+  INTEGER(SIZE_T), INTENT(OUT) :: val_size 
+                        ! If the link is a symbolic link, val_size will be the 
+                        ! length of the link value, i.e. the length of the name 
+                        ! of the pointed-to object with a null terminator. 
+</pre>
+<!-- NEW PAGE -->
+<pre>
+  INTEGER, INTENT(OUT) :: hdferr 
+                        ! Error code:
+                        ! 0 on success and -1 on failure
+  INTEGER(HID_T), OPTIONAL, INTENT(IN) :: lapl_id  
+                        ! Link access property list
+END SUBROUTINE h5lget_info_f
+    </pre>
+
+<p></p>
+<dt><strong>History:</strong>
+    <dd><table width="90%">
+        <tr>
+          <td valign="top" align="left" width="10%">
+            <strong>Release</strong>&nbsp;&nbsp;&nbsp;&nbsp;</td>
+          <td valign="top" align="left">
+            <strong>C</strong></td></tr>
+        <tr>
+          <td valign="top">1.8.0</td>
+          <td valign="top">
+            Function introduced in this release.</td></tr>
+        <tr>
+          <td valign="top">1.8.2</td>
+          <td valign="top">
+            Fortran subroutine added in this release.</td></tr>
+        <tr>
+          <td valign="top">1.8.4</td>
+          <td valign="top">
+            Fortran subroutine syntax changed in this release.</td></tr>
+    </table>
+</dl>
+
+
