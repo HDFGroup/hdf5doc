@@ -1,0 +1,65 @@
+<a name="H5T2028F03292fh5o5finfo5ft"></a>
+<a name="robo25"></a>
+
+<p class="item_name"><strong>Fortran2003 derived type:</strong></p>
+<pre class="source">  enum, bind(c)
+     enumerator :: H5O_TYPE_UNKNOWN_F = -1
+     enumerator :: H5O_TYPE_GROUP_F, H5O_TYPE_DATASET_F,        &amp;
+                   H5O_TYPE_NAMED_DATATYPE_F, H5O_TYPE_NTYPES_F
+  end enum
+
+  TYPE, BIND(C) :: space_t
+     INTEGER(hsize_t) :: total ! Total space for storing object header in file
+     INTEGER(hsize_t) :: meta  ! Space within header for object header metadata 
+                               ! information
+     INTEGER(hsize_t) :: mesg  ! Space within header for actual message information
+     INTEGER(hsize_t) :: free  ! Free space within object header
+  END TYPE space_t
+
+  TYPE, BIND(C) :: mesg_t
+     INTEGER(c_int64_t) :: present ! Flags to indicate presence of message type 
+                                   ! in header 
+     INTEGER(c_int64_t) :: shared  ! Flags to indicate message type is shared 
+                                   ! in header
+  END TYPE mesg_t
+  
+  TYPE, BIND(C) :: hdr_t
+     INTEGER(c_int) :: version ! Version number of header format in file
+     INTEGER(c_int) :: nmesgs  ! Number of object header messages
+     INTEGER(c_int) :: nchunks ! Number of object header chunks
+     INTEGER(c_int) :: flags   ! Object header status flags
+     TYPE(space_t)  :: space   
+     TYPE(mesg_t)   :: mesg
+  END TYPE hdr_t
+
+  ! Extra metadata storage for obj &amp; attributes
+  TYPE, BIND(C) :: H5_ih_info_t
+     INTEGER(hsize_t) :: index_size ! btree and/or list
+     INTEGER(hsize_t) :: heap_size
+  END TYPE H5_ih_info_t
+
+  TYPE, BIND(C) :: meta_size_t
+     TYPE(H5_ih_info_t) :: obj  ! v1/v2 B-tree &amp; local/fractal heap for 
+                                ! groups, B-tree for chunked datasets
+     TYPE(H5_ih_info_t) :: attr ! v2 B-tree &amp; heap for attributes
+  ENDTYPE meta_size_t
+  
+  TYPE, BIND(C) :: <strong>h5o_info_t</strong>
+     INTEGER(c_long) ::  fileno ! File number that object is located in
+                                ! unsigned long
+     INTEGER(HADDR_T) :: addr   ! Object address in file  
+     INTEGER(c_int) :: TYPE     ! Basic object type (group, dataset, etc.) 
+                                ! H5O_type_t type which is type enum
+     INTEGER(c_int) :: rc       ! Reference count of object
+                                ! unsigned rc
+     INTEGER(c_int) :: atime    ! Access time
+     INTEGER(c_int) :: mtime    ! Modification time
+     INTEGER(c_int) :: ctime    ! Change time
+     INTEGER(c_int) :: btime    ! Birth time
+     INTEGER(hsize_t) :: num_attrs ! # of attributes attached to object
+
+     TYPE(hdr_t) :: hdr
+     TYPE(meta_size_t) :: meta_size
+  END TYPE <strong>h5o_info_t</strong>
+</pre>
+
