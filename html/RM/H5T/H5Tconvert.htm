@@ -24,14 +24,14 @@
 <dl>
 
 <dt><div align=right><font color=999999 size=-1><i>
-    Last modified: 28 August 2011
+    Last modified: 30 September 2011
     </i></font></div>
 
 <dt><strong>Name:</strong> <a name="Datatype-Convert">H5Tconvert</a>
 <dt><strong>Signature:</strong>
     <dd><em>herr_t</em> <code>H5Tconvert</code>(
-        <em>hid_t</em> <code>src_id</code>,
-        <em>hid_t</em> <code>dst_id</code>,
+        <em>hid_t</em> <code>src_type_id</code>,
+        <em>hid_t</em> <code>dest_type_id</code>,
         <em>size_t</em> <code>nelmts</code>,
         <em>void *</em><code>buf</code>,
         <em>void *</em><code>background</code>,
@@ -40,23 +40,26 @@
 
 <p>
 <dt><strong>Purpose:</strong>
-    <dd>Converts data from between specified datatypes.
+    <dd>Converts data from one specified datatype to another.
 
 <p>
 <dt><strong>Description:</strong>
     <dd><code>H5Tconvert</code> converts <code>nelmts</code> elements 
-        from the type specified by the <code>src_id</code> identifier 
-        to type <code>dst_id</code>.  
+        from a source datatype. specified by <code>src_type_id</code>, 
+        to a destination datatype, <code>dest_type_id</code>.  
         The source elements are packed in <code>buf</code> and on return 
-        the destination will be packed in <code>buf</code>.  
+        the destination elements will be packed in <code>buf</code>.  
         That is, the conversion is performed in place.  
-        The optional background buffer is an array of <code>nelmts</code> 
-        values of destination type which are merged with the converted 
-        values to fill in cracks (for instance, <code>background</code> 
+        <p>
+        The optional background buffer is for use with compound datatypes.
+        It is an array of <code>nelmts</code> values for the 
+        destination datatype which can then be merged with the converted 
+        values to recreate the compound datatype.
+        For instance, <code>background</code> 
         might be an array of structs with the <code>a</code> and 
         <code>b</code> fields already initialized and the conversion  
         of <code>buf</code> supplies the <code>c</code> and <code>d</code> 
-        field values).
+        field values.
         <p>
         The parameter <code>plist_id</code> contains the dataset transfer 
         property list identifier which is passed to the conversion functions.  
@@ -67,10 +70,10 @@
 <dt><strong>Parameters:</strong>
     <dd><table>
         <tr>
-            <td valign="top"><em>hid_t</em> <code>src_id</code></td>
+            <td valign="top"><em>hid_t</em> <code>src_type_id</code></td>
             <td valign="top">IN: Identifier for the source datatype.</td></tr>
         <tr>
-            <td valign="top"><em>hid_t</em> <code>dst_id</code></td>
+            <td valign="top"><em>hid_t</em> <code>dest_type_id</code></td>
             <td valign="top">IN: Identifier for the destination datatype.</td></tr>
         <tr>
             <td valign="top"><em>size_t</em> <code>nelmts</code></td>
@@ -78,7 +81,11 @@
         <tr>
             <td valign="top"><em>void *</em><code>buf</code></td>
             <td valign="top">IN/OUT: Array containing pre- and post-conversion 
-                values.</td></tr>
+                values.  
+                <br>
+                <code>H5Tconvert</code> will not resize this buffer; it must be
+                large enough to hold the larger of the input and output data.
+                </td></tr>
         <tr>
             <td valign="top"><em>void&nbsp;*</em><code>background&nbsp;&nbsp;&nbsp;&nbsp;</code></td>
             <td valign="top">IN: Optional background buffer.</td></tr>
