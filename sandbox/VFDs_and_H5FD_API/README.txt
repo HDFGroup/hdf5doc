@@ -5,7 +5,8 @@ Original author and date:
     RobB Matzke, 1999
     Quincey Koziol, 2000 revision
 
-JIRA task: 7511
+JIRA task: 7511 -- full task
+           7759 -- "light" task
 
 Files:
     hdf5doc/trunk/html/TechNotes/VFL.html
