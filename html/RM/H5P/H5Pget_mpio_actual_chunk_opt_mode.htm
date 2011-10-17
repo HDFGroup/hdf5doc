@@ -1,0 +1,153 @@
+<!-- NEW PAGE -->
+
+<!-- HEADER RIGHT "H5Pget_mpio_actual_chunk_opt_mode" -->
+<hr>
+<dl>
+  <dt><div align=right><font color=999999 size=-1><i>
+      Last modified: 12 October 2011
+      </i></font></div>
+
+  <dt><strong>Name:</strong><a name="Property-SetMpioActualChunkOptMode">
+    H5Pget_mpio_actual_chunk_opt_mode</a>
+
+  <dt><strong>Signature:</strong>
+    <dd><em>herr_t </em><code>H5Pget_mpio_actual_chunk_opt_mode</code>(
+            <em>hid_t </em><code>dxpl_id</code>,
+            <em>H5D_mpio_actual_chunk_opt_mode_t *</em>
+	    <code>actual_chunk_opt_mode</code>)
+
+  <p>
+  <dt><strong>Purpose:</strong>
+    Retrieves the type of chunk optimization that HDF5 actually 
+    performed on the last parallel I/O call. This is not necessarily 
+    the type of optimization requested.
+
+  <p>
+  <dt><strong>Motivation:</strong>
+    <dd>
+      A user can request collective I/O via a data transfer property list 
+      (DXPL) that has been suitably modified with 
+      <code>H5Pset_dxpl_mpio</code>. The operation can be optimized in 
+      several different ways, some of which also can be requested by the 
+      user. However, HDF5 may not be able to satisfy requests for  
+      specific optimizations and may choose a different
+      optimization scheme. This property allows the user to track which 
+      optimization was actually used. Used in conjunction with 
+      <code>H5Pget_mpio_actual_io_mode</code>, this property allows the 
+      user to determine exactly what HDF5 did when attempting collective 
+      chunked I/O.
+  <p>
+  <dt><strong>Description:</strong>
+    <dd><code>H5Pget_mpio_actual_chunk_opt_mode</code> 
+      retrieves the type of chunk optimization performed when collective
+      I/O was requested. This property is set before I/O takes place, and
+      will be set even if I/O fails.
+      <p>
+      Valid values returned in <code>actual_chunk_opt_mode</code>:
+      <table>
+	<tr valign=top align=left>
+	  <td width=20>&nbsp;</td>
+	  <td>
+	    <code>H5D_MPIO_NO_CHUNK_OPTIMIZATION</code>
+	  </td>
+	  <td width=10>&nbsp;</td>
+	  <td>
+	    No chunk optimization was performed. Either no collective I/O
+	    was attempted or the dataset wasn't chunked.
+	    <br>
+	    <i>(Default)</i>  
+	  </td></tr>
+	<tr valign=top align=left>
+	  <td>&nbsp;</td>
+	  <td>
+	    <code>H5D_MPIO_MULTI_CHUNK</code>
+	  </td>
+	  <td>&nbsp;</td>
+	  <td>
+        Each chunk was individually assigned collective or independent I/O
+        based on what fraction of processes access the chunk. If the fraction
+        is greater than the multi chunk ratio threshold, collective I/O is
+        performed on that chunk. The multi chunk ratio threshold can be set
+        using <code>H5Pset_dxpl_mpio_chunk_opt_ratio</code>. The default 
+        value is 60%.
+	  </td></tr>
+	<tr valign=top align=left>
+	  <td>&nbsp;</td>
+	  <td>
+	    <code>H5D_MPIO_MULTI_CHUNK_NO_OPT</code>
+	  </td>
+	  <td>&nbsp;</td>
+	  <td>
+	    Each chunk is assigned collective or independent I/O based on how
+	    many chunks were accessed before it. Collective I/O is performed
+	    on the the first chunk in each selection, then the second, and so
+	    on until one process finishes, then the remaining processes
+	    perform independent I/O on the rest of their selections.
+	  </td></tr>
+	<tr valign=top align=left>
+	  <td>&nbsp;</td>
+	  <td>
+	    <code>H5D_MPIO_LINK_CHUNK</code>
+	  </td>
+	  <td>&nbsp;</td>
+	  <td>
+	    Collective I/O is performed on all chunks simultaneously.
+	  </td></tr>
+      </table>
+  
+  <p>
+  <dt><strong>Parameters:</strong>
+    <dd>
+    <table>
+      <tr valign="top">
+        <td><em>hid_t </em><code>dxpl_id</code>
+            </td><td>&nbsp;&nbsp;&nbsp;&nbsp;</td>
+        <td>IN: Dataset transfer property list identifier
+        </td></tr>
+      <tr valign="top">
+        <td><em>H5D_mpio_actual_chunk_opt_mode_t&nbsp;*</em>
+	<code>actual_chunk_opt_mode</code>
+            </td><td>&nbsp;</td>
+        <td>OUT: The type of chunk optimization performed by HDF5.
+	</td></tr>
+    </table>
+
+  <p>
+  <dt><strong>Returns:</strong>
+    Returns a non-negative value if successful; otherwise returns 
+    a negative value.
+
+  <p>
+  <dt><strong>See Also:</strong>
+    <dd><a href="RM_H5P.html#Property-SetMpioActualChunkIoMode">
+        <code>H5Pget_mpio_actual_io_mode</code></a>
+	is a sister function that reports the type of I/O HDF5 performed.
+        <p>
+	The following functions request optimizations or change values 
+	that HDF5 uses to choose an optimization scheme:<br>
+        <a href="RM_H5P.html#Property-SetDxplMpioChunkOpt">
+	  <code>H5Pset_dxpl_mpio_chunk_opt</code></a><br>
+	<a href="RM_H5P.html#Property-SetDxplMpioChunkOptNum">
+	  <code>H5Pset_dxpl_mpio_chunk_opt_num</code></a><br>
+	<a href="RM_H5P.html#Property-SetDxplMpioChunkOptRatio">
+	  <code>H5Pset_dxpl_mpio_chunk_opt_ratio</code></a><br>
+	<a href="RM_H5P.html#Property-SetDxplMpioCollectiveOpt">
+	  <code>H5Pset_dxpl_mpio_collective_opt</code></a><br>
+  <p>
+  <dt><strong>History:</strong>
+    <dd><table width="90%">
+        <tr>
+          <td valign="top" align="left" width="10%">
+            <strong>Release</strong>&nbsp;&nbsp;&nbsp;&nbsp;</td>
+          <td valign="top" align="left">
+            <strong>Change</strong></td>
+        </tr>
+        <tr>
+          <td valign="top">*.**.**</td>
+          <td valign="top">
+            C function introduced in this release.</td>
+        </tr>
+        </table>
+</dl>
+
+
