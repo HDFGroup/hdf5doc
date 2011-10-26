@@ -22,124 +22,127 @@
 <!-- HEADER RIGHT "H5Pset_nbit" -->
 <hr>
 <dl>
+
   <dt><div align=right><font color=999999 size=-1><i>
-      Last modified: 9 November 2010
-      </i></font></div>
+    Last modified: 26 October 2011
+    </i></font></div>
 
   <dt><strong>Name:</strong> <a name="Property-SetNbit">H5Pset_nbit</a>
   <dt><strong>Signature:</strong> 
-    <dd><em>herr_t</em> <code>H5Pset_nbit</code>(<em>hid_t</em> 
-	  <code>plist_id</code>)
+    <dd><em>herr_t</em> <code>H5Pset_nbit</code>(
+          <em>hid_t</em> <code>plist_id</code>
+          )
+
+  <p>
   <dt><strong>Purpose:</strong>
     <dd>Sets up the use of the N-Bit filter.
+
+  <p>
   <dt><strong>Description:</strong>
     <dd><code>H5Pset_nbit</code> sets the N-Bit filter, 
-	  <code>H5Z_FILTER_NBIT</code>, in the dataset creation property 
-	  list <code>plist_id</code>.
+        <code>H5Z_FILTER_NBIT</code>, in the dataset creation property 
+        list <code>plist_id</code>.
 
     <p>The HDF5 user can create an N-Bit datatype by writing codes like:
 
-		<ul><dl>
-		<dt>hid_t nbit_datatype = H5Tcopy(H5T_STD_I32LE);<br>
-		H5Tset_precision(nbit_datatype, 16);<br>
-		H5Tset_offset(nbit_datatype, 4);</dt>
-		</dl></ul>
+        <ul><dl>
+        <dt>hid_t nbit_datatype = H5Tcopy(H5T_STD_I32LE);<br>
+            H5Tset_precision(nbit_datatype, 16);<br>
+            H5Tset_offset(nbit_datatype, 4);</dt>
+        </dl></ul>
 
-	
-	<p>In memory, one value of the N-Bit datatype in the above example will be 
-	  stored on a little-endian machine like this:
-	  
+
+     <p>In memory, one value of the N-Bit datatype in the above example will be 
+        stored on a little-endian machine like this:
+
     <dl>
-	  <dt>
-	    <table border="1" width="55%">
-		  <tr>
-		    <td width="25%" align="center">byte 3</td>
-		    <td width="25%" align="center">byte 2</td>
-		    <td width="25%" align="center">byte 1</td>
-		    <td width="25%" align="center">byte 0</td>
-		  </tr>
-		  <tr>
-		    <td width="25%" align="center">????????</td>
-		    <td width="25%" align="center">????SPPP</td>
-		    <td width="25%" align="center">PPPPPPPP</td>
-		    <td width="25%" align="center">PPPP????</td>
-		  </tr>
-		</table>
-		<br>
-		Note: S - sign bit, P - significant bit, ? - padding bit;
-		  For signed integer, the sign bit is included in the precision.
-	  </dt>
-	</dl>
+        <dt>
+          <table border="1" width="55%">
+              <tr>
+                <td width="25%" align="center">byte 3</td>
+                <td width="25%" align="center">byte 2</td>
+                <td width="25%" align="center">byte 1</td>
+                <td width="25%" align="center">byte 0</td>
+              </tr>
+              <tr>
+                <td width="25%" align="center">????????</td>
+                <td width="25%" align="center">????SPPP</td>
+                <td width="25%" align="center">PPPPPPPP</td>
+                <td width="25%" align="center">PPPP????</td>
+              </tr>
+            </table>
+            <br>
+            Note: S - sign bit, P - significant bit, ? - padding bit;
+            For signed integer, the sign bit is included in the precision.
+        </dt>
+    </dl>
 
     <p>When data of the above datatype are stored on disk using N-bit filter, 
-	   all padding bits are chopped off and only significant bits are stored. 
-	   So, the values on disk will be something like:
-	   
+       all padding bits are chopped off and only significant bits are stored. 
+       So, the values on disk will be something like:
+
     <dl>
-	  <dt>
-	    <table border="1" width="55%">
-		  <tr>
-		    <td width="45%" align="center">1st value</td>
-		    <td width="45%" align="center">2nd value</td>
-		    <td width="10%" align="center">&nbsp;</td>
-		  </tr>
-		  <tr>
-		    <td width="45%" align="center">SPPPPPPPPPPPPPPP</td>
-		    <td width="45%" align="center">SPPPPPPPPPPPPPPP</td>
-		    <td width="10%" align="center">...</td>
-		  </tr>
-		</table>
+        <dt>
+          <table border="1" width="55%">
+              <tr>
+                <td width="45%" align="center">1st value</td>
+                <td width="45%" align="center">2nd value</td>
+                <td width="10%" align="center">&nbsp;</td>
+              </tr>
+              <tr>
+                <td width="45%" align="center">SPPPPPPPPPPPPPPP</td>
+                <td width="45%" align="center">SPPPPPPPPPPPPPPP</td>
+                <td width="10%" align="center">...</td>
+              </tr>
+            </table>
       </dt>
-	</dl>
-	
+    </dl>
+
     <p>The N-Bit filter is used effectively for compressing data of 
-	  an N-Bit datatype as well as a compound and an array datatype with N-Bit 
-	  fields.  However, the datatype classes of the N-Bit datatype or the N-Bit 
-	  field of the compound datatype or the array datatype are limited 
-	  to integer or floating-point.  
+       an N-Bit datatype as well as a compound and an array datatype with N-Bit 
+       fields.  However, the datatype classes of the N-Bit datatype or the N-Bit 
+       field of the compound datatype or the array datatype are limited 
+       to integer or floating-point.  
     <p>The N-Bit filter supports complex situations where 
-	  a compound datatype contains member(s) of compound datatype or 
-	  an array datatype that has compound datatype as the base type. 
-	  However, it does not support the situation where an array datatype has 
-	  variable-length or variable-length string as its base datatype.
-	  But the filter does support the situation where 
-	  variable-length or variable-length string is a member of a 
-	  compound datatype.
+       a compound datatype contains member(s) of compound datatype or 
+       an array datatype that has compound datatype as the base type. 
+       However, it does not support the situation where an array datatype has 
+       variable-length or variable-length string as its base datatype.
+       But the filter does support the situation where 
+       variable-length or variable-length string is a member of a 
+       compound datatype.
 
     <p>For all other HDF5 datatypes such as time, string, bitfield, opaque, 
-	  reference, enum, and variable length, the N-Bit filter allows them to
-	  pass through like an no-op.
+       reference, enum, and variable length, the N-Bit filter allows them to
+       pass through like an no-op.
 
     <p>Like other I/O filters supported by the HDF5 library, application 
-	  using the N-Bit filter must store data with chunked storage.
+       using the N-Bit filter must store data with chunked storage.
 
     <p>By nature, the N-Bit filter should not be used together 
-	  with other I/O filters.
+       with other I/O filters.
 
 <!-- NEW PAGE -->
 
+  <p>
   <dt><strong>Parameters:</strong>
     <ul><table>
         <tr>
-		    <td valign="top"><em>hid_t</em>&nbsp;<code>plist_id</code>&nbsp;&nbsp;</td>
-            <td valign="top">IN: Dataset creation property list identifier.</td></tr>
+            <td valign="top"><em>hid_t</em>&nbsp;<code>plist_id</code>&nbsp;&nbsp;</td>
+            <td valign="top">IN: Dataset creation property list 
+                identifier.</td></tr>
     </table></ul>
 
+  <p>
   <dt><strong>Returns:</strong>
     <dd>Returns a non-negative value if successful;
         otherwise returns a negative value.
-  <dt><strong>Fortran90 Interface:</strong> <!--h5pset_nbit_f-->
-    <dd>None.
-<!--
-<pre>
-SUBROUTINE h5pset_nbit_f(plist_id, hdferr)
-  IMPLICIT NONE
-  INTEGER(HID_T), INTENT(IN) :: plist_id ! Dataset creation property list id
-  INTEGER, INTENT(OUT) :: hdferr         ! Error code
-                                         ! 0 on success and -1 on failure
-END SUBROUTINE h5pset_nbit_f
-</pre>
--->
+
+  <p>
+  <dt><strong>Fortran90 Interface:</strong> h5pset_nbit_f
+    <dd>
+
+        <?php include("H5P/h5pset_nbit_f_F90.htm"); ?>
 
   <p>
   <dt><strong>History:</strong>
@@ -155,14 +158,15 @@ END SUBROUTINE h5pset_nbit_f
           <td valign="top">
             C function introduced in this release.</td>
         </tr>
-<!--
         <tr>
+<!--
           <td valign="top">1.8.1</td>
           <td valign="top">1.8.7</td>
-          <td valign="top">
-            Fortran90 subroutine introduced in this release.</td>
-        </tr>
 -->
+          <td valign="top">1.8.8</td>
+          <td valign="top">
+            Fortran subroutine introduced in this release.</td>
+        </tr>
         </table>
 
 </dl>
