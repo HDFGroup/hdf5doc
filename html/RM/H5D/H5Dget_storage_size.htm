@@ -24,7 +24,7 @@
 <dl>
 
 <dt><div align=right><font color=999999 size=-1><i>
-    Last modified: 4 October 2011
+    Last modified: 25 October 2011
     </i></font></div>
 
 <dt><strong>Name:</strong> <a name="Dataset-GetStorageSize">H5Dget_storage_size</a>
@@ -35,35 +35,50 @@
 
 <p />
 <dt><strong>Purpose:</strong>
-    <dd>Returns the amount of storage required for a dataset.
+    <dd>Returns the amount of storage allocated for a dataset.
 
 <p />
 <dt><strong>Description:</strong>
-    <dd><code>H5Dget_storage_size</code> returns the amount of storage 
-        that is required to write the raw data of the dataset specified by 
-        <code>dataset_id</code>.  
+    <dd><code>H5Dget_storage_size</code> returns the amount of storage,
+        in bytes, that is allocated in the file for the raw data of the 
+        dataset specified by <code>dataset_id</code>.  
         <p>
         Note that the <i>amount of storage</i> in this case is
-        the storage required in the written file,
-        which may differ from the space required to hold a dataset in 
-        working memory.  
-        <p>
-        For contiguous datasets, the returned size reflects 
-        the allocated size of the raw data.
-        <p>
+        the storage allocated in the written file,
+        which will typically differ from the space required to hold 
+        a dataset in working memory.  
+        <ul>
+        <li>
+        For contiguous datasets, the returned size equals
+        the current allocated size of the raw data.
+        <li>
         For unfiltered chunked datasets, the returned size is
         the number of allocated chunks times the chunk size.
-        <p>
+        <li>
         For filtered chunked datasets, the returned size is
         the space required to store the filtered data.  
         For example, if a compression filter is in use, 
         <code>H5Dget_storage_size</code> returns the total space required 
         to store the compressed chunks.
+        </ul>
         <p>
         <code>H5Dget_storage_size</code> reports only the space required 
         to store the data; the report does not include any metadata.
         <p>
         The return value may be zero if no data has been stored.
+
+<p />
+<dt><strong>Caution:</strong>
+    <dd>Note that <code>H5Dget_storage_size</code> is not generally 
+        an appropriate function to use when
+        determining the amount of memory required to work with a dataset.
+        In such circumstances, you must determine the number of data points
+        in a dataset and the size of an individual data element.  
+        <a href="RM_H5S.html#Dataspace-ExtentNpoints">
+        <code>H5Sget_simple_extent_npoints</code></a> and
+        <a href="RM_H5T.html#Datatype-GetSize">
+        <code>H5Tget_size</code></a>
+        can be used to get that information.
 
 <p />
 <dt><strong>Parameters:</strong>
@@ -74,17 +89,14 @@
     </table></dd>
 
 <p />
-<dt><strong>Caveat:</strong>
-    <dd><code>H5Dget_storage_size</code> does not differentiate between 
+<dt><strong>Returns:</strong>
+    <dd>Returns the amount of storage space, in bytes, allocated for the dataset, 
+        not counting metadata; 
+        otherwise returns 0 (zero).
+    <p>Note that <code>H5Dget_storage_size</code> does not differentiate between 
         <code>0</code> (zero), the value returned for the storage size of a 
         dataset with no stored values, and
         <code>0</code> (zero), the value returned to indicate an error.
-
-<p />
-<dt><strong>Returns:</strong>
-    <dd>Returns the amount of storage space allocated for the dataset, 
-        not counting metadata; 
-        otherwise returns 0 (zero).
 
 <p />
 <dt><strong>Fortran90 Interface:</strong> h5dget_storage_size_f
