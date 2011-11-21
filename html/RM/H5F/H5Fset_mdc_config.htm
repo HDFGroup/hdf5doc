@@ -23,144 +23,176 @@
 <hr>
 <dl>
 <dt><div align=right><font color=999999 size=-1><i>
-      Last modified: 18 May 2009
+      Last modified: 18 November 2011
       </i></font></div>
 
 <dt><strong>Name:</strong> <a name="File-SetMdcConfig">H5Fset_mdc_config</a>
 <dt><strong>Signature:</strong>
     <dd><em>herr_t</em> <code>H5Fset_mdc_config</code>(<em>hid_t</em> 
       <code>file_id</code>, <em>H5AC_cache_config_t *</em><code>config_ptr</code>)
+
+<p>
 <dt><strong>Purpose:</strong>
     <dd>Attempt to configure metadata cache of target file.
+
+<p>
 <dt><strong>Description:</strong>
     <dd>H5Fset_mdc_config attempts to configure the file's metadata cache 
       according configuration supplied in *config_ptr. 
-      <p>See the overview of the metadata cache in the special topics 
+      <p>
+      See the overview of the metadata cache in the special topics 
       section of the user manual for details on what is being configured.  
       If you haven't read and understood that documentation, you really 
       shouldn't be using this API call.
+
+<p>
 <dt><strong>Parameters:</strong>
-    <ul><table>
+    <dd><table>
         <tr>
-            <td valign="top"><em>hid_t</em>&nbsp;<code>file_id</code>
-              &nbsp;&nbsp;&nbsp;&nbsp;</td>
+            <td colspan="2"><em>hid_t</em>&nbsp;<code>file_id</code></td>
+            </tr><tr>
+            <td valign="top" width="20%">&nbsp;
+                <!-- THIS CELL SETS THE WIDTH OF THIS "INDENT COLUMN" -->
+                <!-- FOR THE ENTIRE PARAMETERS TABLE.                 -->
+                </td>
             <td valign="top">IN: Identifier of the target file</td></tr>
         <tr>
-            <td valign="top"><em>H5AC_cache_config_t&nbsp;*</em><code>config_ptr</code>
-              &nbsp;&nbsp;&nbsp;&nbsp;</td>
-            <td valign="top">IN: Pointer to the instance of H5AC_cache_config_t 
-              containing the desired configuration.  The fields of this structure 
-              are discussed below:</td></tr>
+            <td colspan="2"><em>H5AC_cache_config_t&nbsp;*</em>
+                <code>config_ptr</code></td>
+            </tr><tr>
+            <td valign="top">&nbsp;</td>
+            <td valign="top">IN: Pointer to the instance of 
+                <code>H5AC_cache_config_t</code> containing the desired 
+                configuration.  The fields in this structure can be
+                placed in several categories:
+                    <br>&nbsp;&nbsp;&nbsp;&nbsp;
+                    <a href="#SetFileGenConfigFields">General configuration</a>
+                    <br>&nbsp;&nbsp;&nbsp;&nbsp;
+                    <a href="#SetFileIncConfigFields">Increment configuration</a>
+                    <br>&nbsp;&nbsp;&nbsp;&nbsp;
+                    <a href="#SetFileDecConfigFields">Decrement configuration</a>
+                    <br>&nbsp;&nbsp;&nbsp;&nbsp;
+                    <a href="#SetFileParConfigFields">Parallel configuration</a>
+                <br>
+                Specific fields are described below.
+                </td></tr>
         <tr>
-          <td colspan="2">&nbsp;</td>
+            <td colspan="2">&nbsp;</td>
+        </tr>
+
+
+        <tr>
+            <td colspan="2"><a name="SetFileGenConfigFields">
+                <strong>General configuration fields:</strong></a></td>
         </tr>
         <tr>
-          <td colspan="2"><strong>General configuration section:</strong></td>
-        </tr>
-        <tr>
-            <td valign="top"><em>int</em> <code>version</code>
-              &nbsp;&nbsp;&nbsp;&nbsp;</td>
+            <td colspan="2"><em>int</em> <code>version</code></td>
+            </tr><tr>
+            <td valign="top">&nbsp;</td>
             <td valign="top">IN: Integer field indicating the the version of 
-              the H5AC_cache_config_t in use.  This field should be set to 
-              H5AC__CURR_CACHE_CONFIG_VERSION (defined in H5ACpublic.h).</td></tr>
+                the <code>H5AC_cache_config_t</code> in use.  
+                This field should be set to 
+                <code>H5AC__CURR_CACHE_CONFIG_VERSION</code>
+                (defined in <code>H5ACpublic.h</code>).
+                </td></tr>
         <tr>
-            <td valign="top"><em>hbool_t</em> <code>rpt_fcn_enabled</code>
-              &nbsp;&nbsp;&nbsp;&nbsp;</td>
+            <td colspan="2"><em>hbool_t</em> <code>rpt_fcn_enabled</code></td>
+            </tr><tr>
+            <td valign="top">&nbsp;</td>
             <td valign="top">IN: Boolean flag indicating whether the adaptive 
-              cache resize report function is enabled.  This field should almost 
-              always be set to FALSE. Since resize algorithm activity is reported 
-              via stdout, it MUST be set to FALSE on Windows machines.
-              <p>The report function is not supported code, and can be expected to 
-              change between versions of the library.  Use it at your own risk.</td></tr>
-
-
-
+                cache resize report function is enabled.  
+                This field should almost always be set to <code>FALSE</code>. 
+                Since resize algorithm activity is reported via stdout, 
+                it MUST be set to <code>FALSE</code> on Windows machines.
+                <p>
+                The report function is not supported code, and can be expected to 
+                change between versions of the library.  Use it at your own risk.
+                </td></tr>
         <tr>
-            <td valign="top"><em>hbool_t</em> <code>open_trace_File</code>
-              &nbsp;&nbsp;&nbsp;&nbsp;</td>
+            <td colspan="2"><em>hbool_t</em> <code>open_trace_File</code></td>
+            </tr><tr>
+            <td valign="top">&nbsp;</td>
             <td valign="top">IN: Boolean field indicating whether 
-              the <code>trace_file_name</code> field should be 
-              used to open a trace file for the 
-              cache.
-              <p>
-              The trace file is a debuging feature 
-              that allows the capture of top level 
-              metadata cache requests for purposes 
-              of debugging and/or optimization.  
-              This field should normally be set to 
-              <code>FALSE</code>, as trace file collection 
-              imposes considerable overhead.
-              <p>
-              This field should only be set to 
-              <code>TRUE</code> when the <code>trace_file_name</code> contains 
-              the full path of the desired trace 
-              file, and either there is no open 
-              trace file on the cache, or the 
-              <code>close_trace_file</code> field is also <code>TRUE</code>.
-              <p>
-              The trace file feature is unsupported
-              unless used at the direction of THG.
-              It is intended to allow THG to collect 
-              a trace of cache activity in cases of 
-              occult failures and/or poor performance 
-              seen in the field, so as to aid in
-              reproduction in the lab.  If you use 
-              it absent the direction of THG, you 
-              are on your own.</td></tr>
-
+                the <code>trace_file_name</code> field should be 
+                used to open a trace file for the cache.
+                <p>
+                The trace file is a debuging feature 
+                that allows the capture of top level 
+                metadata cache requests for purposes 
+                of debugging and/or optimization.  
+                This field should normally be set to 
+                <code>FALSE</code>, as trace file collection 
+                imposes considerable overhead.
+                <p>
+                This field should only be set to 
+                <code>TRUE</code> when the <code>trace_file_name</code> contains 
+                the full path of the desired trace 
+                file, and either there is no open 
+                trace file on the cache, or the 
+                <code>close_trace_file</code> field is also <code>TRUE</code>.
+                <p>
+                The trace file feature is unsupported
+                unless used at the direction of The HDF Group.
+                It is intended to allow The HDF Group to collect 
+                a trace of cache activity in cases of 
+                occult failures and/or poor performance 
+                seen in the field, so as to aid in
+                reproduction in the lab.  If you use 
+                it absent the direction of The HDF Group, you 
+                are on your own.</td></tr>
         <tr>
-            <td valign="top"><em>hbool_t</em> <code>close_trace_file</code>
-              &nbsp;&nbsp;&nbsp;&nbsp;</td>
+            <td colspan="2"><em>hbool_t</em> <code>close_trace_file</code></td>
+            </tr><tr>
+            <td valign="top">&nbsp;</td>
             <td valign="top">IN: Boolean field indicating whether 
-              the current trace file (if any) should 
-              be closed.
-              <p>
-              See the above comments on the 
-              <code>open_trace_file</code> field.  This field
-              should be set to <code>FALSE</code> unless there 
-              is an open trace file on the cache 
-              that you wish to close.
-              <p>
-              The trace file feature is unsupported
-              unless used at the direction of THG.
-              It is intended to allow THG to collect 
-              a trace of cache activity in cases of 
-              occult failures and/or poor performance 
-              seen in the field, so as to aid in
-              reproduction in the lab.  If you use 
-              it absent the direction of THG, you 
-              are on your own.</td></tr>
-
+                the current trace file (if any) should be closed.
+                <p>
+                See the above comments on the 
+                <code>open_trace_file</code> field.  This field
+                should be set to <code>FALSE</code> unless there 
+                is an open trace file on the cache 
+                that you wish to close.
+                <p>
+                The trace file feature is unsupported
+                unless used at the direction of The HDF Group.
+                It is intended to allow The HDF Group to collect 
+                a trace of cache activity in cases of 
+                occult failures and/or poor performance 
+                seen in the field, so as to aid in
+                reproduction in the lab.  If you use 
+                it absent the direction of The HDF Group, you 
+                are on your own.</td></tr>
         <tr>
-            <td valign="top"><em>char</em> <code>trace_file_name[]</code>
-              &nbsp;&nbsp;&nbsp;&nbsp;</td>
+            <td colspan="2"><em>char</em> <code>trace_file_name[]</code></td>
+            </tr><tr>
+            <td valign="top">&nbsp;</td>
             <td valign="top">IN: Full path of the trace file to be 
-              opened if the <code>open_trace_file</code> field 
-              is <code>TRUE</code>.
-              <p>
-              In the parallel case, an ascii 
-              representation of the mpi rank of
-              the process will be appended to the 
-              file name to yield a unique trace 
-              file name for each process.
-              <p>
-              The length of the path must not 
-              exceed <code>H5AC__MAX_TRACE_FILE_NAME_LEN</code> 
-              characters.
-              <p>
-              The trace file feature is unsupported
-              unless used at the direction of THG.
-              It is intended to allow THG to collect 
-              a trace of cache activity in cases of 
-              occult failures and/or poor performance 
-              seen in the field, so as to aid in
-              reproduction in the lab.  If you use 
-              it absent the direction of THG, you 
-              are on your own.</td></tr>
-
+                opened if the <code>open_trace_file</code> field 
+                is <code>TRUE</code>.
+                <p>
+                In the parallel case, an ascii 
+                representation of the mpi rank of
+                the process will be appended to the 
+                file name to yield a unique trace 
+                file name for each process.
+                <p>
+                The length of the path must not 
+                exceed <code>H5AC__MAX_TRACE_FILE_NAME_LEN</code> 
+                characters.
+                <p>
+                The trace file feature is unsupported
+                unless used at the direction of The HDF Group.
+                It is intended to allow The HDF Group to collect 
+                a trace of cache activity in cases of 
+                occult failures and/or poor performance 
+                seen in the field, so as to aid in
+                reproduction in the lab.  If you use 
+                it absent the direction of The HDF Group, you 
+                are on your own.</td></tr>
         <tr>
-           <td valign="top"><em>hbool_t</em> <code>evictions_enabled</code>
-                &nbsp;&nbsp;&nbsp;&nbsp;</td>
+           <td colspan="2"><em>hbool_t</em> <code>evictions_enabled</code></td>
+            </tr><tr>
+            <td valign="top">&nbsp;</td>
             <td valign="top">IN: A boolean flag indicating whether evictions
                 from the metadata cache are enabled.  This flag is initially
                 set to <code>TRUE</code>.
@@ -171,8 +203,8 @@
                 <code>evictions_enabled</code> field exists to allow this.
                 However, this is an extreme step, and you have no business
                 doing it unless you have read the User Guide section on 
-		metadata caching, and have considered all other options 
-		carefully.
+                metadata caching, and have considered all other options 
+                carefully.
                 <p>
                 The <code>evictions_enabled</code> field may not be set to
                 <code>FALSE</code> unless all adaptive cache resizing code
@@ -190,237 +222,299 @@
                 possible.
                 <p>
                 </td></tr>
-
         <tr>
-            <td valign="top"><em>hbool_t</em> <code>set_initial_size</code>
-              &nbsp;&nbsp;&nbsp;&nbsp;</td>
-            <td valign="top">IN: Boolean flag indicating whether the cache should be 
-              forced to the user specified initial size.</td></tr>
+            <td colspan="2"><em>hbool_t</em> <code>set_initial_size</code></td>
+            </tr><tr>
+            <td valign="top">&nbsp;</td>
+            <td valign="top">IN: Boolean flag indicating whether the cache 
+                should be forced to the user specified initial size.</td></tr>
         <tr>
-            <td valign="top"><em>size_t</em> <code>initial_size</code>
-              &nbsp;&nbsp;&nbsp;&nbsp;</td>
-            <td valign="top">IN: If set_initial_size is TRUE, initial_size must 
-              contains the desired initial size in bytes.  This value must lie 
-              in the closed interval [min_size, max_size]. (see below)</td></tr>
+            <td colspan="2"><em>size_t</em> <code>initial_size</code></td>
+            </tr><tr>
+            <td valign="top">&nbsp;</td>
+            <td valign="top">IN: If set_initial_size is <code>TRUE</code>, initial_size must 
+                contains the desired initial size in bytes.  This value must lie 
+                in the closed interval [min_size, max_size]. (see below)</td></tr>
         <tr>
-            <td valign="top"><em>double</em> <code>min_clean_fraction</code>
-              &nbsp;&nbsp;&nbsp;&nbsp;</td>
+            <td colspan="2"><em>double</em> <code>min_clean_fraction</code></td>
+            </tr><tr>
+            <td valign="top">&nbsp;</td>
             <td valign="top">IN: This field specifies the minimum fraction of the 
-	      cache that must be kept either clean or empty.
-              <p>The value must lie in the interval [0.0, 1.0].  0.01 is a 
-              good place to start in the serial case.  In the parallel case,
-              a larger value is needed -- see the overview of the metadata
-              cache in the 
-              &ldquo;<a href="../UG/UG_frame17SpecialTopics.html">HDF5 
-              Special Topics</a>&rdquo; section of the 
-              <cite>HDF5 User&rsquo;s Guide</cite> for details.</td></tr>
+                cache that must be kept either clean or empty.
+                <p>
+                The value must lie in the interval [0.0, 1.0].  0.01 is a 
+                good place to start in the serial case.  In the parallel case,
+                a larger value is needed -- see 
+                &ldquo;<a href="../Advanced/HDF5_Metadata/index.html">Metadata 
+                Caching in HDF5</a>&rdquo; in the collection
+                &ldquo;<a href="../Advanced.html">Advanced Topics 
+                in HDF5</a>.&rdquo;
+                </td></tr>
         <tr>
-            <td valign="top"><em>size_t</em> <code>max_size</code>
-              &nbsp;&nbsp;&nbsp;&nbsp;</td>
+            <td colspan="2"><em>size_t</em> <code>max_size</code></td>
+            </tr><tr>
+            <td valign="top">&nbsp;</td>
             <td valign="top">IN: Upper bound (in bytes) on the range of values 
-              that the adaptive cache resize code can select as the maximum 
-              cache size.</td></tr>
+                that the adaptive cache resize code can select as the maximum 
+                cache size.</td></tr>
         <tr>
-            <td valign="top"><em>size_t</em> <code>min_size</code>
-              &nbsp;&nbsp;&nbsp;&nbsp;</td>
+            <td colspan="2"><em>size_t</em> <code>min_size</code></td>
+            </tr><tr>
+            <td valign="top">&nbsp;</td>
             <td valign="top">IN: Lower bound (in bytes) on the range of values 
-              that the adaptive cache resize code can select as the maximum 
-              cache size.</td></tr>
+                that the adaptive cache resize code can select as the maximum 
+                cache size.</td></tr>
         <tr>
-            <td valign="top"><em>long int</em> <code>epoch_length</code>
-              &nbsp;&nbsp;&nbsp;&nbsp;</td>
+            <td colspan="2"><em>long int</em> <code>epoch_length</code></td>
+            </tr><tr>
+            <td valign="top">&nbsp;</td>
             <td valign="top">IN: Number of cache accesses between runs of the 
-              adaptive cache resize code. 50,000 is a good starting number.</td></tr>
+                adaptive cache resize code. 50,000 is a good starting number.</td></tr>
         <tr>
-          <td colspan="2">&nbsp;</td>
+            <td colspan="2">&nbsp;</td>
         </tr>
-<!-- NEW PAGE -->
+
+
         <tr>
-          <td colspan="2"><strong>Increment configuration section:</strong></td>
+            <td colspan="2"><a name="SetFileIncConfigFields">
+                <strong>Increment configuration fields:</strong></a></td>
         </tr>
         <tr>
-            <td valign="top"><em>enum&nbsp;H5C_cache_incr_mode</em>&nbsp;<code>incr_mode</code>
-              &nbsp;&nbsp;&nbsp;&nbsp;</td>
+            <td colspan="2"><em>enum H5C_cache_incr_mode</em> 
+                <code>incr_mode</code></td>
+            </tr><tr>
+            <td valign="top">&nbsp;</td>
             <td valign="top">
-              <br>
-              IN: Enumerated value indicating the operational mode 
-              of the automatic cache size increase code.  At present, only two 
-              values are legal:
-              <p>H5C_incr__off:  Automatic cache size increase is disabled, 
-              and the remaining increment fields are ignored.
-              <p>H5C_incr__threshold:  Automatic cache size increase is enabled 
-              using the hit rate threshold algorithm.</td></tr>
+                IN: Enumerated value indicating the operational mode 
+                of the automatic cache size increase code.  At present, only two 
+                values are legal:
+                <p>
+                H5C_incr__off:  Automatic cache size increase is disabled, 
+                and the remaining increment fields are ignored.
+                <p>
+                H5C_incr__threshold:  Automatic cache size increase is enabled 
+                using the hit rate threshold algorithm.</td></tr>
         <tr>
-            <td valign="top"><em>double</em> <code>lower_hr_threshold</code>
-              &nbsp;&nbsp;&nbsp;&nbsp;</td>
+            <td colspan="2"><em>double</em> <code>lower_hr_threshold</code></td>
+            </tr><tr>
+            <td valign="top">&nbsp;</td>
             <td valign="top">IN: Hit rate threshold used by the hit rate threshold 
-              cache size increment algorithm.
-              <p>When the hit rate over an epoch is below this threshold and the 
-              cache is full, the maximum size of the cache is multiplied by 
-              increment (below), and then clipped as necessary to stay within 
-              max_size, and possibly max_increment.
-              <p>This field must lie in the interval [0.0, 1.0].  0.8 or 0.9 
-              is a good starting point.</td></tr>
+                cache size increment algorithm.
+                <p>
+                When the hit rate over an epoch is below this threshold and the 
+                cache is full, the maximum size of the cache is multiplied by 
+                increment (below), and then clipped as necessary to stay within 
+                max_size, and possibly max_increment.
+                <p>
+                This field must lie in the interval [0.0, 1.0].  0.8 or 0.9 
+                is a good starting point.</td></tr>
         <tr>
-            <td valign="top"><em>double</em> <code>increment</code>
-              &nbsp;&nbsp;&nbsp;&nbsp;</td>
+            <td colspan="2"><em>double</em> <code>increment</code></td>
+            </tr><tr>
+            <td valign="top">&nbsp;</td>
             <td valign="top">IN: Factor by which the hit rate threshold cache 
-              size increment algorithm multiplies the current cache max size 
-              to obtain a tentative new cache size.
-              <p>The actual cache size increase will be clipped to satisfy the 
-              max_size specified in the general configuration, and possibly 
-              max_increment below.
-              <p>The parameter must be greater than or equal to 1.0 -- 2.0 
-              is a reasonable value.
-              <p>If you set it to 1.0, you will effectively disable cache size 
-              increases.</td></tr>
+                size increment algorithm multiplies the current maximum cache size 
+                to obtain a tentative new cache size.
+                <p>
+                The actual cache size increase will be clipped to satisfy the 
+                max_size specified in the general configuration, and possibly 
+                max_increment below.
+                <p>
+                The parameter must be greater than or equal to 1.0 -- 2.0 
+                is a reasonable value.
+                <p>
+                If you set it to 1.0, you will effectively disable cache size 
+                increases.</td></tr>
         <tr>
-            <td valign="top"><em>hbool_t</em> <code>apply_max_increment</code>
-              &nbsp;&nbsp;&nbsp;&nbsp;</td>
+            <td colspan="2"><em>hbool_t</em> <code>apply_max_increment</code></td>
+            </tr><tr>
+            <td valign="top">&nbsp;</td>
             <td valign="top">IN: Boolean flag indicating whether an upper limit 
-              should be applied to the size of cache size increases.</td></tr>
+                should be applied to the size of cache size increases.</td></tr>
         <tr>
-            <td valign="top"><em>size_t</em> <code>max_increment</code>
-              &nbsp;&nbsp;&nbsp;&nbsp;</td>
+            <td colspan="2"><em>size_t</em> <code>max_increment</code></td>
+            </tr><tr>
+            <td valign="top">&nbsp;</td>
             <td valign="top">IN: Maximum number of bytes by which cache size can 
-              be increased in a single step -- if applicable.</td></tr>
+                be increased in a single step -- if applicable.</td></tr>
         <tr>
-            <td valign="top"><em>enum&nbsp;H5C_cache_flash_incr_mode</em>&nbsp;<code>flash_incr_mode</code>&nbsp;&nbsp;&nbsp;&nbsp;</td>
+            <td colspan="2"><em>enum H5C_cache_flash_incr_mode</em> 
+                <code>flash_incr_mode</code></td>
+            </tr><tr>
+            <td valign="top">&nbsp;</td>
             <td valign="top">IN: Enumerated value indicating the operational mode of
-                          the flash cache size increase code.  At present, only the following
-                          values are legal:
-              <p>H5C_flash_incr__off:  Flash cache size increase is disabled.
-              <p>H5C_flash_incr__add_space:  Flash cache size increase is enabled using
-                          the add space algorithm.</td></tr>
+                the flash cache size increase code.  At present, 
+                only the following values are legal:
+                <p>
+                H5C_flash_incr__off:  Flash cache size increase is disabled.
+                <p>
+                H5C_flash_incr__add_space:  Flash cache size increase is 
+                enabled using the add space algorithm.</td></tr>
 
         <tr>
-                    <td valign="top"><em>double</em> <code>flash_threshold</code>
-                          &nbsp;&nbsp;&nbsp;&nbsp;</td>
+            <td colspan="2"><em>double</em> <code>flash_threshold</code></td>
+            </tr><tr>
+            <td valign="top">&nbsp;</td>
             <td valign="top">IN: The factor by which the current maximum cache
-                          size is multiplied to obtain the minimum size
-                          entry / entry size increase which may trigger a
-                          flash cache size increase.
-                          <p>
-                          At present, this value must lie in the range
-                          [0.1, 1.0].</td></tr>
+                size is multiplied to obtain the minimum size
+                entry / entry size increase which may trigger a
+                flash cache size increase.
+                <p>
+                At present, this value must lie in the range
+                [0.1, 1.0].</td></tr>
 
         <tr>
-                    <td valign="top"><em>double</em> <code>flash_multiple</code>
-                          &nbsp;&nbsp;&nbsp;&nbsp;</td>
+            <td colspan="2"><em>double</em> <code>flash_multiple</code></td>
+            </tr><tr>
+            <td valign="top">&nbsp;</td>
             <td valign="top">IN: The factor by which the size of the triggering
-                          entry / entry size increase is multiplied to obtain
-                          the initial cache size increment.  This increment
-                          may be reduced to reflect existing free space in
-                          the cache and the <code>max_size</code> field
-                          above.
-                          <p>
-                          At present, this field must lie in the range
-                          [0.1, 10.0].</td></tr>
+                entry / entry size increase is multiplied to obtain
+                the initial cache size increment.  This increment
+                may be reduced to reflect existing free space in
+                the cache and the <code>max_size</code> field above.
+                <p>
+                At present, this field must lie in the range
+                [0.1, 10.0].</td></tr>
         <tr>
-          <td colspan="2">&nbsp;</td>
+            <td colspan="2">&nbsp;</td>
         </tr>
-<!-- NEW PAGE -->
-		<tr>
-          <td colspan="2"><strong>Decrement configuration section:</strong></td>
+
+
+        <tr>
+            <td colspan="2"><a name="SetFileDecConfigFields">
+                <strong>Decrement configuration fields:</strong></a></td>
         </tr>
         <tr>
-            <td valign="top"><em>enum&nbsp;H5C_cache_decr_mode</em>&nbsp;<code>decr_mode</code>
-              &nbsp;&nbsp;&nbsp;&nbsp;</td>
+            <td colspan="2"><em>enum&nbsp;H5C_cache_decr_mode</em>&nbsp;<code>decr_mode</code></td>
+            </tr><tr>
+            <td valign="top">&nbsp;</td>
             <td valign="top">
-              <br>
-              IN: Enumerated value indicating the operational 
-              mode of the automatic cache size decrease code.  At present,
-              the following values are legal:
-              <p>H5C_decr__off:  Automatic cache size decrease is disabled.
-              <p>H5C_decr__threshold:  Automatic cache size decrease is 
-              enabled using the hit rate threshold algorithm.
-              <p>H5C_decr__age_out:  Automatic cache size decrease is enabled 
-              using the ageout algorithm.
-              <p>H5C_decr__age_out_with_threshold:  Automatic cache size 
-              decrease is enabled using the ageout with hit rate threshold 
-              algorithm</td></tr>
+                IN: Enumerated value indicating the operational 
+                mode of the automatic cache size decrease code.  At present,
+                the following values are legal:
+                <p>
+                H5C_decr__off:  Automatic cache size decrease is disabled.
+                <p>
+                H5C_decr__threshold:  Automatic cache size decrease is 
+                enabled using the hit rate threshold algorithm.
+                <p>
+                H5C_decr__age_out:  Automatic cache size decrease is enabled 
+                using the ageout algorithm.
+                <p>
+                H5C_decr__age_out_with_threshold:  Automatic cache size 
+                decrease is enabled using the ageout with hit rate threshold 
+                algorithm</td></tr>
         <tr>
-            <td valign="top"><em>double</em> <code>upper_hr_threshold</code>
-              &nbsp;&nbsp;&nbsp;&nbsp;</td>
+            <td colspan="2"><em>double</em> <code>upper_hr_threshold</code></td>
+            </tr><tr>
+            <td valign="top">&nbsp;</td>
             <td valign="top">IN: Hit rate threshold for the hit rate threshold and 
-              ageout with hit rate threshold cache size decrement algorithms.
-              <p>When decr_mode is H5C_decr__threshold, and the hit rate over a 
-              given epoch exceeds the supplied threshold, the current maximum 
-              cache size is multiplied by decrement to obtain a tentative new
-              (and smaller) maximum cache size.
-              <p>When decr_mode is H5C_decr__age_out_with_threshold, there is no 
-              attempt to find and evict aged out entries unless the hit rate in 
-              the previous epoch exceeded the supplied threshold.
-              <p>This field must lie in the interval [0.0, 1.0].
-              <p>For H5C_incr__threshold, .9995 or .99995 is a good place to start.
-              <p>For H5C_decr__age_out_with_threshold, .999 might be 
-              more useful.</td></tr>
+                ageout with hit rate threshold cache size decrement algorithms.
+                <p>
+                When decr_mode is H5C_decr__threshold, and the hit rate over a 
+                given epoch exceeds the supplied threshold, the current maximum 
+                cache size is multiplied by decrement to obtain a tentative new
+                (and smaller) maximum cache size.
+                <p>
+                When decr_mode is H5C_decr__age_out_with_threshold, there is no 
+                attempt to find and evict aged out entries unless the hit rate in 
+                the previous epoch exceeded the supplied threshold.
+                <p>
+                This field must lie in the interval [0.0, 1.0].
+                <p>
+                For H5C_incr__threshold, .9995 or .99995 is a good place to start.
+                <p>
+                For H5C_decr__age_out_with_threshold, .999 might be 
+                more useful.</td></tr>
         <tr>
-            <td valign="top"><em>double</em> <code>decrement</code>
-              &nbsp;&nbsp;&nbsp;&nbsp;</td>
+            <td colspan="2"><em>double</em> <code>decrement</code></td>
+            </tr><tr>
+            <td valign="top">&nbsp;</td>
             <td valign="top">IN: In the hit rate threshold cache size decrease 
-              algorithm, this parameter contains the factor by which the
-              current max cache size is multiplied to produce a tentative 
-              new cache size.
-              <p>The actual cache size decrease will be clipped to satisfy the 
-              min_size specified in the general configuration, and possibly 
-              max_decrement below.
-              <p>The parameter must be be in the interval [0.0, 1.0].
-              <p>If you set it to 1.0, you will effectively disable cache size
-              decreases.  0.9 is a reasonable starting point.</td></tr>
-		<tr>
-            <td valign="top"><em>hbool_t</em> <code>apply_max_decrement</code>
-              &nbsp;&nbsp;&nbsp;&nbsp;</td>
+                algorithm, this parameter contains the factor by which the
+                current max cache size is multiplied to produce a tentative 
+                new cache size.
+                <p>
+                The actual cache size decrease will be clipped to satisfy the 
+                min_size specified in the general configuration, and possibly 
+                max_decrement below.
+                <p>
+                The parameter must be be in the interval [0.0, 1.0].
+                <p>
+                If you set it to 1.0, you will effectively disable cache size
+                decreases.  0.9 is a reasonable starting point.</td></tr>
+        <tr>
+            <td colspan="2"><em>hbool_t</em> <code>apply_max_decrement</code></td>
+            </tr><tr>
+            <td valign="top">&nbsp;</td>
             <td valign="top">IN: Boolean flag indicating whether an upper limit 
-              should be applied to the size of cache size decreases.</td></tr>
+                should be applied to the size of cache size decreases.</td></tr>
         <tr>
-            <td valign="top"><em>size_t</em> <code>max_decrement</code>
-              &nbsp;&nbsp;&nbsp;&nbsp;</td>
+            <td colspan="2"><em>size_t</em> <code>max_decrement</code></td>
+            </tr><tr>
+            <td valign="top">&nbsp;</td>
             <td valign="top">IN: Maximum number of bytes by which the maximum cache 
-              size can be decreased in any single step -- if applicable.</td></tr>
+                size can be decreased in any single step -- if applicable.</td></tr>
         <tr>
-            <td valign="top"><em>int</em> <code>epochs_before_eviction</code>
-              &nbsp;&nbsp;&nbsp;&nbsp;</td>
-            <td valign="top">IN: In the ageout based cache size reduction algorithms, 
-              this field contains the minimum number of epochs an entry must remain 
-              unaccessed in cache before the cache size reduction algorithm tries to 
-              evict it. 3 is a reasonable value.</td></tr>
+            <td colspan="2"><em>int</em> <code>epochs_before_eviction</code></td>
+            </tr><tr>
+            <td valign="top">&nbsp;</td>
+            <td valign="top">IN: In the ageout based cache size reduction 
+                algorithms, this field contains the minimum number of epochs an 
+                entry must remain unaccessed in cache before the cache size 
+                reduction algorithm tries to evict it. 
+                3 is a reasonable value.</td></tr>
         <tr>
-            <td valign="top"><em>hbool_t</em> <code>apply_empty_reserve</code>
-              &nbsp;&nbsp;&nbsp;&nbsp;</td>
+            <td colspan="2"><em>hbool_t</em> <code>apply_empty_reserve</code></td>
+            </tr><tr>
+            <td valign="top">&nbsp;</td>
             <td valign="top">IN: Boolean flag indicating whether the ageout based 
-              decrement algorithms will maintain a empty reserve when decreasing 
-              cache size.</td></tr>
+                decrement algorithms will maintain a empty reserve when decreasing 
+                cache size.</td></tr>
         <tr>
-            <td valign="top"><em>double</em> <code>empty_reserve</code>
-              &nbsp;&nbsp;&nbsp;&nbsp;</td>
+            <td colspan="2"><em>double</em> <code>empty_reserve</code></td>
+            </tr><tr>
+            <td valign="top">&nbsp;</td>
             <td valign="top">IN: Empty reserve as a fraction of maximum cache 
-              size if applicable.
-              <p>When so directed, the ageout based algorithms will not decrease 
-              the maximum cache size unless the empty reserve can be met.
-              <p>The parameter must lie in the interval [0.0, 1.0].  
-              0.1 or 0.05 is a good place to start.</td></tr>
+                size if applicable.
+                <p>
+                When so directed, the ageout based algorithms will not decrease 
+                the maximum cache size unless the empty reserve can be met.
+                <p>
+                The parameter must lie in the interval [0.0, 1.0].  
+                0.1 or 0.05 is a good place to start.</td></tr>
+        <tr>
+            <td colspan="2">&nbsp;</td>
+        </tr>
 
-<!-- NEW PAGE -->
 
         <tr>
-          <td colspan="2"><strong>Parallel configuration section:</strong></td>
+          <td colspan="2"><a name="SetFileParConfigFields">
+                <strong>Parallel configuration field:</strong></a></td>
         </tr>
-		<tr>
-		    <td valign="top"><em>int</em> <code>dirty_bytes_threshold</code></td>
-			<td valign="top">IN: Threshold number of bytes of dirty metadata 
-			  generation for triggering synchronizations of the metadata caches 
-			  serving the target file in the parallel case.
-              <p>Synchronization occurs whenever the number of bytes of dirty 
-			  metadata created since the last synchronization exceeds this limit.
-              <p>This field only applies to the parallel case.  While it is ignored 
-			  elsewhere, it can still draw a
-                          value out of bounds error.
-			  <p>It must be consistant across all caches on any given file.
-			  <p>By default, this field is set to 256 KB.  It shouldn't be more 
-			  than half the current max cache size times the min clean fraction.</td>
-		</tr>
-    </table></ul>
+        <tr>
+            <td colspan="2"><em>int</em> <code>dirty_bytes_threshold</code></td>
+            </tr><tr>
+            <td valign="top">&nbsp;</td>
+            <td valign="top">IN: Threshold number of bytes of dirty metadata 
+                generation for triggering synchronizations of the metadata caches 
+                serving the target file in the parallel case.
+                <p>
+                Synchronization occurs whenever the number of bytes of dirty 
+                metadata created since the last synchronization exceeds this limit.
+                <p>
+                This field only applies to the parallel case.  While it is ignored 
+                elsewhere, it can still draw a value out of bounds error.
+                <p>
+                It must be consistant across all caches on any given file.
+                <p>
+                By default, this field is set to 256 KB.  It shouldn't be more 
+                than half the current maximum cache size times the 
+                minimum clean fraction.</td>
+        </tr>
+    </table></dd>
+
+<p>
 <dt><strong>Returns:</strong>
     <dd>Returns a non-negative value if successful; otherwise returns a
         negative value.
