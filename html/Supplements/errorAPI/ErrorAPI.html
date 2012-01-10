@@ -1,0 +1,264 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+    Changes:
+-->
+<HTML>
+
+<HEAD>
+    <TITLE>Unified Error Reporting for HDF5 and Client Libraries</TITLE>
+    <META http-equiv="content-type" content="text/html; charset=ISO-8859-1">
+    <META name="author" content="Quincey Koziol">
+</HEAD>
+
+<BODY TEXT="#000000" BGCOLOR="#FFFFFF">
+
+<STYLE TYPE="text/css">
+OL.loweralpha { list-style-type: lower-alpha }
+OL.upperroman { list-style-type: upper-roman }
+</STYLE>
+       
+<CENTER><H1>Unified Error Reporting for HDF5 and Client Libraries</H1></CENTER>
+<CENTER><H3>Quincey Koziol<br>
+            koziol@ncsa.uiuc.edu<BR>
+            March 26, 2003
+</H3></CENTER>
+
+<OL class="upperroman">
+
+<LI><H3><U>Document's Audience:</U></H3>
+         
+<UL>
+    <LI>Current H5 library designers and knowledgable external developers.</LI>
+</UL>
+         
+<LI><H3><U>Background Reading:</U></H3>
+         
+<DL>
+	<DT><A HREF="http://hdf.ncsa.uiuc.edu/HDF5/doc/RM_H5E.html">HDF5 Error API</A>
+	    <DD>This explains the current error API in HDF5.
+</DL>
+         
+<LI><H3><U>Introduction:</U></H3>
+
+<DL>
+    <DT><STRONG>What is this document about?</STRONG></DT>
+	<DD>This document describes ideas for extending the HDF5 Error API
+	    to allow libraries built on top of the HDF5 library (called
+	    "client libraries") to participate in a unified error reporting
+	    method.
+        </DD> <BR>
+    <DT><STRONG>What is currently implemented?</STRONG></DT>
+	<DD>Currently the HDF5 library's error reporting information
+	    is tightly bound to the library at compile time, requiring
+	    modification of the library source code to add each major or minor
+	    error code and its description.  This prohibits client
+	    libraries from easily adding their own error codes to extend the
+	    set of errors able to be reported.
+        </DD> <BR>
+    <DT><STRONG>What areas do we want to expand error reporting support in?</STRONG></DT>
+	<DD>We would like to allow client libraries to add their own major and
+	    minor error codes at run-time.  Additionally, they must be able to
+	    "chain" into the HDF5 error stack to seamlessly report errors at
+	    their layer in a software stack through the HDF5 error reporting
+	    mechanisms.
+        </DD> <BR>
+    <DT><STRONG>Why do we want to expand error reporting support?</STRONG></DT>
+	<DD>Our customers would like to be able to provide a unified error
+	    report to user's applications, using a single error reporting API.
+        </DD> <BR>
+</DL>
+                                      
+<LI><H3><U>Use Cases:</U></H3>
+
+<P>Adding support for extending error reporting in HDF5 breaks down into a
+few simple use cases.  Note that these use cases only discuss new features,
+the existing HDF5 error API should be used to iterate over the HDF5 error
+stack, etc.
+</P>
+
+<P>Register client library with error API use case scenario:
+<UL>
+    <LI><A HREF="UseCases/Register.html">Register Client Library</A>
+</UL>
+</P>
+
+<P>Push client library error onto error stack use case scenario:
+<UL>
+    <LI><A HREF="UseCases/Push.html">Push Error</A>
+</UL>
+</P>
+
+<P>Switch error stack use case scenario:
+<UL>
+    <LI><A HREF="UseCases/SwitchStack.html">Switch Error Stack</A>
+</UL>
+</P>
+
+<P>Display error stack use case scenario:
+<UL>
+    <LI><A HREF="UseCases/Display.html">Display Error Stack</A>
+</UL>
+</P>
+
+<P>Unregister client library error information use case scenario:
+<UL>
+    <LI><A HREF="UseCases/Unregister.html">Unregister Client Library</A>
+</UL>
+</P>
+
+<LI><H3><U>Potential Problems:</U></H3>
+
+<P>None?
+</P>
+
+<LI><H3><U>Changes to Existing API:</U></H3>
+
+<DL>
+        <DT>H5Epush</DT>
+        <DD>Pushes major error ID, minor error ID, and specified error stack.  
+        It can take additional message for format control like printf and fprintf.</DD>
+        <BR>
+
+        <DT>H5Eprint</DT>
+        <DD>Prints the specified error stack.</DD>
+        <BR>
+
+        <DT>H5Ewalk</DT>
+        <DD>Walks through the specified error stack.  It can traverse the major
+        error ID, minor error ID, and the class ID in the modified H5E_error_t
+        struct.</DD>
+        <BR>
+
+        <DT>H5Eclear</DT>
+        <DD>Clears the specified error stack.</DD>
+        <BR>
+
+        <DT>H5Eset_auto</DT>
+        <DD>Turns automatic error printing on or off for the specified error
+        stack.</DD>
+        <BR>
+
+        <DT>H5Eget_auto</DT>
+        <DD>Returns the settings for the specified error stack traversal.</DD>
+        <BR>    
+
+<p>A list of <A HREF="Specs/exist_error_spec.htm">existing API specifications</A>.<p>
+
+</DL>
+
+<LI><H3><U>Removed API Functions:</U></H3>
+
+<DL>
+<p>Both H5Eget_major and H5Eget_minor are replaced by a single function H5Eget_mesg.
+<p>
+</DL>
+
+<LI><H3><U>New API Functions:</U></H3>
+
+<DL>
+	<DT>H5Eregister_class</DT>
+	<DD>Registers a client library with the error API and returns an
+		error class ID for future use with the error API.
+	</DD><BR>
+
+	<DT>H5Eget_class_name</DT>
+	<DD>Returns a character string and its length describing the error 
+        class.  (This is the string passed in for registering the class with
+	H5Eregister_class).
+	</DD><BR>
+        
+ 	<DT>H5Eunregister_class</DT>
+	<DD>Removes an error class from the error API, closing all major
+	and minor error codes in that class.
+	</DD><BR>
+       
+	<DT>H5Ecreate_mesg</DT>
+	<DD>Add either "major" or "minor" error code to an error class.
+	</DD><BR>
+        
+ 	<DT>H5Eget_mesg</DT>
+	<DD>Returns the error code and its type("major" or "minor") specified
+        by the ID.
+	</DD><BR>
+       
+	<DT>H5Eclose_mesg</DT>
+	<DD>close either "major" or "minor" error code to an error class.
+	</DD><BR>
+
+	<DT>H5Eget_current_stack</DT>
+	<DD>Turns current error stack into an object handle and clears the 
+        current error stack.
+	</DD><BR>
+        
+	<DT>H5Eset_current_stack</DT>
+	<DD>Replaces current error stack with another error stack specified 
+        by its object handle.
+	</DD><BR>
+        
+	<DT>H5Eclose_stack</DT>
+	<DD>Closes the object handle for an error stack and releases its 
+        resources.
+	</DD><BR>
+
+	<DT>H5Eget_num</DT>
+	<DD>Returns the number of error messages in an error stack.
+	</DD><BR>
+
+	<DT>H5Epop</DT>
+	<DD>Deletes some error messages from the error stack.
+	</DD><BR>
+    
+<p>A list of <A HREF="Specs/new_error_spec.htm">new API specifications</A>.<p>
+
+</DL>
+
+<LI><H3><U>Possible New API Functions:</U></H3>
+
+<DL>
+<p>We can provide macros similar to our internal macros, HGOTO_ERROR, HGOTO_DONE.  
+   They will reduce the length of codes.
+<p>
+</DL>
+
+
+
+<LI><H3><U>Example Programs:</U></H3>
+
+<P>Example programs corresponding to use cases:
+</P>
+
+<P>Register client library with error API example:
+<UL>
+    <LI><A HREF="Examples/Register.html">Register Client Library</A>
+</UL>
+</P>
+
+<P>Push client library error onto error stack:
+<UL>
+    <LI><A HREF="Examples/Push.html">Push Error</A>
+</UL>
+</P>
+
+<P>Swich error stack:
+<UL>
+    <LI><A HREF="Examples/SwitchStack.html">Switch Error Stack</A>
+</UL>
+</P>
+
+<P>Display error stack with error class IDs, and dynamicly added major and
+minor error code.
+<UL>
+    <LI><A HREF="Examples/Display.html">Display Error Stack</A>
+</UL>
+</P>
+
+<P>Unregister client library error information:
+<UL>
+    <LI><A HREF="Examples/Unregister.html">Unregister Client Library</A>
+</UL>
+</P>
+
+</OL>
+
+</BODY>
+</HTML>
