@@ -1072,6 +1072,69 @@ all attributes to be put into dense attribute storage and will avoid
 the 64KB size limitation for a single attribute in compact attribute 
 storage.</p>
 
+<p>The example code below illustrates how to create a large attribute 
+that will be kept in dense storage.</p>
+
+<table width="600" cellspacing="0" align="center">
+    <tr valign="top"> 
+        <td align="left">
+        <hr color="green" size="3"/>
+    <pre>
+/*
+Test use of dense attribute
+
+*/
+#define N 82000000
+#include "hdf5.h"
+#include <stdio.h>
+#include <stdlib.h>
+
+int main(){
+
+hid_t fid, gid, sid, aid, gpid, fpid;
+hsize_t dims[] = {N};
+double *buf;
+int i;
+herr_t status;
+
+buf = (double *) malloc(sizeof(double) * N);
+for (i=0; i <N; i++) { buf[i] = -100.0; }
+fpid = H5Pcreate (H5P_FILE_ACCESS);
+status = H5Pset_libver_bounds (fpid, H5F_LIBVER_LATEST, H5F_LIBVER_LATEST);
+fid = H5Fcreate("adense.h5", H5F_ACC_TRUNC, H5P_DEFAULT, fpid);
+gpid = H5Pcreate (H5P_GROUP_CREATE);
+status = H5Pset_attr_phase_change (gpid, 0, 0);
+
+gid = H5Gcreate(fid, "testgrp", H5P_DEFAULT, gpid, H5P_DEFAULT);
+sid = H5Screate_simple(1, dims, NULL);
+
+aid = H5Acreate(gid, "bar", H5T_NATIVE_DOUBLE, sid, H5P_DEFAULT, H5P_DEFAULT);
+status = H5Awrite(aid, H5T_NATIVE_DOUBLE, buf);
+
+/* If you remove these two lines, it doesn't crash */
+status = H5Aclose(aid);
+status = H5Pclose (gpid);
+status = H5Pclose (fpid);
+status = H5Gclose(gid);
+status = H5Fclose (fid);
+
+return 0;
+}
+
+</pre></td>
+        </tr>
+    <tr><td><hr color="green" size="1" /></td></tr>
+
+    <tr valign="top">
+        <td align="left">
+        <b>Example 1. Create a large attribute in dense storage</b>
+        <hr color="green" size="3"/></td>
+        </tr>
+</table>
+<br />
+
+
+
 <h4>Large Attributes Stored in a Separate Dataset</h4>
 
 <p>In addition to dense attribute storage (see above), a large attribute 
