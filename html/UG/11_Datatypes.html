@@ -4823,7 +4823,8 @@ document.writeln ("
 
 
 <!-- NEW PAGE -->
-<h4>6.4.3.2.3. Variable-length Datatypes</h4>
+<a name="VariableLengthDatatypes">
+<h4>6.4.3.2.3. Variable-length Datatypes</h4></a>
   
   <p>A variable-length (VL) datatype is a one-dimensional sequence of a 
   datatype which are not fixed in length from one dataset location to 
@@ -5060,57 +5061,42 @@ document.writeln ("
   
 <h4>6.5.1. Strings</h4>
 
-  <p>Text data is represented by arrays of characters, called strings. 
+  <p>Text data is represented by arrays of characters called strings. 
   Many programming languages support different conventions for storing strings, 
   which may be fixed or variable-length, and may have different rules for 
   padding unused storage.  HDF5 can represent strings in several ways. 
-  See the figure below.</p>
+  The figures below show different ways that the strings &ldquo;Four 
+  score&rdquo; and &ldquo;seven years ago&rdquo; might be stored. 
+  Note that the single and double quotation marks have been added for 
+  clarity in this document and would not be stored in an actual dataset. 
+  Note also that the size of a string is the number of characters in the 
+  string plus the NULL string terminator.</p>
+
+  <p>The figure below shows a string stored in a dataset in a 
+  one-dimensional array using 27 elements. The  <code>H5T_NATIVE_CHAR</code> 
+  datatype is used. Each character of the string is stored in an element 
+  of the dataset. The result is a block of text data that 
+  gives little indication of any structure in the text.</p>
   
 
 <table width="600" cellspacing="0" align="center">
     <tr valign="top"> 
         <td align="center">
         <hr color="green" size="3"/>
-	
-	<table align="center" width="100%">
-	  <tr align="left">
-	    <td width="5%">&nbsp;</td>
-	    <td width="25%" align="left" valign="top">The&nbsp;Strings&nbsp;to&nbsp;store&nbsp;are:&nbsp;</td>
-		<td width="70%" align="left">&ldquo;Four score&rdquo;,<br /> &ldquo;lazy programmers.&rdquo;</td>
-	  </tr>
-	  <tr>
-	    <td colspan="3">&nbsp;</td>
-	  </tr>
 
-      </table>
-  <table width="100%">
-    <tr align="left">
-      <td width="5%">&nbsp;</td>
-      <td valign="top" align="right">
-        <strong>a)</strong>
-      </td>
-      <td><code>H5T_NATIVE_CHAR</code> the dataset is a one-dimensional 
-        array with 29 elements, each element is a single character.
-      </td>
-    </tr>
-  </table>
-  
   <table align="center" width="100%">
 	  <tr>
-	    <td width="5%">&nbsp;</td>
 		<td colspan="2">
-		  <table border="1" width="100%">
+		  <table align="center" border="1" width="95%">
 		    <tr>
 			  <td align="center">0</td>
 			  <td align="center">1</td>
 			  <td align="center">2</td>
 			  <td align="center">3</td>
 			  <td align="center">4</td>
-			  <td align="center">...</td>
-			  <td align="center">25</td>
-			  <td align="center">26</td>
-			  <td align="center">27</td>
-			  <td align="center">28</td>
+			  <td align="center">5</td>
+			  <td align="center">6</td>
+			  <td align="center">7</td>
 		    </tr>
 		    <tr>
 			  <td align="center">&lsquo;F&rsquo;</td>
@@ -5118,129 +5104,214 @@ document.writeln ("
 			  <td align="center">&lsquo;u&rsquo;</td>
 			  <td align="center">&lsquo;r&rsquo;</td>
 			  <td align="center">&lsquo;&nbsp;&rsquo;</td>
-			  <td align="center">...</td>
-			  <td align="center">&lsquo;r&rsquo;</td>
 			  <td align="center">&lsquo;s&rsquo;</td>
-			  <td align="center">&lsquo;.&rsquo;</td>
-			  <td align="center">&lsquo;\0&rsquo;</td>
+			  <td align="center">&lsquo;c&rsquo;</td>
+			  <td align="center">&lsquo;o&rsquo;</td>
 		    </tr>
 		  </table>
 		</td>
 	  </tr>
 	  <tr><td colspan="3">&nbsp;</td></tr>
       </table>
-	
-	<table width="100%">
-	  <tr align="left">
-	    <td width="5%">&nbsp;</td>
-		<td align="right" valign="top"><strong>b)</strong></td>
-		<td>Fixed-length string<br />
-		  The dataset is a one-dimensional array with 2 elements, 
-                  each element is 20 characters.
-		</td>
-	  </tr>
-	</table>
-    
-	<table align="center" width="100%">
-	  <tr>
-	    <td width="15%">&nbsp;</td>
-		<td colspan="2">
-		  <table border="1" width="50%">
-		    <tr align="center">
-			  <td>&nbsp;&nbsp;0&nbsp;&nbsp;</td>
-			  <td><pre>&ldquo;Four&nbsp;score\0&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&rdquo;</pre></td>
-		    </tr>
-			<tr align="center">
-			  <td>&nbsp;&nbsp;1&nbsp;&nbsp;</td>
-			  <td><pre>&ldquo;lazy&nbsp;programmers.\0&rdquo;</pre></td>
-			</tr>
-		  </table>
-		</td>
-	  </tr>
-      <tr><td colspan="3">&nbsp;</td></tr>
-	</table>
 
-	<table width="100%">
-	  <tr align="left">
-	    <td width="5%">&nbsp;</td>
-		<td align="right" valign="top"><strong>c)</strong></td>
-		<td>Variable-length string<br />
-		  The dataset is a one-dimensional array with 2 
-		  elements, each element is a variable-length string.<br />
-		  This is the same result when stored as fixed-length
-		  string, except that first element of the array will 
-		  need only 11 bytes for storage instead of 20.
-		</td>
-	  </tr>
-	</table>
-	
-        <table align="center" width="100%">
+  <table align="center" width="100%">
 	  <tr>
-	    <td width="15%">&nbsp;</td>
 		<td colspan="2">
-		  <table border="1" width="50%">
-		    <tr align="center">
-			  <td>&nbsp;&nbsp;0&nbsp;&nbsp;</td>
-			  <td><pre>&ldquo;Four&nbsp;score\0&rdquo;</pre></td>
+		  <table align="center" border="1" width="95%">
+		    <tr>
+			  <td align="center">8</td>
+			  <td align="center">9</td>
+			  <td align="center">10</td>
+			  <td align="center">11</td>
+			  <td align="center">12</td>
+			  <td align="center">13</td>
+			  <td align="center">14</td>
+			  <td align="center">15</td>
 		    </tr>
-			<tr align="center">
-			  <td>&nbsp;&nbsp;1&nbsp;&nbsp;</td>
-			  <td><pre>&ldquo;lazy&nbsp;programmers.\0&rdquo;</pre></td>
-			</tr>
+		    <tr>
+			  <td align="center">&lsquo;r&rsquo;</td>
+			  <td align="center">&lsquo;e&rsquo;</td>
+			  <td align="center">&lsquo;\0&rsquo;</td>
+			  <td align="center">&lsquo;s&rsquo;</td>
+			  <td align="center">&lsquo;e&rsquo;</td>
+			  <td align="center">&lsquo;v&rsquo;</td>
+			  <td align="center">&lsquo;e&rsquo;</td>
+			  <td align="center">&lsquo;n&rsquo;</td>
+		    </tr>
 		  </table>
 		</td>
 	  </tr>
-      <tr><td colspan="3">&nbsp;</td></tr>
-	</table>
-	
-	<table align="center" width="100%">
+	  <tr><td colspan="3">&nbsp;</td></tr>
+      </table>
+
+  <table align="center" width="100%">
 	  <tr>
-	    <td width="15%">&nbsp;</td>
 		<td colspan="2">
-          <img src="Images/Dtypes_fig34.JPG">
+		  <table align="center" border="1" width="95%">
+		    <tr>
+			  <td align="center">16</td>
+			  <td align="center">17</td>
+			  <td align="center">18</td>
+			  <td align="center">19</td>
+			  <td align="center">20</td>
+			  <td align="center">21</td>
+			  <td align="center">22</td>
+			  <td align="center">23</td>
+		    </tr>
+		    <tr>
+			  <td align="center">&lsquo;&nbsp;&rsquo;</td>
+			  <td align="center">&lsquo;y&rsquo;</td>
+			  <td align="center">&lsquo;e&rsquo;</td>
+			  <td align="center">&lsquo;a&rsquo;</td>
+			  <td align="center">&lsquo;r&rsquo;</td>
+			  <td align="center">&lsquo;s&rsquo;</td>
+			  <td align="center">&lsquo;&nbsp;&rsquo;</td>
+			  <td align="center">&lsquo;a&rsquo;</td>
+		    </tr>
+		  </table>
 		</td>
-	</table>
+	  </tr>
+	  <tr><td colspan="3">&nbsp;</td></tr>
+      </table>
+
+  <table align="center" width="100%">
+	  <tr>
+		<td colspan="2">
+		  <table align="center" border="1" width="95%">
+		    <tr>
+			  <td align="center">24</td>
+			  <td align="center">25</td>
+			  <td align="center">26</td>
+			  <td align="center">27</td>
+			  <td align="center">28</td>
+			  <td align="center">29</td>
+			  <td align="center">30</td>
+			  <td align="center">31</td>
+		    </tr>
+		    <tr>
+			  <td align="center">&lsquo;g&rsquo;</td>
+			  <td align="center">&lsquo;o&rsquo;</td>
+			  <td align="center">&lsquo;\0&rsquo;</td>
+			  <td align="center">&nbsp;</td>
+			  <td align="center">&nbsp;</td>
+			  <td align="center">&nbsp;</td>
+			  <td align="center">&nbsp;</td>
+			  <td align="center">&nbsp;</td>
+		    </tr>
+		  </table>
+		</td>
+	  </tr>
+      </table>
+
+
+      
     <tr><td><hr color="green" size="1" /></td></tr>
     <tr valign="top">
         <td align="left" >
-        <b>Figure 16. Ways to represent strings
-        <!-- formerly Figure 34 --></b><hr color="green" size="3"/></td>
+        <b>Figure 16. A string stored in elements in a one-dimensional
+        array
+        <!-- formerly part of Figure 34 --></b><hr color="green" size="3"/></td>
+        </tr>  
+</table>
+<br />
+
+  <p>The figure below shows how a string might be stored in a <b>fixed-length</b> 
+  element. This one-dimensional array uses the <code>H5T_STRING</code>
+  datatype. The dataset reserves space for a specified number of 
+  characters although some strings may be shorter. In the example below, 
+  the size is set to 20. This approach is simple and usually fast to 
+  access, but this approach can waste storage space if the lengths of the 
+  strings vary. The single quotation marks are used to show the 20 characters 
+  included in each element.</p>
+
+<table width="600" cellspacing="0" align="center">
+    <tr valign="top"> 
+        <td align="center">
+        <hr color="green" size="3"/>
+
+    
+  <table align="center" width="100%">
+	  <tr>
+		<td colspan="2">
+		  <table align="center" border="1" width="70%">
+		    <tr>
+			  <td align="center">0</td>
+			  <td align="center">1</td>
+		    </tr>
+		    <tr>
+			  <td align="center">&lsquo;Four&nbsp;score\0
+              &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&rsquo;</td>
+			  <td align="center">&lsquo;seven&nbsp;years&nbsp;ago\0
+              &nbsp;&nbsp;&nbsp;&nbsp;&rsquo;</td>
+		    </tr>
+		  </table>
+		</td>
+	  </tr>
+      </table>
+
+    <tr><td><hr color="green" size="1" /></td></tr>
+    <tr valign="top">
+        <td align="left" >
+        <b>Figure 17. Strings stored in fixed-length elements
+        <!-- formerly part of Figure 34 --></b><hr color="green" size="3"/></td>
         </tr>  
 </table>
 <br />
 
 
 
-  <p>First, a dataset may have a dataset with datatype 
-  <code>H5T_NATIVE_CHAR</code>, with each character of the string as an 
-  element of the dataset. This will store an unstructured block of text 
-  data, but gives little indication of any structure in the text. See 
-  item a in the figure above. </p>
-  
+  <p>The figure below illustrates how strings might be stored using 
+  a <b>variable-length datatype</b>. This can be done using the mechanisms 
+  described in the <a href="#VariableLengthDatatypes">
+  &ldquo;Variable-length Datatypes&rdquo;</a> section above.
+  The program would use <code>vl_t</code> structures to write and 
+  read the data. The dataset is a one-dimensional array with two 
+  elements, and each element is a variable-length string. 
+  This is the same result as the strings stored in fixed-length elements
+  in the figure above except that the first element of the array will 
+  need only 11 bytes for storage instead of 20, and the second element
+  will need only 16 bytes instead of 20. Note that the single 
+  quotation marks are used to show the characters in each string.</p>
 
-  <p>A second alternative is to store the data using the datatype class 
-  <code>H5T_STRING</code>, 
-  with each element a fixed length. See item b in the figure above. In this 
-  approach, each element might be a word or a sentence, addressed by 
-  the dataspace. The dataset reserves space for the specified number of 
-  characters, although some strings may be shorter. This approach is 
-  simple and usually is fast to access, but can waste storage space if 
-  the length of the Strings varies.</p>
   
-  <p>A third alternative is to use a variable-length datatype. See item c in 
-  the figure above. This can be done using the standard mechanisms 
-  described above (e.g., using <code>H5T_NATIVE_CHAR</code> 
-  instead of <code>H5T_NATIVE_INT</code> in Example 25 above).  The 
-  program would use <code>vl_t</code> structures to write and 
-  read the data.</p>
+<table width="600" cellspacing="0" align="center">
+    <tr valign="top"> 
+        <td align="center">
+        <hr color="green" size="3"/>
 
-  <p>A fourth alternative is to use a special feature of the string datatype 
-  class to set the size of the datatype to <code>H5T_VARIABLE</code>. See 
-  item c in the figure above. The example below <!-- formerly Figure 35 -->
+  <table align="center" width="100%">
+	  <tr>
+		<td colspan="2">
+		  <table align="center" border="1" width="70%">
+		    <tr>
+			  <td align="center">0</td>
+			  <td align="center">1</td>
+		    </tr>
+		    <tr>
+			  <td align="center">&lsquo;Four&nbsp;score\0&rsquo;</td>
+			  <td align="center">&lsquo;seven&nbsp;years&nbsp;ago\0&rsquo;</td>
+		    </tr>
+		  </table>
+		</td>
+	  </tr>
+      </table>
+
+    <tr><td><hr color="green" size="1" /></td></tr>
+    <tr valign="top">
+        <td align="left" >
+        <b>Figure 18. Strings stored in variable-length elements
+        <!-- formerly part of Figure 34 --></b><hr color="green" size="3"/></td>
+        </tr>  
+</table>
+<br />
+
+  
+  <p>The string datatype class can have its size set to 
+  <code>H5T_VARIABLE</code>. The example below <!-- formerly Figure 35 -->
   shows a declaration of a datatype of type <code>H5T_C_S1</code> 
   which is set to <code>H5T_VARIABLE</code>.  The HDF5 Library automatically 
-  translates between this and the <code>vl_t</code> structure. (Note: the 
-  <code>H5T_VARIABLE</code> size can only be used with string datatypes.)</p>
+  translates between this and the <code>vl_t</code> structure. Note that the 
+  <code>H5T_VARIABLE</code> size can only be used with string datatypes.</p>
   
 
 <table width="600" cellspacing="0" align="center">
@@ -5264,8 +5335,9 @@ document.writeln ("
 
 
 
-  <p>Variable-length strings can be read into C strings (i.e., pointers to zero 
-  terminated arrays of <code>char</code>). See the figure below.  </p>
+  <p>Variable-length strings can be read into C strings 
+  (in other words, pointers to zero 
+  terminated arrays of <code>char</code>). See the example below.  </p>
   
 
 <table width="600" cellspacing="0" align="center">
@@ -5544,7 +5616,7 @@ short val;
     <tr><td><hr color="green" size="1" /></td></tr>
     <tr valign="top">
         <td align="left" >
-        <b>Figure 17. Storing an enum array
+        <b>Figure 19. Storing an enum array
         <!-- formerly Figure 40 --></b>
         <hr color="green" size="3"/></td>
         </tr>
@@ -5878,7 +5950,7 @@ document.writeln ("
     <tr><td><hr color="green" size="1" /></td></tr>
     <tr valign="top">
         <td align="left" >
-        <b>Figure 18. A compound datatype built with 
+        <b>Figure 20. A compound datatype built with 
         different datatypes<!-- formerly Figure 45 --></b>
         <hr color="green" size="3"/></td>
         </tr>
@@ -6020,7 +6092,7 @@ document.writeln ("
     <tr><td><hr color="green" size="1" /></td></tr>
     <tr valign="top">
         <td align="left" >
-        <b>Figure 19. Logical tree for the compound 
+        <b>Figure 21. Logical tree for the compound 
         datatype with four members<!-- formerly Figure 47 --></b>
         <hr color="green" size="3"/></td>
         </tr>
@@ -6270,7 +6342,7 @@ document.writeln ("
     <tr><td><hr color="green" size="1" /></td></tr>
     <tr valign="top">
         <td align="left" >
-        <b>Figure 20. The storage layout for the 
+        <b>Figure 22. The storage layout for the 
         four member datatypes<!-- formerly Figure 49 --></b>
         <hr color="green" size="3"/></td>
         </tr>
@@ -6291,7 +6363,7 @@ document.writeln ("
     <tr><td><hr color="green" size="1" /></td></tr>
     <tr valign="top">
         <td align="left" >
-        <b>Figure 21. The storage layout of the combined four members
+        <b>Figure 23. The storage layout of the combined four members
         <!-- formerly Figure 50 --></b>
         <hr color="green" size="3"/></td>
   </tr>
@@ -6312,7 +6384,7 @@ document.writeln ("
     <tr><td><hr color="green" size="1" /></td></tr>
     <tr valign="top">
         <td align="left" >
-        <b>Figure 22. The layout of the dataset
+        <b>Figure 24. The layout of the dataset
         <!-- formerly Figure 51 --></b>
         <hr color="green" size="3"/></td>
         </tr>
@@ -6473,7 +6545,7 @@ document.writeln ("
     <tr><td><hr color="green" size="1" /></td></tr>
     <tr valign="top">
         <td align="left" >
-        <b>Figure 23. Life cycle of a datatype
+        <b>Figure 25. Life cycle of a datatype
         <!-- formerly Figure 53 --> </b>
         <hr color="green" size="3"/></td>
         </tr>
@@ -6508,7 +6580,7 @@ document.writeln ("
     <tr><td><hr color="green" size="1" /></td></tr>
     <tr valign="top">
         <td align="left" >
-        <b>Figure 24. Transient datatype states: modifiable, read-only, and 
+        <b>Figure 26. Transient datatype states: modifiable, read-only, and 
         immutable <!-- formerly Figure 54 --></b>
         <hr color="green" size="3"/></td>
         </tr>
@@ -6845,7 +6917,7 @@ document.writeln ("
     <tr><td><hr color="green" size="1" /></td></tr>
     <tr valign="top">
         <td align="left" >
-        <b>Figure 25. Layout of a datatype conversion
+        <b>Figure 27. Layout of a datatype conversion
         <!-- formerly Figure 57 --></b>
         <hr color="green" size="3"/></td>
         </tr>
@@ -6964,7 +7036,7 @@ document.writeln ("
     <tr><td><hr color="green" size="1" /></td></tr>
     <tr valign="top">
         <td align="left" >
-        <b>Figure 26. An enum datatype conversion
+        <b>Figure 28. An enum datatype conversion
         <!-- formerly Figure 58 --></b>
         <hr color="green" size="3"/></td>
         </tr>
@@ -7045,7 +7117,7 @@ document.writeln ("
     <tr><td><hr color="green" size="1" /></td></tr>
     <tr valign="top">
         <td align="left" >
-        <b>Figure 27. Alignment of a compound datatype 
+        <b>Figure 29. Alignment of a compound datatype 
         <!-- formerly Figure 60 --></b>
         <hr color="green" size="3"/></td>
   </tr>
@@ -7109,7 +7181,7 @@ document.writeln ("
     <tr><td><hr color="green" size="1" /></td></tr>
     <tr valign="top">
         <td align="left" >
-        <b>Figure 28. Layout when an element is skipped
+        <b>Figure 30. Layout when an element is skipped
         <!-- formerly Figure 62 --></b>
         <hr color="green" size="3"/></td>
         </tr>
