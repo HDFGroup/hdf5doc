@@ -1,0 +1,246 @@
+
+
+<!--
+  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+  * Copyright by The HDF Group.                                               *
+  * Copyright by the Board of Trustees of the University of Illinois.         *
+  * All rights reserved.                                                      *
+  *                                                                           *
+  * This file is part of HDF5.  The full HDF5 copyright notice, including     *
+  * terms governing use, modification, and redistribution, is contained in    *
+  * the files COPYING and Copyright.html.  COPYING can be found at the root   *
+  * of the source code distribution tree; Copyright.html can be found at the  *
+  * root level of an installed copy of the electronic HDF5 document set and   *
+  * is linked from the top-level documents page.  It can also be found at     *
+  * http://www.hdfgroup.org/HDF5/doc/Copyright.html.  If you do not have      *
+  * access to either file, you may request a copy from help@hdfgroup.org.     *
+  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+ -->
+
+
+<!-- NEW PAGE -->
+<!-- HEADER RIGHT "H5O_mcdt_search_cb_t" -->
+<hr>
+<dl>
+
+<p><i><font color="red">
+      Current plan: Place this entry in H5O/ and publish it on the H5O RM page.
+      Links to it will be to the entry within the H5O page rather than to the 
+      free-standing entry.
+      It could be published adjacent to <code>H5Pset_mcdt_search_cb</code>, 
+      but that breaks standard practice and would probably be more confusing.
+</font></i>
+
+  <dt><div align=right><font color=999999 size=-1><i>
+      Last modified: 9 March 2012
+      </i></font></div>
+
+  <dt><strong>Name:</strong> <a name="H5O_mcdt_search_cb_t">H5O_mcdt_search_cb_t</a>
+
+  <dt><strong>Signature:</strong>
+    <dd><code>typedef</code> <em>H5O_mcdt_search_ret_t </em>(
+            <code>*H5O_mcdt_search_cb_t</code>
+            )(
+            <em>void *</em><code>op_data</code>
+            )
+
+  <p>
+  <dt><strong>Purpose:</strong>
+    <dd>Provides the mechanism by which a user application may set an action for
+        <a href="RM_H5O.html#Object-H5Ocopy"><code>H5Ocopy</code></a>
+        to take after checking all suggested paths for a matching committed datatype
+        but before starting the global search of the destination file. 
+
+<p><i><font color="red">
+      Terminology issue: "named" versus "committed" datatypes
+</font></i>
+
+  <p>
+  <dt><strong>Description:</strong>
+    <dd><code>H5O_mcdt_search_cb_t</code>
+        is the callback function that
+        <a href="RM_H5O.html#Object-H5Ocopy"><code>H5Ocopy</code></a>
+        will invoke if the callback is set and 
+        when the merge committed datatype feature is enabled
+        in the object copy property list (see 
+        <a href="RM_H5P.html#Property-SetMndtSrchCb">
+        <code>H5Pset_copy_object</code></a>).
+        <p>
+        After searching the list of suggested committed datatype paths,
+        <a href="RM_H5O.html#Object-H5Ocopy"><code>H5Ocopy</code></a>
+        will invoke this callback before searching all committed datatypes
+        in the destination file. This allows a user application
+        to add a customized step to the search process.
+        The callback function is set with 
+        <a href="../RM_H5P.html#Property-SetMndtSrchCb">
+        <code>H5Pset_mcdt_search_cb</code></a>
+        and the search process is described in 
+        <a href="RM_H5P.html#Property-AddMergeCommittedDtypePath">
+        <code>H5Padd_merge_committed_dtype_path</code></a>.
+        <p>
+        Valid return values from this callback function are as follows
+        (defined in the enumerated datatype 
+        <code>H5O_mcdt_search_ret_t</code> in <code>H5Opublic.h</code>):
+        <table width="85%" align="center">
+          <tr><td valign="top">
+              <code>H5O_MCDT_SEARCH_ERROR</code>
+              </td><td>&nbsp;&nbsp;&nbsp;&nbsp;</td><td valign="top">
+                  Aborts <code>H5Ocopy</code>. 
+              </td>
+          </tr><tr><td valign="top">
+                  <code>H5O_MCDT_SEARCH_CONT</code>
+              </td><td>&nbsp;</td><td valign="top">
+                  Continues the global search of all committed datatypes 
+                  in the destination file. 
+              </td>
+          </tr><tr><td valign="top">
+                  <code>H5O_MCDT_SEARCH_STOP<code>
+              </td><td>&nbsp;</td><td valign="top">
+                  Stops the search, but continues copying.
+              </td>
+          </tr>
+
+<tr><td colspan="3">
+<p>
+<i><font color="red">
+      First line originally read <code>'H5O_MCDT_SEARCH_ERROR = -1'</code>.
+      <br>
+      Is that declarationnecessary or desired? 
+      <br>
+      Is that something we want to promote outside the Fortran context?
+      <br>
+</font></i>
+</tr>
+
+        </table>
+
+
+  <p>
+  <dt><strong>Warning:</strong>
+    <dd>If the callback&rsquo;s return value is 
+        <code>H5O_MCDT_SEARCH_ERROR</code>, <code>H5Ocopy</code> 
+        will abort and the destination file may be left in an 
+        inconsistent or corrupted state.
+
+  <p>
+  <dt><strong>Parameters:</strong>
+    <dd>
+    <table>
+      <tr valign="top">
+        <td><em>void&nbsp;*</em><code>op_data</code>
+            </td><td>&nbsp;</td>
+        <td>IN/OUT: Pointer to user-defined input data. This is a pass-through
+            of the data that was passed to 
+            <a href="../RM_H5P.html#Property-SetMndtSrchCb">
+            <code>H5Pset_mcdt_search_cb</code></a>.
+            </td></tr>
+    </table>
+
+  <p>
+  <dt><strong>Returns:</strong>
+    <dd>Returns one of the <code>H5O_MCDT_SEARCH_*</code> values described above.
+  <p>
+  <dt><strong>Failure Modes:</strong>
+    <dd><code>H5O_mcdt_search_cb_t</code> failure modes are dependent on the
+        implementation of the callback function.
+
+  <p>
+  <dt><strong>Example Usage:</strong>
+    <dd>This example defines a callback function in the object copy property 
+        list to discontinue the global search if a matching committed datatype 
+        cannot be found among the suggested paths.
+
+        <dir><pre>
+/* The user-defined callback function */
+static H5O_mcdt_search_ret_t
+mcdt_search_cb(void *_udata)
+{
+    H5O_mcdt_search_ret_t action = *((H5O_mcdt_search_ret_t *)_udata);
+
+    return(action);
+}
+
+int main(void) {
+    hid_t ocpypl_id = H5Pcreate(H5P_OBJECT_COPY);
+
+    /* Enable the merging committed datatype feature. */
+    H5Pset_copy_object(ocpypl_id, H5O_COPY_MERGE_COMMITTED_DTYPE_FLAG);
+
+    /* Add the path to search for a matching committed datatype. */
+    H5Padd_merge_committed_dtype_path(ocpypl_id, "/group/committed_dtypeA");
+
+    /*
+     * Set the callback function to discontinue the global search
+     * if H5Ocopy cannot find a matching committed datatype from the
+     * above suggested path.
+     */
+    action = H5O_MCDT_SEARCH_STOP;
+    H5Pset_mcdt_search_cb(ocpypl_id, mcdt_search_cb, &action);
+
+    /* Do the copy. */
+    H5Ocopy(...ocpypl_id...);
+    ...
+    ...
+}
+        </pre></dir>
+
+<!--__ *** FORTRAN90 INTERFACE  **********************************  -->
+<!--__ When the Fortran90 interface is complete, replace this       -->
+<!--__ section with the Fortran90 subroutine description.           -->
+<!--__                                                              -->
+<!--__ See the file h5fortran_f_insert.htm for a template and       -->
+<!--__ instructions.                                                -->
+<!--__ ***********************************************************  -->
+
+  <p>
+  <dt><strong>See Also:</strong>
+    <dd><table width="90%">
+          <tr valign="top">
+              <td width="46%">
+                  <a href="RM_H5O.html#Object-Copy"><code>H5Ocopy</code></a>
+                  <br>
+                  <a href="RM_H5P.html#Property-SetCopyObject">
+                  <code>H5Pset_copy_object</code></a>
+              </td><td width="4%">&nbsp;</td><td width="46%">
+                  <a href="RM_H5P.html#Property-SetMndtSearchCb">
+                  <code>H5Pset_mcdt_search_cb</code></a>
+                  <br>
+<!--
+                  <a href="RM_H5P.html#Property-FreeMergeCommittedDtypePaths">
+                  <code>H5Pfree_merge_committed_dtype_paths</code></a>
+                  <br>
+                  <a href="RM_H5P.html#Property-AddMergeCommittedDtypePath">
+                  <code>H5Padd_merge_committed_dtype_path</code></a>
+                  <br>
+-->
+                  <a href="RM_H5P.html#Property-GetMndtSearchCb">
+                  <code>H5Pget_mcdt_search_cb</code></a>
+<!--
+                  <br>
+                  <a href="RM_H5O.html#Object-MndtSearchCb_t">
+                  <code>H5O_mcdt_search_cb_t</code></a>
+-->
+          </tr>
+        </table>
+
+  <p>
+  <dt><strong>History:</strong>
+    <dd><table width="90%">
+        <tr>
+          <td valign="top" align="left" width="10%">
+            <strong>Release</strong>&nbsp;&nbsp;&nbsp;&nbsp;</td>
+          <td valign="top" align="left">
+            <strong>Change</strong></td>
+        </tr>
+
+        <tr>
+          <td valign="top">*.**.**</td>
+          <td valign="top">
+            C function type introduced in this release.</td>
+        </tr>
+
+        </tr>
+        </table>
+</dl>
+
+

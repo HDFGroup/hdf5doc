@@ -1,0 +1,244 @@
+
+
+<!--
+  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+  * Copyright by The HDF Group.                                               *
+  * Copyright by the Board of Trustees of the University of Illinois.         *
+  * All rights reserved.                                                      *
+  *                                                                           *
+  * This file is part of HDF5.  The full HDF5 copyright notice, including     *
+  * terms governing use, modification, and redistribution, is contained in    *
+  * the files COPYING and Copyright.html.  COPYING can be found at the root   *
+  * of the source code distribution tree; Copyright.html can be found at the  *
+  * root level of an installed copy of the electronic HDF5 document set and   *
+  * is linked from the top-level documents page.  It can also be found at     *
+  * http://www.hdfgroup.org/HDF5/doc/Copyright.html.  If you do not have      *
+  * access to either file, you may request a copy from help@hdfgroup.org.     *
+  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+ -->
+
+
+<!-- NEW PAGE -->
+<!-- HEADER RIGHT "H5Padd_merge_committed_dtype_path" -->
+<hr>
+<dl>
+
+  <dt><div align=right><font color=999999 size=-1><i>
+      Last modified: 9 March 2012 
+      </i></font></div>
+
+  <dt><strong>Name:</strong> <a name="Property-AddMergeCommittedDtypePath">H5Padd_merge_committed_dtype_path</a>
+
+  <dt><strong>Signature:</strong>
+    <dd><em>herr_t </em><code>H5Padd_merge_committed_dtype_path</code>(
+            <em>hid_t </em><code>ocpypl_id</code>,
+            <em>char *</em><code>path</code>
+        )
+
+  <p>
+  <dt><strong>Purpose:</strong>
+    <dd>Adds a path to the list of paths that will be be searched in the 
+        destination file for a matching committed datatype.
+
+  <p>
+  <dt><strong>Motivation:</strong>
+    <dd><code>H5Padd_merge_committed_dtype_path</code> 
+        provides a means to override the default behavior of
+        <a href="RM_H5O.html#Object-H5Ocopy"><code>H5Ocopy</code></a> 
+        when <code>H5O_COPY_MERGE_COMMITTED_DTYPE_FLAG</code> is set in an
+        object copy property list.
+        <p>
+        <code>H5Padd_merge_committed_dtype_path</code> 
+        is the mechanism for suggesting search paths where
+        <a href="RM_H5O.html#Object-H5Ocopy"><code>H5Ocopy</code></a>
+        will look for a matching committed datatype.
+        This can be substantially faster than the default approach of
+        searching the entire destination file for a match.
+
+  <p>
+  <dt><strong>Description:</strong>
+    <dd><code>H5Padd_merge_committed_dtype_path</code> adds a path, 
+        <code>path</code>, which points to a committed datatype, to the current
+        list of suggested paths stored in the object copy property list 
+        <code>ocpypl_id</code>.
+        The search as described in the next paragraph is effective only if 
+        the <code>H5O_COPY_MERGE_COMMITTED_DTYPE_FLAG</code> is enabled
+        in the object copy property list via 
+        <a href="RM_H5P.html#Property-SetCopyObject">
+        <code>H5Pset_copy_object</code></a>.
+        <p>
+        When copying a committed datatype, a dataset with a committed datatype, 
+        or an object with an attribute of a committed datatype, the default
+        behavior of
+        <a href="RM_H5O.html#Object-H5Ocopy"><code>H5Ocopy</code></a>
+        is to search for a matching committed datatype:
+        <ol>
+          <li>First search the list of suggested paths in the 
+              object copy property list.
+          <li>Then, if no match has been found, search all the 
+              committed datatypes in the destination file.
+        </ol>
+        <p>
+        The default Step 2 in this search process can changed by 
+        setting a callback function 
+        (see <a href="RM_H5P.html#Property-SetMndtSrchCb">
+        <code>H5Pset_mcdt_search_cb</code></a>).
+        <p>
+        Two datatypes are determined equal if their descriptions are identical,
+        in a manner similar to
+        <a href="RM_H5T.html#Datatype-Equal"><code>H5Tequal</code></a>.
+        If either committed datatype has one or more attributes,
+        then all attributes must be present in both committed datatypes
+        and they must be identical.  
+        Two attributes are considered identical if their datatype
+        description, dataspace, and raw data values are the same.
+        However, if an attribute uses a committed datatype, that committed 
+        datatype&rsquo;s attributes will not be compared.
+        <p>
+        If a match is found, 
+        <a href="RM_H5O.html#Object-H5Ocopy"><code>H5Ocopy</code></a>
+        will perform the following in the destination file:
+        <ul>
+          <li>For a committed datatype, the library will create a hard link to 
+              the found datatype.
+          <li>For a dataset that uses a committed datatype, the library 
+              will modify the copied dataset to use the found committed 
+              datatype as its datatype.
+          <li>For an object with an attribute of a committed datatype, 
+              the library will modify the copied object&rsquo;s attribute to 
+              use the found committed datatype as its datatype.
+        </ul>
+        <p>
+        If no match is found or if 
+        <code>H5O_COPY_MERGE_COMMITTED_DTYPE_FLAG</code> is not enabled
+        in the object copy property list,
+        <code>H5Ocopy</code> will follow the default behavior.
+        It will create a new anonymous committed datatype in the 
+        destination file.
+
+<p><i><font color="red">
+          What happens if this is just the first instance of this 
+          committed datatype, so the committed datatype has not yet been copied 
+          and does not yet exist in the file?
+          <p>
+          How is that first instance of a particular committed datatype handled?
+          <br>
+          Or does this mean that committed datatypes should (or must) 
+          be copied first?
+          <p>
+          Is it correct that the path added by this function *must*
+          point directly to either a committed datatype, 
+          a dataset that uses a committed datatype,
+          or an object with an attribute of a committed datatype? 
+          ...that the path cannot, for example, point to a group which is
+          then be recursively searched for a matching committed datatype?
+</font></i>
+
+
+  <p>
+  <dt><strong>Parameters:</strong>
+    <dd>
+    <table>
+      <tr valign="top">
+        <td><em>hid_t </em><code>ocpypl_id</code>
+            </td><td>&nbsp;&nbsp;&nbsp;&nbsp;</td>
+        <td>IN: Object copy property list identifier.
+            </td></tr>
+      <tr valign="top">
+        <td><em>char *</em><code>path</code>
+            </td><td>&nbsp;</td>
+        <td>IN: The path to be added.
+            </td></tr>
+    </table>
+
+
+  <p>
+  <dt><strong>Returns:</strong>
+
+    <dd>Returns a non-negative value if successful;
+        otherwise returns a negative value.
+
+  <p>
+  <dt><strong>Failure Modes:</strong>
+    <dd><code>H5Padd_merge_committed_dtype_path</code> will fail if the 
+        object copy property list is invalid.
+        <p>
+        It will also fail if there is insufficient memory when 
+        duplicating <code>path</code>.
+
+  <p>
+  <dt><strong>Example Usage:</strong>
+    <dd>This example adds two paths to the object copy property list.
+        <code>H5Ocopy</code> will search the two suggested paths for a match
+        before searching all the committed datatypes in the 
+        destination file.
+        <dir><pre>
+
+int main(void) {
+    hid_t ocpypl_id = H5Pcreate(H5P_OBJECT_COPY);
+
+    /* Enable the merging committed datatype feature */
+    H5Pset_copy_object(ocpypl_id, H5O_COPY_MERGE_COMMITTED_DTYPE_FLAG);
+
+    /* Add a path to a committed datatype */
+    H5Padd_merge_committed_dtype_path(ocpypl_id, "/group/committed_dtypeA");
+
+    /* Add a path to a dataset with committed datatype */
+    H5Padd_merge_committed_dtype_path(ocpypl_id, "/group2/committed_dset");
+    
+    /* Does the copy */
+    H5Ocopy(...ocpypl_id...);
+    ...
+    ...
+}
+        </pre></dir>
+
+  <p>
+  <dt><strong>See Also:</strong>
+    <dd><table width="90%">
+          <tr valign="top">
+              <td width="46%">
+                  <a href="RM_H5O.html#Object-Copy"><code>H5Ocopy</code></a>
+                  <br>
+                  <a href="RM_H5P.html#Property-SetCopyObject">
+                  <code>H5Pset_copy_object</code></a>
+<!--
+                  <br>
+                  <a href="RM_H5P.html#Property-AddMergeCommittedDtypePath">
+                  <code>H5Padd_merge_committed_dtype_path</code></a>
+-->
+              </td><td width="4%">&nbsp;</td><td width="46%">
+                  <a href="RM_H5P.html#Property-SetMndtSearchCb">
+                  <code>H5Pset_mcdt_search_cb</code></a>
+                  <br>
+                  <a href="RM_H5P.html#Property-FreeMergeCommittedDtypePaths">
+                  <code>H5Pfree_merge_committed_dtype_paths</code></a>
+<!--
+                  <br>
+                  <a href="RM_H5P.html#Property-GetMndtSearchCb">
+                  <code>H5Pget_mcdt_search_cb</code></a>
+                  <br>
+                  <a href="RM_H5O.html#Object-MndtSearchCb_t">
+                  <code>H5O_mcdt_search_cb_t</code></a>
+-->
+          </tr>
+        </table>
+
+  <p>
+  <dt><strong>History:</strong>
+    <dd><table width="90%">
+        <tr>
+          <td valign="top" align="left" width="10%">
+            <strong>Release</strong>&nbsp;&nbsp;&nbsp;&nbsp;</td>
+          <td valign="top" align="left">
+            <strong>Change</strong></td>
+        </tr>
+        <tr>
+          <td valign="top">*.**.**</td>
+          <td valign="top">
+            C function introduced in this release.</td>
+        </tr>
+        </table>
+</dl>
+
+
