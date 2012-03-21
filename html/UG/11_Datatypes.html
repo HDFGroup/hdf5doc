@@ -5062,15 +5062,34 @@ document.writeln ("
 <h4>6.5.1. Strings</h4>
 
   <p>Text data is represented by arrays of characters called strings. 
-  Many programming languages support different conventions for storing strings, 
-  which may be fixed or variable-length, and may have different rules for 
-  padding unused storage.  HDF5 can represent strings in several ways. 
-  The figures below show different ways that the strings &ldquo;Four 
-  score&rdquo; and &ldquo;seven years ago&rdquo; might be stored. 
-  Note that the single and double quotation marks have been added for 
-  clarity in this document and would not be stored in an actual dataset. 
-  Note also that the size of a string is the number of characters in the 
-  string plus the NULL string terminator.</p>
+  Because C and Fortran terminate strings differently, the library can 
+  read and write strings in several ways. The important questions that 
+  an application needs to answer to read strings correctly are the 
+  following: </p>
+  
+  <ul>
+    <li>What is the size of the string?</li>
+    <li>How is the string terminated?</li>
+  </ul>
+  
+  <p>See the entry for <code>H5Tset_strpad</code> in the 
+  <i>HDF5 Reference Manual</i> for more information on how to specify a 
+  particular style of string padding and terminating. </p>
+
+  <p>In the rest of this section, we will look at some of the common 
+  ways strings might be stored.</p>
+  
+  <p>The figures below show different ways that the strings &ldquo;Four 
+  score&rdquo; and &ldquo;seven years ago&rdquo; might be stored 
+  in a C environment. By C environment, we mean that the disk and memory 
+  versions of the dataset terminate the strings with a NULL, \0. This 
+  also means that the length of a string 
+  is one less than the size of the string: the size counts the NULL. 
+  Note that the single quotation marks have been added for 
+  clarity in the examples in this section and would not be stored in an 
+  actual dataset. See <a href="#stringsInMixedEnvironments">
+  &ldquo;Strings in Mixed Environments&rdquo;</a> at 
+  the end of this section for more information. </p>
 
   <p>The figure below shows a string stored in a dataset in a 
   one-dimensional array using 27 elements. The  <code>H5T_NATIVE_CHAR</code> 
@@ -5089,14 +5108,14 @@ document.writeln ("
 		<td colspan="2">
 		  <table align="center" border="1" width="95%">
 		    <tr>
-			  <td align="center">0</td>
-			  <td align="center">1</td>
-			  <td align="center">2</td>
-			  <td align="center">3</td>
-			  <td align="center">4</td>
-			  <td align="center">5</td>
-			  <td align="center">6</td>
-			  <td align="center">7</td>
+			  <td width="12.5%" align="center">0</td>
+			  <td width="12.5%" align="center">1</td>
+			  <td width="12.5%" align="center">2</td>
+			  <td width="12.5%" align="center">3</td>
+			  <td width="12.5%" align="center">4</td>
+			  <td width="12.5%" align="center">5</td>
+			  <td width="12.5%" align="center">6</td>
+			  <td width="12.5%" align="center">7</td>
 		    </tr>
 		    <tr>
 			  <td align="center">&lsquo;F&rsquo;</td>
@@ -5119,14 +5138,14 @@ document.writeln ("
 		<td colspan="2">
 		  <table align="center" border="1" width="95%">
 		    <tr>
-			  <td align="center">8</td>
-			  <td align="center">9</td>
-			  <td align="center">10</td>
-			  <td align="center">11</td>
-			  <td align="center">12</td>
-			  <td align="center">13</td>
-			  <td align="center">14</td>
-			  <td align="center">15</td>
+			  <td width="12.5%" align="center">8</td>
+			  <td width="12.5%" align="center">9</td>
+			  <td width="12.5%" align="center">10</td>
+			  <td width="12.5%" align="center">11</td>
+			  <td width="12.5%" align="center">12</td>
+			  <td width="12.5%" align="center">13</td>
+			  <td width="12.5%" align="center">14</td>
+			  <td width="12.5%" align="center">15</td>
 		    </tr>
 		    <tr>
 			  <td align="center">&lsquo;r&rsquo;</td>
@@ -5149,14 +5168,14 @@ document.writeln ("
 		<td colspan="2">
 		  <table align="center" border="1" width="95%">
 		    <tr>
-			  <td align="center">16</td>
-			  <td align="center">17</td>
-			  <td align="center">18</td>
-			  <td align="center">19</td>
-			  <td align="center">20</td>
-			  <td align="center">21</td>
-			  <td align="center">22</td>
-			  <td align="center">23</td>
+			  <td width="12.5%" align="center">16</td>
+			  <td width="12.5%" align="center">17</td>
+			  <td width="12.5%" align="center">18</td>
+			  <td width="12.5%" align="center">19</td>
+			  <td width="12.5%" align="center">20</td>
+			  <td width="12.5%" align="center">21</td>
+			  <td width="12.5%" align="center">22</td>
+			  <td width="12.5%" align="center">23</td>
 		    </tr>
 		    <tr>
 			  <td align="center">&lsquo;&nbsp;&rsquo;</td>
@@ -5179,14 +5198,14 @@ document.writeln ("
 		<td colspan="2">
 		  <table align="center" border="1" width="95%">
 		    <tr>
-			  <td align="center">24</td>
-			  <td align="center">25</td>
-			  <td align="center">26</td>
-			  <td align="center">27</td>
-			  <td align="center">28</td>
-			  <td align="center">29</td>
-			  <td align="center">30</td>
-			  <td align="center">31</td>
+			  <td width="12.5%" align="center">24</td>
+			  <td width="12.5%" align="center">25</td>
+			  <td width="12.5%" align="center">26</td>
+			  <td width="12.5%" align="center">27</td>
+			  <td width="12.5%" align="center">28</td>
+			  <td width="12.5%" align="center">29</td>
+			  <td width="12.5%" align="center">30</td>
+			  <td width="12.5%" align="center">31</td>
 		    </tr>
 		    <tr>
 			  <td align="center">&lsquo;g&rsquo;</td>
@@ -5208,21 +5227,21 @@ document.writeln ("
     <tr><td><hr color="green" size="1" /></td></tr>
     <tr valign="top">
         <td align="left" >
-        <b>Figure 16. A string stored in elements in a one-dimensional
-        array
+        <b>Figure 16. A string stored as one-character elements in a 
+        one-dimensional array
         <!-- formerly part of Figure 34 --></b><hr color="green" size="3"/></td>
         </tr>  
 </table>
 <br />
 
-  <p>The figure below shows how a string might be stored in a <b>fixed-length</b> 
-  element. This one-dimensional array uses the <code>H5T_STRING</code>
-  datatype. The dataset reserves space for a specified number of 
-  characters although some strings may be shorter. In the example below, 
-  the size is set to 20. This approach is simple and usually fast to 
-  access, but this approach can waste storage space if the lengths of the 
-  strings vary. The single quotation marks are used to show the 20 characters 
-  included in each element.</p>
+  <p>The figure below shows how these strings might be stored using 
+  a <b>fixed-length</b> datatype. This one-dimensional array uses the 
+  <code>H5T_STRING</code> datatype. The dataset reserves space for a 
+  specified number of characters in each string although some strings may 
+  be shorter. In the figure below, the size is set to 20. This approach 
+  is simple and usually fast to access, but this approach can waste storage 
+  space if the lengths of the strings vary. The single quotation marks are 
+  used to show the 20 characters included in each dataset element.</p>
 
 <table width="600" cellspacing="0" align="center">
     <tr valign="top"> 
@@ -5235,8 +5254,8 @@ document.writeln ("
 		<td colspan="2">
 		  <table align="center" border="1" width="70%">
 		    <tr>
-			  <td align="center">0</td>
-			  <td align="center">1</td>
+			  <td width="50%" align="center">0</td>
+			  <td width="50%" align="center">1</td>
 		    </tr>
 		    <tr>
 			  <td align="center">&lsquo;Four&nbsp;score\0
@@ -5252,7 +5271,7 @@ document.writeln ("
     <tr><td><hr color="green" size="1" /></td></tr>
     <tr valign="top">
         <td align="left" >
-        <b>Figure 17. Strings stored in fixed-length elements
+        <b>Figure 17. Strings stored as fixed-length dataset elements
         <!-- formerly part of Figure 34 --></b><hr color="green" size="3"/></td>
         </tr>  
 </table>
@@ -5260,7 +5279,7 @@ document.writeln ("
 
 
 
-  <p>The figure below illustrates how strings might be stored using 
+  <p>The figure below illustrates how these strings might be stored using 
   a <b>variable-length datatype</b>. This can be done using the mechanisms 
   described in the <a href="#VariableLengthDatatypes">
   &ldquo;Variable-length Datatypes&rdquo;</a> section above.
@@ -5271,7 +5290,7 @@ document.writeln ("
   in the figure above except that the first element of the array will 
   need only 11 bytes for storage instead of 20, and the second element
   will need only 16 bytes instead of 20. Note that the single 
-  quotation marks are used to show the characters in each string.</p>
+  quotation marks are used to show the characters in each dataset element.</p>
 
   
 <table width="600" cellspacing="0" align="center">
@@ -5284,8 +5303,8 @@ document.writeln ("
 		<td colspan="2">
 		  <table align="center" border="1" width="70%">
 		    <tr>
-			  <td align="center">0</td>
-			  <td align="center">1</td>
+			  <td width="50%" align="center">0</td>
+			  <td width="50%" align="center">1</td>
 		    </tr>
 		    <tr>
 			  <td align="center">&lsquo;Four&nbsp;score\0&rsquo;</td>
@@ -5299,15 +5318,16 @@ document.writeln ("
     <tr><td><hr color="green" size="1" /></td></tr>
     <tr valign="top">
         <td align="left" >
-        <b>Figure 18. Strings stored in variable-length elements
+        <b>Figure 18. Strings stored as variable-length dataset elements
         <!-- formerly part of Figure 34 --></b><hr color="green" size="3"/></td>
         </tr>  
 </table>
 <br />
 
   
-  <p>The string datatype class can have its size set to 
-  <code>H5T_VARIABLE</code>. The example below <!-- formerly Figure 35 -->
+  <p>An alternate way to set up variable-length dataset elements is to set
+  the size of the string datatype class to <code>H5T_VARIABLE</code>. 
+  The example below <!-- formerly Figure 35 -->
   shows a declaration of a datatype of type <code>H5T_C_S1</code> 
   which is set to <code>H5T_VARIABLE</code>.  The HDF5 Library automatically 
   translates between this and the <code>vl_t</code> structure. Note that the 
@@ -5326,7 +5346,7 @@ document.writeln ("
     <tr><td><hr color="green" size="1" /></td></tr>
     <tr valign="top">
         <td align="left">
-        <b>Example 30. Set the string datatype size with <code>H5T_VARIABLE</code>
+        <b>Example 30. Set the string datatype size to <code>H5T_VARIABLE</code>
         <!-- formerly Figure 35 --></b>
         <hr color="green" size="3"/></td>
         </tr>
@@ -5340,7 +5360,7 @@ document.writeln ("
   terminated arrays of <code>char</code>). See the example below.  </p>
   
 
-<table width="600" cellspacing="0" align="center">
+<table width="650" cellspacing="0" align="center">
     <tr valign="top"> 
         <td align="left">
         <hr color="green" size="3"/>
@@ -5350,7 +5370,7 @@ document.writeln ("
   ret=H5Dread(dataset, tid1, H5S_ALL, H5S_ALL, xfer_pid, rdata);
 
   for(i=0; i&lt;SPACE1_DIM1; i++) {   
-           printf(&ldquo;%d: len: %d, str is: %s\n&rdquo;, strlen(rdata[i]),rdata[I]);
+           printf(&ldquo;%d: len: %d, str is: %s\n&rdquo;, i, strlen(rdata[i]),rdata[i]);
   } 
 
   ret=H5Dvlen_reclaim(tid1, sid1, xfer_pid, rdata);</pre></td>
@@ -5364,6 +5384,117 @@ document.writeln ("
         </tr>
 </table>
 <br />
+
+
+
+<a name="stringsInMixedEnvironments">
+<b>Strings in Mixed Environments</b></a>
+
+  <p>In the figures above, the strings are terminated with NULLs. 
+  Suppose in another scenario that the strings were stored on disk and 
+  were not terminated with NULLs, and suppose that the users of the data 
+  would be using applications that expected strings to be terminated with 
+  NULLs? What APIs might an application use to properly handle the strings? 
+  </p>
+
+  <p>The figure below shows the strings &ldquo;Four score&rdquo; and 
+  &ldquo;seven years ago&rdquo; stored as fixed-length dataset elements 
+  without NULL terminators.</p>
+  
+<table width="600" cellspacing="0" align="center">
+    <tr valign="top"> 
+        <td align="center">
+        <hr color="green" size="3"/>
+
+    
+  <table align="center" width="100%">
+	  <tr>
+		<td colspan="2">
+		  <table align="center" border="1" width="70%">
+		    <tr>
+			  <td width="50%" align="center">0</td>
+			  <td width="50%" align="center">1</td>
+		    </tr>
+		    <tr>
+			  <td align="center">&lsquo;Four&nbsp;score
+              &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&rsquo;</td>
+			  <td align="center">&lsquo;seven&nbsp;years&nbsp;ago
+              &nbsp;&nbsp;&nbsp;&nbsp;&rsquo;</td>
+		    </tr>
+		  </table>
+		</td>
+	  </tr>
+      </table>
+
+    <tr><td><hr color="green" size="1" /></td></tr>
+    <tr valign="top">
+        <td align="left" >
+        <b>Figure 17???. Strings stored as fixed-length dataset elements
+        and not terminated with NULLs
+        <!-- formerly part of Figure 34 --></b><hr color="green" size="3"/></td>
+        </tr>  
+</table>
+<br />
+  
+  <p>
+  
+
+  <p>??????? rewrite for this new example
+  The figure below shows how these strings might be stored using 
+  a <b>fixed-length</b> datatype. This one-dimensional array uses the 
+  <code>H5T_STRING</code> datatype. The dataset reserves space for a 
+  specified number of characters in each string although some strings may 
+  be shorter. In the example below, the size is set to 20. This approach 
+  is simple and usually fast to access, but this approach can waste storage 
+  space if the lengths of the strings vary. The single quotation marks are 
+  used to show the 20 characters included in each dataset element.</p>
+
+<table width="600" cellspacing="0" align="center">
+    <tr valign="top"> 
+        <td align="center">
+        <hr color="green" size="3"/>
+
+    
+  <table align="center" width="100%">
+	  <tr>
+		<td colspan="2">
+		  <table align="center" border="1" width="70%">
+		    <tr>
+			  <td width="50%" align="center">0</td>
+			  <td width="50%" align="center">1</td>
+		    </tr>
+		    <tr>
+			  <td align="center">&lsquo;Four&nbsp;score\0
+              &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&rsquo;</td>
+			  <td align="center">&lsquo;seven&nbsp;years&nbsp;ago\0
+              &nbsp;&nbsp;&nbsp;&nbsp;&rsquo;</td>
+		    </tr>
+		  </table>
+		</td>
+	  </tr>
+      </table>
+
+    <tr><td><hr color="green" size="1" /></td></tr>
+    <tr valign="top">
+        <td align="left" >
+        <b>Figure 17???. Strings stored as fixed-length dataset elements
+        <!-- formerly part of Figure 34 --></b><hr color="green" size="3"/></td>
+        </tr>  
+</table>
+<br />
+
+  <p>Please note that a data element of size 1 might be useful in an 
+  environment where a NULL is not needed to terminate a string. If a NULL 
+  is needed to terminate a string, then a data element of size 1 
+  would not be useful.</p>
+  
+  
+  
+  
+  
+<br /><br />
+
+
 
 
 
@@ -6523,7 +6654,11 @@ document.writeln ("
   all share the exact same datatype object. This saves space and makes 
   clear that the datatype is shared. Note that a committed datatype can 
   be shared by objects within the same HDF5 file, but not by objects 
-  in other files. </p>
+  in other files. For more information on copying committed datatypes to 
+  other HDF5 files, see the 
+  &ldquo;Copying Committed Datatypes with H5Ocopy&rdquo; topic in 
+  the &ldquo;<a href="17_Additional.html">Additional Resources</a>&rdquo; 
+  chapter.</p>
   
   <p>A committed datatype can be deleted from the file by calling 
   <code>H5Ldelete</code> which replaces <code>H5Gunlink</code>. 
