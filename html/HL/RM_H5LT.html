@@ -150,6 +150,15 @@ certain sets of features in the existing APIs. This version of the API has two s
 	</ul>
       </blockquote>
     </td>
+      </blockquote>
+     <i>HDF5 object functions</i>
+      <blockquote>
+        <p><i>Query object functions</i></p>
+	<ul>
+	  <li><a href="#H5LTpath_valid">H5LTpath_valid</a>
+	</ul>
+      </blockquote>
+    </td>
     <td width="50%" valign="top"><i>Attribute functions</i>
       <blockquote>
         <p><i>Set attribute functions</i></p>
@@ -233,6 +242,15 @@ cases.</p>
         </ul>
       </blockquote>
     </td>
+      </blockquote>
+     <i>HDF5 object functions</i>
+      <blockquote>
+        <p><i>Query object functions</i></p>
+	<ul>
+	  <li><a href="#H5LTpath_valid">h5ltpath_valid_f</a>
+	</ul>
+      </blockquote>
+    </td>
     <td width="50%" valign="top"><i>Attribute functions</i>
       <blockquote>
         <p><i>Set attribute functions</i></p>
@@ -261,6 +279,87 @@ cases.</p>
 
 <p>&nbsp;</p>
 
+<!-- NEW PAGE -->
+<!-- HEADER RIGHT "  H5LTpath_valid -->
+<hr>
+<dl>
+  <dt style="background-color: #CCCCFF">
+    <strong>Name:</strong> <a name="H5LTpath_valid">H5LTpath_valid</a>
+  
+  <dt><strong>Signature:</strong>
+    <dd><em>htri_t</em> H5LTpath_valid ( <em>hid_t</em> loc_id, 
+      <em>const char</em> *path, <em>hbool_t</em> check_object_valid)
+
+  <p />
+  <dt><strong>Purpose:</strong>
+    <dd>Determines if a path to an HDF5 object is valid and, optionally,
+        checks if the path resolves to a valid HDF5 object.
+  
+  <p />
+  <dt><strong>Description:</strong>
+    <dd><code>H5LT</code><code>path_valid </code> checks the validity of <code>path</code> relative
+      to the identifier of an object <code>loc_id</code>. <code>check_object_valid</code> indicates whether
+      to check if the the final component of <code>path</code> resolves to a valid object or if it may dangle.
+      
+      <p>
+      The meaning of the returned value depends on the value of <code>check_object_valid</code>. 
+      If <code>check_object_valid</code> is <em>TRUE</em> then <code>H5LTpath_valid</code> will check 
+      if the final component of <code>path</code> resolves to an actual object and will return <em>TRUE</em>
+      if it resolves to an actual object. Otherwise the function will return <code>FALSE</code> if the 
+      final component of <code>path</code> does not resolve to an actual object. 
+      <p>
+      If <code>check_object_valid</code> is <em>FALSE</em> then <code>H5LTpath_valid</code> will not check 
+      if the object of <code>path</code> (i.e. the final component in the path name) resolves to an actual 
+      object and will return <em>TRUE</em> if all links in <code>path</code> exist. Otherwise the function
+      will return <em>FALSE</em> if the link is invalid.
+      <p>
+      <code>Path</code> can be: an absolute path (meaning the path starts with the file&#39;s root 
+      group &ldquo;&frasl;&rdquo;), 
+      a relative path, or a dot ( . ) if the identifier <code>loc_id</code> is of the object itself. Furthermore, 
+      if <code>path</code> is an absolute path then <code>loc_id</code> is used to identify the file 
+      where the object will be searched, and therefore <code>loc_id</code> can be an identifier for 
+      ANY object stored in the file. However, if <code>path</code> is a relative path, then <code>loc_id</code>
+      has to be a file or a group identifier.  The links in <code>path</code> may be of any type.
+  <p />
+  <dt><strong>Parameters:</strong>
+    <dd>
+      <table>
+        <tr>
+	  <td valign="top"><em>hid_t</em> <code>loc_id</code></td>
+	  <td valign="top">IN: An identifier of an object in the file.</td>
+	</tr>
+        <tr>
+	  <td valign="top"><em>const&nbsp;char&nbsp;*</em><code>path&nbsp;&nbsp;&nbsp;</code></td>
+	  <td valign="top">IN: The path to the object to check.</td>
+	</tr>
+        <tr>
+	  <td valign="top"><em>hbool_t</em> <code>check_object_valid</code></td>
+	  <td valign="top">IN: Check if the final component of the path resolves 
+	      to a valid object or if it may dangle.</td>
+	</tr>
+      </table>
+    </dd>
+
+  <p />
+  <dt><strong>Returns:</strong>
+    <dd>Returns if a path to an HDF5 object is valid and, additionally, if the path resolves to a valid object depending on value of <code>check_object_valid</code>. Returns a negative value if an error occurred.
+  
+  <p />
+  <dt><strong>Fortran90 Interface:</strong> h5ltpath_valid_f
+      <pre>
+  SUBROUTINE h5ltpath_valid_f(loc_id, path, check_object_valid, path_valid, errcode)
+
+    INTEGER(HID_T)  , INTENT(IN)  :: loc_id              ! An identifier of an object in the file.
+    CHARACTER(LEN=*), INTENT(IN)  :: path                ! Path to the object to check, relative to loc_id.
+    LOGICAL         , INTENT(IN)  :: check_object_valid  ! Indicates whether to check if the final component 
+                                                         !  of the path resolves to a valid object 
+    LOGICAL         , INTENT(OUT) :: path_valid          ! Object status
+    INTEGER         , INTENT(OUT) :: errcode             ! Error code: 0 on success and -1 on failure
+
+  END SUBROUTINE h5ltpath_valid_f </pre>
+  <p />
+
+</dl>
 <!-- NEW PAGE -->
 <!-- HEADER RIGHT " H5LTmake_dataset -->
 <hr>
