@@ -12,7 +12,7 @@
   * of the source code distribution tree; Copyright.html can be found at the  *
   * root level of an installed copy of the electronic HDF5 document set and   *
   * is linked from the top-level documents page.  It can also be found at     *
-  * http://hdfgroup.org/HDF5/doc/Copyright.html.  If you do not have          *
+  * http://www.hdfgroup.org/HDF5/doc/Copyright.html.  If you do not have      *
   * access to either file, you may request a copy from help@hdfgroup.org.     *
   * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  -->
@@ -24,13 +24,15 @@
 <dl>
 
   <dt><div align=right><font color=999999 size=-1><i>
-    Last modified: 17 August 2010
+    Last modified: 21 March 2012
     </i></font></div>
 
-  <dt><strong>Name:</strong> <a name="Property-SetCopyObject">H5Pset_copy_object</a>
+  <dt><strong>Name:</strong> 
+      <a name="Property-SetCopyObject">H5Pset_copy_object</a>
+
   <dt><strong>Signature:</strong>
     <dd><em>herr_t </em><code>H5Pset_copy_object</code>(
-            <em>hid_t </em><code>ocp_plist_id</code>,
+            <em>hid_t </em><code>ocpypl_id</code>,
             <em>unsigned </em><code>copy_options</code>
         )
 
@@ -41,22 +43,20 @@
   <p>
   <dt><strong>Description:</strong>
     <dd><code>H5Pset_copy_object</code> sets properties 
-      in the object copy property list <code>ocp_plist_id</code> 
-      that will be invoked when a new copy is made of an existing object.
+      in the object copy property list <code>ocpypl_id</code>. 
+      When an existing object is copied, that property list will 
+      determine how the new copy is created.
       <p>
-      <code>ocp_plist_id</code> is the object copy property list and 
-      specifies the properties governing the copying of the object.
-      <p>
-      Several flags, described in the following table, 
-      are available for inclusion in the object copy property list:
+      The following flags are available for use in an object copy property list:
       <ul><table>
-          <td valign="top"><code>H5O_COPY_SHALLOW_HIERARCHY_FLAG&nbsp;&nbsp;&nbsp;&nbsp;</code>
+          <td valign="top">
+              <code>H5O_COPY_SHALLOW_HIERARCHY_FLAG</code>
           </td>
           <td valign="top">
               Copy only immediate members of a group.
               <br>
               <i>Default behavior, without flag:</i> 
-              Recursively copy all objects below the group.
+              Recursively copy all objects in and below the group.
           </td></tr>
         <tr>
           <td valign="top"><code>H5O_COPY_EXPAND_SOFT_LINK_FLAG</code>
@@ -65,7 +65,7 @@
               Expand soft links into new objects.
               <br>
               <i>Default behavior, without flag:</i> 
-              Keep soft links as they are.
+              Copy soft links as they are.
           </td></tr>
         <tr>
           <td valign="top"><code>H5O_COPY_EXPAND_EXT_LINK_FLAG</code>
@@ -74,7 +74,7 @@
               Expand external link into new objects.
               <br>
               <i>Default behavior, without flag:</i> 
-              Keep external links as they are.
+              Copy external links as they are.
           </td></tr>
         <tr>
           <td valign="top"><code>H5O_COPY_EXPAND_REFERENCE_FLAG</code>
@@ -92,8 +92,40 @@
               Copy object without copying attributes.
               <br>
               <i>Default behavior, without flag:</i> 
-              Copy object along with all its attributes.
+              Copy object with all its attributes.
           </td></tr>
+        <tr>
+          <td valign="top"><code>H5O_COPY_MERGE_COMMITTED_DTYPE_FLAG&nbsp;&nbsp;</code>
+          </td>
+          <td valign="top">
+              Use a matching committed datatype in the destination file 
+	      when copying a committed datatype, 
+                           a dataset with a committed datatype, or 
+                           an object with an attribute of committed datatype.
+              <br>
+              <i>Default behavior without flag:</i>
+              <ul>
+                  <li>A committed datatype in the source will be copied 
+                      to the destination as a committed datatype. 
+                  <li>If a dataset in the source uses a committed datatype 
+                      or an object in the source has an attribute of a 
+                      committed datatype, that committed datatype will be 
+                      written to the destination as an 
+                      anonymous committed datatype.
+                  <li>If copied in a single <code>H5Ocopy</code> operation,
+                      objects that share a committed datatype in the source 
+                      will share an anonymous committed dataype
+                      in the destination copy.
+                      Subsequent <code>H5Ocopy</code> operations, however, 
+                      will be unaware of prior anonymous committed dataypes 
+                      and will create new ones.
+              </ul>
+              <p>
+              See the &ldquo;See Also&rdquo; section immediately below 
+              for functions related to the use of this flag.
+          </td></tr>
+
+        <!-- *** *** *** *** *** -->
         <!-- H5O_COPY_ALL is used in HDF5 testing and debugging;      -->
         <!-- it is not intended for use in user applications.         -->
         <!--
@@ -106,14 +138,15 @@
               <i>Default:</i> 
               Use default properties unless individually set.
           </td></tr>
-          -->
+          *** *** *** *** *** -->
+
       </table></ul>
 
   <p>
   <dt><strong>Parameters:</strong>
     <dd><table>
       <tr>
-        <td valign="top"><em>hid_t </em><code>ocp_plist_id</code>
+        <td valign="top"><em>hid_t </em><code>ocpypl_id</code>
         </td>
         <td valign="top">IN: Object copy property list identifier 
         </td></tr>
@@ -129,12 +162,61 @@
     <dd>Returns a non-negative value if successful;
         otherwise returns a negative value.
 
+  <dt><strong>See Also:</strong>
+    <dd><table border="0" width="100%">
+          <tr valign="top">
+              <td>
+                  <a href="RM_H5O.html#Object-Copy"><code>H5Ocopy</code></a>
+              </td><td width="4%">&nbsp;
+              </td><td>&nbsp;</td></tr>
+          <tr valign="top">
+              <td>
+                  <br>
+                  <a href="../Advanced/CommittedDatatypeCopying/CopyingCommittedDatatypesWithH5Ocopy.pdf">
+                  Copying Committed Datatypes</a> 
+                  <br>
+                  &nbsp;&nbsp;&nbsp;&nbsp;<a href="../Advanced/CommittedDatatypeCopying/CopyingCommittedDatatypesWithH5Ocopy.pdf">with <code>H5Ocopy</code></a> 
+              </td><td width="4%">&nbsp;</td><td>
+                  <br>
+                  A comprehensive discussion of copying committed datatypes (PDF)
+                  in <a href="../Advanced.html">Advanced Topics in HDF5</a>
+              </td></tr>
+          <tr valign="top">
+              <td>
+                  <br>
+<!--
+                  <a href="RM_H5P.html#Property-SetCopyObject">
+                  <code>H5Pset_copy_object</code></a>
+                  <br>
+-->
+                  <a href="RM_H5P.html#Property-AddMergeCommittedDtypePath">
+                  <code>H5Padd_merge_committed_dtype_path</code></a>
+                  <br>
+                  <a href="RM_H5P.html#Property-FreeMergeCommittedDtypePaths">
+                  <code>H5Pfree_merge_committed_dtype_paths</code></a>
+                  <br>
+                  <a href="RM_H5P.html#Property-SetMcdtSearchCb">
+                  <code>H5Pset_mcdt_search_cb</code></a>
+                  <br>
+                  <a href="RM_H5P.html#Property-GetMcdtSearchCb">
+                  <code>H5Pget_mcdt_search_cb</code></a>
+                  <br>
+                  <a href="RM_H5O.html#Object-McdtSearchCb_t">
+                  <code>H5O_mcdt_search_cb_t</code></a>
+              </td><td width="4%">&nbsp;</td><td>
+                  <br>
+                  Functions and a callback function used 
+                  to tune committed datatype copying behavior 
+              </td>
+          </tr>
+        </table>
+
   <p>
   <dt><strong>Fortran90 Interface:</strong> h5pset_copy_object_f
     <dd><pre>
-SUBROUTINE h5pset_copy_object_f(ocp_plist_id, copy_options, hdferr)
+SUBROUTINE h5pset_copy_object_f(ocpypl_id, copy_options, hdferr)
   IMPLICIT NONE
-  INTEGER(HID_T), INTENT(IN) :: ocp_plist_id 
+  INTEGER(HID_T), INTENT(IN) :: ocpypl_id 
                               ! Object copy property list identifier
   INTEGER, INTENT(IN) :: copy_options 
                               ! Copy option(s) to be set, valid options are:
@@ -143,6 +225,7 @@ SUBROUTINE h5pset_copy_object_f(ocp_plist_id, copy_options, hdferr)
                               !   H5O_COPY_EXPAND_EXT_LINK_F
                               !   H5O_COPY_EXPAND_REFERENCE_F
                               !   H5O_COPY_WITHOUT_ATTR_FLAG_F
+                              !   H5O_COPY_MERGE_COMMITTED_DTYPE_FLAG_F
 </pre>
 <!-- NEW PAGE -->
 <pre>
@@ -165,6 +248,11 @@ END SUBROUTINE h5pset_copy_object_f
           <td valign="top">1.8.0</td>
           <td valign="top">
             Function introduced in this release.</td></tr>
+        <tr>
+          <td valign="top">1.8.9</td>
+          <td valign="top">
+            <code>H5O_COPY_MERGE_COMMITTED_DTYPE_FLAG</code> 
+            added in this release. </td></tr>
     </table></dd>
 </dl>
 
