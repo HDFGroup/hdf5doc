@@ -1,0 +1,226 @@
+
+
+<!--
+  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+  * Copyright by The HDF Group.                                               *
+  * All rights reserved.                                                      *
+  *                                                                           *
+  * This file is part of HDF5.  The full HDF5 copyright notice, including     *
+  * terms governing use, modification, and redistribution, is contained in    *
+  * the files COPYING and Copyright.html.  COPYING can be found at the root   *
+  * of the source code distribution tree; Copyright.html can be found at the  *
+  * root level of an installed copy of the electronic HDF5 document set and   *
+  * is linked from the top-level documents page.  It can also be found at     *
+  * http://www.hdfgroup.org/HDF5/doc/Copyright.html.  If you do not have      *
+  * access to either file, you may request a copy from help@hdfgroup.org.     *
+  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+ -->
+
+
+<!-- NEW PAGE -->
+<!-- HEADER RIGHT "H5Fset_mpi_atomicity" -->
+<hr>
+<dl>
+
+  <dt><div align=right><font color=999999 size=-1><i>
+      Last modified: 10 April 2012
+      </i></font></div>
+
+  <dt><strong>Name:</strong> <a name="File-SetMpiAtomicity">H5Fset_mpi_atomicity</a>
+
+  <dt><strong>Signature:</strong>
+    <dd><em>herr_t </em><code>H5Fset_mpi_atomicity</code>(
+            <em>hid_t</em> <code>file_id</code>,
+            <em>hbool_t</em> <code>flag</code>
+        )
+
+  <p>
+  <dt><strong>Purpose:</strong>
+    <dd>Sets the MPI atomicity mode.
+
+  <p>
+  <dt><strong>Motivation:</strong>
+    <dd><code>H5Fset_mpi_atomicity</code>, 
+      used in concert with other elements of HDF5,
+      ensures sequential consistency when multiple files are writing to 
+      and reading from the same file.
+      This enables an application to ensure that any data 
+      written to the file by any participating process 
+      will be available for a subsequent read by any participating process.
+      <p>
+      This assurance is necessay only when using a pure 
+      <small>MPI I/O</small> driver,
+      such as HDF5&rsquo;s <small>H5FD_MPIO</small> driver.
+      It is not necessary when using an <small>MPI POSIX</small> driver
+      because such a safeguard is built into <small>POSIX I/O</small>.
+
+  <p>
+  <dt><strong>Description:</strong>
+    <dd><code>H5Fset_mpi_atomicity</code> 
+      sets MPI consistency semantics for data access 
+      to the file <code>file_id</code>.
+      
+
+<font color="red"><i>
+<p>
+Point of educating myself (FB):
+Why is this an H5F function rather that a file access property (H5P)?
+</i></font>
+
+      <p>
+      If <code>flag</code> is set to <code>TRUE</code>, 
+      all MPI file access functions be executed atomically,
+      ensuring sequential consistency.
+      If <code>flag</code> is set to <code>FALSE</code>, 
+      enforcement of atomic file access will be turned off.
+      <p>
+      <code>H5Fset_mpi_atomicity</code> is a collective function and 
+      all participating processes must pass the same values for 
+      <code>file_id</code> and <code>flag</code>. 
+      <p>
+      This function is available only when the HDF5 Library is configured 
+      with parallel support (<code>--enable-parallel</code>). 
+      It is useful only when used with the <code>H5FD_MPIO</code> driver
+      (see <a href="RM_H5P.html#Property-SetFaplMpio">
+      <code>H5Pset_fapl_mpio</code></a>).
+
+      <p>
+      <strong>Limitations:</strong>
+      <br>
+      <code>H5Fset_mpi_atomicity</code> works though calls to
+      <code>MPI_File_set_atomicity</code> 
+      and is not supported if the execution platform does not 
+      support <code>MPI_File_set_atomicity</code>. 
+      When it is supported and used,
+      the performance of data access operations may drop significantly. 
+      <p>
+      In certain scenarios, even when <code>MPI_File_set_atomicity</code> 
+      is supported, setting atomicity with <code>H5Fset_mpi_atomicity</code> 
+      and <code>flag</code> set to <code>TRUE</code> does not always yield 
+      strictly atomic updates.  For example, some <code>H5Dwrite</code> calls
+      translate to multiple <code>MPI_File_write_at</code> calls. 
+      This happens in all cases where the high-level file access routine 
+      translates to multiple lower level file access routines. 
+      The following scenarios will raise this issue:
+      <ul>
+          <li>Non-contiguous file access using independent I/O
+          <li>Partial collective I/O using chunked access
+          <li>Collective I/O using filters 
+              or when data conversion is required 
+      </ul>
+      <p>
+      This issue arises because MPI atomicity is a matter of 
+      MPI file access operations rather than HDF5 access operations.  
+      But the user is normally seeking atomicity at the HDF5 level.  
+      To accomplish this, the application must set a barrier 
+      after a write, <code>H5Dwrite</code>, 
+      but before the next read, <code>H5Dread</code>, 
+      in addition to calling <code>H5Fset_mpi_atomicity</code>.
+      The barrier will guarantee that all underlying write operations 
+      execute atomically before the read operations starts.
+      This ensures additional ordering semantics and 
+      will normally produce the desired behavior. 
+      <p>
+
+  <p>
+  <dt><strong>Parameters:</strong>
+    <dd>
+    <table>
+      <tr valign="top">
+        <td><em>hid_t</em> <code>file_id</code>,
+            </td><td>&nbsp;&nbsp;&nbsp;&nbsp;</td>
+        <td>IN: HDF5 file identifier
+            </td></tr>
+      <tr valign="top">
+        <td><em>hbool_t</em> <code>flag</code>
+            </td><td>&nbsp;</td>
+        <td>IN: Logical flag for atomicity setting
+                <br>
+                Valid values are:
+                <li>
+                <code>TRUE&nbsp;</code>
+                  &nbsp; Sets MPI file access to atomic mode.
+                <li>
+                <code>FALSE</code>
+                  &nbsp; Sets MPI file access to nonatomic mode.
+
+<font color="red"><i>
+<br>
+Is there a better way to describe the negative case?
+<br>
+For example, does <code>FALSE</code> really set file access to nonatomic mode?
+<br>
+Or does it just turn off the enforcement of atomic mode?
+</i></font>
+
+            </td></tr>
+    </table>
+
+  <p>
+  <dt><strong>Returns:</strong>
+    <dd>Returns a non-negative value if successful;
+        otherwise returns a negative value.
+
+  <p>
+  <dt><strong>Failure Modes:</strong>
+    <dd>
+<font color="red"><i>
+Any worth noting? ? ?
+</i></font>
+
+<!--
+  <p>
+  <dt><strong>Example Usage:</strong>
+
+    <dd>Discuss the elements in the first usage example here.
+<dir><pre>
+Complete usage example line(s) for the first example here
+</pre></dir>
+    <p>
+
+    <dd>Discuss the elements in the second usage example here.
+<dir><pre>
+Complete usage example line(s) for the second example here
+</pre></dir>
+-->
+
+  <p>
+  <dt><strong>Fortran90 Interface:</strong> h5fset_mpi_atomicity_f
+    <dd>
+    <pre>
+SUBROUTINE h5fset_mpi_atomicity_f(file_id, flag, hdferr) 
+  IMPLICIT NONE
+  INTEGER(HID_T), INTENT(IN) :: file_id    ! File identifier
+  INTEGER(HBOOL_T), INTENT(IN) :: flag     ! Atomicity flag
+  INTEGER, INTENT(OUT) :: hdferr           ! Error code
+                                           ! 0 on success; -1 on failure
+END SUBROUTINE h5fset_mpi_atomicity_f </pre>
+    </dd>
+
+  <p>
+  <dt><strong>See Also:</strong>
+    <dd><a href="../Advanced/PHDF5FileConsistencySemantics/PHDF5FileConsistencySemantics.pdf">
+        Enabling a Strict Consistency Semantics Model in Parallel HDF5</a>
+        <p>
+        <a href="RM_H5F.html#File-GetMpiAtomicity">
+        <code>H5Fget_mpi_atomicity</code></a>
+
+  <p>
+  <dt><strong>History:</strong>
+    <dd><table width="90%">
+        <tr>
+          <td valign="top" align="left" width="10%">
+            <strong>Release</strong>&nbsp;&nbsp;&nbsp;&nbsp;</td>
+          <td valign="top" align="left">
+            <strong>Change</strong></td>
+        </tr>
+        <tr>
+          <td valign="top">1.8.9</td>
+          <td valign="top">
+            C function and Fortran subroutine 
+            introduced in this release.</td>
+        </tr>
+        </table>
+</dl>
+
+
