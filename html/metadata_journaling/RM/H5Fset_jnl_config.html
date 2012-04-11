@@ -9,59 +9,80 @@
 <!-- HEADER RIGHT "H5Fset_jnl_config" -->
 <hr>
 <dl>
+
+  <dt><div align=right><font color=999999 size=-1><i>
+      Last modified: 23 December 2011
+      </i></font></div>
+
   <dt><strong>Name:</strong> <a name="File-SetJnlConfig">H5Fset_jnl_config</a>
   <dt><strong>Signature:</strong>
     <dd><em>herr_t </em><code>H5Fset_jnl_config</code>(
             <em>hid_t </em><code>file_id</code>,
             <em>const H5AC_jnl_config_t *</em><code>config_ptr</code>
         )
+
   <p>
   <dt><strong>Purpose:</strong>
     <dd>Sets metadata journaling configuration.
+
   <p>
   <dt><strong>Motivation:</strong>
-    <dd><code>H5Fset_jnl_config</code> is part of an HDF5 feature set 
-      provided to guard against and recover from metadata corruption. 
+    <dd>This function is part of HDF5&rsquo;s metadata journaling feature,  
+      which guards against metadata corruption and provides a recovery 
+      capability. 
       <p>
-      This feature set is discussed in
+      Metadata journaling is discussed more fully in 
       &ldquo;<a href="../RG/CrashSurvival.html">Using HDF5&rsquo;s 
       Metadata Journaling and File Recovery Features</a>&rdquo; and
       &ldquo;<a href="../RG/Metadata_Journaling,Crash_Survivability.pdf">Metadata  
       Journaling to Improve Crash Survivability</a>.&rdquo;
+
   <p>
   <dt><strong>Description:</strong>
     <dd><code>H5Fset_jnl_config</code> 
-      is used to configure metadata journaling on the target file
-      according to the configuration supplied in <code>config_ptr</code>.
+      sets the initial metadata journaling configuration for the target file
+      according to the configuration supplied in the instance of the
+      <a href="H5AC_jnl_config_t.html"><code>H5AC_jnl_config_t</code></a>
+      struct pointed to by <code>config_ptr</code>.
+      <p>
+      This function is used when dynamically turning metadata journaling 
+      on and off on an open file.
+
   <p>
   <dt><strong>Failure Mode:</strong>
     <dd><code>H5Pset_jnl_config</code> will fail if an invalid configuration 
       is detected. 
+
   <p>
   <dt><strong>Parameters:</strong>
     <dd><table>
       <tr>
-        <td valign="top"><em>hid_t </em><code>file_id</code>
+        <td valign="top"><em>hid_t&nbsp;</em><code>file_id</code>
         </td>
         <td>&nbsp;&nbsp;</td>
         <td valign="top">IN:  File identifier of the target file.
+            <br>&nbsp;
         </td></tr>
       <tr>
-        <td valign="top"><em>const H5AC_jnl_config_t&nbsp;*</em><code>config_ptr</code>
-        </td>
+        <td valign="top" colspan="3">
+            <em>const H5AC_jnl_config_t&nbsp;*</em><code>config_ptr</code>
+        </td></tr>
+      <tr>
         <td>&nbsp;</td>
-        <td valign="top">IN:  Pointer to the instance of 
-            <code><em>H5AC_jnl_config_t</em></code> containing the
+        <td>&nbsp;</td>
+        <td valign="top">IN:  Pointer to the instance of the
+            <code>H5AC_jnl_config_t</code> struct containing the
             desired configuration.
             <p>
-            See <a href="H5AC_jnl_config_t.html"><em>H5AC_jnl_config_t</em></a>
+            See <a href="H5AC_jnl_config_t.html">
+            <code>H5AC_jnl_config_t</code></a>
             for the struct definition and a field-by-field description.
 	    <p>
-            Set struct fields as follows:
+            The fields of the struct should be set as follows:
             <ul>
-            <li>Initialize <code>version</code> to the value of 
-                <code>H5AC2__CURR_JNL_CONFIG_VER</code>
-                (defined in <code>H5ACpublic.h</code>).
+            <li>Initialize <code>version</code> to 
+                <code>H5AC2__CURR_JNL_CONFIG_VER</code>,
+                a value defined internally by the HDF5 Library.
             <li>Set <code>enable_journaling</code> 
                 to <code>TRUE</code> if journaling is to be turned on, 
                 to <code>FALSE</code> if journaling is being turned off.
@@ -69,7 +90,7 @@
                 of the file used to store the metadata journal.
                 This path is defined only if <code>enable_journaling</code>
                 is set to <code>TRUE</code> and can be no longer 
-                <code>H5AC2__MAX_JOURNAL_FILE_NAME_LEN</code> characters long.
+                than <code>H5AC2__MAX_JOURNAL_FILE_NAME_LEN</code> characters.
             <li>Set <code>journal_recovered</code> to <code>FALSE</code>.
             <li><code>jbrb_buf_size</code> specifies the size of each
                  individual buffer in the journal buffer ring buffer.
@@ -84,113 +105,23 @@
                 large enough that a write to a buffer is likely to complete 
                 before that buffer is needed again.
             <li>Set <code>jbrb_use_aio</code> to <code>FALSE</code>
-                if the journal file should written using synchronous I/O.
-                If the host system supports Asynchronous I/O, consider 
+                if the journal file should be written using synchronous I/O.
+                If the host system supports asynchronous I/O, consider 
 		setting the field to <code>TRUE</code> to allow processing 
 		to overlap in time with journal file writes.
             <li>Set <code>jbrb_human_readable</code> to <code>TRUE</code>
                 if the journal file should be human readable.
-                Otherwise, use <code>FALSE</code> for the more efficient 
+                Otherwise, use <code>FALSE</code> to create a more efficient 
                 machine-readble file.
             </ul>
         </td></tr>
     </table>
 
-<!--
-    <p>
-    The fields of <em>H5AC_jnl_config_t</em> struct are defined as follows:
-    <dir>
-    <p>
-    <table>
-      <tr>
-        <td valign="top"><em>int</em> <code>version</code></td>
-        <td>&nbsp;&nbsp;</td>
-        <td valign="top">Integer field indicating the the version of 
-            the <em>H5AC_jnl_config_t</em> in use.  
-            <p>
-            This field should be set to 
-            <code>H5AC2__CURR_JNL_CONFIG_VER</code>
-            (defined in <code>H5ACpublic.h</code>)
-            and must be initialized for an 
-            <code>H5Fset_jnl_config</code> or
-            <a href="H5Pset_jnl_config.html"><code>H5Pset_jnl_config</code></a>
-            call.
-        </td></tr>
-      <tr>
-        <td valign="top"><em>hbool_t</em> <code>enable_journaling</code></td>
-        <td>&nbsp;</td>
-        <td valign="top">Boolean flag set to <code>TRUE</code> 
-            if journaling is enabled 
-            and to <code>FALSE</code> if journaling is disabled.
-        </td></tr>
-      <tr>
-        <td valign="top"><em>char</em> <code>journal_file_path[]</code></td>
-        <td>&nbsp;</td>
-        <td valign="top">Full path of the file used to store the 
-            metadata journal.  This field is only defined if 
-            <code>enable_journaling</code> is <code>TRUE</code>.
-            <p>
-            At present, the length of the journal file path is restricted to 
-            no more than <code>H5AC2__MAX_JOURNAL_FILE_NAME_LEN</code>.
-        </td></tr>
-      <tr>
-        <td valign="top"><em>hbool_t</em> <code>journal_recovered</code></td>
-        <td>&nbsp;</td>
-        <td valign="top">Boolean flag indicating 
-            that the journaled file being opened was not closed correctly 
-            and that the file has been been recovered successfully.
-            <p>
-            Since this field is only meaningful on file open, it should
-            always be set to <code>FALSE</code> in this context.
-        </td></tr>
-      <tr>
-        <td valign="top"><em>size_t</em> <code>jbrb_buf_size</code></td>
-        <td>&nbsp;</td>
-        <td valign="top">The size of individual buffers in 
-            the journal buffer ring buffer.
-            <p>
-            This size should be chosen to be some multiple of the 
-            block size used by the file system on which the journal file 
-            will be written.
-        </td></tr>
-      <tr>
-        <td valign="top"><em>int</em> <code>jbrb_num_bufs</code></td>
-        <td>&nbsp;</td>
-        <td valign="top">Number of buffers in the journal buffer ring buffer. 
-            <p>
-            If synchronous I/O is used, one or two buffers is sufficient.  
-            If asynchronous I/O is used, the number of buffers should be 
-            sufficiently large that a write on buffer is likely to complete 
-            before that buffer is needed again.
-        </td></tr>
-      <tr>
-        <td valign="top"><em>hbool_t</em> <code>jbrb_use_aio</code></td>
-        <td>&nbsp;</td>
-        <td valign="top">Boolean flag indicating the use of
-            asynchronous I/O for journal entry writes.
-            <code>TRUE</code> indicates that asynchronous I/O is in use
-            or is to be used;
-            <code>FALSE</code> indicates no asynchronous I/O.
-        </td></tr>
-      <tr>
-        <td valign="top"><em>hbool_t</em>&nbsp;<code>jbrb_human_readable</code></td>
-        <td>&nbsp;</td>
-        <td valign="top">Boolean flag indicating whether the journal file 
-            is written or is to be written in human-readable form 
-            (<code>TRUE</code>).
-            <code>FALSE</code> indicates a machine-readable journal file.
-            <p>
-            In general, this field should be set to <code>FALSE</code>, 
-            as the human-readable journal file is at least twice a large as 
-            the machine-readable version.
-        </td></tr>
-    </table>
-    </dir>
--->
   <p>
   <dt><strong>Returns:</strong>
     <dd>Returns a non-negative value if successful;
         otherwise returns a negative value.
+
   <p>
   <dt><strong>See Also:</strong>
     <dd>
@@ -213,6 +144,7 @@
         <br>
         &ldquo;<a href="../RG/Metadata_Journaling,Crash_Survivability.pdf">Metadata
           Journaling to Improve Crash Survivability</a>&rdquo; 
+
 <!--
   <p>
   <dt><strong>Fortran90 Interface:</strong> ***FORTRAN_routine_name***
@@ -221,6 +153,7 @@
         ***FORTRAN subroutine description***
     </pre>
 -->
+
   <p>
   <dt><strong>History:</strong>
     <dd><table width="90%">
@@ -228,11 +161,11 @@
           <td valign="top" align="left" width="10%">
             <strong>Release</strong>&nbsp;&nbsp;&nbsp;&nbsp;</td>
           <td valign="top" align="left">
-            <strong>C</strong></td></tr>
+            <strong>Change</strong></td></tr>
         <tr>
-          <td valign="top">1.8.?</td>
+          <td valign="top">1.10.0</td>
           <td valign="top">
-            Function introduced in this release.</td></tr>
+            C function introduced in this release.</td></tr>
     </table>
 </dl>
 

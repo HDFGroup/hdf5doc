@@ -9,17 +9,22 @@
 <!-- HEADER RIGHT "Metadata Journaling and File Recovery" -->
 
 <h2>Using HDF5&rsquo;s Metadata Journaling and File Recovery Features</h2>
+                                                <div align=right>
+                                                <font color=999999 size=-1><i>
+                                                Last modified: 5 January 2012
+                                                </i></font></div>
 
-  <h3>This document</h3>
+  <h3>Overview</h3>
   <dir>
-      This document provides brief instructions for using the
-      HDF5 metadata journaling and file recovery features.
-      More complete instructional material is being prepared. 
+      The HDF5 metadata journaling and file recovery feature set guards
+      against metadata corruption and provides a recovery capability.
+      This document provides basic instructions for using these features,
+      with a few examples along the way.
 
   </dir>
   <h3>Motivation</h3>
   <dir>
-      The metadata journaling and file recovery feature set
+      The combination of metadata journaling and file recovery 
       enables metadata recovery in the case of metadata corruption.
       In many cases, it will be possible to recover cleanly from 
       such a failure. 
@@ -47,13 +52,13 @@
           <li><a href="../RM/h5recover.html"><code>h5recover</code></a> 
       </ul>
 -->
-      When metadata journaling is turned on, all metadata written to 
-      an HDF5 file is also written to a journal log file.  
-      If the application terminates in such a manner that the 
-      HDF5 file is abandoned without being properly closed, 
-      the command line tool <code>h5recover</code> can be used to 
-      reapply missing metadata to the HDF5 file according to the entries 
-      in the metadata journal log file.
+      When metadata journaling is turned on for an HDF5 file, 
+      all metadata written to that file is also written to a journal log file.  
+      If a system crash, file system failure, or other event causes 
+      the application to terminate unexpectedly and abandon the HDF5 file
+      without properly closing it, the scriptable command line tool 
+      <code>h5recover</code> can use the entries in the metadata journal 
+      log file to reapply missing metadata to the HDF5 file. 
       <p>
       Note that this feature set preserves only metadata; different 
       steps must be taken to guard against raw data loss or corruption.
@@ -68,6 +73,11 @@
   <dir>
       Metadata journaling is for situations where 
       a file is vulnerable to loss in a &ldquo;crash&rdquo; situation.
+      Using a file access property list, a file can be opened with or without 
+      metadata journaling enabled;
+      using HDF5 calls on an active file, metadata journaling can be 
+      turned on or off for an open file.
+<!-- STILL NOT HAPPY WITH THE ABOVE PARAGRAPH.  FMB -->
 
       <p>
   <b>Journaling by property list</b> 
@@ -124,7 +134,7 @@
       <code>H5Fset_jnl_config</code>.
 
   </dir>
-  <h3>Use of a file while metadata journaling is &ldquo;on&rdquo;</h3>
+  <h3>Use of a file while metadata journaling is on</h3>
   <dir>
       While metadata journaling is turned on, an HDF5 file can be used in 
       all of the usual ways.  
@@ -158,7 +168,7 @@
       applying the metadata records that remained in the journal log file.
       <p>
       For example, in the context of the 
-      <a href="../examples/enable_journaling.c"><code>enable_journaling.c</a>
+      <a href="../examples/enable_journaling.c"><code>enable_journaling.c</code></a>
       example below, the following <code>h5recover</code> call from the 
       command line or from a script would apply the journal log entries
       from the log file <code>JournalEG.h5.jnl</code> to repair the
@@ -171,12 +181,20 @@
       though other factors will determine whether the raw data 
       is in sync with the metadata.
 
+<!-- NEED REFERENCE TO STRATEGIES TO ENSURE THE INTEGRITY OF RAW DATA. -->
+<!-- SO FAR, ONLY H5Fflush HAS BEEN MENTIONED.   FMB                   -->
+
   </dir>
   <h3>Example 1: Metadata journaling with HDF5</h3>
   <dir>
 
+<div align="right"><font color="red"><i>
+(Consider embedding relevant snippets of code<br>
+in this and the following examples.)
+</i></font></div>
+
       The C example in the file
-      <a href="../examples/enable_journaling1.c"><code>enable_journaling1.c</a>
+      <a href="../examples/enable_journaling1.c"><code>enable_journaling1.c</code></a>
       demonstrates enabling metadata journaling at file creation time 
       and enabling journaling on an open file.  
       It also demonstrates disabling metadata journaling both manually 
@@ -199,8 +217,21 @@
       <a href="http://www.hdfgroup.org/HDF5/doc/RM/RM_H5P.html#Property-SetLibverBounds">
       <code>H5Pset_libver_bounds</code></a>
       to specify using the latest version of the HDF5 file format.
+
+<!-- EDITORIAL COMMENT: THE ABOVE STATEMENT IS PRESUMABLY VALID ONLY UNTIL -->
+<!-- RELEASE 1.10, AT WHICH POINT THE OPTION SHOULD BE AVAILABLE TO      -->
+<!-- "SPECIFY USING A SPECIFIED MINIMUM VERSION OF THE LIBRARY",         -->
+<!-- I.E., "SPECIFY A FORMAT VERSION NO OLDER THAN..."                   -->
+
+<div align="right"><font color="red"><i>
+(Editorial comment: The above statement is presumably valid<br>
+only until Release 1.10, at which point the option should be<br>
+available to "specify using a specified minimum version of the<br>
+HDF5 Library", i.e., "specify a format version no older than...")
+</i></font></div>
+
       <p>
-      The example next sets up the journaling property.  
+      The example next sets up the metadata journaling property.  
       We could do this in several ways, but this example uses
       <a href="../RM/H5Pget_jnl_config.html"><code>H5Pget_jnl_config</code></a> 
       to get the default journaling configuration, 
@@ -216,9 +247,15 @@
       After setting up the FAPL, this example creates the file as usual.
       Since the FAPL calls for metadata journaling, journaling will be enabled 
       on this file.
+
+<div align="right"><font color="red"><i>
+(Editorial comment: Not just "create";
+<br>we might also want an "open".)
+</i></font></div>
+
       <p>
       With the file created and journaling running, we can then go off 
-      and do what we want; this is where application computation occures. 
+      and do what we want; this is where application computation occurs. 
       This example sets up a selection of chunked datasets.  
       Note that these datasets (and the later access pattern) 
       are chosen to maximize the amount of dirty metadata generated.  
@@ -243,13 +280,19 @@
       we did earlier in this example.  We would also have had to use
       <code>H5Pset_libver_bounds</code> to set the FAPL to create the file 
       initially with the latest HDF5 file format format.) 
+
+<div align="right"><font color="red"><i>
+(Editorial comment: Find more appropriate 
+<br>location for "(If we had originally...)")
+</i></font></div>
+
       <p>
       Having re-enabled journaling, the example then proceeds to write to 
       the datasets.  Again, please note that the write strategy in this 
       example (round robin and small chunks) is designed to maximize
-      dirty metadata generation and to load on the metadata cache.
-      When possible, real applications would be designed to do just the 
-      opposite.
+      dirty metadata generation and to exercise the metadata cache.
+      When possible, real applications designed for efficient operation
+      usually do just the opposite.
       <p>
       This example maximizes dirty metadata generation deliberately to force
       the journal file will grow quickly, setting up the next illustration.  
@@ -283,10 +326,12 @@
   </dir>
   <h3>Example 2: Metadata journaling with HDF5 and file recovery</h3>
   <dir>
-      The file 
-      <a href="../examples/enable_journaling.c"><code>enable_journaling.c</a>
-      provides an example illustrating the use of metadata journaling 
-      to log metadata updates in a file.
+      The example in
+      <a href="../examples/enable_journaling.c"><code>enable_journaling.c</code></a>
+      illustrates the use of metadata journaling to log metadata updates 
+      in an HDF5 file, an interuption that forces abandonment of the file
+      without properly closing it, and restoration of the metadate entries 
+      lost as a result of the interuption.
       <p>
       In this example, the application 
       sets up metadata journaling in a file access property list, 
@@ -295,7 +340,7 @@
       being recorded in <code>JournalEG.h5.jnl</code>, 
       and performs a series of operations on the file.
       <p>
-      The example file contains instructions for interupting the program,
+      The example includes instructions for interupting the program,
       usually leaving <code>JournalEG.h5</code> in a corrupted state.
       The corrupted file can then be recovered with the following 
       <code>h5recover</code> call:
@@ -405,7 +450,7 @@
   <dir>
     <table border=0>
       <tr valign="top"><td>
-          Reference
+          Reference&nbsp;manual
       </td><td>&nbsp;&nbsp;&nbsp;&nbsp;</td><td>
           <a href="../RM/H5Fset_jnl_config.html">
           <code>H5Fset_jnl_config</code></a>,
@@ -425,6 +470,7 @@
           <a href="../RM/h5recover.html"><code>h5recover</code></a>
           <p>
       
+<!--
       </td></tr><tr valign=top><td>
           <p>
           Usage
@@ -434,20 +480,21 @@
           &ldquo;<a href="../RG/CrashSurvival.html">Using HDF5&rsquo;s 
           Metadata Journaling and File Recovery Features</a>&rdquo;
           <p>
+-->
 
       </td></tr><tr valign=top><td>
           <p>
-          Examples
+          Code&nbsp;examples
           <p>
       </td><td>&nbsp;</td><td>
           <p>
-          <a href="../examples/enable_journaling1.c"><code>enable_journaling1.c</a>
+          <a href="../examples/enable_journaling1.c"><code>enable_journaling1.c</code></a>
           <br>
-          <a href="../examples/enable_journaling.c"><code>enable_journaling.c</a>
+          <a href="../examples/enable_journaling.c"><code>enable_journaling.c</code></a>
           <br>
-          <a href="../examples/nc4_recover.c"><code>nc4_recover.c</a>
+          <a href="../examples/nc4_recover.c"><code>nc4_recover.c</code></a>
           <br>
-          <a href="../examples/nc4_norecover.c"><code>nc4_norecover.c</a>
+          <a href="../examples/nc4_norecover.c"><code>nc4_norecover.c</code></a>
           <p>
 
       </td></tr><tr valign=top><td>
@@ -461,13 +508,22 @@
 
       </td></tr><tr valign=top><td>
           <p>
-          Document<br>&nbsp;&nbsp;&nbsp;&nbsp;index
+          Topic&nbsp;index
       </td><td>&nbsp;</td><td>
           <p>
-          <a href="../index.html">Index of metadata journaling
-          and crash survival documentation</a>
+          &ldquo;<a href="../index.html">Documentation for Metadata Journaling
+          and File Recovery</a>&rdquo;
           <p>
- 
+
+      </td></tr><tr valign=top><td>
+          <p>
+          Related&nbsp;topic
+      </td><td>&nbsp;</td><td>
+          <p>
+          &ldquo;<a href="../../MetadataCache/index.html">Metadata Caching 
+          in HDF5</a>&rdquo;
+          <p>
+
       </td></tr>
     </table>
   </dir>

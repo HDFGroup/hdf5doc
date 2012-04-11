@@ -9,7 +9,14 @@
 <!-- HEADER RIGHT "H5AC_jnl_config_t" -->
 <hr>
 <dl>
+
+  <dt><div align=right><font color=999999 size=-1><i>
+      Last modified: 23 December 2011
+      </i></font></div>
+
   <dt><strong>Name:</strong> <a name="DTypeDefs-H5AC_jnl_config_t">H5AC_jnl_config_t</a>
+
+  <p>
   <dt><strong>Definition:</strong>
     <dd><code>typedef struct H5AC2_jnl_config_t {
             <br>&nbsp;&nbsp;&nbsp;&nbsp;
@@ -40,31 +47,32 @@
 
   <p>
   <dt><strong>Purpose:</strong>
-    <dd>Metadata journaling configuration struct
+    <dd>Metadata journaling configuration data structure
+
   <p>
   <dt><strong>Motivation:</strong>
-    <dd><code>H5AC_jnl_config_t</code> is a data structure in the 
-      HDF5 feature set provided to guard against and recover from 
-      metadata corruption. 
+    <dd>This data structure is part of HDF5&rsquo;s metadata journaling 
+      feature, which guards against metadata corruption and provides 
+      a recovery capability. 
       <p>
-      This feature set is discussed in 
+      Metadata journaling is discussed more fully in 
       &ldquo;<a href="../RG/CrashSurvival.html">Using HDF5&rsquo;s 
       Metadata Journaling and File Recovery Features</a>&rdquo; and
       &ldquo;<a href="../RG/Metadata_Journaling,Crash_Survivability.pdf">Metadata  
       Journaling to Improve Crash Survivability</a>.&rdquo;
+
   <p>
   <dt><strong>Used By:</strong>
     <dd>This struct is used by the following functions:
-        <dir>
-        <br>
+        <br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
         <a href="H5Fset_jnl_config.html"><code>H5Fset_jnl_config</code></a>
-        <br>
+        <br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
         <a href="H5Fget_jnl_config.html"><code>H5Fget_jnl_config</code></a> 
-        <br>
+        <br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
         <a href="H5Pset_jnl_config.html"><code>H5Pset_jnl_config</code></a> 
-        <br>
+        <br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
         <a href="H5Pget_jnl_config.html"><code>H5Pget_jnl_config</code></a> 
-        </dir>
+  
   <p>
   <dt><strong>Field Description:</strong>
     <dd>The <code>H5AC_jnl_config_t</code> fields are defined as follows:
@@ -75,7 +83,7 @@
         <td valign="top"><em>int</em> <code>version</code></td>
         <td valign="top"><ul>
             <li>Integer field indicating the the version of 
-                the <em>H5AC_jnl_config_t</em> in use.  
+                <code>H5AC_jnl_config_t</code> in use  
             <li><i>Always</i> initialized by calling function.
             </ul>
         </td></tr>
@@ -83,7 +91,7 @@
         <td valign="top"><em>hbool_t</em> <code>enable_journaling</code></td>
         <td valign="top"><ul>
             <li>Boolean flag
-            <br><code>TRUE</code> 
+            <li><code>TRUE</code> 
                 if journaling is enabled;
             <br><code>FALSE</code> if journaling is disabled.
             </ul>
@@ -91,9 +99,9 @@
       <tr>
         <td valign="top"><em>char</em> <code>journal_file_path[]</code></td>
         <td valign="top"><ul>
-            <li>Full path of the file used to store the metadata journal.  
-            <li>Restricted to no more than 
-                <code>H5AC2__MAX_JOURNAL_FILE_NAME_LEN</code>.
+            <li>Full path of the file used to store the metadata journal
+            <li>Restricted in length to no more than 
+                <code>H5AC2__MAX_JOURNAL_FILE_NAME_LEN</code> characters.
             <li>Defined only if <code>enable_journaling</code> 
                 is <code>TRUE</code>.
             </ul>
@@ -102,48 +110,62 @@
         <td valign="top"><em>hbool_t</em> <code>journal_recovered</code></td>
         <td valign="top"><ul>
             <li>Boolean flag
-            <br>For use only by file recovery tools;
+            <li>This field is meaningful only on file open following a
+                recovery tool&rsquo;s attempt to recover corrupted metadata
+                in that file.
+            <li>For use only by file recovery tools;
                 should be set to <code>FALSE</code> in all other situations.
-            <br><code>TRUE</code> if journaled file being 
+            <li><code>TRUE</code> if journaled file being 
                 opened was not closed correctly 
                 but has been successfully recovered;
-            <br><code>FALSE</code> under all other circumstances.
+                <br>
+                <code>FALSE</code> under all other circumstances.
+            <li>Unless writing a new recovery tool, a user will never 
+                set this flag to <code>TRUE</code>; 
+                it should always be <code>FALSE</code> 
+                unless the recovery tool has tried and 
+                been unable to recover the file.
         </td></tr>
       <tr>
         <td valign="top"><em>size_t</em> <code>jbrb_buf_size</code></td>
         <td valign="top"><ul>
-            <li>Size of individual buffers in the journal buffer ring buffer.
-	        Should be a multiple of the block size of the underlying
-		file system.
+            <li>Size of individual buffers in the journal buffer ring buffer
+            <li>Should be a multiple of the block size of the underlying
+                file system.
         </td></tr>
       <tr>
         <td valign="top"><em>int</em> <code>jbrb_num_bufs</code></td>
         <td valign="top"><ul>
-            <li>Number of buffers in the journal buffer ring buffer. 
-	        If synchronous I/O is used, one or two buffers will be 
-		sufficient. If asynchronous I/O is used, the number of 
-		buffers should be large enough that a write to a buffer 
-		is likely to complete before that buffer is needed again.
+            <li>Number of buffers in the journal buffer ring buffer 
+            <li>If synchronous I/O is used, one or two buffers will be 
+                sufficient. If asynchronous I/O is used, the number of 
+                buffers should be large enough that a write to a buffer 
+                is likely to complete before that buffer is needed again.
         </td></tr>
       <tr>
         <td valign="top"><em>hbool_t</em> <code>jbrb_use_aio</code></td>
         <td valign="top"><ul>
             <li>Boolean flag
-            <br><code>TRUE</code> if asynchronous I/O 
+            <li><code>TRUE</code> if asynchronous I/O 
                 is to be used for journal entry writes;
             <br><code>FALSE</code> if synchronous I/O is to be 
-	        used for journal entry writes.
+                used for journal entry writes.
         </td></tr>
       <tr>
         <td valign="top"><em>hbool_t</em>&nbsp;<code>jbrb_human_readable</code></td>
         <td valign="top"><ul>
             <li>Boolean flag
-            <br><code>TRUE</code> if journal file 
+            <li><code>TRUE</code> if journal file 
                 is written or is to be written in human-readable form;
             <br><code>FALSE</code> indicates a machine-readable journal file.
+            <li>Unless there is specific reason to do otherwise, 
+                set this field to <code>FALSE</code>; 
+                a human-readable journal file will be at least twice 
+                as large as a machine-readable version.
         </td></tr>
     </table>
     </dir>
+
   <p>
   <dt><strong>See Also:</strong>
     <dd><a href="H5Fset_jnl_config.html"><code>H5Fset_jnl_config</code></a>,
@@ -165,6 +187,7 @@
         <br>
         &ldquo;<a href="../RG/Metadata_Journaling,Crash_Survivability.pdf">Metadata
           Journaling to Improve Crash Survivability</a>&rdquo; 
+
   <p>
   <dt><strong>History:</strong>
     <dd><table width="90%">
@@ -172,11 +195,11 @@
           <td valign="top" align="left" width="10%">
             <strong>Release</strong>&nbsp;&nbsp;&nbsp;&nbsp;</td>
           <td valign="top" align="left">
-            <strong>C</strong></td></tr>
+            <strong>Change</strong></td></tr>
         <tr>
-          <td valign="top">1.8.?</td>
+          <td valign="top">1.10.0</td>
           <td valign="top">
-            Introduced in this release.</td></tr>
+            C data structure introduced in this release.</td></tr>
     </table>
 </dl>
 

@@ -9,79 +9,88 @@
 <!-- HEADER RIGHT "H5Pset_jnl_config" -->
 <hr>
 <dl>
+
+  <dt><div align=right><font color=999999 size=-1><i>
+      Last modified: 23 December 2011
+      </i></font></div>
+
   <dt><strong>Name:</strong> <a name="Property-SetJnlConfig">H5Pset_jnl_config</a>
   <dt><strong>Signature:</strong>
     <dd><em>herr_t </em><code>H5Pset_jnl_config</code>(
             <em>hid_t </em><code>fapl_id</code>,
             <em>const H5AC_jnl_config_t *</em><code>config_ptr</code>
         )
+
   <p>
   <dt><strong>Purpose:</strong>
     <dd>Sets initial metadata journaling configuration.
+
   <p>
   <dt><strong>Motivation:</strong>
-    <dd><code>H5Pset_jnl_config</code> is part of an HDF5 feature set 
-      provided to guard against and recover from metadata corruption. 
+    <dd>This function is part of HDF5&rsquo;s metadata journaling feature,  
+      which guards against metadata corruption and provides a recovery 
+      capability. 
       <p>
-      This feature set is discussed in 
+      Metadata journaling is discussed more fully in 
       &ldquo;<a href="../RG/CrashSurvival.html">Using HDF5&rsquo;s 
       Metadata Journaling and File Recovery Features</a>&rdquo; and
       &ldquo;<a href="../RG/Metadata_Journaling,Crash_Survivability.pdf">Metadata  
       Journaling to Improve Crash Survivability</a>.&rdquo;
+
   <p>
   <dt><strong>Description:</strong>
     <dd><code>H5Pset_jnl_config</code> sets the initial metadata journaling 
       configuration in the file access property list <code>fapl_id</code>
       according to the values supplied in the buffer 
       specified by <code>config_ptr</code>.
-      This configuration is used when a file is opened with 
+      <p>
+      This function is used when a file is to be opened with 
       metadata journaling enabled.
+
   <p>
   <dt><strong>Failure mode:</strong>
     <dd><code>H5Pset_jnl_config</code> will fail if an invalid configuration 
       is detected. 
+
   <p>
   <dt><strong>Parameters:</strong>
-    <dd><table>
+    <dd><table border="0">
       <tr>
-        <td valign="top"><em>hid_t </em><code>fapl_id</code>
+        <td valign="top"><em>hid_t&nbsp;</em><code>fapl_id</code>
         </td>
-        <td>&nbsp;&nbsp;</td>
+        <td>&nbsp;&nbsp;&nbsp;&nbsp;</td>
         <td valign="top">IN:  File access property list identifier.
+            <br>&nbsp;
         </td></tr>
       <tr>
-        <td valign="top"><em>const H5AC_jnl_config_t&nbsp;*</em><code>config_ptr</code>
-        </td>
+        <td valign="top" colspan="3">
+            <em>const H5AC_jnl_config_t *</em><code>config_ptr</code>
+        </td></tr>
+      <tr>
         <td>&nbsp;</td>
-        <td valign="top">IN:  Pointer to the instance of 
-            <code><em>H5AC_jnl_config_t</em></code> containing the
+        <td>&nbsp;</td>
+        <td valign="top">IN:  Pointer to the instance of the
+            <code>H5AC_jnl_config_t</code> struct containing the
             desired configuration.
             <p>
-            See <a href="H5AC_jnl_config_t.html"><em>H5AC_jnl_config_t</em></a>
+            See 
+            <a href="H5AC_jnl_config_t.html"><code>H5AC_jnl_config_t</code></a>
             for the struct definition and a field-by-field description.
 	    <p>
-            Set struct fields as follows:
+            The fields of the struct should be set as follows:
             <ul>
-            <li>Initialize <code>version</code> to the value of 
-                <code>H5AC2__CURR_JNL_CONFIG_VER</code>
-                (defined in <code>H5ACpublic.h</code>).
+            <li>Initialize <code>version</code> to 
+                <code>H5AC2__CURR_JNL_CONFIG_VER</code>,
+                a value set internally by the HDF5 Library.
             <li>Set <code>enable_journaling</code> 
                 to <code>TRUE</code> if journaling is to be turned on, 
-                to <code>FALSE</code> if journaling is being turned off.
+                to <code>FALSE</code> if journaling is to be turned off.
             <li>Set <code>journal_file_path</code> to the full path 
                 of the file used to store the metadata journal.
                 This path is defined only if <code>enable_journaling</code>
-                is set to <code>TRUE</code> and can be no longer 
+                is set to <code>TRUE</code> and can be no more than 
                 <code>H5AC2__MAX_JOURNAL_FILE_NAME_LEN</code> characters long.
-            <li><code>journal_recovered</code> is a boolean flag
-                that indicates, when set to <code>TRUE</code> that the 
-                journaled file being opened was not closed correctly and 
-                that the journal recovery tool was run on it successfuly.
-                Otherwise, the field whould always be <code>FALSE</code>.
-                <p>
-                Set this field to <code>TRUE</code> only if you are 
-                writing a new journal recovery tool; in all other situations, 
-                it should be set to <code>FALSE</code>.
+            <li>Set <code>journal_recovered</code> to <code>FALSE</code>.
             <li><code>jbrb_buf_size</code> specifies the size of each
                 individual buffer in the journal buffer ring buffer.
                 The specified value should be a multiple of the block size 
@@ -95,17 +104,15 @@
                 large enough that a write to a buffer is likely to complete 
                 before that buffer is needed again.
             <li>Set <code>jbrb_use_aio</code> to <code>FALSE</code>
-	        if the journal file should written using synchronous I/O. 
-		If the host system supports Asynchronous I/O, consider 
+	        if the journal file should be written using synchronous I/O. 
+		If the host system supports asynchronous I/O, consider 
 		setting the field to <code>TRUE</code> to allow processing 
 		to overlap in time with journal file writes.
             <li>Set <code>jbrb_human_readable</code> to <code>TRUE</code>
                 if the journal file should be human readable.
-                Otherwise, use <code>FALSE</code> for the more efficient 
-                machine-readble file.
+                Otherwise, use <code>FALSE</code> to create a more efficient 
+                machine-readable file.
             </ul>
-        </td></tr>
-    </table>
         </td></tr>
     </table>
 
@@ -113,6 +120,7 @@
   <dt><strong>Returns:</strong>
     <dd>Returns a non-negative value if successful;
         otherwise returns a negative value.
+
   <p>
   <dt><strong>See Also:</strong>
     <dd><a href="H5Fset_jnl_config.html"><code>H5Fset_jnl_config</code></a>,
@@ -134,6 +142,7 @@
         <br>
         &ldquo;<a href="../RG/Metadata_Journaling,Crash_Survivability.pdf">Metadata
           Journaling to Improve Crash Survivability</a>&rdquo; 
+
 <!--
   <p>
   <dt><strong>Fortran90 Interface:</strong> ***FORTRAN_routine_name***
@@ -142,6 +151,7 @@
         ***FORTRAN subroutine description***
     </pre>
 -->
+
   <p>
   <dt><strong>History:</strong>
     <dd><table width="90%">
@@ -149,11 +159,11 @@
           <td valign="top" align="left" width="10%">
             <strong>Release</strong>&nbsp;&nbsp;&nbsp;&nbsp;</td>
           <td valign="top" align="left">
-            <strong>C</strong></td></tr>
+            <strong>Change</strong></td></tr>
         <tr>
-          <td valign="top">1.8.?</td>
+          <td valign="top">1.10.0</td>
           <td valign="top">
-            Function introduced in this release.</td></tr>
+            C function introduced in this release.</td></tr>
     </table>
 </dl>
 
