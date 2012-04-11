@@ -5,48 +5,104 @@ H5recover Tool Specification
 
 <body>
 
+
 <hr>
 <dl>
+
+  <dt><div align=right><font color=999999 size=-1><i>
+      Last modified: 29 December 2011
+      </i></font></div>
+
   <dt><strong>Tool Name:</strong> <a name="Tools-Recover">h5recover</a>
   <dt><strong>Syntax:</strong>
     <dd><code>h5recover
-        [-j </code><em>journal_file.jnl</em><code>]
+        -j <em>journal_file.jnl</em>
         [-h]
         [-v] 
-        [-b </code><em>backup_name</em><code>]
+        [-b <em>backup_name</em>]
         [-s] 
         [-n] 
-        <em>hdf5_file.h5</em>
+        <em>hdf5_file.h5</em></code>
+
   <p>
   <dt><strong>Purpose:</strong>
-    <dd>Recovers a corrupted HDF5 file that crashed while journaling was enabled.
+    <dd>Recovers a corrupted HDF5 file that crashed while journaling 
+        was enabled.
+
   <p>
   <dt><strong>Motivation:</strong>
-    <dd><code>hrecover</code> is part of an HDF5 feature set 
-      provided to guard against and recover from metadata corruption. 
+    <dd><code>h5recover</code> is part of HDF5&rsquo;s metadata journaling
+      feature, which guards against metadata corruption and provides a
+      recovery capability.
       <p>
-      This feature set is discussed in 
+      Metadata journaling is discussed more fully in the <cite>HDF5 Reference
+      Manual</cite> entries cited below (in &ldquo;See Also&rdquo;),
       &ldquo;<a href="../RG/CrashSurvival.html">Using HDF5&rsquo;s 
-      Metadata Journaling and File Recovery Features</a>&rdquo; and
+      Metadata Journaling and File Recovery Features</a>,&rdquo; and
       &ldquo;<a href="../RG/Metadata_Journaling,Crash_Survivability.pdf">Metadata  
       Journaling to Improve Crash Survivability</a>.&rdquo;
+
   <p>
   <dt><strong>Description:</strong>
     <dd><code>h5recover</code> is a command line tool that walks through a 
-        supplied journal file to rebuild the corresponding corrupted HDF5 file.
-        Images stored in the journal entries of the journal file are written
-        into the corrupted HDF5 file in order to restore its metadata.
+        the journal file specified in <em>journal_file.jnl</em> to
+        rebuild the corrupted HDF5 file specified in <em>hdf5_file.h5</em>.
+        <p>
+        <code>h5recover</code> is deisigned for use only when all of
+        the following are true:
+        <ul>
+            <li>An event has occured that caused an HDF5 file to be 
+                abandoned without being closed properly.
+                An application or system crash would be an example of 
+                such an event.
+            <li>Metadata journaling was set for the file at the time of
+                the event.  (See <code>H5Fset_jnl_config</code>,
+                <code>H5Pset_jnl_config</code>, and 
+                &ldquo;Using HDF5&rsquo;s Metadata Journaling and File 
+                Recovery Features.&rdquo;)
+        </ul>
+        <p>
+        In such circumstances, the most recent metadata updates 
+        are expected to be missing in the abandoned HDF5 file.
+        <code>h5recover</code> expects to find those metadata changes 
+        recorded as metadata image journal entries in the journal file 
+        <em>journal_file.jnl</em>.
+        <code>h5recover</code> will decode those metadata images and 
+        write the metadata updates to the HDF5 file <em>hdf5_file.h5</em>.
+        Normally, this operation will restore the corrupted HDF5 file
+        to a usable state. 
+
+  <p>
+  <dt><strong>Notes:</strong>
+    <dd>It is the user&rsquo;s or the application&rsquo;s responsibility 
+        to make sure that the following are true. 
+        <code>h5recover</code> does not check and one should assume that
+        a mismatch will result in a permanently unrecoverable HDF5 file:
+        <ul>
+            <li><em>hdf5_file.h5</em> is corrupted and needs to be recovered.
+            <li><em>journal_file.jnl</em> is the correct journal file 
+                for <em>hdf5_file.h5</em>.
+        </ul>
+        <p>
+        When creating a backup file, <code>h5recover</code> overwrites 
+        a file of the same name without warning.
+        <p>
+        <code>h5recover</code> recovers only missing metadata updates; 
+        a different approach is required to ensure raw data preservation.
+
   <p>
   <dt><strong>Objects:</strong>
-    <dl>
+    <dd><dl>
         <dt><code>-j</code> <em>journal_file.jnl</em> 
-            <dd>Specify the input journal file.
+            <dd>Specifies the input journal file, which will provide
+                the missing metadata updates.
         <dt><em>hdf5_file.h5</em>
-            <dd>Specify the HDF5 file to be recovered.
+            <dd>Specifies the HDF5 file to be recovered.
     </dl>
+
   <p>
   <dt><strong>Options and Parameters:</strong>
-    <dl>
+    <dd><dl>
         <dt><code>-h, --help</code>
             <dd>Print information regarding this command.
         <dt><code>-v, --verbose</code>
@@ -60,6 +116,7 @@ H5recover Tool Specification
         <dt><code>-n, --nocopy</code>
             <dd>Do not create a backup copy before recovery.
     </dl>
+
   <p>
   <dt><strong>See Also:</strong>
     <dd><a href="H5Fset_jnl_config.html"><code>H5Fset_jnl_config</code></a>,
@@ -81,6 +138,7 @@ H5recover Tool Specification
         <br>
         &ldquo;<a href="../RG/Metadata_Journaling,Crash_Survivability.pdf">Metadata
           Journaling to Improve Crash Survivability</a>&rdquo; 
+
   <p>
   <dt><strong>Assumptions and Caveats:</strong>
     <dd>The following assumptions and caveats should eventually be addressed 
@@ -100,6 +158,20 @@ H5recover Tool Specification
           <li>Backup files created by <code>h5recover</code> will currently 
               overwrite files of the same name without issuing a warning.
         </ul>
+
+  <p>
+  <dt><strong>History:</strong>
+    <dd><table width="90%">
+        <tr>
+          <td valign="top" align="left" width="10%">
+            <strong>Release</strong>&nbsp;&nbsp;&nbsp;&nbsp;</td>
+          <td valign="top" align="left">
+            <strong>Change</strong></td></tr>
+        <tr>
+          <td valign="top">1.10.0</td>
+          <td valign="top">
+            Command-line utility introduced in this release.</td></tr>
+    </table>
 </dl>
 
 </body>
