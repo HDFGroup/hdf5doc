@@ -1,0 +1,245 @@
+
+
+<!--
+  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+  * Copyright by The HDF Group.                                               *
+  * All rights reserved.                                                      *
+  *                                                                           *
+  * This file is part of HDF5.  The full HDF5 copyright notice, including     *
+  * terms governing use, modification, and redistribution, is contained in    *
+  * the files COPYING and Copyright.html.  COPYING can be found at the root   *
+  * of the source code distribution tree; Copyright.html can be found at the  *
+  * root level of an installed copy of the electronic HDF5 document set and   *
+  * is linked from the top-level documents page.  It can also be found at     *
+  * http://www.hdfgroup.org/HDF5/doc/Copyright.html.  If you do not have      *
+  * access to either file, you may request a copy from help@hdfgroup.org.     *
+  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+ -->
+
+
+<!-- NEW PAGE -->
+<!-- HEADER RIGHT "H5Fget_file_image" -->
+<hr>
+<dl>
+
+  <dt><div align=right><font color=999999 size=-1><i>
+      Last modified: 13 April 2012
+      </i></font></div>
+
+  <dt><strong>Name:</strong> <a name="File-GetFileImage">H5Fget_file_image</a>
+
+  <dt><strong>Signature:</strong>
+    <dd><em>ssize_t</em> <code>H5Fget_file_image</code>(
+            <em>hid_t </em><code>file_id</code>,
+            <em>void *</em><code>buf_ptr</code>,
+            <em>size *</em><code>buf_len</code>
+        )
+
+  <p>
+  <dt><strong>Purpose:</strong>
+    <dd>Retrieves a copy of the image of an existing, open file.
+
+
+  <p>
+  <dt><strong>Motivation:</strong>
+    <dd><code>H5Fget_file_image</code> and other elements of HDF5 are
+      used to load an image of an HDF5 file into sytem memory and open 
+      that image as a regular HDF5 file.
+      An application can then use the file without the overhead of disk I/O.
+
+  <p>
+  <dt><strong>Recommended Reading:</strong>
+    <dd>This function is part of the file image operations feature set.
+      It is highly recommended to study the guide
+      &ldquo;<a href="../Advanced/FileImageOperations/HDF5FileImageOperations.pdf"
+      >HDF5 File Image Operations</a>&rdquo; before using this feature set.
+      <p>
+      See the &ldquo;See Also&rdquo; section below for links to 
+      other elements of HDF5 file image operations.
+
+  <p>
+  <dt><strong>Description:</strong>
+    <dd><code>H5Fget_file_image</code> 
+      retrieves a copy of the image of an existing, open file.
+      This routine can be used with files opened using the 
+      <small>SEC2</small> (or <small>POSIX</small>), 
+      <small>STDIO,</small> and 
+      Core (or Memory) virtual file drivers (VFDs).
+
+<font color="red">
+<p>
+How does this function then interact with those drivers?
+<br>
+Are those file images then accessed in memory by the aforementioned drivers?
+Or via the Core driver?
+<br>
+Does this call tell the original driver that it is to start using
+the file image in memory rather than an image on disk?
+<br>
+</font>
+
+      <p>
+      If the return value of <code>H5Fget_file_image</code> 
+      is a positive value, it will be the length in bytes of the buffer 
+      required to store the file image. 
+      So if the file size is unkown, it can be safely determined 
+      with an initial <code>H5Fget_file_image</code> call with 
+      <code>buf_ptr</code> set to <code>NULL</code>.
+      The file image can then be retrieved with a second 
+      <code>H5Fget_file_image</code> with <code>buf_len</code> 
+      set to the initial call&rsquo;s return value.
+      <p>
+      While the current file size can also be retrieved with 
+      <code>H5Fget_filesize</code>, that call may produce a larger 
+      value than is needed.  
+      The value returned by <code>H5Fget_filesize</code> includes 
+      the user block, if it exists, and any unallocated space
+      at the end of the file.  
+      It is safe in all situations to get the file size with 
+      <code>H5Fget_file_image</code> and it often produces a value 
+      that is more appropriate for the size of a file image buffer.
+
+
+<!--__ *** NOTES AND WARNINGS ************************************  -->
+
+      <p>
+      <b>Note/Warning:</b> 
+
+
+<font color="red">
+Anything here?
+</font>
+
+
+  <p>
+  <dt><strong>Parameters:</strong>
+    <dd>
+    <table>
+      <tr valign="top">
+        <td><em>hid_t </em><code>file_id</code>
+            </td><td>&nbsp;&nbsp;&nbsp;&nbsp;</td>
+        <td>IN: Target file identifier
+            </td></tr>
+      <tr valign="top">
+        <td><em>void&nbsp;*</em><code>buf_ptr</code>
+            </td><td>&nbsp;</td>
+        <td>IN: Pointer to the buffer into which the image of the HDF5 file 
+                is to be copied
+                <p>
+                If <code>buf_ptr</code> is <code>NULL</code>, 
+                no data will be copied but the function&rsquo;s 
+                return value will still indicate the buffer size required
+                (or a negative value on error).
+            </td></tr>
+      <tr valign="top">
+        <td><em>size *</em><code>buf_len</code>
+            </td><td>&nbsp;</td>
+        <td>IN: Size of the supplied buffer
+            </td></tr>
+    </table>
+
+  <p>
+  <dt><strong>Returns:</strong>
+    <dd>If successful, returns the size in bytes of the 
+        buffer required to store the file image  if successful;
+        otherwise returns a negative value.
+
+  <p>
+  <dt><strong>Failure Modes:</strong>
+    <dd><code>H5Pget_file_image</code> will fail, returning a negative value,
+      if the file is too large for the supplied buffer.
+
+<font color="red">
+<p>
+Others?
+</font>
+
+
+<!--
+  <p>
+  <dt><strong>Example Usage:</strong>
+
+    <dd>Discuss the elements in the first usage example here.
+<dir><pre>
+Complete usage example line(s) for the first example here
+</pre></dir>
+    <p>
+
+    <dd>Discuss the elements in the second usage example here.
+<dir><pre>
+Complete usage example line(s) for the second example here
+</pre></dir>
+  <p>
+-->
+
+
+<!--__ *** FORTRAN INTERFACE  ************************************  -->
+<!--__ Leave this comment block in place if there is not yet a      -->
+<!--__ Fortran interface for this function.                         -->
+<!--__                                                              -->
+<!--__ When the Fortran interface is complete, replace this         -->
+<!--__ section with the Fortran subroutine description.             -->
+<!--__                                                              -->
+<!--__ See the file h5fortran_f_insert.htm for a template and       -->
+<!--__ instructions.                                                -->
+<!--__ ***********************************************************  -->
+
+
+  <p>
+  <dt><strong>See Also:</strong>
+    <dd><table width="100%" border="0">
+      <tr valign="top"><td>
+        <a href="../HL/RM_H5LT.html#H5LTopen_file_image">
+            <code>H5LTopen_file_image</code></a>
+        <br>&nbsp;
+        <br>
+<!--
+        <a href="../RM/RM_H5F.html#File-GetFileImage">
+            <code>H5Fget_file_image</code></a>
+        <br>&nbsp;
+        <br>
+-->
+        <a href="../RM/RM_H5P.html#Property-SetFileImage">
+            <code>H5Pset_file_image</code></a>
+        <br>
+        <a href="../RM/RM_H5P.html#Property-GetFileImage">
+            <code>H5Pget_file_image</code> </a>
+        <br>&nbsp;
+        <br>
+        <a href="../RM/RM_H5P.html#Property-SetFileImageCallbacks">
+            <code>H5Pset_file_image_callbacks</code></a>
+        <br>
+        <a href="../RM/RM_H5P.html#Property-GetFileImageCallbacks">
+            <code>H5Pget_file_image_callbacks</code></a>
+      </td><td><code>&nbsp;&nbsp;&nbsp;&nbsp;</code></td>
+      <td>
+        Within <code>H5Pset_file_image_callbacks</code></a>:
+        <br>
+        Callback struct &nbsp; 
+        <a href="../RM/RM_H5P.html#Property-SetFileImageCallbacksStruct,Enum">
+            <code>H5_file_image_callbacks_t</code></a>
+        <br>
+        Callback <small>ENUM</small> &nbsp; 
+        <a href="../RM/RM_H5P.html#Property-SetFileImageCallbacksStruct,Enum">
+            <code>H5_file_image_op_t</code></a>
+      </td>
+      </table>
+
+  <p>
+  <dt><strong>History:</strong>
+    <dd><table width="90%">
+        <tr>
+          <td valign="top" align="left" width="10%">
+            <strong>Release</strong>&nbsp;&nbsp;&nbsp;&nbsp;</td>
+          <td valign="top" align="left">
+            <strong>Change</strong></td>
+        </tr>
+        <tr>
+          <td valign="top">1.8.9</td>
+          <td valign="top">
+            C function introduced in this release.</td>
+        </tr>
+        </table>
+
+</dl>
+
