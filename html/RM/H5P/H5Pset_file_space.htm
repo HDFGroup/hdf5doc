@@ -24,7 +24,7 @@
 <dl>
 
   <dt><div align=right><font color=999999 size=-1><i>
-      Last modified: 5 April 2012
+      Last modified: 19 April 2012
       </i></font></div>
 
   <dt><strong>Name:</strong> <a name="Property-SetFileSpace">H5Pset_file_space</a>
@@ -44,26 +44,30 @@
   <p>
   <dt><strong>Motivation:</strong>
     <dd><code>H5Pset_file_space</code> 
-      provides the means for applications to manage the HDF5 file's file
-      space for their specific needs.
+      provides the means for applications to manage an HDF5 file&rsquo;s 
+      file space to meet specific needs.
 
   <p>
   <dt><strong>Description:</strong>
     <dd><code>H5Pset_file_space</code> 
       sets the file space management strategy for the file associated with 
-      <code>fcpl_id</code> to <code>strategy</code>.  
-      There are four strategies that applications can select and
-      they are described in the <strong>Parameters</strong> section.
+      <code>fcpl_id</code> as specified in <code>strategy</code>  
+      and sets the file-space threshold to <code>threshold</code>.
+      <p>
+      Available strategies are described in the 
+      &ldquo;Parameters:&rdquo; section below.
+      <p>
       This routine can also set the free-space section threshold to
-      <code>threshold</code> so that the library's free-space managers 
+      <code>threshold</code> so that the library&rsquo;s free-space managers 
       will track only free-space sections whose size is 
       greater than or equal to <code>threshold</code> for the file.
-      Passing a zero value for <code>strategy</code> or <code>thresold</code> 
-      indicates the corresponding parameter's value should not be modified
-      as a result of the call.
+      <p>
+      Passing <code>0</code> (zero) for <code>strategy</code> or 
+      <code>thresold</code> indicates that the corresponding parameter&rsquo;s 
+      value should not be modified as a result of the call.
       <p>
       <b>Note:</b> The file space management strategy and/or free-space 
-      section threshold that is set via this routine cannot be changed once
+      section threshold that are set via this routine cannot be changed once
       the file is created. 
 
   <p>
@@ -77,14 +81,18 @@
             </td></tr>
 
       <tr valign="top">
-        <td><em>H5F_file_space_type_t</em>&nbsp;<code>strategy</code>
-        </td><td>&nbsp;&nbsp;&nbsp;&nbsp;</td>
+        <td colspan="3"><em>H5F_file_space_type_t</em>&nbsp;<code>strategy</code>
+        </td></tr>
+        <tr><td>&nbsp;</td><td>&nbsp;&nbsp;&nbsp;&nbsp;</td>
         <td>IN: The strategy for file space management.
             <p>
             Valid values are as follows:
-            <table border=0>
+            <table border="0">
               <tr valign="top">
-                <td><code>H5F_FILE_SPACE_ALL_PERSIST</code>&nbsp;&nbsp;</td>
+                <td colspan="2">
+                    <code>H5F_FILE_SPACE_ALL_PERSIST&nbsp;&nbsp;&nbsp;&nbsp;</code>
+                </td></tr>
+                <tr><td>&nbsp;</td>
                 <td>With this strategy, the free-space managers track the
                     free space that results from the manipulation of HDF5 
                     objects in the HDF5 file.  The free space information 
@@ -92,7 +100,7 @@
                     file is reopened.
                     <br>
                     When space is needed for file metadata or raw data, 
-                    the HDF5 library first requests space from the library's 
+                    the HDF5 library first requests space from the library&rsquo;s 
                     free-space managers. If the request is not satisfied, 
                     the library requests space from the aggregators. 
                     If the request is still not satisfied, 
@@ -103,8 +111,8 @@
               </tr>
 
               <tr valign="top">
-                <td><code>H5F_FILE_SPACE_ALL</code></td>
-                <td>This is the library's default file space management 
+                <td><code>H5F_FILE_SPACE_ALL&nbsp;&nbsp;&nbsp;</code></td>
+                <td>This is the library&rsquo;s default file space management 
                     strategy. 
                     With this strategy, the free-space managers track the 
                     free space that results from the manipulation of HDF5 
@@ -125,7 +133,9 @@
               </tr>
 
               <tr valign="top">
-                <td><code>H5F_FILE_SPACE_AGGR_VFD</code>&nbsp;&nbsp;</td>
+                <td colspan="2"><code>H5F_FILE_SPACE_AGGR_VFD</code>
+                </td></tr>
+                <tr><td>&nbsp;</td>
                 <td>With this strategy, the library does not track free space 
                     that results from the manipulation of HDF5 obejcts in the 
                     HDF5 file and the free space becomes unaccounted space in 
@@ -151,18 +161,27 @@
               </tr>
 
             </table>
+<!--
             <p>
             The <code><em>H5F_file_space_type_t</em></code> 
             <small>ENUM</small> is fully described in 
             <a href="../examples/H5F_file_space_type_t.html">
             <code>H5F_file_space_type_t.html</code></a>.
             </td></tr>
+-->
 
       <tr valign="top">
-        <td><em>hsize_t </em><code>threshold</code>
+        <td><em>hsize_t&nbsp;</em><code>threshold</code>
             </td><td>&nbsp;</td>
-        <td>IN: The free-space section threshold.
-            The library default is 1, which is to track all free-space sections.
+        <td>IN: The free-space section threshold, in bytes.
+            Can be any non-negative integer value.
+            <br>
+            A value of <code>0</code> (zero) specifies to retain the current
+            setting.
+            <p>
+            <i>Default:</i> <code>1</code> (one). 
+            Track all free-space sections of 1 byte or larger; 
+            in other words, track all free-space sections.
             </td></tr>
     </table>
 
@@ -173,7 +192,7 @@
 
   <p>
   <dt><strong>Failure Modes:</strong>
-    <dd>This routine will fail when the following is true:
+    <dd>This routine will fail when any of the following is true:
         <ul>
             <li><code>strategy</code> is not one of the valid values listed 
                 above.
@@ -190,7 +209,7 @@
         file associated with <code>fcpl</code> to 
         <code>H5F_FILE_SPACE_ALL_PERSIST</code>.
         It also sets the free-space section threshold to <code>10</code>, 
-        which means that the library's free-space managers will track only 
+        which means that the library&rsquo;s free-space managers will track only 
         free-space sections whose size is >= 10 for the file.
 <dir><pre>
 H5Pset_file_space(fcpl, H5F_FILE_SPACE_ALL_PERSIST, (hsize_t)10);
@@ -218,23 +237,24 @@ H5Pset_file_space(fcpl, H5F_FILE_SPACE_VFD, (hsize_t)0);
 
   <p>
   <dt><strong>See Also:</strong>
-    <dd><a href="../html/RM/RM_H5D.html#Dataset-Create">
+    <dd><a href="../RM/RM_H5P.html#Property-GetFileSpace">
         <code>H5Pget_file_space</code></a>
-        &nbsp;
         <p>
 
+<!--
         <a href="../html/RM/H5function.html#H5F_file_space_type_t">
         <code>H5F_file_space_type_t</code></a>
         <p>
+-->
 
-        <a href="../html/RM/Tools.html#h5repack"><code>h5repack</code></a>
+        <a href="../RM/Tools.html#h5repack"><code>h5repack</code></a>
         <p>
-        <a href="../html/RM/Tools.html#h5dump"><code>h5dump</code></a>
+        <a href="../RM/Tools.html#h5dump"><code>h5dump</code></a>
         <p>
-        <a href="../html/RM/Tools.html#h5stat"><code>h5stat</code></a>
+        <a href="../RM/Tools.html#h5stat"><code>h5stat</code></a>
         <p>
-        <a href="../../html/UG/index.html"><cite>HDF5 Guide to File Space 
-        Management</cite></a>
+        <a href="../Advanced/FileSpaceManagement/FileSpaceManagement.pdf">
+           <cite>HDF5 File Space Management</cite></a>
 
   <p>
   <dt><strong>History:</strong>
@@ -246,15 +266,17 @@ H5Pset_file_space(fcpl, H5F_FILE_SPACE_VFD, (hsize_t)0);
             <strong>Change</strong></td>
         </tr>
         <tr>
-          <td valign="top">*.**.**</td>
+          <td valign="top">1.10.0</td>
           <td valign="top">
             C function introduced in this release.</td>
         </tr>
+<!--
         <tr>
           <td valign="top">*.**.**</td>
           <td valign="top">
             Fortran90 subroutine introduced in this release.</td>
         </tr>
+-->
         </table>
 
 </dl>
