@@ -71,31 +71,246 @@ other user-visible changes in behavior
 in the transition from HDF5 Release 1.8.8 to Release 1.8.9.
 
 
-    <h3>New C Functions <!--and Macros--></h3>
+    <h3>New and Changed Functions <!--and Macros--></h3>
 
         <dl>    
-            <dd>The following function was added to the HDF5 Library 
-            in Release 1.8.5 but was not documented at that time:
+            <dd>A new high level C function and Fortran subroutine were added 
+                to HDF5 Lite (<a href="../HL/RM_H5LT.html">H5LT</a>)
+                to determine whether an HDF5 path is correct 
+                and resolves to a valid HDF5 object:
+                <ul>
+                    <li><a href="../HL/RM_H5LT.html#H5LTpath_valid">
+                        <code>H5LTpath_valid</code></a>
+                    <li><a href="../HL/RM_H5LT.html#H5LTpath_valid">
+                        <code>h5ltpath_valid_f</code></a>
+                </ul>
+
+            <br>
+            <p>
+            <dd>The new file image operations feature consists of the 
+                following functions and their associated callbacks, 
+                struct, and <small>ENUM</small>. 
+                This feature enables an application to load a file
+                into memory (as a file image) and to operate on that 
+                file image without the overhead of disk I/O.
+                This feature provides the following functions:
+                <table width="90%">
+                <tr valign="top">
+                  <td width="46%">
+                    <ul>
+                      <li><a href="../HL/RM_H5LT.html#H5LTopen_file_image">
+                          <code>H5LTopen_file_image</code></a>
+                      <li><a href="../RM/RM_H5F.html#File-GetFileImage">
+                          <code>H5Fget_file_image</code></a>
+                    </ul>
+                  </td><td width="4%">&nbsp;</td><td>&nbsp;</td>
+                </tr><tr vilign="top">
+                  <td>
+                    <ul>
+                      <li><a href="../RM/RM_H5P.html#Property-SetFileImage">
+                          <code>H5Pset_file_image</code></a>
+                      <li><a href="../RM/RM_H5P.html#Property-GetFileImage">
+                          <code>H5Pget_file_image</code></a>
+                    <ul>
+                  </td><td width="4%">&nbsp;</td><td width="46%">
+                    <ul>
+                      <li><a href="../RM/RM_H5P.html#Property-SetFileImageCallbacks">
+                          <code>H5Pset_file_image_callbacks</code></a>
+                      <li><a href="../RM/RM_H5P.html#Property-GetFileImageCallbacks">
+                          <code>H5Pget_file_image_callbacks</code></a>
+                    </ul>
+                </table>
+            <dd>For the callbacks, struct, 
+                          and <small>ENUM</small>, see 
+                          <a href="../RM/RM_H5P.html#Property-SetFileImageCallbacks">
+                          <code>H5Pset_file_image_callbacks</code></a>.
+            <dd>Use of this feature is described in
+                          &ldquo;<a href="../Advanced/FileImageOperations/HDF5FileImageOperations.pdf">HDF5 
+                          File Image Operations</a>&rdquo; (PDF).
+
+            <br>&nbsp;
+            <p>
+            <dd>The following functions were modified or added to 
+                the HDF5 Library to allow an application to control 
+                the operation of copying committed datatypes with 
+                <a href="../RM/RM_H5O.html#Object-Copy">
+                <code>H5Ocopy</code></a>:
+            <dd><i>Function with changed interface:</i>
+                <ul>
+                    <li><a href="../RM/RM_H5P.html#Property-SetCopyObject">
+                        <code>H5Pset_copy_object</code></a>
+                </ul>
+            <dd><i>New flag for use with <code>H5Pset_copy_object</code>:</i>
+                <ul>
+                    <li><a href="../RM/RM_H5P.html#Property-SetCopyObject">
+                        <code>H5O_COPY_MERGE_COMMITTED_DTYPE_FLAG</code></a>
+                </ul>
+            <dd><i>Function with changed behavior:</i>
+                <ul>
+                    <li><a href="../RM/RM_H5P.html#Object-Copy">
+                        <code>H5Ocopy</code></a>
+                        <br>
+                        This function&rsquo;s behavior is changed,
+                        but only with the use of the new flag,
+                        <code>H5O_COPY_MERGE_COMMITTED_DTYPE_FLAG</code>.
+                </ul>
+
+            <dd><i>New functions and callback function:</i>
+                <table width="90%">
+                <tr valign="top">
+                    <td width="46%">
+                      <ul>
+                        <li><a href="RM_H5P.html#Property-SetMcdtSearchCb">
+                            <code>H5Pset_mcdt_search_cb</code></a>
+                        <li><a href="RM_H5P.html#Property-GetMcdtSearchCb">
+                            <code>H5Pget_mcdt_search_cb</code></a>
+                        <li><a href="RM_H5O.html#Object-McdtSearchCb_t">
+                            <code>H5O_mcdt_search_cb_t</code></a>
+                      </ul>
+                    </td><td width="4%">&nbsp;</td><td width="46%">
+                      <ul>
+                        <li><a href="RM_H5P.html#Property-AddMergeCommittedDtypePath">
+                            <code>H5Padd_merge_committed_dtype_path</code></a>
+                        <li><a href="RM_H5P.html#Property-FreeMergeCommittedDtypePaths">
+                            <code>H5Pfree_merge_committed_dtype_paths</code></a>
+                      </ul>
+                    </td></tr>
+                </table>
+            <dd>Use of this capability is described in
+                &ldquo;<a href="../Advanced/CommittedDatatypeCopying/CopyingCommittedDatatypesWithH5Ocopy.pdf">Copying 
+                Committed Datatypes with 
+                <code>H5Ocopy</code></a>&rdquo; (PDF).
+
+            <br>&nbsp;
+            <p>
+            <!-- KEEP THE FOLLOWING ENTRY LAST IN THE 'NEW FUNCTIONS' SECTION. -->
+            <dd>The following C functions and Fortran subroutines 
+                were added to provide a mechanism
+                to ensure sequential consistency 
+                in parallel environments using MPI I/O:
+                <table width="90%">
+                <tr valign="top">
+                    <td width="46%">
+                      <ul>
+                        <li><a href="../RM/RM_H5F.html#File-SetMpiAtomicity">
+                            <code>H5Fset_mpi_atomicity</code></a>
+                        <li><a href="../RM/RM_H5F.html#File-GetMpiAtomicity">
+                            <code>H5Fget_mpi_atomicity</code></a>
+                      </ul>
+                    </td><td width="4%">&nbsp;</td><td width="46%">
+                      <ul>
+                        <li><a href="../RM/RM_H5F.html#File-SetMpiAtomicity">
+                            <code>h5fset_mpi_atomicity_f</code></a>
+                        <li><a href="../RM/RM_H5F.html#File-GetMpiAtomicity">
+                            <code>h5fget_mpi_atomicity_f</code></a>
+                      </ul>
+                    </td></tr>
+                </table>
+            <dd>Use of this capability is described in
+                &ldquo;<a href="../Advanced/PHDF5FileConsistencySemantics/PHDF5FileConsistencySemantics.pdf">Enabling 
+                a Strict Consistency Semantics Model in 
+                Parallel HDF5</a>&rdquo; (PDF).
+
+            <br>&nbsp;
+            <p>
+            <dd>The following function was added at Release 1.8.5 
+            but was not documented at that time.
+            It is mentioned here for those who may have missed its
+            introduction:
                 <ul>
                     <li><a href="../RM/RM_H5O.html#Object-ExistsByName">
                         <code>H5Oexists_by_name</code></a>
                 </ul>
+        </dl>    
+</dir>
 
-<font color="red"><b>[ [ [
-    Add complementary note in Release 1.8.5 section:</b>
-            <dd>The following function was added to the HDF5 Library
-            at this release, but was not documented at that time:
+
+<dir>
+    <h3>New Fortran Subroutines</h3>
+
+        <dl>    
+            <dd>The following Fortran subroutines have been added 
+              in this release:
                 <ul>
-                    <li><a href="../RM/RM_H5O.html#Object-ExistsByName">
-                        <code>H5Oexists_by_name</code></a>
+                    <li><a href="../HL/RM_H5LT.html#H5LTpath_valid">
+                        <code>h5ltpath_valid_f</code></a>
+                    <li><a href="../RM/RM_H5O.html#Object-Copy">
+                        <code>h5ocopy_f</code></a>
+                    <li><a href="../RM/RM_H5F.html#File-SetMpiAtomicity">
+                        <code>h5fset_mpi_atomicity_f</code></a>
+                    <li><a href="../RM/RM_H5F.html#File-GetMpiAtomicity">
+                        <code>h5fget_mpi_atomicity_f</code></a>
                 </ul>
-            <i>(This note added in November 2011, shortly following 
-            Release 1.8.8.)</i>
-<br><b>] ] ]</b></font>
+        </dl>    
 
+
+</dir>
+
+
+<dir>
+<!--
+    <h3>New Command-line Utility</h3>
+
+        <dl>    
+            <dd>
+                <font color="red"><i>Nothing recorded in RELEASE.txt.</i></font>
+            </dd>
+        </dl>
+
+-->
+
+    
+    <h3>Command-line Utilities with New Options and/or Changed Behavior</h3>
+
+        <dl>    
+            <dd>
+            <dd><a href="../RM/Tools.html#Tools-Repack"><code>h5repack</code></a>
+                has a new option and 
+                improved performance under certain circumstances:
+                <ul>
+                  <li><code>&dash;M<em>n</em>, 
+                      &dash;&dash;metadata_block_size=<em>n</em></code>
+                      <br>
+                      Sets the metadata block size in the output file.
+                      <br>&nbsp;</li>
+                  <li>Performance is improved when repacking 
+                      large chunked datasets
+                      (for example, when dataset size exceeds 128 MB).
+                </ul>
+                &nbsp;<br>
+            <dd><a href="../RM/Tools.html#Tools-Stat"><code>h5stat</code></a>
+                has a new option:
+                <ul>
+                  <li><code>&dash;S,
+                      &dash;&dash;summary</code>
+                      <br>
+                      Displays a summary of file space usage for a file.</li>
+                </ul>
+                &nbsp;<br>
+            <dd><a href="../RM/Tools.html#Tools-Dump"><code>h5dump</code></a>
+                has new options and a new capability:
+                <ul>
+                  <li><code>&dash;a <em>P</em>,
+                      &dash;&dash;attribute=<em>P</em></code>
+                      <br>
+                      Prints the specified attribute.</li>
+                  <li><code>&dash;&dash;no-compact-subset</code>
+                      <br>
+                      Disables compact subsetting to allow
+                      the left-hand square bracket character 
+                      ( <font size="+1"><code>[</code></font> )
+                      in a dataset name.
+                      <br>&nbsp;</li>
+                  <li>The <code>files</code> parameter now accommodates 
+                      wildcards.  With this change, <code>h5dump</code>
+                      command-line options can be applied across multiple
+                      files without listing the files individually.
+                </ul>
         </dl>    
 
 </dir>
+
+
 
 
 <a name="188">
@@ -444,46 +659,6 @@ in the transition from HDF5 Release 1.8.7 to Release 1.8.8.
         </dir>
     
 </dir>
-
-<!--
-<dir>
-    <h3>New Command-line Utility</h3>
-
-        <dl>    
-            <dd>
-                <font color="red"><i>Nothing recorded in RELEASE.txt.</i></font>
-            </dd>
-        </dl>
-
-    
-    <h3>Command-line Utilities with New Options</h3>
-
-        <dl>    
-            <dd>
-                <font color="red"><i>Nothing recorded in RELEASE.txt.</i></font>
-            </dd>
-        </dl>
-
-        <dl>    
-            <dd>
-            <dd><a href="../RM/Tools.html#Tools-Diff"><code>h5diff</code></a>
-                has a new <i>verbose with levels</i> option to display
-                additional attribute information: 
-                <ul>
-                  <li><code>-v<em>n</em>, &dash;&dash;verbose=<em>n</em></code></li>
-                </ul>
-                &nbsp;<br>
-                <a href="../RM/Tools.html#Tools-Dump"><code>h5dump</code></a>
-                has one new option to enable reporting of the 
-                HDF5 Library&rsquo;s error stack:
-                <ul>
-                  <li><code>&dash;&dash;enable-error-stack</code></li>
-                </ul>
-        </dl>    
-
-
-</dir>
--->
 
 
 
@@ -1099,8 +1274,21 @@ This section lists interface-level changes and
 other user-visible changes in behavior 
 in the transition from HDF5 Release 1.8.4 to Release 1.8.5.
 
-    <h3>C Functions with Additional Capability</h3>
+    <h3>New C Function</h3>
     
+        <dl>    
+            <dd>The following function was added to the HDF5 Library
+            at this release, but was not documented at that time:
+                <ul>
+                    <li><a href="../RM/RM_H5O.html#Object-ExistsByName">
+                        <code>H5Oexists_by_name</code></a>
+                </ul>
+            <i>(This note added in November 2011, shortly following 
+            Release 1.8.8.)</i>
+        </dl>    
+
+    <h3>C Functions with Additional Capability</h3>
+
         <dl>    
             <dd>The following functions have been modified to 
                 accommodate filters set on a group creation property list:
@@ -9504,7 +9692,7 @@ V1.4.0
 </address>
 <!-- #EndLibraryItem --><!-- Created: Spring 1999 -->
 <!-- hhmts start -->
-Last modified: 19 January 2012
+Last modified: 1 May 2012
 <!-- hhmts end -->
 
 </body>
