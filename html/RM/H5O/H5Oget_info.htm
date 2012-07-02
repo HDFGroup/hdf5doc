@@ -42,68 +42,83 @@
     <dir>
     <pre>
 typedef struct H5O_info_t {
-    unsigned long       fileno;         /* File number that object is         */
-                                        /*    located in                      */
-    haddr_t             addr;           /* Object address in file             */
-    H5O_type_t          type;           /* Basic object type                  */
-                                        /*    (See H5O_type_t below)          */
-    unsigned            rc;             /* Reference count of object          */
-    time_t              atime;          /* Access time                        */
-    time_t              mtime;          /* Modification time                  */
-    time_t              ctime;          /* Change time                        */
-    time_t              btime;          /* Birth time                         */
-    hsize_t             num_attrs;      /* # of attributes attached to object */
+    unsigned long       fileno;     /* Number of file where object is       */
+                                    /*   located                            */
+    haddr_t             addr;       /* Object address in file               */
+    H5O_type_t          type;       /* Basic object type                    */
+                                    /*   (See H5O_type_t below)             */
+    unsigned            rc;         /* Reference count of object            */
+    time_t              atime;      /* Access time                          */
+    time_t              mtime;      /* Modification time                    */
+    time_t              ctime;      /* Change time                          */
+    time_t              btime;      /* Birth time                           */
+    hsize_t             num_attrs;  /* # of attributes attached to object   */
+    H5O_hdr_info_t      hdr         /* Object header information            */
+                                    /*   (See H5O_hdr_info_t below)         */
     struct {
-        unsigned version;               /* Version number of header format in */
-                                        /*    file                            */
-        unsigned nmesgs;                /* Number of object header messages   */
-        unsigned nchunks;               /* Number of object header chunks     */
-        unsigned flags;                 /* Object header status flags         */
-        struct {
-            hsize_t total;              /* Total space for storing object     */
-                                        /*    header in file                  */
-            hsize_t meta;               /* Space within header for object     */
-                                        /*    header metadata information     */
-            hsize_t mesg;               /* Space within header for actual     */
-                                        /*    message information             */
-            hsize_t free;               /* Free space within object header    */
-        } space;
-        struct {
-            uint64_t present;           /* Flags to indicate presence of      */
-                                        /*    message type in header          */
-            uint64_t shared;            /* Flags to indicate message type is  */
-                                        /*    shared in header                */
-        } mesg;     
-    } hdr;
-    /* Extra metadata storage for obj & attributes */
-    struct {
-        H5_ih_info_t   obj;             /* v1/v2 B-tree & local/fractal heap  */
-                                        /*    for groups, B-tree for chunked  */
-                                        /*    datasets                        */
-        H5_ih_info_t   attr;            /* v2 B-tree & heap for attributes    */
+                                    /* Extra metadata storage for obj &     */
+                                    /*   attributes                         */
+        H5_ih_info_t    obj;        /* v1/v2 B-tree & local/fractal heap    */
+                                    /*   for groups, B-tree for chunked     */
+                                    /*   datasets.                          */
+                                    /*   For internal library use only.     */
+        H5_ih_info_t    attr;       /* v2 B-tree & heap for attributes.     */
+                                    /*   For internal library use only.     */
     } meta_size;
 } H5O_info_t;
     </pre>
     </dir>
     <p>
-    An <em>H5O_type_t</em> struct is defined (in <code>H5Opublic.h</code>) 
-    as follows:
+    Note that the fields nested in the <code>meta_size</code> field are 
+    for internal library use only.</p>
+
+    <p>
+    An <em>H5O_type_t</em> enum indicates the object type and is defined 
+    (in <code>H5Opublic.h</code>) as follows:</p>
     <dir>
     <pre>
-/* Types of objects in file */
 typedef enum H5O_type_t {
-    H5O_TYPE_UNKNOWN = -1,    /* Unknown object type        */
-    H5O_TYPE_GROUP,           /* Object is a group          */
-    H5O_TYPE_DATASET,         /* Object is a dataset        */
-    H5O_TYPE_NAMED_DATATYPE,  /* Object is a committed (named) datatype */
-    H5O_TYPE_NTYPES           /* Number of different object types (must be last!) */
+    H5O_TYPE_UNKNOWN = -1,      /* Unknown object type                              */
+    H5O_TYPE_GROUP,             /* Object is a group                                */
+    H5O_TYPE_DATASET,           /* Object is a dataset                              */
+    H5O_TYPE_NAMED_DATATYPE,    /* Object is a committed (named) datatype           */
+    H5O_TYPE_NTYPES             /* Number of different object types (must be last!) */
 } H5O_type_t;
     </pre>
-
-
-
-
     </dir>
+    <p>
+    An <em>H5O_hdr_info_t</em> struct holds object header metadata and is 
+    defined (in <code>H5Opublic.h</code>) as follows:
+    <dir>
+    <pre>
+typedef struct H5O_hdr_info_t {
+    unsigned version;           /* Version number of header format in file  */
+    unsigned nmesgs;            /* Number of object header messages         */
+    unsigned nchunks;           /* Number of object header chunks           */
+    unsigned flags;             /* Object header status flags               */
+    struct {
+        hsize_t total;          /* Total space for storing object header in */ 
+                                /*   file                                   */
+        hsize_t meta;           /* Space within header for object header    */
+                                /*   metadata information                   */
+        hsize_t mesg;           /* Space within header for actual message   */
+                                /*   information                            */
+        hsize_t free;           /* Free space within object header          */
+    } space;
+    struct {
+        uint64_t present;       /* Flags to indicate presence of message    */
+                                /*   type in header                         */
+        uint64_t shared;        /* Flags to indicate message type is        */
+                                /*   shared in header                       */
+    } mesg;
+} H5O_hdr_info_t;
+    </pre>
+    </dir>
+    <p>
+    Note that the information held by <em>H5O_hdr_info_t</em> might be 
+    useful only to developers with extensive HDF5 experience. </p>
+
+
 <!-- NEW PAGE -->
   <p>
   <dt><strong>Parameters:</strong>
@@ -149,7 +164,10 @@ typedef enum H5O_type_t {
         <tr>
           <td valign="top">1.8.10</td>
           <td valign="top">
-            Added <em>H5O_type_t</em> structure to the Description section.</td></tr>
+            Added <em>H5O_type_t</em> structure to the Description section.<br />
+            Separated <em>H5O_hdr_info_t</em> structure from 
+            <em>H5O_info_t</em> in the Description section.
+            </td></tr>
     </table>
 </dl>
 
