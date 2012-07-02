@@ -22,28 +22,38 @@
 <!-- HEADER RIGHT "H5Lmove" -->
 <hr>
 <dl>
+
+  <dt><div align=right><font color=999999 size=-1><i>
+      Last modified: 2 July 2012
+      </i></font></div>
+
   <dt><strong>Name:</strong> <a name="Link-Move">H5Lmove</a> 
+
   <dt><strong>Signature:</strong> 
   <dd><em>herr_t</em> <code>H5Lmove</code>( 
       <em>hid_t</em> <code>src_loc_id</code>, 
       <em>const char *</em><code>src_name</code>, 
       <em>hid_t</em> <code>dest_loc_id</code>, 
       <em>const char *</em><code>dest_name</code>, 
-      <em>hid_t</em> <code>lcpl</code>, 
-      <em>hid_t</em> <code>lapl</code> 
+      <em>hid_t</em> <code>lcpl_id</code>, 
+      <em>hid_t</em> <code>lapl_id</code> 
       )
+
       <p></p>
   <dt><strong>Purpose:</strong> 
-  <dd>Renames a link within an HDF5 file. 
+  <dd>Moves a link within an HDF5 file. 
+
       <p></p>
   <dt><strong>Description:</strong> 
-  <dd><code>H5Lmove</code> renames a link within an HDF5 file. 
-      The original link, <code>src_name</code>, is removed from the 
-      group graph and the new link, <code>dest_name</code>, 
-      is inserted; this change is accomplished as an atomic operation. 
+  <dd><code>H5Lmove</code> moves a link within an HDF5 file. 
+      The original link, <code>src_name</code>, 
+      is removed from <code>src_loc_id</code> and 
+      the new link, <code>dest_name</code>, 
+      is inserted at <code>dest_loc_id</code>.
+      This change is accomplished as an atomic operation. 
       <p>
       <code>src_loc_id</code> and <code>src_name</code> identify the 
-      existing link.  
+      original link.  
       <code>src_loc_id</code> is either a file or group identifier;
       <code>src_name</code> is the path to the link and is interpreted
       relative to <code>src_loc_id</code>.
@@ -54,7 +64,14 @@
       <code>dest_name</code> is the path to the link and is interpreted
       relative to <code>dest_loc_id</code>.
       <p>
-      <code>lcpl</code> and <code>lapl</code> are the link creation 
+      Note that <code>H5Lmove</code> does not modify the value of the link;
+      the new link points to the same object as the original link pointed to.
+      Furthermore, if the object pointed to by the original link 
+      was already open with a valid object identifier, 
+      that identifier will remain valid after the call to 
+      <code>H5Lmove</code>. 
+      <p>
+      <code>lcpl_id</code> and <code>lapl_id</code> are the link creation 
       and link access property lists, respectively, associated with
       the new link, <code>dest_name</code>.
       <p>
@@ -74,13 +91,15 @@
           <code>H5Pset_nlinks</code></a>, and
       <a href="RM_H5P.html#Property-SetELinkPrefix">
           <code>H5Pset_elink_prefix</code></a>, respectively.
-      </p>
+
+      <p></p>
   <dt><strong>Warning:</strong> 
   <dd>Exercise care in moving links as it is possible to render data in 
       a file inaccessible with <code>H5Lmove</code>. 
       If the link being moved is on the only path leading to an HDF5 object, 
       that object may become permanently inaccessible in the file.
-      <p>
+
+      <p><p>
   <dt><strong>Parameters:</strong> 
     <dd><table>
       <tr>
@@ -104,10 +123,12 @@
         <td valign="top">IN: Link access property list identifier 
             to be associated with the new link.</td></tr>
     </table>
+
       <p></p>
   <dt><strong>Returns:</strong> 
   <dd>Returns a non-negative value if successful; otherwise returns a negative 
     value. 
+
       <p></p>
   <dt><strong>Fortran90 Interface:</strong> h5lmove_f
     <dd>
@@ -122,7 +143,7 @@ SUBROUTINE h5lmove_f(src_loc_id, src_name, dest_loc_id, dest_name, hdferr, &
   INTEGER(HID_T), INTENT(IN) :: dest_loc_id 
                                         ! Destination file or group identifier.
   CHARACTER(LEN=*), INTENT(IN) :: dest_name 
-                                        ! new link name.
+                                        ! New link name.
   INTEGER(HID_T), INTENT(OUT) :: hdferr ! Error code:
                                         ! 0 on success and -1 on failure
   INTEGER(HID_T), OPTIONAL, INTENT(IN) :: lcpl_id 
@@ -133,12 +154,7 @@ SUBROUTINE h5lmove_f(src_loc_id, src_name, dest_loc_id, dest_name, hdferr, &
                                         ! to be associated with the new link.
 END SUBROUTINE h5lmove_f
     </pre>
-    	<!--<dt><strong>Non-C API(s):</strong>
-    	<dd>
-        
-        <img src="Graphics/Java.gif"> 
-        <img src="Graphics/C++.gif">
-        -->
+
 <p></p>
 <dt><strong>History:</strong>
     <dd><table width="90%">
