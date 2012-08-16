@@ -22,6 +22,11 @@
 <!-- HEADER RIGHT "h5jam and h5unjam" -->
 <hr>
 <dl>
+
+<dt><div align=right><font color=999999 size=-1><i>
+    Last modified: 16 August 2012
+    </i></font></div>
+
 <dt><strong>Tool Name:</strong> <a name="Tools-Jam">h5jam/h5unjam</a>
 
 <dt><strong>Syntax:</strong>
@@ -33,17 +38,20 @@
         [</code><code>-o out_file.h5]</code>
     <dd><code>h5unjam -h</code>
 
+<p>
 <dt><strong>Purpose:</strong>
-    <dd>Adds user block to front of an HDF5 file, 
+    <dd><code>h5jam</code>:
+        Adds user block to front of an HDF5 file, 
         to create a new concatenated file.
-    <dd>Splits user block and HDF5 file into two files: 
+    <dd><code>h5unjam</code>:
+        Splits user block and HDF5 file into two files: 
         user block data and HDF5 data.
+<p>
 <dt><strong>Description:</strong>
-    <dd><code>h5jam</code>&nbsp; concatenates a <code>user_block</code> 
+    <dd><b><code>h5jam</code>:</b>
+       <br>
+       <code>h5jam</code>&nbsp; concatenates a <code>user_block</code> 
        file and an HDF5 file to create an HDF5 file with a user block. 
-       The user block can be either binary or text. 
-       The output file is padded so that the HDF5 header begins on 
-       byte 512, 1024, etc.. (See the HDF5 File Format.)
 
     <p>If <code>out_file.h5</code> is given, a new file is created 
        with the <code>user_block</code> followed by the contents of
@@ -57,7 +65,21 @@
        If <code>--clobber</code> is set, any existing user block will be 
        overwritten.  
 
-    <p><code>h5unjam</code> splits an HDF5 file, writing the user block 
+    <p>A user block can contain either binary or text data. 
+
+    <p>The minimum size of a user block is 512 bytes.
+       As needed, the user block can be any power of 2 greater than that:
+       1024 bytes, 2048 bytes, etc.
+       The user block in the output file is padded so that the 
+       HDF5 header begins on the first appropriate boundary. 
+       For example, if only 8 bytes of data are inserted for the user block,
+       the HDF5 header will be found at byte 512;
+       if 1100 bytes of data are inserted for the user block,
+       the HDF5 header will be found at byte 2048.
+
+    <dd><b><code>h5unjam</code>:</b>
+       <br>
+       <code>h5unjam</code> splits an HDF5 file, writing the user block 
        to a file or to stdout and the HDF5 file to an HDF5 file with a 
        header at byte zero (<code>0</code>, i.e., with no user block). 
     <p>If <code>out_file.h5</code> is given, a new file is created with 
@@ -72,7 +94,15 @@
        will be written to stdout. 
        If <code>--delete</code> is selected, 
        the user block will not be written.
+    <p>The last portion of a  returned user block may contain padding
+       or undefined data
+       (see discussion below: &ldquo;<code>h5jam</code> and 
+       <code>h5unjam</code> not necessarily transitive&rdquo;). 
+       It is the user&rsquo;s or the user application&rsquo;s responsibility 
+       to handle this correctly.
 
+<p>
+<!-- NEW PAGE -->
 <dt><strong>Examples:</strong>
     <dd>Create new file, <code>newfile.h5</code>, with the text in file 
        <code>mytext.txt</code> as the user block for the HDF5 file 
@@ -87,13 +117,12 @@
        with the contents of <code>mytext.txt</code>.
        <pre>&nbsp;&nbsp;&nbsp;&nbsp;h5jam -u mytext.txt -i file.h5 --clobber</pre>
   
-<!-- NEW PAGE -->
        For an HDF5 file, <code>with_ub.h5</code>, with a user block, 
        extract the user block to <code>user_block.txt</code> and 
        the HDF5 portion of the file to <code>wo_ub.h5</code>.
        <pre>&nbsp;&nbsp;&nbsp;&nbsp;h5unjam -i with_ub.h5 -u user_block.txt -o wo_ub.h5</pre>
 
-
+<p>
 <dt><strong>Exit Status:</strong></dt>
     <dd><table border=0>
         <tr valign=top align=left>
@@ -106,7 +135,43 @@
         </tr>
     </table>
 
+<p>
 <dt><strong>Caveats:</strong>
+
+
+<!--
+    <dd><b> * * *  Additional notes from HDFFV-7671 research   * * * </b> 
+    <dd><b> * * *  not included in the h5jam/h5unjam updates.  * * * </b> 
+    <dd><b> * * *                              -- FMB 120816   * * * </b> 
+<pre>
+    HDF5 maintains no record of the size of the block provided by the
+    user and takes no responsibility for the user block's layout;
+    all responsiblity for user block management rests with the user.
+    The original specification for the user block was for a space that the 
+    user could use 
+        in any desired manner, 
+        for any desired purpose, 
+        with any desired content.
+    Any structure assumed in user block data must therefore be defined 
+    by the user or by the user communmity.
+
+    AllenB has suggested creating an option to pass in an 'offset,size' 
+    parameter so that the extracted userblock can be plucked precisely 
+    without extraneous undefined material.
+    The proposal was rejected on grounds that h5unjam does exactly what 
+    it was designed to do, returning the user block as allocated and 
+    attached to the HDF5 file.
+
+    By design, HDF5 never knows anything about the content of the user 
+    block as the user block is intended to be usable and manipulatable
+    without any reference to or reliance on the the HDF5 Library.
+
+    -- FMBaker in consultation w/Allen Byrne and Mark Evans, 11 July 2012
+    -- FMBaker in consultation w/Allen Byrne, 15-16 August 2012
+</pre>
+-->
+
+
     <dd>These tools copy all the data sequentially in the file(s) 
        to new offsets.  For a large file, this copy will take a long time.
     <p>The most efficient way to create a user block is to create the file
@@ -115,14 +180,60 @@
        and write the user block data into that space from a program.
     <p>The user block is completely opaque to the HDF5 library and to 
        the <code>h5jam</code> and <code>h5unjam</code> tools. 
-       The user block is simply read or written as a string of bytes, 
-       which could be text or any kind of binary data; it is up to the 
-       user to know what the contents of the user block means and how 
-       to process it.
-    <p>When the user block is extracted, all the data is written to the 
-       output, including any padding or unwritten data.
+       The user block is read or written in a single block 
+       as a string of bytes; 
+       it can contain text or any kind of binary data; 
+       and it is up to the user to know what the user block content means
+       and how to process it.
+    <p>When the user block is extracted, its entire contents are written 
+       as a single block of output, including any padding or uninitialized 
+       data.
     <p>This tool moves the HDF5 portion of the file through byte copies; 
        i.e., it does not read or interpret the HDF5 objects.
+
+    <p><b><code>h5jam</code> and <code>h5unjam</code> 
+       not necessarily transitive:</b>
+       <br>
+       Note that <code>h5jam</code> and <code>h5unjam</code> 
+       are not necessarily transitive operations.
+       Any amount of data can be inserted into a user block, 
+       but an HDF5 user block itself has specific size requirements.
+       The minimum size is 512 bytes; beyond that, the user block can
+       be 512 bytes times any positive power of 2.  
+       That is, a user block&rsquo;s size will be one of the following:
+       512 bytes, 1024 bytes, 2048 bytes, 4096 bytes, et cetera.
+    <p>If <code>h5jam</code> is used to insert a 700 byte file into 
+       the user block, <code>h5jam</code> will create a user block 
+       of 1024 bytesa and insert the user&rsquo;s file as the first 
+       700 bytes of that block.  
+       The remaining 324 bytes will be undefined.
+       If the remaining bytes must have a particular fill value, 
+       for instance, the user must modify the input file by padding 
+       it to exactly 1024 bytes with the required fill value 
+       before inserting it with <code>h5jam</code>.
+    <p>When <code>h5unjam</code> is asked to return the above user block,
+       it will be returned 
+       with the padding in the last 324 bytes if the user defined it
+       or with undefined data in the last 324 bytes if the user took
+       no action to insert the padding.
+    <p>If the file must be cleaned up for use,
+       it is the user&rsquo;s or the user application&rsquo;s responsibility.  
+    <p>If a community of users employs user block data that must be 
+       cleaned up after the use of <code>h5unjam</code>, the community
+       should establish a protocol for that process so that every community 
+       member knows what is required.  
+       The community may prefer to create and provide a tool 
+       to perform standard cleanup.
+       A simple protocol might be for a user community to declare that the
+       first <i>N</i> bytes of the user block will always contain 
+       the length or size of the valid user block content, 
+       much as a Pascal string starts with the length of the string data.
+       Also see the HDF5 source code for examples of examining or reading 
+       the user block without modifying the file in any way.
+       The relevant source files are the test programs 
+       <code>tools/h5jam/tellub.c</code> and 
+       <code>tools/h5jam/getub.c</code>.
+
 </dl>
 
 
