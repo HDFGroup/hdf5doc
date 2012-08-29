@@ -1,0 +1,335 @@
+
+These notes form the basis for an as-yet-unwritten "String Datatypes" UG section.
+
+    <hr>
+<font color=red><i>
+This outline is more detailed and attempts to be more comprehensive
+than the subsequent text.
+</i></font>
+<br>
+    </font>
+    <hr>
+
+    Outline:
+    <ol>
+      <li>Overview
+      <li>Strings
+      <li>String versus char base datatypes
+      <li>Creating string datatypes
+      <li>Creating fixed-length string datatypes
+      <li>Creating variable-length string datatypes
+      <ol type="a">
+          <li>Value and strengths 
+          <li>Limitations
+          <li>An alternative approach
+      </ol>
+      <li>Constrained variable-length strings
+      <ol type="a">
+          <li>Constrained, or <i>faux</i> or <i>spoofed</i>, variable-length strings
+      </ol>
+      <li>Character encodings
+      <ol type="a type="a"">
+          <li>ASCII, UTF-8, <code>H5Pset_char_encoding</code> (objects), 
+              <code>H5Tset_cset</code> (datatypes)
+          <li>Fixed-length ASCII strings easy
+          <li>Fixed-length UTF-8 strings not so easy
+          <ol type="i">
+              <li>Inherently variable-length, with 1 to 4 bytes per character
+              <li>In general case or when the nature, range, or constraints 
+                  of the strings in a dataset are not well characterized, 
+                  they can be most safely stored in a variable-length 
+                  string datatype.
+              <li>But circumstances may enable use of constrained 
+                  variable-length strings stored in a dataset of 
+                  fixed-length datatype.
+              <li>For example, if it is known that the strings in a dataset 
+                  will always be Hebrew text, one can be confident 
+                  that a few characters will be 1 byte, 
+                  most will be 2 bytes, and none will be more than 2 bytes.  
+                  In this case, a dataset of 10-character strings 
+                  could be safely stored with NULL terminators 
+                  in a 21-byte fixed-length string datatype.
+                  A dataset of 10- to 30-character strings 
+                  could be safely stored with NULL terminators 
+                  in a 61-byte (or 64-byte) fixed-length string datatype.
+                  Both would be examples of constrained variable-length 
+                  datatypes.
+              <li>This has the potential to substantially boost 
+                  I/O and/or storage efficiency over the use 
+                  of a variable-length string datatype.
+              <li>http://www.utf8-chartable.de/unicode-utf8-table.pl
+              <br>http://en.wikipedia.org/wiki/UTF-8
+              <br>http://en.wikipedia.org/wiki/Unicode
+          </ol>
+      </ol>
+      <li><code>H5Tvlen_create</code> creates something quite different
+    </ol>
+
+    <hr>
+<font color=red><i>
+Raw and uncorrected text follows.
+<br>
+_topic/create_vlen_strings.htm contains more carefully developed text,
+but only for one aspect of this. 
+</i></font>
+<br>
+    </font>
+    <hr>
+
+<br>&nbsp;
+<br>
+
+<p>
+<strong>
+<a name="CreateVLString">
+Creating variable-length string datatypes</a>
+</strong>
+    <br>
+
+<font color=red><i>
+A heavily revised version of this section 
+(see <code>_topic/create_vlen_strings.htm</code>) 
+is included via PHP on the H5T RM page.
+</i></font>
+<br>
+
+    As the term implies, 
+    variable-length strings are strings of varying lengths.
+    <i>Real</i> variable-length strings can be arbitrarily long,
+    anywhere from 1 character to thousands of characters long.
+    These are what HDF5 calls <i>variable-length strings</i>
+    and, for the sake of discussion, we'll call them
+    <i>unconstrained variable-length strings</i> in this article.
+    <p>
+    But there is also a subclass of variable-length strings
+    that vary within a well-defined range. 
+    For example, a set of strings might be known to always be 
+    between 5 and 20 characters long.
+    In this article, we will call this subclass
+    <i>constrained variable-length strings</i>. 
+    From HDF5&rsquo;s point of view, 
+    these are actually just fixed-length strings
+    that may happen to be shorter in length than the assigned datatype.
+    Think of them as <i>faux</i> variable-length strings;
+    we'll discuss them in more detail shortly.
+    <p>
+<!--
+    <strong>
+    A quick look at string and character datatypes:</strong>
+-->
+    Before we start creating strings, let&rsquo;s look at
+    string and character datatypes for a minute.
+    HDF5 provides the following predefined datatypes that are relevant
+    to this discussion, one string datatype and three character datatypes:
+    <pre>
+    H5T_C_S1
+    H5T_NATIVE_CHAR
+    H5T_NATIVE_SCHAR
+    H5T_NATIVE_UCHAR
+    </pre>
+    The character datatypes, 
+        <code>H5T_NATIVE_CHAR</code>,
+        <code>H5T_NATIVE_SCHAR</code>, and 
+        <code>H5T_NATIVE_UCHAR</code>, 
+    are single-character datatypes; 
+    a data element of one of these datatypes always contains one character. 
+    They are unsuitable for creating a string datatype.
+
+    <p>
+    The string datatype, 
+        <code>H5T_C_S1</code> for C and 
+        <code>H5T_FORTRAN_S1</code> for Fortran,
+    defaults to one character in size but can be resized to any length.&nbsp;
+    These types are therefore the base type for any fixed-length 
+    or variable-length string datatype.
+
+
+    <p>
+    <strong>
+    Creating unconstrained 
+    (or <i>real</i>) variable-length string datatypes:</strong>
+    <br>
+    The following HDF5 call creates a variable-length string datatype, 
+    <code>vls_type_id</code>:
+    <pre>
+    vls_type_id = H5Tcreate(H5T_C_S1, H5T_VARIABLE)                 (call 1)
+    </pre>
+    Strings of type <code>vls_type_id</code> can be of arbitrary length.
+    <p>
+    In a C environment, these strings will always be 
+    <small>NULL</small>-terminated, so the buffer to hold such a string 
+    in memory must be one byte larger than the string itself 
+    to accomadate the <small>NULL</small> terminator.
+    <p>
+    Under the covers, variable-length strings are stored in a heap, 
+    which can present challenges for efficient storage and read/write access.
+    <p>
+    The next section discusses a different approach which may be 
+    useful in situations where it is known that the string length 
+    in a dataset will vary within known bounds.
+
+    <p>
+    <strong>
+    Creating datatypes for constrained 
+    (or <i>faux</i>) variable-length strings:</strong>
+    <br>
+    To avoid the storage and I/O overhead associated with heaps,
+    it will sometimes be useful to take a different approach when 
+    it is known that the string length in a dataset 
+    will always fall within known bounds.
+    <p>
+    Consider the example of a dataset containing one million strings
+    that you know will range from 5 to 20 bytes in length.
+    The following HDF5 call creates a string datatype for strings 
+    up to 20 bytes.
+    <pre>
+    to20B_type_id = H5Tcreate(H5T_C_S1, 20)                         (call 2)
+    </pre>
+    If a particular data element is just a 5-byte string, 
+    simply write it to the dataset as a 5-byte string plus a 
+    <small>NULL</small> terminator (6 bytes total).
+    When HDF5 reads the data back in a C environment 
+    and as it works with the data, HDF5 will interpret the 
+    <small>NULL</small>-terminated string transparently and correctly.
+    <p>
+    Note that variable-length strings stored in this manner must 
+    always be <small>NULL</small>-terminated unless they exactly 
+    fill the full datatype space (exactly 20 bytes in this case).
+    Failure to include the <small>NULL</small>-terminator will 
+    result in either misinterpreted data or undefined values. 
+    <p>
+    Strings in this dataset can be of any length up to 20 bytes,
+    giving you essentially a constrained variable-length string.
+    But since everything is handled within a fixed-length datatype,
+    you receive all the benefits of HDF5&rsquo;s highly efficient
+    sequential I/O without the overhead of extracting data from a heap.
+
+    <p>
+    If this datatype were defined as in call 1 and the million-element 
+    dataset were fully populated,
+    reading the entire dataset would require HDF5, under the covers, 
+    to issue up to 2 million seeks and reads to pluck the 
+    data elements 1-by-1 from the heap.
+    Using this <i>faux</i> variable-length datatype, HDF5 can read the 
+    entire dataset with a couple of seeks and reads.
+    <p>
+    Note that this dataset can also be chunked, an option that is 
+    not available in a heap and is thus unavailable for a dataset of 
+    unconstrained variable-length strings.
+
+    <p>
+    <strong>
+    Creating fixed-length string datatypes:</strong>
+    <br>
+    Relative to any form of variable-length string datatype,
+    fixed-length string datatypes are straight-forward.
+    The following HDF5 call creates a a fixed-length, 30-byte 
+    string datatype: 
+    <pre>
+    20B_type_id = H5Tcreate(H5T_C_S1, 30)
+    </pre>
+    This datatype can be used for 30-character ASCII strings 
+    without any need for <small>NULL</small> terminators
+    or any other special handling. 
+    <p>
+    <i>
+    [ Consider a note regarding the accommodations necessary
+    to handle fixed-length UTF-8 strings. ]
+    </i>
+
+
+    <p>&nbsp;
+    <hr>
+
+    <strong>
+    The function <code>H5Tvlen_create</code> 
+    does not create variable-length strings</strong>
+    <br>
+    While it is tempting to try to create a variable-length string datatype with
+    <a href="../RM/RM_H5T.html#Datatype-VlenCreate"><code>H5Tvlen_create</code></a>,
+    that function actually creates a fundamentally different datatype object.
+    <p>
+    <code>H5Tvlen_create</code> creates a datatype that is a 
+    one-dimensional array datatype with array elements of the base datatype.
+    Consider the following examples: 
+    <pre>
+    vl_char_type_id       = H5Tvlen_create(H5T_NATIVE_CHAR) </pre>
+    This call creates a datatype that holds a variable-size, 
+    one-dimensional array of data elements; 
+    each element is of the <code>H5T_NATIVE_CHAR</code> base datatype.
+    <p>
+    <pre>
+    12B_string_type_id    = H5Tset_size(H5T_C_S1, 12)
+    vl_12B_string_type_id = H5Tvlen_create(12B_string) </pre>
+    This pair of calls creates a datatype that holds a variable-size, 
+    one-dimensional array of 12-byte strings.
+    <p>
+    <pre>
+    vl_int8_type_id       = H5Tvlen_create(H5T_IEEE_F32BE) </pre>
+    The above call creates a datatype that holds a variable-size, 
+    one-dimensional array of IEEE big-endian 32-bit floats.
+
+<!--
+
+<br>&nbsp;
+<br>&nbsp;
+<br>&nbsp;
+<br>
+
+    <hr>
+    <font size="2">
+    Cut here -- the rest is scrap.
+    </font>
+    <hr>
+
+    <table border=1 align=right width=210><tr>
+        <td align=center>
+            <img src="../UG/Images/Dmodel_fig40_d+g3.jpg" width=250>
+            <img src="./Dmodel_fig40_d.jpg" width=250> 
+        </td></tr><tr><td align=center>
+            Sample file structure:<br><code>DATA_FILE1</code>
+    </tr></table>
+
+    <p>
+ 
+    <p>
+    <pre>
+    type_id = H5Tcreate(H5T_NATIVE_CHAR, H5T_VARIABLE)
+
+    type_id = H5Tvlen_create(H5T_C_S1)
+    H5Tset_size(type_id, H5T_VARIABLE)
+`
+    type_id = H5Tvlen_create(H5T_NATIVE_CHAR)
+
+
+    type_id = H5Tcreate(H5T_NATIVE_CHAR, H5T_VARIABLE)
+
+    type_id = H5Tcreate(H5T_C_S1, H5T_VARIABLE)
+    </pre>
+
+    <hr>
+    <hr>
+
+    <ul>
+        <li><code>loc_id</code> specifies <code>group3</code>.
+            <br>
+            <code>name = 'dset3'</code> 
+            <br>
+            <code>attr_name = 'A3'</code>
+            <p>
+    </ul>
+
+    <p>
+
+    <p>
+    <ul>
+        <li><code>whatever</code> specifies <code>whatever</code>.
+    </ul>
+
+ -->
+
+    <div align=right><font color=999999 size=-1><i>
+    Last modified: 29 August 2012
+      </i></font></div>
+
+
