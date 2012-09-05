@@ -33,9 +33,6 @@ Last modified: 29 August 2012
     or UTF-8 strings.  This characteristic is set with 
     <a href="../RM/RM_H5T.html#Datatype-SetCset"><code>H5Tset_cset</a></code>
     in the process of creating the datatype.
-    <p>
-    Under the covers, variable-length strings are stored in a heap; 
-    this can present challenges for efficient storage and read/write access.
 
     <p>
     The following HDF5 calls create a 
@@ -43,33 +40,39 @@ Last modified: 29 August 2012
     <code>vls_type_id</code>:
     <pre>
     vls_type_c_id = H5Tcopy(H5T_C_S1)
-    status        = H5Tset_size(vls_type_c_id, H5T_VARIABLE)
-    </pre>
-    <p>
+    status        = H5Tset_size(vls_type_c_id, H5T_VARIABLE) </pre>
+
     In a C environment, variable-length strings will always be 
     <small>NULL</small>-terminated, so the buffer to hold such 
     a string must be one byte larger than the string itself 
     to accomadate the <small>NULL</small> terminator.
 
     <p>
-    In Fortran, the datatype class <code>H5T_STRING</code> is defined 
-    by the library to be variable length.  The following HDF5 calls 
-    create a FORTRAN-style variable-length string datatype, 
-    <code>vls_type_f_id</code>, and set the padding value to space padding:
+    In Fortran, the datatype class <code>H5T_STRING</code> 
+    is predefined by the HDF5 Library to be variable length.  
+    The following HDF5 calls create a Fortran-style 
+    variable-length string datatype, <code>vls_type_f_id</code>, 
+    and set the padding value to space padding:
     <pre>
     h5tcopy_f(H5T_STRING, vls_type_f_id, hdferr)
-    h5tset_strpad_f(vls_type_f_id, H5T_STR_SPACEPAD_F, hdferr)
-    </pre>
+    h5tset_strpad_f(vls_type_f_id, H5T_STR_SPACEPAD_F, hdferr) </pre>
+
+    Fortran-style strings are generally space-padded, 
+    though they may be <small>NULL</small>-terminated 
+    when used in a C environment. 
+
     <p>
-    In a Fortran environment, these strings will generally be 
-    space padded.
-    If used in a C environment, however, they may be
-    <small>NULL</small>-terminated.  
-
-
-
-
-
-
+    <b>Note:</b> &nbsp;
+    Under the covers, variable-length strings are stored in a heap, 
+    potentially impacting efficiency in the following ways:
+    <ul style="compact">
+        <li>Heap storage requires more space than regular raw data storage.
+        <li>Heap access generally reduces I/O efficiency because 
+            it requires individual read or write operations for each 
+            data element rather than one read or write per dataset or 
+            per data selection. 
+        <li>Chunking and filters, including compression,
+            are not available for heaps.
+    </ul>
 
 
