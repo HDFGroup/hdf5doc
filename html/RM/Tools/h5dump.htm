@@ -26,7 +26,7 @@
 <dl>
 
 <dt><div align=right><font color=999999 size=-1><i>
-    Last modified: 2 May 2012
+    Last modified: 25 October 2012
     </i></font></div>
 
 <dt><strong>Tool Name:</strong> <a name="Tools-Dump">h5dump</a>
@@ -98,17 +98,6 @@
             <code>h5dump -a /attr1 -a /attr2 foo.h5</code>
           </br>
         <p>
-        It's possible to select the file driver with which to open the
-        HDF5 file by using the --filedriver (-f) command-line option.
-        Acceptable values for the --filedriver option are: "sec2",
-        "family", "split", and "multi".
-        <!--, and "stream".-->
-        If the file driver flag
-        isn't specified, then the file will be opened with each driver in
-        turn and in the order specified above until one driver succeeds
-        in opening the file.
-        </p>
-        <p>
         One byte integer type data is displayed in decimal by default. When
         displayed in ASCII, a non-printable code is displayed in 3 octal
         digits preceeded by a back-slash unless there is a C language escape
@@ -121,6 +110,74 @@
           a   b   c  \0   0   1   2  \n </pre>
         h5dump prints them as "abc\000012\n".  But if h5dump prints NUL as \0,
         the output is "abc\0012\n" which is ambiguous.
+        </p>
+        <p>
+        <strong>Using file drivers:</strong>
+        <br>
+        It is possible to select the file driver with which to open an
+        HDF5 file by using the <code>--filedriver</code> (or <code>-f</code>)
+        command-line option.
+        Valid values for the <code>--filedriver</code> option are 
+        &nbsp;<code>sec2</code>, &nbsp;<code>family</code>, 
+        &nbsp;<code>split</code>, &nbsp;and &nbsp;<code>multi</code>.
+        <!--, and &nbsp;<code>stream</code>.-->
+        If the file driver flag is not specified, 
+        then the file will be opened with each driver in turn
+        and in the order specified above 
+        until one driver succeeds in opening the file.
+        </p>
+        <p>
+        Special file naming restrictions apply when using <code>h5dump</code>
+        with either the <code>split</code> or the <code>multi</code> driver.
+        <p>
+        <i>To dump a split file,</i> <code>h5dump</code> requires that 
+        the metadata and raw data filenames end with 
+        <code>-m.h5</code> and <code>-r.h5</code>, respectively,
+        and that the entire virtual HDF5 file be referred to 
+        on the command line by the common portion of the filename preceding 
+        the <code>-m</code> and <code>-r</code>.
+        For example, assume that a split HDF5 file has its 
+        metadata in a file named <code>splitfile-m.h5</code> and its
+        raw data in a file named <code>splitfile-r.h5</code>.
+        The following command would dump the contents of this HDF5 file: 
+        <br><code>&nbsp;&nbsp;&nbsp;&nbsp; 
+            h5dump --filedriver="split" splitfile</code>
+        </p>
+        <p>
+        <i>To dump a multi file,</i> <code>h5dump</code> requires that 
+        the metadata and raw data filenames end with a subset of the following:
+        <br><code>&nbsp;&nbsp;&nbsp;&nbsp;</code>
+            <code>-s.h5</code> &nbsp; for userblock, superblock, 
+            and driver information block data
+        <br><code>&nbsp;&nbsp;&nbsp;&nbsp;</code>
+            <code>-b.h5</code> &nbsp; for B-tree node information
+        <br><code>&nbsp;&nbsp;&nbsp;&nbsp;</code>
+            <code>-r.h5</code> &nbsp; for dataset raw data
+        <br><code>&nbsp;&nbsp;&nbsp;&nbsp;</code>
+            <code>-g.h5</code> &nbsp; for global heap data
+        <br><code>&nbsp;&nbsp;&nbsp;&nbsp;</code>
+            <code>-l.h5</code> &nbsp; for local heap  data (object names)
+        <br><code>&nbsp;&nbsp;&nbsp;&nbsp;</code>
+            <code>-o.h5</code> &nbsp; for object headers
+        <br>
+        The entire virtual HDF5 file must also be referred to 
+        on the command line by the common portion of the filename preceding 
+        those special tags.
+        For example, assume that a multi HDF5 file has its 
+        userblock, superblock, and driver information block data 
+        in a file named <code>multifile-s.h5</code>, its
+        B-tree node information in a file named <code>multifile-b.h5</code>, its
+        raw data in a file named <code>multifile-r.h5</code>, its
+        global heap data in a file named <code>multifile-g.h5</code>,
+        et cetera.
+        The following command would dump the contents of this HDF5 file: 
+        <br><code>&nbsp;&nbsp;&nbsp;&nbsp; 
+            h5dump --filedriver="multi" multifile</code>
+        </p>
+        <p>
+        Note that the above filename restrictions are specific to 
+        <code>h5dump</code>; 
+        HDF5 applications do not necessarily have the same limitations.
         </p>
 
 <dt><strong>XML Output:</strong>
@@ -487,14 +544,17 @@
     <table>
         <tr>
           <td valign="top"><em>D</em></td>
-          <td valign="top">Which file driver to use in opening the
-            file. Acceptable values are "sec2", "family", "split",
-            and "multi". 
-            <!--, and "stream".-->
-            Without the file driver flag, the
-            file will be opened with each driver in turn and in the
-            order specified above until one driver succeeds in
-            opening the file.</td></tr>
+          <td valign="top">File driver to use in opening the file
+            <br>
+            Valid values are 
+            &nbsp;<code>sec2</code>, &nbsp;<code>family</code>, 
+            &nbsp;<code>split</code>, and &nbsp;<code>multi</code>.
+            <!--, and &nbsp;<code>stream</code>.-->
+            <br>
+            Without the file driver option, the
+            file will be opened with each driver in turn,
+            and in the order specified immediately above,
+            until one driver succeeds in opening the file.</td></tr>
         <tr>
           <td valign="top"><em>P</em></td>
           <td valign="top">The full path from the root group to 
@@ -506,9 +566,12 @@
           <td valign="top"><em>N</em></td>
           <td valign="top">An integer greater than 1</td></tr>
         <tr>
-          <td valign="top"><em>START</em>,&nbsp;<em>STRIDE</em>, 
-            <em>COUNT</em>,&nbsp;<em>BLOCK</em>&nbsp;&nbsp;&nbsp;</td>
-          <td valign="top">Comma-separated lists of integers.  
+          <td valign="top" colspan="2"><em>START</em>, &nbsp;<em>STRIDE</em>, 
+            &nbsp;<em>COUNT</em>, &nbsp;<em>BLOCK</em></td></tr>
+        <tr>
+          <td valign="top"><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code></td>
+          <td valign="top">Comma-separated lists of integers  
+            <br>
             Each of these option parameters must be a list of integers
             with one integer for each dimension of the dataspace being 
             queried.</td></tr>
