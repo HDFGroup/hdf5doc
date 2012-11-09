@@ -1,0 +1,47 @@
+<head>
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8" >
+<title>
+UTF-8 encoding in HDF5
+</title>
+</head>
+
+<body>
+<align="center">
+<h2>UTF-8 Character Encoding in HDF5</h2>
+<h6>James Laird</h6>
+
+<align="left">
+<h5>Motivation</h5>
+<p>The NetCDF team would like HDF5 to support strings with UTF-8 Unicode character encoding.  Currently HDF5 officially supports only strings encoded in standard US ASCII.</p>
+
+<h5>What is UTF-8?</h5>
+<p>Joel Spolsky has written an introduction to character sets and Unicode entitled <a href="http://www.joelonsoftware.com/articles/Unicode.html">The Absolute Minimum Every Software Developer Absolutely, Positively Must Know About Unicode and Character Sets</a>.</p>
+
+<p>Briefly: standard ASCII defines characters for byte values between 0 and 127.  Values 128 through 255 are <b>not defined</b> by standard ASCII.  UTF-8 byte values between 0 and 127 represent the same characters as ASCII--standard ASCII is a subset of UTF-8.  ASCII values 128-255 represent different characters depending on which "code page" is currently loaded.  UTF-8 also uses these values to represent characters outside of unaccented American English.</p>
+
+<p>The convenient side-effect of this is that any UTF-8 string is also a valid ASCII string, although not necessarily one with the same meaning.  Any string consisting of only standard ASCII characters (unaccented American English characters) is identical in ASCII and UTF-8 encodings.</p>
+
+<p>UTF-8 does store some characters as multiple bytes (up to four bytes); all multibyte characters use byte values of 128-255.  NULL-termination, space padding, and C string routines all operate identically on UTF-8 as they do on ASCII characters and strings.  The fact that UTF-8 has mutibyte characters means that the number of bytes in a string is not necessarily the number of characters in that string, but the number of bytes is usually the important factor for storing and manipulating the string.</p>
+
+<p>The ASCII and UTF-8 must be displayed differently for characters outside of the standard ASCII set, but this is the responsibility of the displaying software, not of HDF5.  ASCII and UTF-8 strings can be stored and manipulated identically by HDF5.</p>
+
+<h5>Proposed action to investigate further:</h5>
+<p>   Write tests to ensure that UTF-8 characters can be used in the library.  The tests would ensure that strings including non-ASCII characters don't break any functionality, and can be returned to the user unaltered.  This would need to be tested everywhere the library uses character strings, which includes the following places (AFAIK):<br>
+- Attributes<br>
+- Datasets<br>
+- Groups<br>
+- Files<br>
+- Property List Classes<br>
+- Properties<br>
+- Comments on filters<br>
+- References<br>
+- Datatypes</p>
+
+<h5>What would UTF-8 support mean?</h5>
+<p>If these tests pass, we can discuss officially adding UTF-8 support to HDF5.  This would probably consist of:<br>
+&nbsp&nbsp - checking in the UTF-8 tests to CVS<br>
+&nbsp&nbsp - adding UTF-8 to HDF5's list of character encodings (allowing users to designate a string as either UTF-8 or ASCII)<br>
+&nbsp&nbsp - allowing users to flag names of objects that do not have a character encoding (datasets, groups, attributes, properties, etc.) as being in UTF-8 rather than ASCII.</p>
+<p>Alternately, UTF-8 could be the default encoding of HDF5.  This would not require object names to be flagged--since standard ASCII is a subset of UTF-8, users would be free to use standard ASCII encoding by not using any byte values above 127.  We would still allow users to label their string data as using the ASCII character set.<br>
+This option might confuse users who don't realize that ASCII only encodes values for 127 characters or who worry that UTF-8 will change the encoding of their ASCII names.</p>
+</body>

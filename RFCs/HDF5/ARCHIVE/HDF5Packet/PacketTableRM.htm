@@ -1,0 +1,622 @@
+<html>
+
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+<title> HDF5 Packet Table API Functions </title>
+</head>
+
+<h1 align="center">H5TB: HDF5 Packet Table</h1>
+
+<h2>HDF5 Packet Table API&nbsp;Reference</h2>
+
+<p>The HDF5 Packet Table API is an extension of the HDF5 high-level
+Table API.  The Packet Table API is lower-level than the Table API,
+to maximize throughput.  Packet Tables can contain either fixed-length
+or variable-length records.  Packet Table API calls should not be made
+on Tables, nor should Table API calls be made on Packet Tables.&nbsp;</p>
+
+<p>The following functions are part of the HDF5 Packet Table API.&nbsp; </p>
+
+<p><strong>The C Interfaces:</strong>
+
+ </p>
+
+<table border="0" width="100%">
+  <tr>
+
+    <td width="50%" valign="top">
+      <p align="left"><i>Creation and Opening</i>
+      <ul>
+        <li>
+          <p align="left"><a href="#H5TBmake_packet_table">H5TBmake_packet_table</a></li>
+        <li>
+          <p align="left"><a href="#H5TBmake_vl_packet_table">H5TBmake_vl_packet_table</a></li>
+        <li>
+          <p align="left"><a href="#H5TBopen_packet_table">H5TBopen_packet_table</a></li>
+        <li>
+          <p align="left"><a href="#H5TBclose_packet_table">H5TBclose_packet_table</a></li>
+      </ul>
+          <p align="left"><i>Storage</i>
+
+      <ul>
+        <li>
+          <p align="left"><a href="#H5TBappend_packets">H5TBappend_packets</a></li>
+        <li>
+          <p align="left"><a href="#H5TBappend_single_packet">H5TBappend_single_packet</a></li>
+      </ul>
+      <p align="left"><i>Table Index</i>
+      <ul>
+        <li>
+          <p align="left"><a href="#H5TBcreate_ptable_index">H5TBcreate_ptable_index</a></li>
+
+        <li>
+          <p align="left"><a href="#H5TBset_ptable_index">H5TBset_ptable_index</a></li>
+      </ul>
+    </td>
+    <td width="50%" valign="top">
+      <p align="left"><i>Retrieval</i>
+
+      <ul>
+        <li>
+          <p align="left"><a href="#H5TBread_packets">H5TBread_packets</a></li>
+        <li>
+          <p align="left"><a href="#H5TBread_single_packet">H5TBread_single_packet</a></li>
+        <li>
+          <p align="left"><a href="#H5TBget_next_packets">H5TBget_next_packets</a></li>
+
+      </ul>
+      <p align="left"><i>Query</i>
+      <ul>
+        <li>
+          <p align="left"><a href="#H5TBget_num_packets">H5TBget_num_packets</a></li>
+
+        <li>
+          <p align="left"><a href="#H5TBis_valid">H5TBis_valid</a></li>
+        <li>
+          <p align="left"><a href="#H5TBis_varlen">H5TBis_varlen</a></li>
+      </ul>
+      <p align="left"><i>Memory Management</i>
+      <ul>
+        <li>
+          <p align="left"><a href="#H5TBfree_vlen_readbuff">H5TBfree_vlen_readbuff</a></li>
+      </ul>
+    </td>
+  </tr>
+</table>
+
+<p align="left">&nbsp;</p>
+
+<hr>
+
+<dl>
+  <dt style="background-color: #CCCCFF"><strong>Name:</strong>        <a name="H5TBmake_packet_table">H5TBmake_packet_table</a> </dt>
+
+  <dt><strong>Signature:</strong> </dt>
+  <dl><dt> <em>hid_t</em>       H5TBmake_packet_table( <em>hid_t</em>    loc_id,
+    <em>const char *</em>    dset_name, <em>hid_t</em> dtype_id, <em>hsize_t</em> 
+      chunk_size )</dt>
+
+  </dl>
+  <dt><strong>Purpose:</strong> </dt>
+  <dd>Creates a packet table to store fixed-length packets. </dd>
+
+  <dt><strong>Description:</strong> </dt>
+  <dd><code>H5TBmake_packet_table </code> creates and opens a 
+    packet table named <code>dset_name</code> attached to
+    the object specified by the identifier <code>loc_id</code>.
+    It should be closed with <code>H5TBclose_packet_table</code>.&nbsp; </dd>
+  <dt><strong>Parameters:</strong> </dt>
+
+    <dl>
+    <dt><em>hid_t</em> <code>loc_id</code> </dt>
+    <dd>IN: Identifier of the file or group to create the table within. </dd>
+    <dt><em>const char *</em> <code>dset_name</code> </dt>
+    <dd>IN: The name of the dataset to create. </dd>
+    <dt><em>hid_t </em><code>dtype_id</code> </dt>
+    <dd>IN: The datatype of a packet. </dd>
+    <dt><em>hsize_t </em><code>chunk_size</code> </dt>
+    <dd>IN: The packet table uses HDF5 chunked storage to allow it to grow.  This
+            value allows the user to set the size of a chunk.  The chunk size
+            affects performance. </dd>
+  </dl>
+</dl>
+
+<dl>
+  <dt><strong>Returns:</strong> </dt>
+  <dd>Returns an identifier for the new packet table, or H5I_INVALID_HID on error.</dd>
+</dl>
+
+<hr>
+
+<dl>
+  <dt style="background-color: #CCCCFF"><strong>Name:</strong> <a name="H5TBmake_vl_packet_table">H5TBmake_vl_packet_table</a> </dt>
+
+  <dt><strong>Signature:</strong> </dt>
+  <dl><dt> <em>hid_t</em>       H5TBmake_vl_packet_table( <em>hid_t</em>    loc_id,
+    <em>const char</em>    *dset_name, <em>hsize_t</em>
+      chunk_size )</dt>
+
+  </dl>
+  <dt><strong>Purpose:</strong> </dt>
+  <dd>Creates a packet table to store variable-length packets. </dd>
+
+  <dt><strong>Description:</strong> </dt>
+  <dd><code>H5TBmake_vl_packet_table </code> creates and opens a dataset named
+    <code>dset_name</code> attached to
+    the object specified by the identifier <code>loc_id</code>.  This dataset can
+    then be written to as a packet table.  It should be closed with
+    <code>H5TBclose_packet_table</code>.&nbsp; </dd>
+  <dt><strong>Parameters:</strong> </dt>
+
+    <dl>
+    <dt><em>hid_t</em> <code>loc_id</code> </dt>
+    <dd>IN: Identifier of the file or group to create the table within. </dd>
+    <dt><em>const char *</em><code>dset_name</code> </dt>
+    <dd>IN: The name of the dataset to create. </dd>
+    <dt><em>hsize_t </em><code>chunk_size</code> </dt>
+    <dd>IN: The packet table uses HDF5 chunked storage to allow it to grow.  This
+            value allows the user to set the size of a chunk.  The chunk size
+            affects performance. </dd>
+  </dl>
+</dl>
+
+<dl>
+  <dt><strong>Returns:</strong> </dt>
+  <dd>Returns an identifier for the new packet table, or H5I_INVALID_HID on error.</dd>
+</dl>
+  
+<hr>
+
+<dl>
+  <dt style="background-color: #CCCCFF"><strong>Name:</strong> <a name="H5TBopen_packet_table">H5TBopen_packet_table</a> </dt>
+
+  <dt><strong>Signature:</strong> </dt>
+  <dl><dt> <em>hid_t</em>       H5TBopen_packet_table( <em>hid_t</em>    loc_id,
+    <em>const char</em>    *dset_name )</dt>
+
+  </dl>
+  <dt><strong>Purpose:</strong> </dt>
+  <dd>Opens an existing packet table.</dd>
+
+  <dt><strong>Description:</strong> </dt>
+  <dd><code>H5TBopen_packet_table </code> opens an existing packet table in the file
+      or group specified by <code>loc_id</code>.  <code>dset_name</code> is the name
+      of the packet table and is used to identify it in the file.  This function is
+      used to open both fixed-length packet tables and variable-length packet tables.
+      The packet table should later be closed with <code>H5TBclose_packet_table</code>.&nbsp; </dd>
+
+  <dt><strong>Parameters:</strong> </dt>
+    <dl>
+    <dt><em>hid_t</em> <code>loc_id</code> </dt>
+    <dd>IN: Identifier of the file or group within which the packet table can be found. </dd>
+    <dt><em>const char *</em><code>dset_name</code> </dt>
+    <dd>IN: The name of the packet table to open. </dd>
+  </dl>
+</dl>
+
+<dl>
+  <dt><strong>Returns:</strong> </dt>
+  <dd>Returns an identifier for the packet table, or H5I_INVALID_HID on error.</dd>
+</dl>
+
+<hr>
+
+<dl>
+  <dt style="background-color: #CCCCFF"><strong>Name:</strong> <a name="H5TBclose_packet_table">H5TBclose_packet_table</a> </dt>
+
+  <dt><strong>Signature:</strong> </dt>
+  <dl><dt> <em>herr_t</em>       H5TBclose_packet_table( <em>hid_t</em>  table_id )</dt>
+  </dl>
+
+  <dt><strong>Purpose:</strong> </dt>
+  <dd>Closes an open packet table.</dd>
+
+  <dt><strong>Description:</strong> </dt>
+  <dd><code>H5TBclose_packet_table</code> ends access to a packet table specified by
+      <code>dataset_id</code>. &nbsp; </dd>
+
+  <dt><strong>Parameters:</strong> </dt>
+    <dl>
+    <dt><em>hid_t</em> <code>dataset_id</code> </dt>
+    <dd>IN: Identifier of packet table to be closed. </dd>
+  </dl>
+</dl>
+
+<dl>
+  <dt><strong>Returns:</strong> </dt>
+  <dd>Returns a non-negative value if successful, otherwise returns a negative value.</dd>
+</dl>
+
+<hr>
+
+<dl>
+  <dt style="background-color: #CCCCFF"><strong>Name:</strong> <a name="H5TBappend_packets">H5TBappend_packets</a> </dt>
+
+  <dt><strong>Signature:</strong> </dt>
+  <dl><dt> <em>herr_t</em>       H5TBappend_packets( <em>hid_t</em>  table_id, 
+    <em>hsize_t</em>   nrecords,    <em>const void* data</em>)</dt>
+  </dl>
+
+  <dt><strong>Purpose:</strong> </dt>
+  <dd>Appends packets to the end of a packet table.</dd>
+
+  <dt><strong>Description:</strong> </dt>
+  <dd><code>H5TBappend_packets</code> writes <code>nrecords</code> packets to the end
+      of a packet table specified by <code>table_id</code>.  <code>data</code>
+      is a buffer containing the data to be written.  For a packet table
+      holding fixed-length packets, this data should be in the packet table's
+      datatype.  For a variable-length packet table, the data should be in the
+      form of <code>hvl_t</code> structs. &nbsp;</dd>
+
+  <dt><strong>Parameters:</strong> </dt>
+    <dl>
+    <dt><em>hid_t</em> <code>table_id</code> </dt>
+    <dd>IN: Identifier of packet table to which packets should be appended. </dd>
+    <dt><em>hsize_t</em> <code>nrecords</code> </dt>
+    <dd>IN: Number of packets to be appended. </dd>
+    <dt><em>const void *</em> <code>data</code> </dt>
+    <dd>IN: Buffer holding data to write. </dd>
+  </dl>
+</dl>
+
+<dl>
+  <dt><strong>Returns:</strong> </dt>
+  <dd>Returns a non-negative value if successful, otherwise returns a negative value.</dd>
+</dl>
+
+<hr>
+
+<dl>
+  <dt style="background-color: #CCCCFF"><strong>Name:</strong> <a name="H5TBappend_single_packet">H5TBappend_single_packet</a> </dt>
+
+  <dt><strong>Signature:</strong> </dt>
+  <dl><dt> <em>herr_t</em>    H5TBappend_single_packet( <em>hid_t</em>  table_id, 
+         <em>const void* data</em>)</dt>
+  </dl>
+
+  <dt><strong>Purpose:</strong> </dt>
+  <dd>Appends a single packet to the end of a packet table.</dd>
+
+  <dt><strong>Description:</strong> </dt>
+  <dd><code>H5TBappend_single_packet</code> writes one packet to the end
+      of a packet table specified by <code>table_id</code>.  <code>data</code>
+      is a buffer containing the data to be written.  For a packet table
+      holding fixed-length packets, this data should be in the packet table's
+      datatype.  For a variable-length packet table, the data should be in the
+      form of a <code>hvl_t</code> struct.  This function is identical to
+      calling <code>H5TBappend_packets<code> to append a single packet.&nbsp;</dd>
+
+  <dt><strong>Parameters:</strong> </dt>
+    <dl>
+    <dt><em>hid_t</em> <code>table_id</code> </dt>
+    <dd>IN: Identifier of packet table to which packet should be appended. </dd>
+    <dt><em>const void *</em> <code>data</code> </dt>
+    <dd>IN: Buffer holding data to write. </dd>
+  </dl>
+</dl>
+
+<dl>
+  <dt><strong>Returns:</strong> </dt>
+  <dd>Returns a non-negative value if successful, otherwise returns a negative value.</dd>
+</dl>
+
+<hr>
+
+<dl>
+  <dt style="background-color: #CCCCFF"><strong>Name:</strong> <a name="H5TBcreate_ptable_index">H5TBcreate_ptable_index</a> </dt>
+
+  <dt><strong>Signature:</strong> </dt>
+  <dl><dt> <em>herr_t</em>    H5TBcreate_ptable_index( <em>hid_t</em>  table_id)</dt>
+  </dl>
+
+  <dt><strong>Purpose:</strong> </dt>
+  <dd>Resets a packet table's index to the first packet.</dd>
+
+  <dt><strong>Description:</strong> </dt>
+  <dd>Each packet table keeps an index of the "current" packet so that
+      <code>get_next_packets</code> can iterate through the packets in
+      order.  <code>H5TBcreate_ptable_index</code> initializes a packet
+      table's index, and should be called before using
+      <code>get_next_packets</code>.
+      The index must be initialized every time a packet table is created
+      or opened; this information is lost when the packet table is closed.&nbsp;</dd>
+
+  <dt><strong>Parameters:</strong> </dt>
+    <dl>
+    <dt><em>hid_t</em> <code>table_id</code> </dt>
+    <dd>IN: Identifier of packet table whose index should be initialized. </dd>
+  </dl>
+</dl>
+
+<dl>
+  <dt><strong>Returns:</strong> </dt>
+  <dd>Returns a non-negative value if successful, otherwise returns a negative value.</dd>
+</dl>
+
+<hr>
+
+<dl>
+  <dt style="background-color: #CCCCFF"><strong>Name:</strong> <a name="H5TBset_ptable_index">H5TBset_ptable_index</a> </dt>
+
+  <dt><strong>Signature:</strong> </dt>
+  <dl><dt> <em>herr_t</em>       H5TBset_ptable_index( <em>hid_t</em>  table_id, 
+    <em>hsize_t</em>   pt_index)</dt>
+  </dl>
+
+  <dt><strong>Purpose:</strong> </dt>
+  <dd>Sets a packet table's index.</dd>
+
+  <dt><strong>Description:</strong> </dt>
+  <dd>Each packet table keeps an index of the "current" packet so that
+      <code>get_next_packets</code> can iterate through the packets in
+      order.  <code>H5TBset_ptable_index</code> sets this index to point
+      to a user-specified packet (the packets are zero-indexed).&nbsp;</dd>
+
+  <dt><strong>Parameters:</strong> </dt>
+    <dl>
+    <dt><em>hid_t</em> <code>table_id</code> </dt>
+    <dd>IN: Identifier of packet table whose index is to be set. </dd>
+    <dt><em>hsize_t</em> <code>index</code> </dt>
+    <dd>IN: The packet to which the index should point. </dd>
+  </dl>
+</dl>
+
+<dl>
+  <dt><strong>Returns:</strong> </dt>
+  <dd>Returns a non-negative value if successful, otherwise returns a negative value.</dd>
+</dl>
+
+<hr>
+
+<dl>
+  <dt style="background-color: #CCCCFF"><strong>Name:</strong> <a name="H5TBread_packets">H5TBread_packets</a> </dt>
+
+  <dt><strong>Signature:</strong> </dt>
+  <dl><dt> <em>herr_t</em>       H5TBread_packets( <em>hid_t</em>  table_id, 
+    <em>hsize_t</em>   start,  <em>hsize_t</em>   nrecords,
+    <em>void* data</em>)</dt>
+  </dl>
+
+  <dt><strong>Purpose:</strong> </dt>
+  <dd>Reads a number of packets from a packet table.</dd>
+
+  <dt><strong>Description:</strong> </dt>
+  <dd><code>H5TBread_packets</code> reads <code>nrecords</code> packets starting
+      at packet number <code>start</code> from a packet table specified by
+      <code>table_id</code>.  <code>data</code> is a buffer into which the
+      data should be read.<br>
+      For a packet table holding variable-length records, the data returned
+      in the buffer will be in form of <code>hvl_t</code> structs, each
+      containing the length of the data and a pointer to it in memory.
+      The memory used by this data must be freed using 
+      <code>H5TBfree_vlen_readbuff</code>. &nbsp;</dd>
+
+  <dt><strong>Parameters:</strong> </dt>
+    <dl>
+    <dt><em>hid_t</em> <code>table_id</code> </dt>
+    <dd>IN: Identifier of packet table to read from. </dd>
+    <dt><em>hsize_t</em> <code>start</code> </dt>
+    <dd>IN: Packet to start reading from. </dd>
+    <dt><em>hsize_t</em> <code>nrecords</code> </dt>
+    <dd>IN: Number of packets to be read. </dd>
+    <dt><em>void *</em> <code>data</code> </dt>
+    <dd>OUT: Buffer into which to read data. </dd>
+  </dl>
+</dl>
+
+<dl>
+  <dt><strong>Returns:</strong> </dt>
+  <dd>Returns a non-negative value if successful, otherwise returns a negative value.</dd>
+</dl>
+
+<hr>
+
+<dl>
+  <dt style="background-color: #CCCCFF"><strong>Name:</strong> <a name="H5TBread_single_packet">H5TBread_single_packet</a> </dt>
+
+  <dt><strong>Signature:</strong> </dt>
+  <dl><dt> <em>herr_t</em>       H5TBread_single_packet( <em>hid_t</em>  table_id, 
+    <em>hsize_t</em>   index,  <em>void* data</em>)</dt>
+  </dl>
+
+  <dt><strong>Purpose:</strong> </dt>
+  <dd>Reads a single packet from a packet table.</dd>
+
+  <dt><strong>Description:</strong> </dt>
+  <dd><code>H5TBread_packets reads a single packet with index <code>index</code>
+      from a packet table specified by <code>table_id</code>.  <code>data</code>
+      is a buffer into which the data should be read.<br>
+      For a packet table holding variable-length records, the data returned
+      in the buffer will be in form of a <code>hvl_t</code> struct
+      containing the length of the data and a pointer to it in memory.
+      The memory used by this data must be freed using 
+      <code>H5TBfree_vlen_readbuff</code>. &nbsp;</dd>
+
+  <dt><strong>Parameters:</strong> </dt>
+    <dl>
+    <dt><em>hid_t</em> <code>table_id</code> </dt>
+    <dd>IN: Identifier of packet table to read from. </dd>
+    <dt><em>hsize_t</em> <code>index</code> </dt>
+    <dd>IN: Index of packet to be read (packet tables are zero-indexed). </dd>
+    <dt><em>void *</em> <code>data</code> </dt>
+    <dd>OUT: Buffer into which to read data. </dd>
+  </dl>
+</dl>
+
+<dl>
+  <dt><strong>Returns:</strong> </dt>
+  <dd>Returns a non-negative value if successful, otherwise returns a negative value.</dd>
+</dl>
+
+<hr>
+
+<dl>
+  <dt style="background-color: #CCCCFF"><strong>Name:</strong> <a name="H5TBget_next_packets">H5TBget_next_packets</a> </dt>
+
+  <dt><strong>Signature:</strong> </dt>
+  <dl><dt> <em>herr_t</em>       H5TBget_next_packets( <em>hid_t</em>  table_id, 
+    <em>hsize_t</em>   nrecords,  <em>void* data</em>)</dt>
+  </dl>
+
+  <dt><strong>Purpose:</strong> </dt>
+  <dd>Reads packets from a packet table starting at the current index.</dd>
+
+  <dt><strong>Description:</strong> </dt>
+  <dd><code>H5TBread_packets</code> reads <code>nrecords</code> packets
+      starting with the "current index" from a packet table 
+      specified by <code>table_id</code>.  The packet table's index
+      is set and reset with <code>H5TBset_index</code> and
+      <code>H5TBcreate_index</code>.
+      <code>data</code> is a buffer into which the data should 
+      be read.<br>
+      For a packet table holding variable-length records, the data returned
+      in the buffer will be in form of a <code>hvl_t</code> struct
+      containing the length of the data and a pointer to it in memory.
+      The memory used by this data must be freed using 
+      <code>H5TBfree_vlen_readbuff</code>. &nbsp;</dd>
+
+  <dt><strong>Parameters:</strong> </dt>
+    <dl>
+    <dt><em>hid_t</em> <code>table_id</code> </dt>
+    <dd>IN: Identifier of packet table to read from. </dd>
+    <dt><em>hsize_t</em> <code>nrecords</code> </dt>
+    <dd>IN: Number of packets to be read. </dd>
+    <dt><em>void *</em> <code>data</code> </dt>
+    <dd>OUT: Buffer into which to read data. </dd>
+  </dl>
+</dl>
+
+<dl>
+  <dt><strong>Returns:</strong> </dt>
+  <dd>Returns a non-negative value if successful, otherwise returns a negative value.</dd>
+</dl>
+
+<hr>
+
+<dl>
+  <dt style="background-color: #CCCCFF"><strong>Name:</strong> <a name="H5TBget_num_packets">H5TBget_num_packets</a> </dt>
+
+  <dt><strong>Signature:</strong> </dt>
+  <dl><dt> <em>herr_t</em>       H5TBget_num_packets( <em>hid_t</em>  table_id, 
+    <em>hsize_t *</em>  nrecords)</dt>
+  </dl>
+
+  <dt><strong>Purpose:</strong> </dt>
+  <dd>Returns the number of packets in a packet table.</dd>
+
+  <dt><strong>Description:</strong> </dt>
+  <dd><code>H5TBget_num_packets</code> returns by reference the
+      number of packets in a packet table specified by
+      <code>table_id</code>. &nbsp;</dd>
+
+  <dt><strong>Parameters:</strong> </dt>
+    <dl>
+    <dt><em>hid_t</em> <code>table_id</code> </dt>
+    <dd>IN: Identifier of packet table to query. </dd>
+    <dt><em>hsize_t</em> <code>nrecords</code> </dt>
+    <dd>OUT: Number of packets in packet table. </dd>
+  </dl>
+</dl>
+
+<dl>
+  <dt><strong>Returns:</strong> </dt>
+  <dd>Returns a non-negative value if successful, otherwise returns a negative value.</dd>
+</dl>
+
+<hr>
+
+<dl>
+  <dt style="background-color: #CCCCFF"><strong>Name:</strong> <a name="H5TBis_valid">H5TBis_valid</a> </dt>
+
+  <dt><strong>Signature:</strong> </dt>
+  <dl><dt> <em>herr_t</em>       H5TBis_valid( <em>hid_t</em>  table_id)</dt>
+  </dl>
+
+  <dt><strong>Purpose:</strong> </dt>
+  <dd>Determines whether an indentifier points to a packet table.</dd>
+
+  <dt><strong>Description:</strong> </dt>
+  <dd><code>H5TBis_valid</code> returns a non-negative value if
+      <code>table_id</code> corresponds to an open packet table,
+      and returns a negative value otherwise. &nbsp;</dd>
+
+  <dt><strong>Parameters:</strong> </dt>
+    <dl>
+    <dt><em>hid_t</em> <code>table_id</code> </dt>
+    <dd>IN: Identifier to query. </dd>
+  </dl>
+</dl>
+
+<dl>
+  <dt><strong>Returns:</strong> </dt>
+  <dd>Returns a non-negative value if <code>table_id</code> is a valid packet table, otherwise returns a negative value.</dd>
+</dl>
+
+<hr>
+
+<dl>
+  <dt style="background-color: #CCCCFF"><strong>Name:</strong> <a name="H5TBis_varlen">H5TBis_varlen</a> </dt>
+
+  <dt><strong>Signature:</strong> </dt>
+  <dl><dt> <em>herr_t</em>       H5TBis_varlen( <em>hid_t</em>  table_id)</dt>
+  </dl>
+
+  <dt><strong>Purpose:</strong> </dt>
+  <dd>Determines whether a packet table contains variable-length or fixed-length packets.</dd>
+
+  <dt><strong>Description:</strong> </dt>
+  <dd><code>H5TBis_varlen</code> returns 1 (TRUE) if <code>table_id</code>
+      is a packet table containing variable-length records.  It returns
+      0 (FALSE) if <code>table_id</code> is a packet table containing
+      fixed-length records.  If <code>table_id</code> is not a packet table,
+      a negative value is returned. &nbsp;</dd>
+
+  <dt><strong>Parameters:</strong> </dt>
+    <dl>
+    <dt><em>hid_t</em> <code>table_id</code> </dt>
+    <dd>IN: Packet table to query. </dd>
+  </dl>
+</dl>
+
+<dl>
+  <dt><strong>Returns:</strong> </dt>
+  <dd>Returns 1 for a variable-length packet table, 0 for fixed-length, or a negative value on error.</dd>
+</dl>
+
+<hr>
+
+<dl>
+  <dt style="background-color: #CCCCFF"><strong>Name:</strong> <a name="H5TBfree_vlen_readbuff">H5TBfree_vlen_readbuff</a> </dt>
+
+  <dt><strong>Signature:</strong> </dt>
+  <dl><dt> <em>herr_t</em>       H5TBfree_vlen_readbuff( <em>hid_t</em>  table_id,
+      <em>hsize_t</em> bufflen,    <em>void *</em> buff)</dt>
+  </dl>
+
+  <dt><strong>Purpose:</strong> </dt>
+  <dd>Releases memory allocated in the process of reading variable-length packets.</dd>
+
+  <dt><strong>Description:</strong> </dt>
+  <dd>When variable-length packets are read, memory is automatically allocated
+      to hold them, and must be freed.  <code>H5TBfree_vlen_readbuff</code>
+      frees this memory, and should be called whenever packets are read
+      from a variable-length packet table. &nbsp;</dd>
+
+  <dt><strong>Parameters:</strong> </dt>
+    <dl>
+    <dt><em>hid_t</em> <code>table_id</code> </dt>
+    <dd>IN: Packet table whose memory should be freed. </dd>
+    <dt><em>hsize_t</em> <code>bufflen</code> </dt>
+    <dd>IN: Size of <code>buff</code>. </dd>
+    <dt><em>void *</em> <code>buff</code> </dt>
+    <dd>IN: Buffer that was used to read in variable-length packets. </dd>
+  </dl>
+</dl>
+
+<dl>
+  <dt><strong>Returns:</strong> </dt>
+  <dd>Returns a non-negative value on success or a negative value on error.</dd>
+</dl>
+
+<hr>
+

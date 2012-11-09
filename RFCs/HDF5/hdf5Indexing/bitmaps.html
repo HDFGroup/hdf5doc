@@ -1,0 +1,96 @@
+<html>
+
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+<title>Indexing in HDF5</title>
+</head>
+
+<body>
+
+<hr color="#000080" size="4">
+<table border="1" width="100%">
+	<tr>
+		<td><a href="http://www.hdfgroup.org"><img border="0" src="images/hdf_logo.jpg" width="208" height="70"></a></td>
+		<td width="600">
+		<p align="right"><b><font size="7" face="Bookman Old Style">
+		<a href="index.html">Indexing in 
+		HDF5</a></font></b></td>
+	</tr>
+</table>
+<hr color="#000080" size="4">
+<table border="1" width="100%" height="81">
+	<tr>
+		<td colspan="2" height="12" width="50%"><b>
+		<font size="5" face="Bookman Old Style" color="#000080">HDF Indexing Prototypes</font></b></td>
+		<td colspan="2" height="12" width="50%"><b>
+		<font size="5" face="Bookman Old Style" color="#000080">Other Indexing Projects</font></b></td>
+	</tr>
+	<tr>
+		<td width="25%" height="8"><b>
+		<a href="bitmaps.html">
+		<font size="4" face="Bookman Old Style" color="#000080">Bitmap Indices</font></a></b></td>
+		<td height="8" width="25%"><b>
+		<a href="PIs.html">
+		<font size="4" face="Bookman Old Style" color="#000080">Projection Indices</font></a></b></td>
+		<td height="8" width="25%"><b>
+		<font face="Bookman Old Style" size="4" color="#000080">
+		<a href="fastbit.html">FastBit</a></font></b></td>
+		<td height="8" width="25%"><b>
+		<font size="4" face="Bookman Old Style" color="#000080">
+		<a href="pytables.html">PyTables</a></font></b></td>
+	</tr>
+	</table>
+<p><u><font face="Bookman Old Style" size="6">Basics:</font></u></p>
+<p><font face="Bookman Old Style" size="4">A <b>bitmap index</b> is a special 
+kind of index that stores the bulk of its data as bitmaps and answers most queries 
+by performing bitwise logical operations on these bitmaps. A small introduction 
+of bitmap indexes can be found
+<a href="http://en.wikipedia.org/wiki/Bitmap_index">here</a>. A more detailed 
+description of bitmap indexes and their state of art can be found in this
+<a href="http://elephant.cs.uiuc.edu/~rsinha/papers/TODS_2007.pdf">paper</a>.
+Section 2 of the paper describes the basics of bitmap indexes, while the rest
+of the paper describes multi-resolution bitmap indexes. This version of H5BIN
+has provisions to use multi-resolution bitmap indexes.</font></p>
+<p><u><font face="Bookman Old Style" size="6">Restrictions:</font></u></p>
+<p><font face="Bookman Old Style" size="4">At this point the indexing is limited 
+to atomic datatypes only. An extension to use it with compound datatypes with 
+one level complexity would be added soon.</font></p>
+<p><font face="Bookman Old Style" size="4">The response from the query consists 
+of a bit vector which can be iterated upon using an iterator (provided with the 
+API). The positions would have to be converted into dataspaces by the users 
+themselves. A patch to convert bit vectors into dataspaces in the works.</font></p>
+<p><font face="Bookman Old Style" size="4">It currently supports indexing of 
+integral datatypes (byte, short, int, long long int) only. The bitmap has one 
+bit vector per value in the integral range. In the future we plan to map 
+floating point numbers to integers (by binning them and assigning bit vectors to 
+bins) and provide indexing for floating point numbers too. </font></p>
+<p><u><font face="Bookman Old Style" size="6">Using Bitmap Indexes:</font></u></p>
+<p><font face="Bookman Old Style" size="4">The bitmap index API, called the 
+H5BIN API,&nbsp; is implemented as a C++ class with 3 public functions, the 
+constructor, create and query. The constructor takes as a parameter the 
+directory which contains the data and the metadata files. The create function 
+takes no parameters, while the query function takes a list of attributes and 
+their associated bounds as input. The query function then creates an conjunctive 
+query using the various attributes and their associated bounds and executes the 
+query. In order to create the indexes we need to let the function know which 
+datasets to read and which indexes to build. We do this through the metadata 
+file. The default metadata file to be provided by the user consists of 2 
+datasets named <i>Variables </i>and <i>Files</i>. They contain:</font></p>
+<ul>
+	<li><font face="Bookman Old Style" size="4"><i>Variables:</i> This dataset 
+	consists of a table with each row consisting of the name of the variable, 
+	the location inside a file where the variable is stored, the data type and 
+	whether it is a nodal or elemental coordinate (only for meshes).</font></li>
+	<li><font face="Bookman Old Style" size="4"><i>Files:</i> This dataset 
+	consist of a list of the names of the files where the data to be indexed is 
+	stored.</font></li>
+</ul>
+
+<p><u><font face="Bookman Old Style" size="6">Software:</font></u></p>
+<p><font face="Bookman Old Style" size="4">The source code for the indexing 
+software can be found <a href="./H5BIN.tar">here</a>.</font></p>
+<p>&nbsp;</p>
+
+</body>
+
+</html>

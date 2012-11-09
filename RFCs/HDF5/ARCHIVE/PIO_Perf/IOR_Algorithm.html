@@ -1,0 +1,233 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN"
+    "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html xmlns="http://www.w3.org/TR/REC-html40" lang="en-US">
+
+<head>
+  <title>IOR Parallel Measurement</title>
+</head>
+
+<body bgcolor="white" lang="EN-US" link="blue" vlink="blue">
+
+<h1 align="center" style="text-align:center">IOR's Algorithm</h1>
+
+<h3 align="center" style="text-align:center">DRAFT VERSION</h3>
+
+<h2>1 Introduction</h2>
+
+<ul>
+    <p>
+    This is a summary of the functions and the algorithms of the LLNL IOR performance program, originally created by Kim Yates.
+    </p>
+</ul>
+
+
+<h3>2.1 Current IOR Algorithm Design</h3>
+
+<h4>2.1.1 Environment Variables Used by IOR</h4>
+
+<ul>
+    <p>
+    Environment variables are used to modify the actions of the IOR
+    program.
+    </p>
+  
+    <dl>
+        <li><code>REPORT_FILE_NAME</code></li>
+            <dd>The report file name.</dd>
+        <li><code>TEST_REPETITIONS</code></li>
+            <dd>How many times to do outermost test.</dd>
+        <li><code>TEST_PROCS_MAX</code></li>
+            <dd>Largest number of porcesses user wants to do I/O.</dd>
+        <li><code>TEST_PROCS_MIN</code></li>
+            <dd>Smallest number of processes user wants to do I/O.</dd>
+        <li><code>TEST_PROCS_DEC</code></li>
+            <dd>If &gt;0, decrement number of processes used.</dd>
+        <li><code>TEST_PROCS_DIV</code></li>
+            <dd>If &gt;1, divide number of processes used.</dd>
+        <li><code>TEST_READ_ONLY</code></li>
+            <dd>Test read only, no write.</dd>
+        <li><code>TEST_WRITE_ONLY</code></li>
+            <dd>Test write only, no read.</dd>
+        <li><code>DELETE_TEST_FILE</code></li>
+            <dd>Delete test file after tests are completed.</dd>
+        <li><code>TEST_WRITE_OVER</code></li>
+            <dd>Rewrite over existing file.</dd>
+        <li><code>IOR_DEBUG</code></li>
+            <dd>Debugging printfs.</dd>
+        <li><code>SHOW_STATS</code></li>
+            <dd>Show times.</dd>
+        <li><code>USE_MPI_TIMER</code></li>
+            <dd>Use MPI_Timer instead of gettimeofday.</dd>
+        <li><code>SHOW_RANDOM_LIST</code></li>
+            <dd>Show random parameters when built.</dd>
+        <li><code>SHOW_XFERS</code></li>
+            <dd>Show the results of transfers.</dd>
+        <li><code>SHOW_DELAYS</code></li>
+            <dd>Show when we delay.</dd>
+        <li><code>DO_COLLECTIVE_XFERS</code></li>
+            <dd>Do collective transfers.</dd>
+        <li><code>DO_MULTIBLOCK_XFERS</code></li>
+            <dd>Do multiblock transfers.</dd>
+        <li><code>TEST_FILE_PATH</code></li>
+            <dd>Change default file path.</dd>
+        <li><code>TEST_FILE_NAME</code></li>
+            <dd>Change default file name.</dd>
+        <li><code>PREFIX_FOR_OPEN</code></li>
+            <dd>Special prefix for openning files. (??)</dd>
+        <li><code>BLOCK_SIZE_MAX</code></li>
+            <dd>Largest block to try.</dd>
+        <li><code>BLOCK_SIZE_MIN</code></li>
+            <dd>Smallest block to try.</dd>
+        <li><code>BLOCK_SIZE_DEC</code></li>
+            <dd>If &gt;0, decrement block size.</dd>
+        <li><code>BLOCK_SIZE_DIV</code></li>
+            <dd>If &gt;1, divide block size.</dd>
+        <li><code>SUBBLOCK_SIZE_MAX</code></li>
+            <dd>Largest subblock to try.</dd>
+        <li><code>SUBBLOCK_SIZE_MIN</code></li>
+            <dd>Smallest subblock to try.</dd>
+        <li><code>SUBBLOCK_SIZE_DEC</code></li>
+            <dd>If &gt;0, decrement subblock size.</dd>
+        <li><code>SUBBLOCK_SIZE_DIV</code></li>
+            <dd>If &gt;1, divide subblock size.</dd>
+        <li><code>BUFFER_SIZE</code></li>
+            <dd>New data write/read buffer size.</dd>
+        <li><code>FILE_SIZE_MAX_MB</code></li>
+            <dd>Test file size maximum is a megabyte.</dd>
+        <li><code>FILE_SIZE_MAX</code></li>
+            <dd>Define test file size maximum.</dd>
+        <li><code>FILE_SIZE_MIN_MB</code></li>
+            <dd>Test file size minimum is a megabyte.</dd>
+        <li><code>FILE_SIZE_MIN</code></li>
+            <dd>Define test file size minimum.</dd>
+        <li><code>FILE_SIZE_DEC_MB</code></li>
+            <dd>Decrement file size by a megabyte.</dd>
+        <li><code>FILE_SIZE_DEC</code></li>
+            <dd>If &gt;0, decrement file size.</dd>
+        <li><code>FILE_SIZE_DIV_MB</code></li>
+            <dd>Divide file size by a megabyte.</dd>
+        <li><code>FILE_SIZE_DIV</code></li>
+            <dd>If &gt;1, divide file size.</dd>
+        <li><code>DO_CHECK_READ</code></li>
+            <dd>Check that the data read is as expected.</dd>
+        <li><code>DO_CHECK_WRITE</code></li>
+            <dd>Read the data back immediately and check it.</dd>
+        <li><code>TEST_ACCESS_PATTERNS</code></li>
+            <dd>Test various access patterns (Regular, Random/InOrder
+                Random/Random)</dd>
+        <li><code>TEST_FILECREATE_PATTERN</code></li>
+            <dd>Per Job or per process.</dd>
+        <li><code>MIN_INTS_PER_CHUNK</code></li>
+            <dd>Minimum number of integers per chunk.</dd>
+        <li><code>MAX_INTS_PER_CHUNK</code></li>
+            <dd>Maximum number of integers per chunk.</dd>
+        <li><code>CHUNK_SIZE_SEED</code></li>
+            <dd>Random seed.</dd>
+        <li><code>MULTIBLOCK_REGION_SIZE</code></li>
+            <dd>Total bytes in multiblock transvers will be &lt;= this.</dd>
+        <li><code>NUM_DATASETS</code></li>
+            <dd>Number of datasets.</dd>
+        <li><code>INTERTEST_DELAY_SECS</code></li>
+            <dd>Delay before open to let previous I/O to finish.</dd>
+        <li><code>H5_DSET_CHUNK_SIZE</code></li>
+            <ul>
+                <li>If !=0, number of elements in a chunk used to grow an
+                    extendable dataset</li>
+                <li>If &lt;0, use default extension chunk size</li>
+                <li>If &gt;0, specifies the chunk size</li>
+                <li>If 0 (default), use non-extendable datasets</li>
+            </ul>
+        <li><code>H5_DSET_EXTEND_SIZE</code></li>
+            <ul>
+                <li>If &gt;0, number of elements to grow an extendable
+                    dataset</li>
+                <li>If &lt;=0 (default), use non-extendable datasets</li>
+            </ul>
+        <li><code>MPI_INFO_KEYSVALS</code></li>
+            <dd>MPI info keys/vals.</dd>
+    </dl>
+</ul>
+
+<h4>2.1.2 Steps Taken by IOR Program</h4>
+
+<ul>
+    <li>Number of processes can be changed for each loop iteration</li>
+    <li>Block size vary for acesses which are "Regular"</li>
+    <li>Files can be created per Job or Process</li>
+    <li>Process 0 does all time management stuff</li>
+    <li>Do Write/Read:</li>
+      <ul>
+        <li>Open file</li>
+          <ul>
+            <li>Set file access template</li>
+            <li>Align datasets for better performance</li>
+            <li>Create memory dataspace</li>
+            <li>Set up the transfer properties list</li>
+            <li>Create file if writing, open file if reading</li>
+          </ul>
+        <li>Determine sizes of first (n - 1) datasets and nth dataset</li>
+        <li>Loop reading/writing datasets</li>
+          <ul>
+            <li>If Writing:</li>
+              <ul>
+                <li>Regular pattern: each process transfers 1 block at a time</li>
+                <li>Can do multiblock transfers only if filecreate per job</li>
+                <li>Non-regular does random sized chunks</li>
+                <li>Writing can create extendable datasets</li>
+                <li>Create dataset collectively</li>
+              </ul>
+            <li>If Reading:</li>
+              <ul>
+                <li>Open dataset</li>
+              </ul>
+            <li>Set up file for hyperslab</li>
+              <ul>
+                <li>If multiblock transfers, set up accordingly</li>
+                <li>Otherwise, use 1-chunk hyperslabs</li>
+                <li>If Writing:</li>
+                  <ul>
+                    <li>Might have to extend dataset collectively</li>
+                  </ul>
+                <li>Select hyperslab</li>
+                <li>Set up memory hyperslab</li>
+                <li>If Writing:</li>
+                  <ul>
+                    <li>Do write (collectively, if need be)</li>
+                  </ul>
+                <li>If Reading:</li>
+                  <ul>
+                    <li>Do read (collectively, if need be)</li>
+                  </ul>
+                <li>Check write, if specified</li>
+                <li>Check read, if specified</li>
+              </ul>
+            <li>Set up for next loop iteration</li>
+            <li>Collectively close dataset</li>
+          </ul>
+        <li>After loop:</li>
+          <ul>
+            <li>Participate in collective extensions which remain</li>
+            <li>Participate in collective transfers which remain</li>
+            <li>Close file</li>
+            <li>If Writing:</li>
+              <ul>
+                <li>Get stat64() information about file (if we have
+                    stat64()) and hope that it's the size we expect</li>
+              </ul>
+          </ul>
+      </ul>
+    <li>Report max speeds
+</ul>
+
+<hr size=3 width="100%" align=center />
+
+<p>
+Albert Cheng &amp; Bill Wendling<br>
+National Center for Supercomputing Applications<br>
+Send comments to<br>
+<a href="mailto:hdfparallel@ncsa.uiuc.edu">hdfparallel@ncsa.uiuc.edu</a></p>
+
+<h6>Last Modified: 14. December, 2001</h6>
+
+</body>
+</html>

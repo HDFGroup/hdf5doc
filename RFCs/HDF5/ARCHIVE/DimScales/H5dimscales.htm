@@ -1,0 +1,485 @@
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+   <meta name="Generator" content="Microsoft Word 97">
+   <meta name="GENERATOR" content="Mozilla/4.72 [en] (WinNT; U) [Netscape]">
+   <meta name="Author" content="Robert E. McGrath">
+   <title>H4 to H5 Conversion Issues for HDF4 Dimensions</title>
+</head>
+<body text="#000000" bgcolor="#FFFFFF" link="#0000FF" vlink="#800080" alink="#FF0000">
+
+<h2>
+<b><font face="Times New Roman,Times">Dimension Scales in HDF5: Preliminary
+Ideas</font></b></h2>
+<font face="Times New Roman,Times">Robert E. McGrath</font>
+<br><font face="Times New Roman,Times">16 May, 2001</font>
+<h3>
+1. Introduction and Rationale</h3>
+
+<p><br>HDF4 implements Dimension Scales for Scientific Datasets.&nbsp;
+This implementation includes a standard storage scheme for dimensions,
+and also has a programming model.&nbsp; HDF5 has no specification for Dimension
+Scales, but this has been frequently requested.&nbsp; This feature is needed
+both to bring forward HDF4 data and applications, and to support new applications.
+<p>Dimension scales in HDF5 have been partly addressed in previous work.&nbsp;
+Two experiments have suggested possible approaches to dimension scales
+based on netCDF.&nbsp; The "<a href="http://hdf.ncsa.uiuc.edu/HDF5/papers/netcdfh5.html">NetCDF-H5
+Prototype</a>" explored a fairly complete implementation of netCDF on top
+of HDF5.[<a href="#ref1">1</a>] This work proposed a storage scheme and
+software to implement netCDF's model of dimensions.&nbsp; A later study,
+"<a href="http://hdf.ncsa.uiuc.edu/HDF5/XML/nctoh5/writeup.htm">Experiment
+with XSL</a>," converted XML files to HDF5 files via XML and XSL style
+sheets.[<a href="#ref2">2</a>] This work used a different storage layout
+for dimensions from [<a href="#ref1">1</a>], and did not address any issues
+of programming model or compatibility.
+<p>The <a href="http://hdf.ncsa.uiuc.edu/HDF5/papers/h4toh5/">HDF4 to HDF5
+Mapping</a> is an official specification for a default representation of
+HDF4 objects in an HDF5 file. This specification includes an official specification
+for storing dimension scales from an HDF4 object in an HDF5 file.([<a href="#ref3">3</a>],
+section 3.1). This specification did not suggest a programming model, and
+did not consider requirements for using dimensions in ab novo HDF5 (i.e.,
+not converted from HDF4).
+<p>While previous efforts have aimed to simulate HDF4 or netCDF, the fact
+is that HDF5 is a clean slate. We can implement whatever concepts we want,
+with whatever programming model and interfaces we want.
+<p>Based on the previous work above, it seems certain that these features
+can be implemented as part of the HDF5 'lite' API, with not changes to
+the core HDF5 library.&nbsp; Other software may need to be updated, particularly
+the h4toh5 converter and other tools.
+<br>&nbsp;
+<h3>
+<b>2. Requirements</b></h3>
+
+<p><br>I believe that a specification for Dimension Scales needs the following
+pieces:
+<ul>
+<ul>
+<li>
+A conceptual model of what a dimension scale is</li>
+
+<li>
+A storage model</li>
+
+<li>
+A programming model</li>
+</ul>
+</ul>
+These components are discussed in section 3, below.
+<p>The design should meet the following requirements:
+<ol>
+<li>
+The conceptual should be a conceptual superset of HDF4 (and netCDF)</li>
+
+<ol>
+<li>
+The concepts supported in HDF4 should be supported by HDF5</li>
+
+<li>
+HDF5 may provide features not supported by HDF4 or netCDF</li>
+</ol>
+
+<li>
+The storage model should be simple and efficient</li>
+
+<ol>
+<li>
+No changes to the HDF5 library should be required</li>
+
+<li>
+Ideally, the storage design should be similar to the HDF4 to HDF5 Mapping
+currently specifies, unless there is a good reason to do something else</li>
+</ol>
+
+<li>
+The programming model should be a superset of HDF4 (and netCDF)</li>
+
+<ol>
+<li>
+Users should be able to create and access dimension scale information in
+ways analogous to HDF4</li>
+
+<li>
+HDF5 may provide additional features</li>
+</ol>
+</ol>
+
+<h2>
+<b>3. Design Issues</b></h2>
+<b>3.1. Conceptual Model</b>
+<p>A dimension scale is essentially a means of labeling the axes of a multidimensional
+array. Clearly, there are many ways to do this, and many interpretations
+of a given label. For HDF, the goal is to store an adequate representation
+of the desired labels, along with an appropriate association between each
+axis and its label(s), if any.
+<br>&nbsp;
+<table BORDER WIDTH="100%" >
+<caption><b>Table 1. Some conceptual variations of dimension scales.</b></caption>
+
+<tr>
+<td><b>Case</b></td>
+
+<td><b>Description and Comments</b></td>
+</tr>
+
+<tr>
+<td>No scale</td>
+
+<td>No scale is needed, or else the application has its own means of labeling
+the axis.</td>
+</tr>
+
+<tr>
+<td>Start Value plus Increment</td>
+
+<td>A linear scale, e.g., the dimension scale values for x are A + Bx,
+where A and B are stored.</td>
+</tr>
+
+<tr>
+<td>Arbitrary Generating Function</td>
+
+<td>A generalization of above, where the dimension scale values for x are
+defined by some function f(x), including log, exp, etc.</td>
+</tr>
+
+<tr>
+<td>Stored list</td>
+
+<td>The scale value at each point on dimension x is stored explicitly in
+a 1D array.&nbsp; (Note that this can support types other than numbers.)</td>
+</tr>
+
+<tr>
+<td>Partial and/or multi-list</td>
+
+<td>Scale values for some points are stored explicitly, with each scale
+point potentially stored individually.&nbsp; Possibly more than one scale
+value per point on the dimension.</td>
+</tr>
+</table>
+
+<p>Table 1 lists some possible conceptual variations for stored dimension
+scales. HDF4 supports 'No scale' and 'Stored list'.&nbsp; The 'Arbitrary
+generating function' could be difficult to implement unless the functions
+allowed are constrained (as in 'Start plus increment').&nbsp; Partial and
+multi-lists would not be especially difficult to store, but the programming
+model might be complex.
+<p>Whatever the conceptual features supported, the programming model should
+be as simple and clear as possible, with reasonable default behaviors.&nbsp;
+For instance, it should not be necessary to call an API in order to <i>not</i>
+use dimensions, and it should be possible to add or delete a dimension
+scale to a dataset at most points in the object's life cycle.&nbsp; Thus,
+the selected set of features must be evaluated as a whole package.
+<p>Considering Dimension Scales as objects, there are two properties that
+must be considered.&nbsp; First, the dimensions may potentially be shared,
+and the sharing (and 'addressing') might be of several scopes. Second,
+a Dimension Scale may have many data types, not necessarily the data type
+of the data in the array.
+<br>&nbsp;
+<table BORDER WIDTH="100%" >
+<caption><b>Table 2. Some dimensions of shared dimensions</b></caption>
+
+<tr>
+<td><b>Case</b></td>
+
+<td><b>Description and Notes</b></td>
+</tr>
+
+<tr>
+<td>No sharing</td>
+
+<td>Dimension is local to the object, not visible to any other object.</td>
+</tr>
+
+<tr>
+<td>shared within a local scope, e.g., a group</td>
+
+<td>Dimension is shared among a local set of objects.</td>
+</tr>
+
+<tr>
+<td>shared within a single file</td>
+
+<td>Dimension is global to the file</td>
+</tr>
+
+<tr>
+<td>shared, may be in external file&nbsp;</td>
+
+<td>Dimension may be in another HDF5 file</td>
+</tr>
+
+<tr>
+<td>shared, from any URI</td>
+
+<td>Dimension scale may be stored on the internet, in any format (e.g.,
+XML)</td>
+</tr>
+</table>
+
+<p>Table 2 lists some of the ways that a dimension scale might be shared.&nbsp;
+Shared dimensions within a file are widely used&nbsp; in netCDF and HDF4,
+so that data in multiple datasets can be correctly related to each other.&nbsp;
+HDF5 would support local sharing (e.g., within a Group), and schemes for
+dimension scales external to the file can be imagined.
+<p>In any case, it is very important that the user be able to understand
+and control the sharing of dimensions. Also, implementation of the conceptual
+cases in Table 1 need to support sharing in a consistent fashion.
+<br>&nbsp;
+<table BORDER WIDTH="100%" >
+<caption><b>Table 3. Data type for dimension scales.</b></caption>
+
+<tr>
+<td><b>Case</b></td>
+
+<td><b>Description and Comments</b></td>
+</tr>
+
+<tr>
+<td>Sequences of atomic numbers</td>
+
+<td>Numerical axes. Might be constrained to be in the range of legal generating
+functions.</td>
+</tr>
+
+<tr>
+<td>Any type, including string and compound</td>
+
+<td>Any user defined values, including strings.</td>
+</tr>
+</table>
+
+<p>Table 3 gives two general alternatives for the data type of a dimension
+scale.&nbsp; If the scale is stored explicitly, then HDF5 can easily support
+a dimension with any data type supported by HDF5.&nbsp; If a generating
+function is used, then the function will define the data type of its range.&nbsp;
+In this case, the dimension scale might realistically be considered to
+have the type 'FUNCTION', which would be a new feature for HDF5!
+<p><b>3.2. Storage model for a Dimension Scale Object</b>
+<p>This section assumes that a Dimension Scale object is defined, which
+implements some or all of the variations described above.&nbsp; How should
+these objects be stored in HDF5, and how should they be associated with
+the dimensions they label?
+<p><b><i>Storage</i></b>
+<p>HDF5 offers two primary choices for storing a dimension scale for an
+object:&nbsp; as an Attribute of the object or as a separate Dataset pointed
+to by an Attribute of the object.&nbsp; Ideally, a dimension scale would
+be an attribute of a <i>data space</i>, but HDF5 does not support this.&nbsp;
+Since the data space is always tightly bound to a dataset, there is no
+problem attaching the dimensions to the dataset.
+<p>For a dimension scale that is stored as explicit values, storing a dimension
+scale as an HDF5 attribute has several drawbacks.&nbsp; Dimension scales
+may be large, and may 'unlimited', so they can grow, and dimensions scales
+need to be shared.&nbsp;&nbsp; HDF5 attributes cannot support these features.&nbsp;
+Therefore, a dimension scale object will almost certainly be stored as
+one or more HDF5 objects, referenced by an attribute.
+<p>For other possibilities, the storage depends on the feature.&nbsp; A
+description of generating function might be stored as a an attribute, either
+as a string or as a compound datatype, or a simple shared dataset.&nbsp;
+The sharing and growth properties of this scale are less clear, but probably
+are the same as for a stored array. If multiple dimension scales (or piecewise
+functions) are supported, then they could be grouped in an HDF5 Group.
+<p>It might be noted that to replicate netCDF/HDF5 semantics. a shared,
+unlimited dimension has a single current size throughout the file.&nbsp;
+If one dataset using that dimension extends it, all other datasets using
+the dimension must grow by the same amount.&nbsp; For this reason, and
+to support some aspects of the programming model, there will likely be
+some sort of stored table or index, to track all the dimensions and their
+associations. (See Yeager's prototype for an example of the required data
+structures. [<a href="#ref1">1</a>])
+<p><b><i>Names</i></b>
+<p>It is almost certain that dimension scales will be shared objects.&nbsp;
+This means that there must be some way to address them, i.e., they must
+have names.&nbsp; The names will be used to associate specific dimension
+scales with specific dimension of datasets.
+<br>&nbsp;
+<br>&nbsp;
+<table BORDER WIDTH="100%" >
+<caption><b>Table 4. Some variations on names</b></caption>
+
+<tr>
+<td><b>Case</b></td>
+
+<td><b>Description and Comments</b></td>
+</tr>
+
+<tr>
+<td>Default/Implicit names</td>
+
+<td>E.g., based on the object name and dimension, or on the order of creation
+(a la netCDF)</td>
+</tr>
+
+<tr>
+<td>Reserved names</td>
+
+<td>Dimension scales must have certain names, e.g., must all be stored
+in a particular HDF5 Group, as is done in the HDF4 to HDF5 Mapping ([<a href="#ref3">3</a>])</td>
+</tr>
+
+<tr>
+<td>Arbitrary names</td>
+
+<td>Any dataset can be a Dimension Scale</td>
+</tr>
+</table>
+
+<p>Table 4 lists some ways that Dimension scale objects could be named.
+The naming scheme definitely interacts with the kinds of sharing that must
+be supported.&nbsp; Any sharing outside the file introduces serious problems
+for how to name the dimension scale object.
+<p><b><i>Properties &amp; Attributes of Dimensions</i></b>
+<p>A Dimension Scale object will be stored as an HDF5 Attribute or Dataset.&nbsp;
+Assuming the object is stored as a dataset, it will have some mandatory
+and may have additional optional properties and attributes.
+<br>&nbsp;
+<br>&nbsp;
+<table BORDER WIDTH="100%" >
+<caption><b>Table 5. Properties of a Dimension Scale</b></caption>
+
+<tr>
+<td>Property or attribute</td>
+
+<td>Description and Comments</td>
+</tr>
+
+<tr>
+<td>Name</td>
+
+<td>See discussion above.</td>
+</tr>
+
+<tr>
+<td>CLASS</td>
+
+<td>"DIMENSION_SCALE"&nbsp; (Possibly more than one kind of dimension scale
+might be supported)</td>
+</tr>
+
+<tr>
+<td>Data space</td>
+
+<td>See above.&nbsp; Note that an explicitly stored dimension should be
+a "correct size" for the dataspace of the dataset that is using it.&nbsp;
+E.g., a dimension scale for a dimension that is 10, should have 10 elements.</td>
+</tr>
+
+<tr>
+<td>Data type</td>
+
+<td>See discussion above.</td>
+</tr>
+
+<tr>
+<td>Other attributes</td>
+
+<td>UNITS, SCALE_FACTOR, OFFSET</td>
+</tr>
+
+<tr>
+<td>USED_BY</td>
+
+<td>List of datasets using this attribute. (?)</td>
+</tr>
+</table>
+
+<p>Table 5 lists some of the properties and attributes of a Dimension Scale
+object.&nbsp; In addition to the description of the dimension itself, the
+dimension scale might have attributes of its own, such as UNITS.&nbsp;
+If several kinds of Dimension Scales are supported (explicitly stored,
+start plus offset, etc.), an attribute would indicate what kind of dimension
+it is.&nbsp; Also, there could be attributes that indicate the datasets
+that use the dimension.
+<p><b><i>Miscellaneous</i></b>
+<p>HDF5 Attributes and Array data types have data spaces with dimensions.&nbsp;
+Shouldn't these dimensions be allowed to have Dimension Scales?&nbsp; If
+so, how can this be implemented?&nbsp; These cases are not encountered
+in other formats.
+<br>&nbsp;
+<h3>
+<b>3.3. Programming model</b></h3>
+Most users of netCDF and HDF4 neither know nor care how dimensions are
+stored. They are very concerned with the programming model and API, however.&nbsp;
+When a user requests "Dimension Scales for HDF5", they usually want an
+API akin to what HDF4 does.&nbsp; Of course, we would be wise not to slavishly
+copy older APIs without considering better ideas.
+<br>&nbsp;
+<br>&nbsp;
+<table BORDER WIDTH="100%" >
+<caption>&nbsp;</caption>
+
+<tr>
+<td><b>Required operation</b></td>
+
+<td><b>Description and Comments</b></td>
+</tr>
+
+<tr>
+<td>create</td>
+
+<td>Create dimension with intended properties</td>
+</tr>
+
+<tr>
+<td>destroy</td>
+
+<td></td>
+</tr>
+
+<tr>
+<td>attach to dimension of a dataset</td>
+
+<td>Associate Dimension Scale with particular dimension of a dataset</td>
+</tr>
+
+<tr>
+<td>detach from dimension of a dataset</td>
+
+<td></td>
+</tr>
+
+<tr>
+<td>get dimension scales for dataset</td>
+
+<td>Retrieve the Dimension Scales (if any), in order.</td>
+</tr>
+
+<tr>
+<td>iterate through all dimensions in file (or other scope)</td>
+
+<td>Find all Dimension Scales, in a canonical order (e.g., the order of
+creation).</td>
+</tr>
+
+<tr>
+<td>change size</td>
+
+<td>Extend a Dimension and all datasets using the Dimension</td>
+</tr>
+</table>
+
+<p>Table 6 lists some operations that will likely be needed.&nbsp; In addition
+to the basic operations to create and attach Dimension Scales, users will
+need iterators to list the Dimension Scales in a canonical order.
+<br>&nbsp;
+<h3>
+4. Summary</h3>
+This paper suggests the need for a comprehensive design for Dimension Scales
+in HDF5.&nbsp; Some requirements are proposed, and design issues listed.
+<p>These ideas need to be considered carefully, and a set of features decided.&nbsp;
+Then a specification and implementation can be done.
+<h3>
+<b>5. References</b></h3>
+
+<p><br><a NAME="ref1"></a>1. Nancy Yeager, "Implementation of the NetCDF-H5
+prototype", August 20, 1999. <a href="http://hdf.ncsa.uiuc.edu/HDF5/papers/netcdfh5.html">http://hdf.ncsa.uiuc.edu/HDF5/papers/netcdfh5.html</a>
+<p><a NAME="ref2"></a>2. Robert E. McGrath, "Experiment with XSL: translating
+scientific data", February 21, 2001. <a href="http://hdf.ncsa.uiuc.edu/HDF5/XML/nctoh5/writeup.htm">http://hdf.ncsa.uiuc.edu/HDF5/XML/nctoh5/writeup.htm</a>
+<p><a NAME="ref3"></a>3.&nbsp; Mike Folk, Robert E. McGrath, Kent Yang,
+"Mapping HDF4 Objects to HDF5 Objects" Revised: October, 2000. <a href="http://hdf.ncsa.uiuc.edu/HDF5/papers/h4toh5/">http://hdf.ncsa.uiuc.edu/HDF5/papers/h4toh5/</a>
+<br>&nbsp;
+<br>&nbsp;
+<br>&nbsp;
+</body>
+</html>

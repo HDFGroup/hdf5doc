@@ -1,0 +1,68 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+	<meta http-equiv="content-type" content="text/html; charset=utf-8">
+	<meta name="generator" content="VoodooPad">
+	<title>The old metadata cache</title>
+		<style type="text/css">
+
+body
+{
+	margin: 20px;
+	color: #000;
+	font-size: 16px;
+	background-color: #BCCCAB;
+}
+
+.main
+{
+	min-width: 400px;
+	border: solid 1px #aaaaaa;
+	padding: 5px;
+	font-family: verdana, arial, helvetica, sans-serif;
+	font-size: 9pt;
+	background: #fff;
+	margin-top: 10px;
+}
+
+.header
+{
+	color: black;
+	font-size: 24px;
+	font-variant: small-caps;
+	font-weight: bold;
+	border: solid 1px #aaaaaa;
+	background: #fff;
+}
+
+	
+	</style>
+	
+	
+</head>
+
+<body>
+    <div class="header" align="center">
+        The old metadata cache
+    </div>
+    
+    <div class="main">
+        <style type="text/css">
+p.p1 {margin: 0.0px 0.0px 0.0px 0.0px; font: 18.0px 'Lucida Grande'}
+p.p2 {margin: 0.0px 0.0px 0.0px 0.0px; font: 18.0px 'Lucida Grande'; min-height: 21.0px}
+</style>
+
+<p class="p1">The old metadata cache indexed the cache with a hash table with no provision for collisions. Instead, collisions were handled by evicting the existing entry to make room for the new entry. Aside from flushes, there was no other mechanism for evicting entries, so the replacement policy could best be described as "Evict on Collision".</p>
+<p class="p2"><br></p>
+<p class="p1">As a result, if two frequently used entries hashed to the same location, they would evict each other regularly. To decrease the likelihood of this situation, the default hash table size was set fairly large -- slightly more than 10,000. This worked well, but since the size of metadata entries is not bounded, and since entries were only evicted on collision, the large hash table size allowed the cache size to explode when working with HDF5 files with complex structure.</p>
+<p class="p2"><br></p>
+<p class="p1">The "Evict on Collision" replacement policy also caused problems with the parallel version of the HDF5 library, as a collision with a dirty entry could force a write in response to a metadata read. Since all metadata writes must be collective in the parallel case while reads need not be, this could cause the library to hang if only some of the processes participated in a metadata read that forced a write. Prior to the implementation of the new metadata cache, we dealt with this issue by maintaining a “shadow” location for dirty entries evicted by a read.</p>
+
+    </div>
+    <div class="main">
+        <a href="_page_index.html">Page Index</a>
+    </div>
+</body>
+</html>
+

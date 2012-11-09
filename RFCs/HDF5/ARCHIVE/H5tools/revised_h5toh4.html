@@ -1,0 +1,172 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"><html><head><title>revised h5toh4</title><meta http-equiv="content-type" content="text/html; charset=ISO-8859-1"></head><body>
+<dl>
+<dt><strong>Tool Name:</strong> <a name="Tools-H5toh4">h5toh4</a>
+</dt><dt><strong>Syntax:</strong>
+    </dt><dd><code>h5toh4 -h</code><br>
+
+        <code>h5toh4 </code><em>
+            h5file&nbsp;</em>[-r[oot]]<em>
+            h4file</em> <br>
+
+        <code>h5toh4 </code><em>
+            h5file</em> [-r[oot]]<br>
+
+        <code>h5toh4 -m </code><em>
+            h5file1 </em>[-r[oot]]<em>
+            [h5file2&nbsp;</em>[-r[oot]]<em>]
+            [h5file3&nbsp;</em>[-r[oot]]] ...</dd><dd>
+    <pre>h5toh4 -h[elp], OR<br>	h5toh4 &lt;infile&gt; [-r[oot]] [&lt;outfile&gt;]<br>	h5toh4 -m[ultiple] &lt;infile&gt; [-r[oot]] [&lt;infile&gt; [-r[oot]] ...]</pre>
+    <br>
+  </dd>
+<dt><strong>Purpose:</strong>
+    </dt><dd>Convert one or more HDF5 files into HDF4 files.
+</dd><dt><strong>Description:</strong>
+    </dt><dd><code>h5toh4</code> is an HDF5 utility which reads 
+        an HDF5 file, <em>h5file</em>, and converts all 
+        supported objects to produce an HDF4 file, 
+        <em>h4file</em>.  If <em>h4file</em> already exists, 
+        it will be replaced.</dd><dd><br>
+  </dd>
+  <dd>The objects are converted following the specification in:&nbsp;</dd>
+</dl>
+<dl>
+  <dd><i>&nbsp; &nbsp; &nbsp;Mapping HDF4 Objects to HDF5 Objects</i> (Oct. 2000)
+[<b><a href="http://hdf.ncsa.uiuc.edu/HDF5/doc/ADGuide/H4toH5Mapping.pdf">pdf</a></b>]&nbsp;
+    <p>
+        If only one file name is given, the name must end in 
+        <code>.h5</code> and is assumed to represent the 
+        HDF5 input file.  <code>h5toh4</code> replaces the 
+        <code>.h5</code> suffix with <code>.hdf</code> to form 
+        the name of the resulting HDF4 file and proceeds as above.  
+        If a file with the name of the intended HDF4 file already 
+        exists, <code>h5toh4</code> exits with an error without 
+        changing the contents of any file.
+        </p>
+    <p>
+        The <code>-m</code> option allows multiple HDF5 file 
+        arguments.  Each file name is treated the same as the 
+        single file name case above.</p>
+  </dd>
+  <dd>The -r option includes the 'root' Vgroup in the converted HDF4 file. By default, the root group is not converted to an HDF4 Vgroup.<br>
+  </dd>
+  <dd>
+    <p>
+        </p>
+    <p>The <code>-h</code> option causes the following
+        syntax summary to be displayed.     </p>
+
+        
+        
+    <p>
+
+        The following HDF5 objects occurring in an HDF5 file are 
+        converted to HDF4 objects in the HDF4 file:
+
+        </p>
+    <ul>
+<li>HDF5 group objects are converted into HDF4 Vgroup 
+              objects.  HDF5 hardlinks and softlinks pointing to 
+              objects are converted to HDF4 Vgroup references.
+          </li><li>HDF5 dataset objects of integer datatype are 
+              converted into HDF4 SDS objects.  These datasets 
+              may have up to 32 fixed dimensions.  
+              The slowest varying dimension may be extendable.  
+              8-bit, 16-bit, and 32-bit integer datatypes are 
+              supported.
+          </li><li>HDF5 dataset objects of floating point datatype 
+              are converted into HDF4 SDS objects.  
+              These datasets may have up to 32 fixed dimensions.  
+              The slowest varying dimension may be extendable.  
+              32-bit and 64-bit floating point datatypes are 
+              supported.
+          </li><li>HDF5 dataset objects of single dimension and 
+              compound datatype are converted into HDF4 Vdata 
+              objects. The length of that single dimension may 
+              be fixed or extendable.  The members of the 
+              compound datatype are constrained to be no more 
+              than rank 4.
+          </li><li>HDF5 dataset objects of single dimension and fixed length string
+              datatype are converted into HDF4 Vdata objects.  The HDF4 Vdata 
+              is a single field whose order is the length of the HDF5 string 
+              type.  The number of records of the Vdata is the length of the 
+              single dimension which may be fixed or extendable.</li>
+    </ul>
+  </dd>
+  <dd><br>
+  </dd>
+  <dd>Some objects are recognized as special cases:</dd>
+</dl>
+<blockquote>
+  <ul>
+    <li>By default, the HDF5 root group is removed
+from the file after all the root group attributes are processed.&nbsp;</li>
+    <li>Attributes of the root group&nbsp;are written as HDF4 file descriptions with
+the value "HDF5_&lt;AttributeName&gt; = &lt;AttributeValue&gt;"</li>
+    <li>&nbsp;Attributes of the root group suffixed with GLO_SDS are written as global to
+the SD interface. Similarly, attributes suffixed with GLO_GR are written
+as global to the GR interface.&nbsp;</li>
+    <li>An HDF5 dataset (see HDF5 Image specification (<a href="http://hdf.ncsa.uiuc.edu/HDF5/doc/ADGuide/ImageSpec.html">http://hdf.ncsa.uiuc.edu/HDF5/doc/ADGuide/ImageSpec.html</a>)&nbsp; is converted into an HDF4 GR Image.
+	Corresponding HDF5 palette datasets are converted to HDF4 pallete objects.</li>
+    <li>HDF5 Table data (see the HDF5 Table specification &nbsp;<a href="http://hdf.ncsa.uiuc.edu/HDF5/hdf5_hl/doc/RM_hdf5tb_spec.htm">http://hdf.ncsa.uiuc.edu/HDF5/hdf5_hl/doc/RM_hdf5tb_spec.htm</a>l) is stored as an HDF4 Vdata.</li>
+    <li>Attributes created by the h4toh5 utility are converted into an HDF5
+attribute or annotation that corresponds to the original, or else are omitted
+if not needed.</li>
+  </ul>
+</blockquote>
+<dl>
+  <dd><br>
+
+
+        Other objects are not converted and are not recorded
+        in the resulting <em>h4file</em>.
+        
+    <p>
+        Attributes not described above are copied to attributes of the HDF4 objects.  
+        Attributes may be of integer, floating point, or fixed length 
+        string datatype and they may have up to 32 fixed dimensions.
+        </p>
+    <p>
+        All datatypes are converted to big-endian.  
+        Floating point datatypes are converted to IEEE format.
+        
+
+    </p>
+  </dd>
+</dl>
+<dl>
+<dt><strong>Options and Parameters:</strong>
+    </dt><dl><dt><code>-h</code>
+            </dt><dd>Displays a syntax summary.
+        </dd><dt><code>-m</code>
+            </dt><dd>Converts multiple HDF5 files to multiple HDF4 files.</dd></dl>
+</dl>
+<blockquote>
+  <dl>
+    <dt><code>-r[oot]</code></dt>
+  </dl>
+  <blockquote>
+    <dl>
+      <dt>This is an optional argument. When specified, the root group in the HDF5 file is converted to a 'dummy' vgroup in the &nbsp;HDF4 file giving a single rooted tree in the HDF4 file. When this option is not specified, the dummy vgroup is omitted.</dt>
+    </dl>
+  </blockquote>
+</blockquote>
+<dl>
+  <dl>
+<dt><em>h5file</em>
+            </dt><dd>The HDF5 file to be converted.
+        </dd><dt><em>h4file</em>
+            </dt><dd>The HDF4 file to be created.
+    </dd>
+  </dl>
+<!--
+<dt><strong>Current Status:</strong>
+    <dd>
+<dt><strong>See Also:</strong>
+    <dd>
+-->
+</dl>
+
+
+
+<hr><br>
+</body></html>

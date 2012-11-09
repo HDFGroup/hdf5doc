@@ -1,0 +1,299 @@
+<html>
+<head><title>
+HDF5/H5R API Specification
+</title>
+
+<!-- #BeginLibraryItem "/ed_libs/styles_RM.lbi" -->
+
+<!--
+  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+  * Copyright by the Board of Trustees of the University of Illinois.         *
+  * All rights reserved.                                                      *
+  *                                                                           *
+  * This file is part of HDF5.  The full HDF5 copyright notice, including     *
+  * terms governing use, modification, and redistribution, is contained in    *
+  * the files COPYING and Copyright.html.  COPYING can be found at the root   *
+  * of the source code distribution tree; Copyright.html can be found at the  *
+  * root level of an installed copy of the electronic HDF5 document set and   *
+  * is linked from the top-level documents page.  It can also be found at     *
+  * http://hdf.ncsa.uiuc.edu/HDF5/doc/Copyright.html.  If you do not have     *
+  * access to either file, you may request a copy from hdfhelp@ncsa.uiuc.edu. *
+  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+ -->
+
+<link href="ed_styles/RMelect.css" rel="stylesheet" type="text/css">
+<!-- #EndLibraryItem -->
+
+</head>
+
+<body bgcolor="#FFFFFF">
+<!-- HEADER RIGHT " " -->
+
+
+<!-- #BeginLibraryItem "/ed_libs/NavBar_RM.lbi" -->
+<hr>
+<center>
+<table border=0 width=98%>
+<tr><td valign=top align=left>
+<a href="index.html">HDF5 documents and links</a>&nbsp;<br>
+<a href="H5.intro.html">Introduction to HDF5</a>&nbsp;<br>
+<a href="http://hdf.ncsa.uiuc.edu/HDF5/doc/UG/index.html">HDF5 User Guide</a>&nbsp;<br>
+<!--
+<a href="Glossary.html">Glossary</a><br>
+-->
+</td>
+</tr>
+</table>
+</center>
+<hr>
+<!-- #EndLibraryItem --><center>
+<h1>H5IN: Indexing Interface</h1>
+</center>
+
+<h2>Index API Functions</h2>
+The indexing API allows the user to create an index over a specific dataset and
+then query efficiently over that dataset.
+
+<p>
+<strong>The C Interfaces:</strong>
+
+<table border=0 width=80%>
+<tr><td valign=top width=40%>
+<ul>
+    <li><a href="#Reference-Create">H5INcreate</a>
+    <li><a href="#Reference-Dereference">H5INquery</a>
+</ul>
+</td><td valign=top width=40%>
+<ul>
+	&nbsp;
+</ul>
+</td><td valign=top width=20%>
+<ul>
+    &nbsp;
+</ul>
+</td></tr>
+</table>
+
+<p>
+
+<i>Alphabetical Listing</i>
+
+<table border="0">
+  <tr>
+    <td valign="top">
+	<ul>
+      <li><a href="#Index-Create">H5INcreate</a>
+      <li><a href="#Index-Query">H5INquery</a>
+	</ul>      
+    </td>
+    
+    <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
+    
+    <td valign="top">
+	<ul>
+      &nbsp;
+	</ul>
+    </td>
+    
+    <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
+    
+    <td valign="top">
+	<ul>
+      &nbsp;
+	</ul>
+    </td>
+  </tr>
+</table>
+
+<p>
+
+<p>
+
+<!-- NEW PAGE -->
+<!-- HEADER RIGHT " " -->
+<!-- NEW PAGE -->
+<!-- HEADER RIGHT "H5INcreate" -->
+<hr>
+<dl>
+<dt><strong>Name:</strong> <a name="Index-Create">H5INcreate</a>
+<dt><strong>Signature:</strong>
+    <dd><em>hid_t</em> <code>H5INcreate</code>(
+				<em>const char *</em><code>grp_name</code>,
+        <em>hid_t</em> <code>grp_loc_id</code>,
+        <em>const hid_t</em> <code>property_list</code>,
+        <em>hid_t</em> <code>data_loc_id</code>,<br>
+				<em>const char *</em><code>data_loc_name</code>,
+        <em>const char *</em><code>field_name</code>,
+        <em>hsize_t</em> <code>max_mem_size</code>
+        <em>hbin_type_t</em> <code>bin_type</code>,
+        <em>hsize_t</em> <code>num_bins</code>
+        <em>void *</em> <code>bins</code>
+    )
+<dt><strong>Purpose:</strong>
+    <dd>Creates an index.
+<dt><strong>Description:</strong>
+    <dd><code>H5INcreate</code> creates an index, named 
+				<code>field_name/data_loc_name</code>, (for compound/atomic data types
+						respectively), in the group <code>grp_name</code>, at location
+				<code>grp_loc_id</code>, on the dataset <code>data_loc_name</code> at th
+				location <code>data_loc_id</code>. If the dataset pointed to by the
+				<code>data_loc_name</code> is of atomic, then the 
+				<code>field_name</code> attribute should be NULL, else if it is a 
+				compound data type, then the <code>field_name</code> decides on which
+				field in the data type the index has to be created.
+				<p>
+				The parameters <code>bin_type</code>, <code>num_bins</code>, 
+				<code>bins</code> are used to define the binning strategy to be used
+			 	in the indexing.
+        <dir>
+        <table border=0>
+        <tr><td><em>hbin_type_t</em>&nbsp;&nbsp;</td>
+            <td><code>H5IN_NO_BINS</code>&nbsp;&nbsp;</td>
+            <td>No Bins to be created</td></tr>
+        <tr><td><em>hbin_type_t</em></td>
+            <td><code>H5IN_EW_BINS</code></td>
+            <td>Equi-width bins to be used.</td></tr>
+        <tr><td><em>hbin_type_t</em></td>
+            <td><code>H5IN_USER_BINS</code></td>
+            <td>User provided bins to be used.</td></tr>
+        </table>
+        </dir>
+        <p>
+				In the case where the user provided bins are to be used the
+				<code>bins</code> variable is used to define the bins. No type checks
+				are done for the bins. It is assumed that the bins are of the same type
+				as the data that is being indexed.
+        <p>
+				The parameter <code>property_list</code> defines the properties of the
+				dataset where the index is to be stored.
+        <p>
+				The parameter  <code>max_mem_size</code> decides the maximum memory size
+				that can be allocated for sorting. While most datasets can be stored in
+				memory for sorting assuming that for all datasets would be incorrect.
+				This parameter controls the amount of memory the user wants to allocate
+				for the index creation.
+<dt><strong>Parameters:</strong>
+    <ul><table>
+        <tr>
+		    <td valign="top"><em>const char *</em><code>grp_name</code></td>
+            <td valign="top">IN: The name of the group where the index is to be
+						stored.</td></tr>
+        <tr>
+		    <td valign="top"><em>hid_t</em> <code>grp_loc_id</code></td>
+            <td valign="top">IN: Location identifier used to locate the group
+						where the index is stored.</td></tr>
+        <tr>
+		    <td valign="top"><em>hid_t</em> <code>property_list</code></td>
+            <td valign="top">IN: The properties of the dataset where the index
+						is stored.</td></tr>
+        <tr>
+		    <td valign="top"><em>hid_t</em> <code>data_loc_id</code></td>
+            <td valign="top">IN: The location where the dataset containing the
+						data to be indexed is.</td></tr>
+        <tr>
+		    <td valign="top"><em>const char *</em><code>data_loc_name</code></td>
+            <td valign="top">IN: Name of the dataset to be indexed.</td></tr>
+        <tr>
+		    <td valign="top"><em>const char *</em><code>field_name</code></td>
+            <td valign="top">IN: Name of the field to be indexed.</td></tr>
+        <tr>
+		    <td valign="top"><em>hsize_t</em> <code>max_mem_size</code></td>
+            <td valign="top">IN: Maximum memory size that can be used during
+						sorting of the index.</td></tr>
+        <tr>
+		    <td valign="top"><em>hbin_type_t</em> <code>bin_type</code></td>
+            <td valign="top">IN: The type of binning to be used.</td></tr>
+        <tr>
+		    <td valign="top"><em>hsize_t</em> <code>num_bins</code></td>
+            <td valign="top">IN: The number of bins to be used (if not required
+								should be 0).</td></tr>
+        <tr>
+		    <td valign="top"><em>void *</em><code>bins</code></td>
+            <td valign="top">IN: The actual bins to be used (if not required
+								should be NULL).</td></tr>
+    </table></ul>
+<dt><strong>Returns:</strong>
+    <dd>Returns the identifier to the group where the index is tored if
+		succesful, otherwise returns a negative value.</dd>
+</dt>
+</dl>
+
+<!-- NEW PAGE -->
+<!-- HEADER RIGHT "H5INquery" -->
+<hr>
+<dl>
+<dt><strong>Name:</strong> <a name="Index-Query">H5INquery</a>
+<dt><strong>Signature:</strong>
+    <dd><em>hid_t</em> <code>H5INquery</code>(<em>hid_t</em> <code>dataset</code>,
+        <em>const char **</em><code>keys</code>,
+        <em>void *</em><code>ubounds</code>, 
+        <em>void *</em><code>lbounds</code>, 
+        <em>int</em> <code>nkeys</code>
+    )
+<dt><strong>Purpose:</strong>
+    <dd>To query a dataset.
+<dt><strong>Description:</strong>
+    <dd>Queries the given dataset over the keys provided. The current
+		implementation just covers AND queries over the various keys, with
+		individual range queries for each key. The parameter <code>nkeys</code>
+		specifies the number of keys over which the query is done. If the dataset
+		being queried does not have an index, the current implementation just
+		returns an error. If the dataset is of atomic type query can be only on one
+		key (has to be the datasetname), where as in case of compound datatype the 
+		query can be on multiple keys(has to be name of the fields on which the
+				index is built). Again no type checking is done, it is assumed that the
+		types of the bounds correspond to the type of the key.
+        
+<dt><strong>Parameters:</strong>
+    <ul><table>
+        <tr>
+		    <td valign="top"><em>hid_t</em> <code>dataset</code></td>
+            <td valign="top">IN: Dataset being queried.</td></tr>
+        <tr>
+		    <td valign="top"><em>const char **</em><code>keys</code></td>
+            <td valign="top">IN: The name of the keys.</td></tr>
+        <tr>
+		    <td valign="top"><em>void *</em><code>ubounds</code></td>
+            <td valign="top">IN: The upper bounds for the keys.</td></tr>
+        <tr>
+		    <td valign="top"><em>void *</em><code>lbounds</code></td>
+            <td valign="top">IN: The lower bounds for the keus.</td></tr>
+        <tr>
+		    <td valign="top"><em>int</em> <code>nkeys</code></td>
+            <td valign="top">IN: The number of keys.</td></tr>
+    </table></ul>
+<dt><strong>Returns:</strong>
+    <dd>Returns valid identifier if successful;
+        otherwise returns a negative value.</dd>
+
+</dt>
+</dl>
+<!-- #BeginLibraryItem "/ed_libs/NavBar_RM.lbi" -->
+<hr>
+<center>
+<table border=0 width=98%>
+<tr><td valign=top align=left>
+<a href="index.html">HDF5 documents and links</a>&nbsp;<br>
+<a href="H5.intro.html">Introduction to HDF5</a>&nbsp;<br>
+<a href="http://hdf.ncsa.uiuc.edu/HDF5/doc/UG/index.html">HDF5 User Guide</a>&nbsp;<br>
+<!--
+<a href="Glossary.html">Glossary</a><br>
+-->
+</td>
+</table>
+</center>
+<hr>
+<!-- #EndLibraryItem --><!-- #BeginLibraryItem "/ed_libs/Footer.lbi" -->
+<address>
+<a href="mailto:hdfhelp@ncsa.uiuc.edu">HDF Help Desk</a> 
+<br>
+Describes HDF5 Release 1.6.5, November 2005
+</address>
+<!-- #EndLibraryItem --><SCRIPT LANGUAGE="JAVASCRIPT">
+<!--
+document.writeln("Last modified: 16 October 2003");
+-->
+</SCRIPT> 
+
+</body>
+</html>

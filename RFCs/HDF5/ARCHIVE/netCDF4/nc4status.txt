@@ -1,0 +1,86 @@
+Reviewing my mail for the last few weeks, I have 4 major items from 
+HDF:
+
+  1. Draft proposal for configuration/build
+  2. Parallel test plan
+  3. Discussions of group and indexing features and plans
+  4. Discussions of unicode
+ 
+Here is my summary
+
+Draft proposal:  "A Roadmap for Implementing NetCDF4 Configure/build"
+=============
+  (March 30, 2005)
+  See the document:
+    http://hdf.ncsa.uiuc.edu/RFC/netCDF4/nc4-conf.pdf
+
+  Status:  I think this document represents the consensus of the project.
+           At some point, it will be important to publish something.
+
+Parallel test plan and test status
+==================================
+  "Ideas for Testing Parallel NetCDF-4" 
+  (April 12, 2005, revised April 28, 2005)
+  See the document:
+    http://hdf.ncsa.uiuc.edu/RFC/netCDF4/par-tests-revised.pdf
+  (Note:  see the _revised_ plan on page 3-4)
+
+  Status:  This work is in progress.
+
+Discussion of Group Indexes
+===========================
+
+1. Plan
+
+ * For feature freeze: implement new API with old index internally 
+ * Reimplement with new structures for the release
+
+ The files created in this period may be incompatible with the released
+ library.
+
+2. Design
+
+ Multiple options for what will stored for each link (i.e., the index
+ in a group):
+    - Name (indexable, must be unique, modifiable)
+    - Creation time (indexable, may be non-unique, modifiable)
+    - Creation order (indexable, unique, monotonicly increasing, non-modifiable)
+    - Character set (i.e. ASCII, UTF-8, etc.) (non-indexable?, non-unique, modifiable)
+    - Object address/link target (for hard/soft links) (non-indexable, may be
+        non-unique (for multiple links to same object), modifiable?)
+
+  Applications can determine which of the three indexable fields they'd like
+  to have an index maintained for with a group creation property.  They will
+  choose an index for iteration, etc. with a group access property.
+
+  Additional requirements were proposed:
+    * No current API will change, all existing programs work without change.
+    * No matter what index is selected at create time it must be possible to
+      iterate by name, and this must be the default behavior.
+  I gather that these requirements may not be fully met, but no details
+  are available at this time.
+
+Discussions of Unicode
+======================
+
+Unidata requested support for Unicode, at least for object (and attribute?) 
+names.  This was limited to UTF-8 support for now.
+
+Action:
+   An RFC is being prepared 
+
+Summary of approach:
+
+  HDF should be able to accept UTF-8 encoded file names, object names,
+  attribute names and strings as a datatype.  We are running tests
+  to verify this.
+
+  Add several small features to the library to allow the file
+  to have better self-description information about UTF-8 strings:
+     - A field in the link to an object that describes the character
+       set encoding used for the name
+     - Some metadata on attributes describing the character set
+       encoding used for the name
+     - A new character set encoding type for string datatypes.
+
+  Details will be presented in an RFC, RSN

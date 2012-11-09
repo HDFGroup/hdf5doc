@@ -1,0 +1,252 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"><html><head>
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8"><title>UTF-8 encoding in HDF5</title></head><body>
+<align ="center">
+</align><h2>UTF-8 Character Encoding in HDF5</h2>
+<h6>James Laird<br>
+Robert E. McGrath<br>
+(revised 4 May, 2005)<br>
+</h6>(superceedes Version 1:  <a href="http://hdf.ncsa.uiuc.edu/RFC/Unicode/Unicode-5-2-05.html">http://hdf.ncsa.uiuc.edu/RFC/Unicode/Unicode-5-2-05.html</a>)<br>
+<align ="left">
+</align><h5>Motivation</h5>
+<p>The NetCDF team would like HDF5 to support strings with UTF-8 Unicode character encoding.<br>
+</p>
+<p>  Currently HDF5 officially supports only strings encoded in standard US ASCII.  However, the HDF5 <a href="http://hdf.ncsa.uiuc.edu/HDF5/doc/H5.format.html">Format Specification </a>and other documentation is ambiguous, and the library does not check the encoding of strings.</p>
+
+
+<h5>What is UTF-8?</h5>
+<p>Joel Spolsky has written an introduction to character sets and Unicode entitled <a href="http://www.joelonsoftware.com/articles/Unicode.html">The Absolute Minimum Every Software Developer Absolutely, Positively Must Know About Unicode and Character Sets</a>.</p>
+
+<p>Briefly: standard ASCII defines characters for byte values between 0 and 127.  Values 128 through 255 are <b>not defined</b>
+by standard ASCII.  UTF-8 byte values between 0 and 127 represent the same
+characters as ASCII--standard ASCII is a subset of UTF-8.  ASCII values 128-255
+represent different characters depending on which "code page" is currently
+loaded.  UTF-8 also uses these values to represent characters outside of
+unaccented American English.</p>
+
+<p>The convenient side-effect of this is that any UTF-8 string is also a
+valid ASCII string, although not necessarily one with the same meaning. 
+Any string consisting of only standard ASCII characters (unaccented American
+English characters) is identical in ASCII and UTF-8 encodings.</p>
+
+<p>UTF-8 does store some characters as multiple bytes (up to four bytes);
+all multibyte characters use byte values of 128-255.  NULL-termination, space
+padding, and C string routines all operate identically on UTF-8 as they do
+on ASCII characters and strings.  The fact that UTF-8 has mutibyte characters
+means that the number of bytes in a string is not necessarily the number
+of characters in that string, but the number of bytes is usually the important
+factor for storing and manipulating the string.</p>
+
+<p>The ASCII and UTF-8 must be displayed differently for characters outside
+of the standard ASCII set, but this is the responsibility of the displaying
+software, not of HDF5.  ASCII and UTF-8 strings can be stored and manipulated
+identically by HDF5.</p>
+
+<h5>Proposed action to investigate further:</h5>
+<p>   Write tests to ensure that UTF-8 characters can be used in the library.
+ The tests would ensure that strings including non-ASCII characters don't
+break any functionality, and can be returned to the user unaltered.  This
+would need to be tested everywhere the library uses character strings,. Table
+1 gives a list of where strings are used in the HDF5 API.<br>
+<br>
+</p>
+<div align="center"><b>Table 1. HDF5 Libary APIs String Usage</b><br>
+</div>
+<table cellpadding="2" cellspacing="2" border="1" width="100%">
+  <tbody>
+    <tr>
+      <td valign="top" align="center"><b>Object<br>
+      </b></td>
+      <td valign="top" align="center"><b>Uses<br>
+      </b></td>
+      <td valign="top" align="center"><b>Comments<br>
+      </b></td>
+    </tr>
+    <tr>
+      <td valign="top">Data (i.e., contents of attribute or dataset that are an array of strings.<br>
+      </td>
+      <td valign="top">define datatype,<br>
+
+get datatype<br>
+      </td>
+      <td valign="top">User data should conform to the encodeing specified by the datatype, but th elibrary doesn't check this.<br>
+      </td>
+    </tr>
+    <tr>
+      <td valign="top">Object names and paths (links to Group, Dataset, Named Datatype)<br>
+      </td>
+      <td valign="top">create object<br>
+open object<br>
+interate group,<br>
+get name from ID<br>
+      </td>
+      <td valign="top"><br>
+      </td>
+    </tr>
+    <tr>
+      <td valign="top">Reference to object or region<br>
+      </td>
+      <td valign="top">create reference<br>
+      </td>
+      <td valign="top">Should be same as path names.<br>
+      </td>
+    </tr>
+    <tr>
+      <td valign="top">Soft link linkval<br>
+      </td>
+      <td valign="top">set/get value<br>
+      </td>
+      <td valign="top">Should be same as path names.<br>
+      </td>
+    </tr>
+    <tr>
+      <td valign="top">Attribute names<br>
+      </td>
+      <td valign="top">create,<br>
+open<br>
+get name<br>
+      </td>
+      <td valign="top"><br>
+      </td>
+    </tr>
+    <tr>
+      <td valign="top">Compound datatype field names<br>
+      </td>
+      <td valign="top">define datatype, <br>
+get datatype,<br>
+select fields<br>
+      </td>
+      <td valign="top"><br>
+      </td>
+    </tr>
+    <tr>
+      <td valign="top">ENUM type names<br>
+      </td>
+      <td valign="top">define datatype,<br>
+retrieved from nameof, getmember<br>
+      </td>
+      <td valign="top"><br>
+      </td>
+    </tr>
+    <tr>
+      <td valign="top">opaque data type tag<br>
+      </td>
+      <td valign="top">define datatype,<br>
+
+retrieved from gettag<br>
+      </td>
+      <td valign="top"><br>
+      </td>
+    </tr>
+    <tr>
+      <td valign="top">error strings<br>
+      </td>
+      <td valign="top">define error strings,<br>
+push messages,<br>
+retrieve stack<br>
+      </td>
+      <td valign="top">Details changed in 1.8, waiting for documentation.<br>
+      </td>
+    </tr>
+    <tr>
+      <td valign="top">property class name, filter name, <br>
+      </td>
+      <td valign="top">register, <br>
+get name<br>
+get by name<br>
+      </td>
+      <td valign="top">Predefined do not need UTF-8 option.  Probably do not need to support UTF-8 for these.<br>
+      </td>
+    </tr>
+    <tr>
+      <td valign="top">property name<br>
+      </td>
+      <td valign="top">create property,<br>
+set/get property value<br>
+      </td>
+      <td valign="top"><br>
+      </td>
+    </tr>
+    <tr>
+      <td valign="top">file names<br>
+      </td>
+      <td valign="top">create, open,<br>
+
+ get name<br>
+
+is_hdf5,<br>
+
+mount/unmount<br>
+      </td>
+      <td valign="top">Depends on file system?<br>
+      </td>
+    </tr>
+    <tr>
+      <td valign="top">file names: external file, multi file, split file<br>
+      </td>
+      <td valign="top">set, get file names<br>
+      </td>
+      <td valign="top">Depends on file system?<br>
+      </td>
+    </tr>
+    <tr>
+      <td valign="top">comment on filters<br>
+      </td>
+      <td valign="top">set/get<br>
+      </td>
+      <td valign="top">No need for UTF-8<br>
+      </td>
+    </tr>
+    <tr>
+      <td valign="top">comment on groups<br>
+      </td>
+      <td valign="top">set/get<br>
+      </td>
+      <td valign="top">Non need for UDF-8<br>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+
+<h5>What would UTF-8 support mean?</h5>This document assumes that the tests
+will confirm that using UTF-8 will not break the HDF5 API or library. If
+so, these tests can be checked in to CVS if appropriate.<br>
+<br>
+Adding support for UTF-8 has several aspects.<br>
+<br>
+<ol>
+  <li>Adding means for the user to set and retrieve a character encoding for all the cases in Table 1 that we cover.</li>
+  <li>Adding a new encoding to the character encodings for a String datatype (first row)</li>
+  <li>Checking the validity of UTF-8 encoded strings, when UDF-8 is selected (optional?)</li>
+  <li>Updating the Format Specification to correctly specify the use of US ASCII, extended ASCII, and UTF-8.</li>
+  <li>Documenting the correct use of UTF-8, and backward compatibility issues with existing files and applications.</li>
+</ol>
+An important design decision is which objects in Table 1 will support alternative
+encodings, and what granualarity will they be specified.<br>
+<br>
+Data values (i.e., data of type String) are easy to handle via  a  simple
+extension of the current data types. As currently, the HDF5 library would
+not check the encoding of user data values.<br>
+<br>
+A simple option is to have a single file creation property that selects ASCII
+or UTF-8 for the whole file (except for data values).  Whichever is selected
+applies to the whole file. <br>
+<ul>
+  <li>Advantages:</li>
+  <ul>
+    <li>simple</li>
+    <li>feasible</li>
+  </ul>
+  <li>Disadvantages:</li>
+  <ul>
+    <li>inflexible, especially for future if additional encodings are added</li>
+  </ul>
+</ul>
+Finer grained control is more difficult because only a few operations have
+property lists that can be used to specifcy the encoding, at lease without
+changing the existing APIs. How this could be done is an open question.<br>
+<br>
+<br>
+<br>
+<br>
+</body></html>

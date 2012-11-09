@@ -1,0 +1,155 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+	<meta http-equiv="content-type" content="text/html; charset=utf-8">
+	<meta name="generator" content="VoodooPad">
+	<title>The adaptive cache resizing algorithm</title>
+		<style type="text/css">
+
+body
+{
+	margin: 20px;
+	color: #000;
+	font-size: 16px;
+	background-color: #BCCCAB;
+}
+
+.main
+{
+	min-width: 400px;
+	border: solid 1px #aaaaaa;
+	padding: 5px;
+	font-family: verdana, arial, helvetica, sans-serif;
+	font-size: 9pt;
+	background: #fff;
+	margin-top: 10px;
+}
+
+.header
+{
+	color: black;
+	font-size: 24px;
+	font-variant: small-caps;
+	font-weight: bold;
+	border: solid 1px #aaaaaa;
+	background: #fff;
+}
+
+	
+	</style>
+	
+	
+</head>
+
+<body>
+    <div class="header" align="center">
+        The adaptive cache resizing algorithm
+    </div>
+    
+    <div class="main">
+        <style type="text/css">
+p.p1 {margin: 0.0px 0.0px 0.0px 0.0px; font: 18.0px 'Lucida Grande'}
+p.p2 {margin: 0.0px 0.0px 0.0px 0.0px; font: 18.0px 'Lucida Grande'; min-height: 21.0px}
+span.s1 {text-decoration: underline}
+</style>
+
+<p class="p1"><b>Adaptive Cache Resizing in the New Metadata Cache:</b></p>
+<p class="p2"><br></p>
+<p class="p1">This section on adaptive cache resizing is relevant to the I/O question only to the extent that resizing the metadata cache to exceed the current working set size will reduce the amount of metadata I/O. Feel free to skip it if this connection seems sufficiently tenuous.</p>
+<p class="p2"><br></p>
+<p class="p1">As mentioned earlier, the metadata working set size for a HDF5 file varies wildly depending on the structure of the file and the access pattern. For example, a 2MB limit on metadata cache size is excessive for an H5repack of almost all HDF5 files we have tested. However, I have a file submitted by one of our users that that will run a 13% hit rate with this cache size, and will lock up one of our Linux boxes using <a href="the%20old%20metadata%20cache.html"><span class="s1">the old metadata cache</span></a>. Increase the new metadata cache size to 4 MB, and the hit rate exceeds 99%.</p>
+<p class="p2"><br></p>
+<p class="p1">In this case the main culprit is a root group with more than 20,000 entries in it. As a result, the root group heap exceeds 1 MB, which tends to crowd out the rest of the metadata in a 2 MB cache</p>
+<p class="p1">This case and a number of synthetic tests convinced us that we needed to modify the new metadata cache to expand and contract according to need within user specified bounds.</p>
+<p class="p2"><br></p>
+<p class="p1">I was unable to find any previous work on this problem, so I invented solutions as I went along. If you are aware of prior work, please send me references. The closest I was able to come was a group of embedded CPU designers who were turning off sections of their cache to conserve power.</p>
+<p class="p2"><br></p>
+<p class="p2"><br></p>
+<p class="p1"><b>Increasing the Cache Size:</b></p>
+<p class="p2"><br></p>
+<p class="p1">In the context of the HDF5 library, the problem of increasing the cache size as necessary to contain the current working set turns out to involve two rather different issues.</p>
+<p class="p2"><br></p>
+<p class="p1">The first of these, which was recognized immediately, is the problem of recognizing long term changes in working set size, and increasing the cache size accordingly, while not reacting to transients.</p>
+<p class="p2"><br></p>
+<p class="p1">The second, which I recognized the hard way, is to adjust the cache size for sudden, dramatic increases in working set size caused by requests for large pieces of metadata which may be larger than the current metadata cache size. The algorithms for handling these situations are discussed below. These problems are largely orthogonal to each other, so both algorithms may be used simultaneously.</p>
+<p class="p2"><br></p>
+<p class="p1">Hit Rate Threshold Cache Size Increment:</p>
+<p class="p2"><br></p>
+<p class="p1">Perhaps the most obvious heuristic for identifying cases in which the cache is too small involves monitoring the hit rate. If the hit rate is low for a while, and thecache is at its current maximum size, the current maximum cache size is probably too small.</p>
+<p class="p2"><br></p>
+<p class="p1">The hit rate threshold algorithm for increasing cache size applies this intuition directly.</p>
+<p class="p1">Hit rate statistics are collected over a user specified number of cache accesses. This period is known as an epoch.</p>
+<p class="p2"><br></p>
+<p class="p1">At the end of each epoch, the hit rate is computed, and the counters are reset. If the hit rate is below a user specified threshold and the cache is at its current maximum size, the maximum size of the cache is increased by a user specified multiple. If required, the new cache maximum size is clipped to stay within the user specified upper bound on the maximum cache size, and optionally, within a user specified maximum increment.</p>
+<p class="p2"><br></p>
+<p class="p1">My tests indicate that this algorithm works well in most cases. However, in a synthetic test in which hit rate increased slowly with cache size, and load remained steady for many epochs, I observed a case in which cache size increased until hit rate just exceeded the specified minimum and then stalled. This is a problem, as to avoid volatility, it is necessary to set the minimum hit rate threshold well below the desired hit rate. Thus we may find ourselves with a cache running with a 91% hit rate when we really want it to increase its size until the hit rate is about 99%. If this case occurs frequently in actual use, I will have to come up with an improved algorithm. Please let me know if you see this behavior. However, I had to work rather hard to create it in my synthetic tests, so I would expect it to be uncommon.</p>
+<p class="p2"><br></p>
+<p class="p1">Flash Cache Size Increment:</p>
+<p class="p2"><br></p>
+<p class="p1">A fundamental problem with the above algorithm is that contains the hidden assumption that cache entries are relatively small in comparison to the cache itself. While I knew this assumption was not generally true when I developed the algorithm, I thought that cases where it failed would be so rare as to not be worth considering, as even if they did occur, the above algorithm would rectify the situation within an epoch or two.</p>
+<p class="p2"><br></p>
+<p class="p1">While it is true that such occurrences are rare, and it is true that the hit rate threshold cache size increment algorithm will rectify the situation eventually, the performance degradation experienced by users while waiting for the epoch to end was so extreme that some way of accelerating response to such situations was essential.</p>
+<p class="p2"><br></p>
+<p class="p1">To understand the problem, consider the following use case: suppose we create a group, and then repeatedly create a new data set in the group, write some data to it and then close it.</p>
+<p class="p2"><br></p>
+<p class="p1">In some versions of the HDF5 file format, the names of the datasets will be stored in a local heap associated with the group, and the space for that heap will be allocated in a single, contiguous chunk. When this local heap is full, we allocate a new chunk twice the size of the old, copy the data from the old local heap into the new, and discard the old local heap.</p>
+<p class="p2"><br></p>
+<p class="p1">By default, the minimum metadata cache size is set to 2 MB. Thus in this use case, our hit rate will be fine as long as the local heap is no larger than a little less than 2 MB, as the group related metadata is accessed frequently and never evicted, and the data set related metadata is never accessed once the data set is closed, and thus is evicted smoothly to make room for new data sets.</p>
+<p class="p2"><br></p>
+<p class="p1">All this changes abruptly when the local heap finally doubles in size to a value above the slightly less than 2 MB limit. All of a sudden, the local heap is the size of the metadata cache, and the cache must constantly swap it in to access it, and then swap it out to make room for other metadata.</p>
+<p class="p2"><br></p>
+<p class="p1">The hit rate threshold based algorithm for increasing the cache size will fix this problem eventually, but performance will be very bad until it does, as the metadata cache will largely ineffective until its size is increase.</p>
+<p class="p2"><br></p>
+<p class="p1">An obvious heuristic for addressing this "big rock in a small pond" issue is to watch for large "incoming rocks", and increase the size of the "pond" if the rock is so big that it will force most of the "water" out of the "pond".</p>
+<p class="p2"><br></p>
+<p class="p1">The add space flash cache size increment algorithm algorithm applies this intuition directly:</p>
+<p class="p1">Let x be either the size of a newly inserted entry, a newly loaded entry, or the number of bytes by which the size of an existing entry has been increased (i.e. the size of the "rock"). If x is greater than some user specified fraction of the current maximum cache size, increase the current maximum cache size by x times some user specified multiple, less any free space that was in the cache to begin with. Further, to avoid confusing the other cache size increment/decrement code, start a new epoch.</p>
+<p class="p2"><br></p>
+<p class="p1">At present, this algorithm pays no attention to any user specified limit on the maximum size of any single cache size increase, but it DOES stay within the user specified upper bound on the maximum cache size.</p>
+<p class="p2"><br></p>
+<p class="p1">While it should be easy to see how this algorithm could be fooled into inactivity by large number of entries that were not quite large enough to cross the threshold, in practice it seems to work reasonably well.</p>
+<p class="p2"><br></p>
+<p class="p1">Needless to say, I will revisit the issue should this cease to be the case.</p>
+<p class="p2"><br></p>
+<p class="p2"><br></p>
+<p class="p1"><b>Decreasing the Cache Size:</b></p>
+<p class="p2"><br></p>
+<p class="p1">Identifying cases in which the maximum cache size is larger than necessary turned out to be more difficult.</p>
+<p class="p2"><br></p>
+<p class="p1">Hit Rate Threshold Cache Size Reduction:</p>
+<p class="p2"><br></p>
+<p class="p1">One obvious heuristic is to monitor the hit rate and guess that we can safely decrease cache size if hit rate exceeds some user supplied threshold (say .99995). The hit rate threshold size decrement algorithm implemented in the new metadata cache implements this intuition as follows:</p>
+<p class="p1">At the end of each epoch (this is the same epoch that is used in the cache size increment algorithm), the hit rate is compared with the user specified threshold. If the hit rate exceeds that threshold, the current maximum cache size is decreased by a user specified factor. If required, the size of the reduction is clipped to stay within a user specified lower bound on the maximum cache size, and optionally, within a user specified maximum decrement.</p>
+<p class="p2"><br></p>
+<p class="p1">In my synthetic tests, this algorithm works poorly. Even with a very high threshold and a small maximum reduction, it results in cache size oscillations. The size increment code typically increments maximum cache size above the working set size.</p>
+<p class="p2"><br></p>
+<p class="p1">This results in a high hit rate, which causes the threshold size decrement code to reduce the maximum cache size below the working set size, which causes hit rate to crash causing the cycle to repeat. The resulting average hit rate is poor.</p>
+<p class="p2"><br></p>
+<p class="p1">It remains to be seen if this behavior will be seen in the field. The algorithm is available for use, but it wouldn't be my first choice. If you use it, please report back.</p>
+<p class="p2"><br></p>
+<p class="p1">Ageout Cache Size Reduction:</p>
+<p class="p2"><br></p>
+<p class="p1">Another heuristic for dealing with oversized cache conditions is to look for entries that haven't been accessed for a long time, evict them, and reduce the cache size accordingly.</p>
+<p class="p2"><br></p>
+<p class="p1">The age out cache size reduction applies this intuition as follows: At the end of each epoch (again the same epoch as used in the cache size increment algorithm), all entries that haven't been accessed for a user configurable number of epochs (1 - 10 at present) are evicted. The maximum cache size is then reduced to equal the sum of the sizes of the remaining entries. The size of the reduction is clipped to stay within a user specified lower bound on maximum cache size, and optionally, within a user specified maximum decrement.</p>
+<p class="p2"><br></p>
+<p class="p1">In addition, the user may specify a minimum fraction of the cache which must be empty before the cache size is reduced. Thus if an empty reserve of 0.1 was specified on a 10 MB cache, there would be no cache size reduction unless the eviction of aged out entries resulted in more than 1 MB of empty space. Further, even after the reduction, the cache would be one tenth empty.</p>
+<p class="p2"><br></p>
+<p class="p1">In my synthetic tests, the age out algorithm works rather well, although it is somewhat sensitive to the epoch length and age out period selection.</p>
+<p class="p2"><br></p>
+<p class="p1">Ageout With Hit Rate Threshold Cache Size Reduction:</p>
+<p class="p2"><br></p>
+<p class="p1">To address these issues, I combined the hit rate threshold and age out heuristics. Age out with threshold works just like age out, except that the algorithm is not run unless the hit rate exceeded a user specified threshold in the previous epoch.</p>
+<p class="p2"><br></p>
+<p class="p1">In my synthetic tests, age out with threshold seems to work nicely, with no observed oscillation. Thus I have selected it as the default cache size reduction algorithm.</p>
+<p class="p2"><br></p>
+<p class="p1">For those interested in such things, the age out algorithm is implemented by inserting a marker entry at the head of the LRU list at the beginning of each epoch. Entries that haven't been accessed for at least n epochs are simply entries that appear in the LRU list after the n<sup>th</sup> marker at the end of an epoch.</p>
+
+    </div>
+    <div class="main">
+        <a href="_page_index.html">Page Index</a>
+    </div>
+</body>
+</html>
+

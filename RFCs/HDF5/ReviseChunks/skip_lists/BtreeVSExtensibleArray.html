@@ -1,0 +1,382 @@
+<HTML>
+<HEAD>
+   <META http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+   <TITLE>A Comparison of Using B-Trees vs. Extensible Arrays for Locating Chunks of Single Unlimited Dimension Chunked HDF5 Datasets</TITLE>
+</HEAD>
+
+<BODY text="#000000" bgcolor="#FFFFFF">
+<STYLE type="text/css">
+OL.upperroman { list-style-type: upper-roman }
+OL.upperalpha { list-style-type: upper-alpha }
+OL.numeric { list-style-type: numeric }
+OL.loweralpha { list-style-type: lower-alpha }
+OL.lowerroman { list-style-type: lower-roman }
+</STYLE>
+
+<CENTER>
+<H3>A Comparison of Using B-Trees vs. Extensible Arrays for Locating Chunks of Single Unlimited Dimension Chunked HDF5 Datasets</H3>
+Quincey Koziol<BR>
+The HDF Group<BR>
+koziol@hdfgroup.org<BR>
+Version 0.1<BR>
+August 15<sup>th</sup>, 2008
+</CENTER>
+
+<OL class="upperroman">
+<LI><H3><U>Background</U></H3>
+<P>This document is written for the HDF5 development team, and outside
+developers who are familiar with HDF5's current data model.
+Certain commonly used terms in
+HDF5 are not explained in detail, please see the HDF5 documentation at
+<A href="http://www.hdfgroup.org/HDF5">http://www.hdfgroup.org/HDF5</A>
+for more information about HDF5.
+</P>
+
+<P>
+See the general overview of changes to chunked dataset storage in HDF5 for
+a description of the current implementation of indexing chunks in HDF5:
+<A href="../ReviseChunks.html">Revising Chunked Dataset Storage in HDF5</A>.
+The B-tree data structure is also described in the first sections of that
+document.
+</P>
+
+<P>
+See the derivation of the extensible array data structure used here in this
+document:
+<A href="SkipListChunkIndex.html">Skip Lists to Extensible Arrays</A>.
+</P>
+
+<LI><H3><U>Introduction</U></H3>
+<P>
+This document compares I/O performance and storage space usage between
+the existing (v1) B-trees and the proposed extensible array data structures for
+locating chunks of chunked HDF5 datasets.  Two different operations on
+datasets are compared: appending a new chunk to the dataset and locating an
+existing chunk.
+</P>
+
+<LI><H3><U>Spreadsheet Settings</U></H3>
+<P>
+Data for the tables in this document is drawn from these two spreadsheets:
+<A href="BTreeChunkIndex.xls">B-tree Info</A> and
+<A href="ResizableArrayChunkIndex.xls">Extensible Array Info</A>
+</P>
+
+<P>
+For the purposes of this white paper, the following parameters are set in the B-Tree spreadsheet:
+    <TABLE>
+        <TABLE border=1 width=90%>
+        <TR>
+            <TD><STRONG>Name</STRONG>
+            <TD><STRONG>Value</STRONG>
+        <TR>
+            <TD><STRONG>HDF5 Elements Per HDF5 Chunk</STRONG>
+            <TD>2048
+        <TR>
+            <TD><STRONG>Size of HDF5 Element (bytes)</STRONG>
+            <TD>4
+        <TR>
+            <TD><STRONG>B-Tree Overhead Per Node (bytes)</STRONG>
+            <TD>24
+        <TR>
+            <TD><STRONG>B-Tree Keys Per Node</STRONG>
+            <TD>16
+        <TR>
+            <TD><STRONG>Size of B-Tree Key (bytes)</STRONG>
+            <TD>16
+        <TR>
+            <TD><STRONG>Size of Internal B-tree Pointer (bytes)</STRONG>
+            <TD>8
+        <TR>
+            <TD><STRONG>Size of B-Tree Node (bytes)</STRONG>
+            <TD>400
+        </TABLE>
+    </TABLE>
+</P>
+
+<P>
+For the purposes of this white paper, the following parameters are set in the Extensible Array
+spreadsheet:
+    <TABLE>
+        <TABLE border=1 width=90%>
+        <TR>
+            <TD><STRONG>Name</STRONG>
+            <TD><STRONG>Value</STRONG>
+        <TR>
+            <TD><STRONG>HDF5 Chunks Per Data Block Unit</STRONG>
+            <TD>16
+        <TR>
+            <TD><STRONG>Data Block Compression Factor</STRONG>
+            <TD>1.00
+        <TR>
+            <TD><STRONG>Data Block Expansion Factor</STRONG>
+            <TD>2
+        <TR>
+            <TD><STRONG>Super Block Expansion Factor</STRONG>
+            <TD>2
+        <TR>
+            <TD><STRONG>Min. # of Data Blocks per Super Block</STRONG>
+            <TD>4
+        <TR>
+            <TD><STRONG># of Chunk Pointers Directly Stored in Index Block</STRONG>
+            <TD>4
+        <TR>
+            <TD><STRONG>Size of Super Block Pointer (bytes)</STRONG>
+            <TD>8
+        <TR>
+            <TD><STRONG>Size of Data Block Pointer (bytes)</STRONG>
+            <TD>8
+        <TR>
+            <TD><STRONG>Size of Chunk Address (bytes)</STRONG>
+            <TD>8
+        <TR>
+            <TD><STRONG>Size of HDF5 Chunk Fixed Key Values (bytes)</STRONG>
+            <TD>0
+        <TR>
+            <TD><STRONG>Size of Chunk Pointer (bytes)</STRONG>
+            <TD>8
+        <TR>
+            <TD><STRONG>Index Block Overhead (bytes)</STRONG>
+            <TD>17
+        <TR>
+            <TD><STRONG>Super Block Overhead (bytes)</STRONG>
+            <TD>9
+        <TR>
+            <TD><STRONG>Data Block Overhead (bytes)</STRONG>
+            <TD>9
+        <TR>
+            <TD><STRONG>HDF5 Elements Per HDF5 Chunk</STRONG>
+            <TD>2048
+        <TR>
+            <TD><STRONG>Size of HDF5 Element (bytes)</STRONG>
+            <TD>4
+        </TABLE>
+    </TABLE>
+</P>
+
+<LI><H3><U>Comparison of I/O Performance</U></H3>
+<P>
+The following table shows the maximum number of I/O accesses needed to retrieve
+the address of a chunk for the data structures:
+<CENTER>
+    <TABLE>
+        <TABLE border=1>
+        <TR align=center>
+            <TD>Number of Elements in Dataset
+            <TD>B-Tree
+            <TD>Extensible Array
+        <TR align=center>
+            <TD>1 x 10<SUP>0</SUP>
+            <TD>1
+            <TD>1
+        <TR align=center>
+            <TD>1 x 10<SUP>1</SUP>
+            <TD>1
+            <TD>1
+        <TR align=center>
+            <TD>1 x 10<SUP>2</SUP>
+            <TD>1
+            <TD>1
+        <TR align=center>
+            <TD>1 x 10<SUP>3</SUP>
+            <TD>1
+            <TD>1
+        <TR align=center>
+            <TD>1 x 10<SUP>4</SUP>
+            <TD>1
+            <TD>2
+        <TR align=center>
+            <TD>1 x 10<SUP>5</SUP>
+            <TD>2
+            <TD>3
+        <TR align=center>
+            <TD>1 x 10<SUP>6</SUP>
+            <TD>3
+            <TD>3
+        <TR align=center>
+            <TD>1 x 10<SUP>7</SUP>
+            <TD>4
+            <TD>3
+        <TR align=center>
+            <TD>1 x 10<SUP>8</SUP>
+            <TD>4
+            <TD>3
+        <TR align=center>
+            <TD>1 x 10<SUP>9</SUP>
+            <TD>5
+            <TD>3
+        <TR align=center>
+            <TD>1 x 10<SUP>10</SUP>
+            <TD>6
+            <TD>3
+        </TABLE>
+        <TR>
+            <TD span=5 align=center><STRONG>Table 1: Retrieve Chunk Address for Element</STRONG>
+    </TABLE>
+</CENTER>
+
+<P>
+The following table shows the maximum number of I/O accesses needed for each
+data structure to extend the dimension of the dataset by one element:
+<CENTER>
+    <TABLE>
+        <TABLE border=1>
+        <TR align=center>
+            <TD>Number of Elements in Dataset
+            <TD>B-Tree
+            <TD>Extensible Array
+        <TR align=center>
+            <TD>1 x 10<SUP>0</SUP>
+            <TD>1
+            <TD>1
+        <TR align=center>
+            <TD>1 x 10<SUP>1</SUP>
+            <TD>1
+            <TD>1
+        <TR align=center>
+            <TD>1 x 10<SUP>2</SUP>
+            <TD>1
+            <TD>1
+        <TR align=center>
+            <TD>1 x 10<SUP>3</SUP>
+            <TD>1
+            <TD>1
+        <TR align=center>
+            <TD>1 x 10<SUP>4</SUP>
+            <TD>1
+            <TD>2
+        <TR align=center>
+            <TD>1 x 10<SUP>5</SUP>
+            <TD>4
+            <TD>3
+        <TR align=center>
+            <TD>1 x 10<SUP>6</SUP>
+            <TD>6
+            <TD>3
+        <TR align=center>
+            <TD>1 x 10<SUP>7</SUP>
+            <TD>8
+            <TD>3
+        <TR align=center>
+            <TD>1 x 10<SUP>8</SUP>
+            <TD>8
+            <TD>3
+        <TR align=center>
+            <TD>1 x 10<SUP>9</SUP>
+            <TD>10
+            <TD>3
+        <TR align=center>
+            <TD>1 x 10<SUP>10</SUP>
+            <TD>12
+            <TD>3
+        </TABLE>
+        <TR>
+            <TD span=5 align=center><STRONG>Table 2: Append Element to Dataset</STRONG>
+    </TABLE>
+</CENTER>
+
+</P>
+
+<P>
+For both data structures the cost of appending an element is frequently just
+one I/O access (when the current chunk has room for the element), but the
+B-Tree data structure has much worse performance when its nodes are full and
+need to be split.
+For table 2 above, the maximum number of I/O accesses for the B-tree reflects
+the cost of splitting each node, all the way to the root.  Because the
+extensible array is designed for efficient append operations, no splitting of
+nodes is ever required and once the maximum depth of the data structure is
+reached, the number of I/O accesses for both lookups (table 1) and appends
+(table 2) is constant.
+</P>
+
+<P>
+</P>
+
+<LI><H3><U>Comparison of Data Structure Storage Use</U></H3>
+<P>
+For the tables below, the parameters for the spreadsheets are the same as
+above.
+</P>
+
+<P>
+The following table shows the size of the data structure needed to track
+the address of a chunk for the data structures:
+<CENTER>
+    <TABLE>
+        <TABLE border=1>
+        <TR align=center>
+            <TD>Number of Elements in Dataset
+            <TD>B-Tree
+            <TD>Extensible Array
+        <TR align=center>
+            <TD>1 x 10<SUP>0</SUP>
+            <TD>400 bytes
+            <TD>49 bytes
+        <TR align=center>
+            <TD>1 x 10<SUP>1</SUP>
+            <TD>400 bytes
+            <TD>49 bytes
+        <TR align=center>
+            <TD>1 x 10<SUP>2</SUP>
+            <TD>400 bytes
+            <TD>49 bytes
+        <TR align=center>
+            <TD>1 x 10<SUP>3</SUP>
+            <TD>400 bytes
+            <TD>49 bytes
+        <TR align=center>
+            <TD>1 x 10<SUP>4</SUP>
+            <TD>400 bytes
+            <TD>194 bytes
+        <TR align=center>
+            <TD>1 x 10<SUP>5</SUP>
+            <TD>2,000 bytes
+            <TD>476 bytes
+        <TR align=center>
+            <TD>1 x 10<SUP>6</SUP>
+            <TD>18,800 bytes
+            <TD>4,393 bytes
+        <TR align=center>
+            <TD>1 x 10<SUP>7</SUP>
+            <TD>218,800 bytes
+            <TD>58,888 bytes
+        <TR align=center>
+            <TD>1 x 10<SUP>8</SUP>
+            <TD>1,317,200 bytes
+            <TD>491,860 bytes
+        <TR align=center>
+            <TD>1 x 10<SUP>9</SUP>
+            <TD>13,653,600 bytes
+            <TD>4,492,371 bytes
+        <TR align=center>
+            <TD>1 x 10<SUP>10</SUP>
+            <TD>143,766,800 bytes
+            <TD>57,050,196 bytes
+        </TABLE>
+        <TR>
+            <TD span=5 align=center><STRONG>Table 3: Data Structure Storage Size</STRONG>
+    </TABLE>
+</CENTER>
+</P>
+
+<P>
+<CENTER><TABLE><TR><TD><IMG src=BTreeVSExtensibleArraySize.png><TR><TD align=center><STRONG>Figure 1: Data Structure Storage Size</STRONG></TABLE></CENTER>
+</P>
+
+<P>
+Table 3 and Figure 1 show that the extensible array data structure's storage
+size is always smaller than the B-Tree's and is around 1/3<SUP>rd</SUP> the
+size of the B-Tree when they reach their long-term trends.
+</P>
+
+
+</OL>
+
+<HR>
+
+<I>QAK:08/15/2008</I>
+</BODY>
+</HTML>
+
+

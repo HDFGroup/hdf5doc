@@ -1,0 +1,288 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+	<meta http-equiv="content-type" content="text/html; charset=utf-8">
+	<meta name="generator" content="VoodooPad">
+	<title>Collective I/O on Chunked Datasets</title>
+		<style type="text/css">
+
+body
+{
+	margin: 20px;
+	color: #000;
+	font-size: 16px;
+	background-color: #BCCCAB;
+}
+
+.main
+{
+	min-width: 400px;
+	border: solid 1px #aaaaaa;
+	padding: 5px;
+	font-family: verdana, arial, helvetica, sans-serif;
+	font-size: 9pt;
+	background: #fff;
+	margin-top: 10px;
+}
+
+.header
+{
+	color: black;
+	font-size: 24px;
+	font-variant: small-caps;
+	font-weight: bold;
+	border: solid 1px #aaaaaa;
+	background: #fff;
+}
+
+	
+	</style>
+	
+	
+</head>
+
+<body>
+    <div class="header" align="center">
+        Collective I/O on Chunked Datasets
+    </div>
+    
+    <div class="main">
+        <style type="text/css">
+p.p1 {margin: 0.0px 0.0px 0.0px 0.0px; font: 18.0px 'Lucida Grande'}
+p.p2 {margin: 0.0px 0.0px 0.0px 0.0px; font: 18.0px 'Lucida Grande'; min-height: 21.0px}
+p.p3 {margin: 0.0px 0.0px 0.0px 0.0px; font: 12.0px Helvetica}
+li.li1 {margin: 0.0px 0.0px 0.0px 0.0px; font: 18.0px 'Lucida Grande'}
+span.s1 {text-decoration: underline}
+ul.ul1 {list-style-type: hyphen}
+</style>
+
+<p class="p1">Collective I/O on chunked datasets can be performed either as a fully collective I/O operation on all the chunks at once (“linked-chunk I/O”), or partially collective, with collective I/O on each chunk individually (“multi-chunk I/O”).<span class="Apple-converted-space">&nbsp; </span>The general flowchart for this decision making looks like this:</p>
+<p class="p2"><br></p>
+<p class="p3"><img src="collective%20i_o%20on%20chunked%20datasets.Pasted%20Graphic%202.png" alt="Pasted Graphic 2.pdf"></p>
+<p class="p2"><br></p>
+<p class="p1">The user input for this algorithm is provided with the following API routines which set properties on a dataset transfer property list (DXPL) that can be used in a call to <a href="http://www.hdfgroup.org/HDF5/doc/RM/RM_H5D.html#Dataset-Read"><span class="s1">H5Dread</span></a> or <a href="http://www.hdfgroup.org/HDF5/doc/RM/RM_H5D.html#Dataset-Write"><span class="s1">H5Dwrite</span></a>.</p>
+<p class="p2"><br></p>
+<ul class="ul1">
+<li class="li1"><a href="http://www.hdfgroup.org/HDF5/doc/RM/RM_H5P.html#Property-SetDxplMpioChunkOpt"><span class="s1">H5Pset_dxpl_mpio_chunk_opt</span></a>()<span class="Apple-converted-space">&nbsp; &nbsp; </span>[in <a href="http://svn.hdfgroup.uiuc.edu/hdf5/trunk/src/H5FDmpio.c"><span class="s1">src/H5FDmpio.c</span></a>]</li>
+<ul class="ul1">
+<li class="li1">Set the type of collective chunk I/O to perform (linked-chunk or multi-chunk I/O) without using MPI communication for making decisions.</li>
+</ul>
+</ul>
+<p class="p2"><br></p>
+<ul class="ul1">
+<li class="li1"><a href="http://www.hdfgroup.org/HDF5/doc/RM/RM_H5P.html#Property-SetDxplMpioChunkOptNum"><span class="s1">H5Pset_dxpl_mpio_chunk_opt_num</span></a>()<span class="Apple-converted-space">&nbsp; &nbsp; </span>[in <a href="http://svn.hdfgroup.uiuc.edu/hdf5/trunk/src/H5FDmpio.c"><span class="s1">src/H5FDmpio.c</span></a>]</li>
+<ul class="ul1">
+<li class="li1">Sets a threshold number of chunks per process for doing linked chunk I/O.<span class="Apple-converted-space">&nbsp; </span>The library will calculate the average number of chunks selected by each process. If the number is greater than the threshold set by the application, the library will do linked-chunk I/O; otherwise, I/O will be done for every chunk.</li>
+</ul>
+</ul>
+<p class="p2"><br></p>
+<ul class="ul1">
+<li class="li1"><a href="http://www.hdfgroup.org/HDF5/doc/RM/RM_H5P.html#Property-SetDxplMpioChunkOptRatio"><span class="s1">H5Pset_dxpl_mpio_chunk_opt_ratio</span></a>() <span class="Apple-converted-space">&nbsp; </span>[in <a href="http://svn.hdfgroup.uiuc.edu/hdf5/trunk/src/H5FDmpio.c"><span class="s1">src/H5FDmpio.c</span></a>]</li>
+<ul class="ul1">
+<li class="li1">Sets a threshold for doing collective I/O for each chunk.<span class="Apple-converted-space">&nbsp; </span>The library will calculate the percentage of the number of process holding selections at each chunk. If that percentage of number of processes in the individual chunk is greater than the threshold set by the user, the library will do collective chunk I/O for this chunk; otherwise, independent I/O will be done for this chunk.</li>
+</ul>
+</ul>
+<p class="p2"><br></p>
+<p class="p1">Describing this in pseudo-code: (source code is in H5D_chunk_collective_io() in <a href="http://svn.hdfgroup.uiuc.edu/hdf5/trunk/src/H5Dmpio.c"><span class="s1">src/H5Dmpio.c</span></a>)</p>
+<ul class="ul1">
+<li class="li1">&lt;check if chunk I/O mode has been chosen with <a href="http://www.hdfgroup.org/HDF5/doc/RM/RM_H5P.html#Property-SetDxplMpioChunkOpt"><span class="s1">H5Pset_dxpl_mpio_chunk_opt</span></a>()&gt;</li>
+<ul class="ul1">
+<li class="li1">&lt;set chunk I/O mode from DXPL&gt;</li>
+</ul>
+<li class="li1">&lt;else&gt;<span class="Apple-converted-space">&nbsp; </span>[chunk I/O mode has not been specified by the application]</li>
+<ul class="ul1">
+<li class="li1">&lt;call H5D_mpio_get_sum_chunk()&gt;</li>
+<ul class="ul1">
+<li class="li1">&lt;get the number of chunks on each process&gt;</li>
+<li class="li1">&lt;sum the number of chunks on all processes with MPI_Allreduce()&gt;</li>
+</ul>
+<li class="li1">&lt;retrieve the threshold number of chunks per process from the DXPL and compare to the average number of chunks per process&gt;</li>
+<li class="li1">&lt;if average number of chunks per process is &gt;= threshold number of chunks per process&gt;</li>
+<ul class="ul1">
+<li class="li1">&lt;set chunk I/O mode to linked-chunk I/O&gt;</li>
+</ul>
+<li class="li1">&lt;else&gt;</li>
+<ul class="ul1">
+<li class="li1">&lt;set chunk I/O mode to multi-chunk I/O&gt;</li>
+</ul>
+</ul>
+<li class="li1">&lt;if chunk I/O mode is linked-chunk I/O&gt;</li>
+<ul class="ul1">
+<li class="li1">&lt;call H5D_link_chunk_collective_io() in <a href="http://svn.hdfgroup.uiuc.edu/hdf5/trunk/src/H5Dmpio.c"><span class="s1">src/H5Dmpio.c</span></a>&gt; to create the MPI datatype describing all the I/O to all the chunks and perform the I/O&gt;</li>
+<ul class="ul1">
+<li class="li1">&lt;if the dataset only has one chunk&gt;</li>
+<ul class="ul1">
+<li class="li1">&lt;treat the chunk as if it was the block of elements for a contiguous storage dataset&gt;</li>
+<li class="li1">&lt;set up MPI datatype for selection in the file and in memory&gt;</li>
+<li class="li1">&lt;pass the MPI datatypes down to the <a href="mpi-io%20vfd.html"><span class="s1">MPI-IO VFD</span></a>, where the collective I/O operation occurs&gt;</li>
+</ul>
+<li class="li1">&lt;else&gt;<span class="Apple-converted-space">&nbsp; </span>[the dataset has more than one chunk]</li>
+<ul class="ul1">
+<li class="li1">&lt;determine the number of chunks that this process will perform I/O on&gt;</li>
+<li class="li1">&lt;if the number of chunks that this node will perform I/O on is greater than 0 &gt;</li>
+<ul class="ul1">
+<li class="li1">&lt;call H5D_sort_chunk() in <a href="http://svn.hdfgroup.uiuc.edu/hdf5/trunk/src/H5Dmpio.c"><span class="s1">src/H5Dmpio.c</span></a> to create an array of the chunks to perform I/O on, sorted in increasing order by the chunk’s address in the file&gt;</li>
+<ul class="ul1">
+<li class="li1">&lt;if the number of chunks per process is &gt; 30% of all the chunks in the dataset and the average number of chunks per process is &gt; 10,000&gt;</li>
+<ul class="ul1">
+<li class="li1">&lt;iterate over all the chunks in the dataset with process 0, retrieving the address of each chunk&gt;</li>
+<li class="li1">&lt;use MPI_Bcast() to send the chunk addresses to all the other processes&gt;</li>
+</ul>
+<li class="li1">&lt;iterate over all the chunks for this process&gt;</li>
+<ul class="ul1">
+<li class="li1">&lt;retrieve the chunk’s address (if we don’t already have it)&gt;</li>
+<li class="li1">&lt;set up chunk I/O information and chunk address in array to sort&gt;</li>
+</ul>
+<li class="li1">&lt;sort the array of chunk I/O information in increasing chunk address order&gt;</li>
+</ul>
+<li class="li1">&lt;iterate over all chunks for this process&gt;</li>
+<ul class="ul1">
+<li class="li1">&lt;create an MPI datatype for the memory and file selection for each chunk, according to the algorithms defined for each selection type in <a href="collective%20i_o%20on%20contiguous%20datasets.html"><span class="s1">Collective I/O on Contiguous Datasets</span></a>&gt;</li>
+<li class="li1">&lt;store the MPI datatype for the memory and file selection in array&gt;</li>
+</ul>
+<li class="li1">&lt;use MPI_Type_struct() and MPI_Type_commit() to create single final MPI datatype for all chunks in the file&gt;</li>
+<li class="li1">&lt;use MPI_Type_struct() and MPI_Type_commit() to create single final MPI datatype for all chunks in memory&gt;</li>
+<li class="li1">&lt;release all intermediate MPI datatypes for individual chunks&gt;</li>
+<li class="li1">&lt;set the MPI count to 1&gt;</li>
+<li class="li1">&lt;call H5D_final_collective_io() (in <a href="http://svn.hdfgroup.uiuc.edu/hdf5/trunk/src/H5Dmpio.c"><span class="s1">src/H5Dmpio.c</span></a>) to perform the final call</li>
+</ul>
+<li class="li1">&lt;else&gt; <span class="Apple-converted-space">&nbsp; </span>[this process has no chunks to perform I/O on]</li>
+<ul class="ul1">
+<li class="li1">&lt;set the file and memory MPI datatype to MPI_BYTE and the MPI count to 0&gt;</li>
+</ul>
+</ul>
+<li class="li1">&lt;call H5D_final_collective_io() (in <a href="http://svn.hdfgroup.uiuc.edu/hdf5/trunk/src/H5Dmpio.c"><span class="s1">src/H5Dmpio.c</span></a>) to perform the final call to perform the collective I/O operations in the <a href="mpi-io%20vfd.html"><span class="s1">MPI-IO VFD</span></a>&gt;</li>
+</ul>
+</ul>
+<li class="li1">&lt;else if chunk I/O mode is multi-chunk I/O&gt; <span class="Apple-converted-space">&nbsp; </span>[i.e. the application requested collective I/O on as many chunks as possible]</li>
+<ul class="ul1">
+<li class="li1">&lt;call H5D_multi_chunk_collective_io_no_opt() (in <a href="http://svn.hdfgroup.uiuc.edu/hdf5/trunk/src/H5Dmpio.c"><span class="s1">src/H5Dmpio.c</span></a>) to perform I/O on chunks&gt;</li>
+<ul class="ul1">
+<li class="li1">&lt;call H5D_mpio_get_min_chunk() (in <a href="http://svn.hdfgroup.uiuc.edu/hdf5/trunk/src/H5Dmpio.c"><span class="s1">src/H5Dmpio.c</span></a>) to determine the minimum number of chunks, &lt;max_coll_chunks&gt; to perform I/O on, for all chunks&gt;</li>
+<ul class="ul1">
+<li class="li1">&lt;each process determines the number of chunks it will perform I/O on&gt;</li>
+<li class="li1">&lt;use MPI_Allreduce() with MPI_MIN on the number of chunks for each process to generate the number of chunks that collective I/O can be used for&gt;</li>
+</ul>
+<li class="li1">&lt;iterate over chunks for this process, tracking the index of the chunk we are operating on in &lt;chunk_index&gt; &gt;</li>
+<ul class="ul1">
+<li class="li1">&lt;if &lt;chunk_index&gt; is greater than &lt;max_coll_chunks&gt; &gt;<span class="Apple-converted-space">&nbsp; </span>[need to perform independent I/O on this chunk]</li>
+<ul class="ul1">
+<li class="li1">&lt;write data elements to disk using single I/O operation for each run of contiguous elements in the chunk&gt;<span class="Apple-converted-space">&nbsp; </span>[i.e. like serial I/O on the chunk, but don’t pull the chunk into the chunk cache]</li>
+</ul>
+<li class="li1">&lt;else&gt; [perform collective I/O on this chunk]</li>
+<ul class="ul1">
+<li class="li1">&lt;call H5D_inter_collective_io() (in <a href="http://svn.hdfgroup.uiuc.edu/hdf5/trunk/src/H5Dmpio.c"><span class="s1">src/H5Dmpio.c</span></a>) to create MPI datatype for file and memory selection and perform I/O&gt;</li>
+<ul class="ul1">
+<li class="li1">&lt;if there’s a file and memory selection&gt;</li>
+<ul class="ul1">
+<li class="li1">&lt;create an MPI datatype for the memory and file selection for chunk, according to the algorithms defined for each selection type in <a href="collective%20i_o%20on%20contiguous%20datasets.html"><span class="s1">Collective I/O on Contiguous Datasets</span></a>&gt;</li>
+<li class="li1">&lt;call H5D_final_collective_io() (in <a href="http://svn.hdfgroup.uiuc.edu/hdf5/trunk/src/H5Dmpio.c"><span class="s1">src/H5Dmpio.c</span></a>) to perform the final call to perform the collective I/O operations in the <a href="mpi-io%20vfd.html"><span class="s1">MPI-IO VFD</span></a>&gt;</li>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+<li class="li1">&lt;else&gt;<span class="Apple-converted-space">&nbsp; </span>[the chunk I/O mode should be determined for each chunk]</li>
+<ul class="ul1">
+<li class="li1">&lt;call H5D_multi_chunk_collective_io() (in <a href="http://svn.hdfgroup.uiuc.edu/hdf5/trunk/src/H5Dmpio.c"><span class="s1">src/H5Dmpio.c</span></a>) to perform I/O on chunks&gt;</li>
+<ul class="ul1">
+<li class="li1">&lt;allocate arrays to hold the type of I/O to perform on each chunk and the address of each chunk&gt;</li>
+<li class="li1">&lt;call H5D_obtain_mpio_mode() to obtain the type of I/O and address for each chunk&gt;</li>
+<ul class="ul1">
+<li class="li1">&lt;retrieve the &lt;percent_nproc_per_chunk&gt; value from the DXPL (set with <a href="http://www.hdfgroup.org/HDF5/doc/RM/RM_H5P.html#Property-SetDxplMpioChunkOptRatio"><span class="s1">H5Pset_dxpl_mpio_chunk_opt_ratio</span></a>() ) &gt;</li>
+<li class="li1">&lt;if configure-time setting that “complex derived datatypes work” and “special collective I/O works”&gt;</li>
+<ul class="ul1">
+<li class="li1">&lt;if &lt;percent_nproc_per_chunk&gt; is 0 (i.e. always do collective I/O on all chunks) &gt;</li>
+<ul class="ul1">
+<li class="li1">&lt;retrieve the chunk addresses with H5D_chunk_addrmap() (in <a href="http://svn.hdfgroup.uiuc.edu/hdf5/trunk/src/H5Dmpio.c"><span class="s1">src/H5Dmpio.c</span></a>)</li>
+<li class="li1">&lt;set the type of I/O for each chunk to “collective”&gt;</li>
+</ul>
+</ul>
+<li class="li1">&lt;else&gt; <span class="Apple-converted-space">&nbsp; </span>[configure-time settings false or &lt;percent_nproc_per_chunk&gt; greater than 0]</li>
+<ul class="ul1">
+<li class="li1">&lt;allocate &lt;io_mode_info&gt; array of size &lt;total # of chunks&gt; initializing each array element to the “no selection” value &gt;</li>
+<li class="li1">&lt;allocate &lt;recv_io_mode_info&gt; array of size (&lt;# of MPI processes&gt; * &lt;total # of chunks&gt; &gt;</li>
+<li class="li1">&lt;iterate through all the chunks selected for this process&gt;</li>
+<ul class="ul1">
+<li class="li1">&lt;if the file and memory selection are regular&gt;</li>
+<ul class="ul1">
+<li class="li1">&lt;set the &lt;io_mode_info&gt; for this chunk to “regular”&gt;</li>
+</ul>
+<li class="li1">&lt;else&gt; <span class="Apple-converted-space">&nbsp; </span>[the file or the memory selection is irregular&gt;</li>
+<ul class="ul1">
+<li class="li1">&lt;set the &lt;io_mode_info&gt; for this chunk to “irregular”&gt;</li>
+</ul>
+</ul>
+<li class="li1">&lt;use MPI_Gather() to send each process’ &lt;io_mode_info&gt; array to process 0, which receives them in the &lt;recv_io_mode_info&gt; array&gt;</li>
+<li class="li1">&lt;if process is rank 0&gt;</li>
+<ul class="ul1">
+<li class="li1">&lt;call H5D_chunk_addrmap() (in <a href="http://svn.hdfgroup.uiuc.edu/hdf5/trunk/src/H5Dmpio.c"><span class="s1">src/H5Dmpio.c</span></a>) to retrieve the chunk addresses&gt;</li>
+<li class="li1">&lt;iterate over the number of processes&gt;</li>
+<ul class="ul1">
+<li class="li1">&lt;iterate over the total number of chunks in the dataset&gt;</li>
+<ul class="ul1">
+<li class="li1">&lt;if the current process will perform I/O on this chunk&gt;</li>
+<ul class="ul1">
+<li class="li1">&lt;increment the number of processes that will perform I/O on the chunk&gt;</li>
+</ul>
+</ul>
+</ul>
+<li class="li1">&lt;iterate over the total number of chunks in the dataset&gt;</li>
+<ul class="ul1">
+<li class="li1">&lt;if the number of processes that will perform I/O on this chunk is greater than &lt;percent_nproc_per_chunk&gt; &gt;</li>
+<ul class="ul1">
+<li class="li1">&lt;set the I/O mode for this chunk to “collective”&gt;</li>
+</ul>
+</ul>
+<li class="li1">&lt;use MPI_Bcast to broadcast the I/O mode and address of each chunk to all processes&gt;</li>
+</ul>
+</ul>
+</ul>
+<li class="li1">&lt;iterate over all chunks for dataset&gt;</li>
+<ul class="ul1">
+<li class="li1">&lt;if collective I/O for this chunk&gt;</li>
+<ul class="ul1">
+<li class="li1">&lt;if this process will perform I/O on this chunk&gt;</li>
+<ul class="ul1">
+<li class="li1">&lt;set the file and memory dataspace to the description for this chunk&gt;</li>
+</ul>
+<li class="li1">&lt;else&gt;<span class="Apple-converted-space">&nbsp; </span>[this process doesn’t have any I/O for this chunk]</li>
+<ul class="ul1">
+<li class="li1">&lt;set the file and memory dataspace to NULL&gt;</li>
+</ul>
+<li class="li1">&lt;call H5D_inter_collective_io() (in <a href="http://svn.hdfgroup.uiuc.edu/hdf5/trunk/src/H5Dmpio.c"><span class="s1">src/H5Dmpio.c</span></a>) to perform the I/O (covered earlier in this page) &gt;</li>
+</ul>
+<li class="li1">&lt;else&gt; <span class="Apple-converted-space">&nbsp; </span>[independent I/O for this chunk (possibly) ]</li>
+<ul class="ul1">
+<li class="li1">&lt;if configure-time check for “complex derived datatype works” or “special collective I/O works” failed&gt; <span class="Apple-converted-space">&nbsp; </span>[need to perform independent I/O on this chunk]</li>
+<ul class="ul1">
+<li class="li1">&lt;write data elements to disk using single I/O operation for each run of contiguous elements in the chunk&gt;<span class="Apple-converted-space">&nbsp; </span>[i.e. like serial I/O on the chunk, but don’t pull the chunk into the chunk cache]</li>
+</ul>
+<li class="li1">&lt;else&gt; <span class="Apple-converted-space">&nbsp; </span>[possible to perform independent I/O using MPI derived datatype]</li>
+<ul class="ul1">
+<li class="li1">&lt;set the I/O mode in the DXPL to perform independent I/O, but use a derived datatype (i.e. call MPI_FIle_set_view in read or write <a href="mpi-io%20vfd.html"><span class="s1">MPI-IO VFD</span></a> callback)&gt;</li>
+<li class="li1">&lt;if this process will perform I/O on this chunk&gt;</li>
+<ul class="ul1">
+<li class="li1">&lt;set the file and memory dataspace to the description for this chunk&gt;</li>
+</ul>
+<li class="li1">&lt;else&gt;<span class="Apple-converted-space">&nbsp; </span>[this process doesn’t have any I/O for this chunk]</li>
+<ul class="ul1">
+<li class="li1">&lt;set the file and memory dataspace to NULL&gt;</li>
+</ul>
+<li class="li1">&lt;call H5D_inter_collective_io() (in <a href="http://svn.hdfgroup.uiuc.edu/hdf5/trunk/src/H5Dmpio.c"><span class="s1">src/H5Dmpio.c</span></a>) to perform the I/O (covered earlier in this page) &gt;</li>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+
+    </div>
+    <div class="main">
+        <a href="_page_index.html">Page Index</a>
+    </div>
+</body>
+</html>
+

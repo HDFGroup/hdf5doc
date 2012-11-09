@@ -1,0 +1,197 @@
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+   <meta name="Generator" content="Microsoft Word 97">
+   <meta name="GENERATOR" content="Mozilla/4.72 [en] (WinNT; U) [Netscape]">
+   <meta name="Author" content="Robert E. McGrath">
+   <title>H4 to H5 Conversion Issues for HDF4 Dimensions</title>
+</head>
+<body text="#000000" bgcolor="#FFFFFF" link="#0000EE" vlink="#551A8B" alink="#FF0000">
+
+<h2>
+<b><font face="Times New Roman,Times">Needed: A Convenience API to Support
+Dimensions in HDF5</font></b></h2>
+<font face="Times New Roman,Times">Robert E. McGrath</font>
+<br><font face="Times New Roman,Times">16 July, 2001</font>
+<h3>
+1. Introduction and Rationale</h3>
+Dimension names and scales are a key feature of HDF4, and users have requested
+them for HDF5 as well.
+<br>These are especially important for users who are moving from HDF4 to
+HDF5, not least because the <i>h4toh5</i> converter stores dimension names
+and dimension scales in conventional attributes and datasets int the HDF5
+file. However, there is no API to retrieve or manipulate these HDF5 objects
+as dimension names and scales. Thus, our software is creating objects that
+there is no convenient or standard way to use.&nbsp; The neutron scattering
+community and some NASA users have reported this as a problem.
+<p>In addition to converting HDF4 data to HDF5, many users want to bring
+forward their programming model to HDF5, including the use of dimension
+names and scales. These users would like something at least similar to
+HDF4 dimensions. Another reason to provide dimension scale support is that
+some software packages, such as VisAD, DODS, Matlab, and IDL work best
+when dimension information is available.&nbsp; Without dimension names
+and scales, these packages cannot use some of their most powerful features.
+<p>Dimension scales in HDF5 have been partly addressed in previous work.&nbsp;
+Two experiments have suggested possible approaches to dimension scales
+based on netCDF.&nbsp; The "<a href="http://hdf.ncsa.uiuc.edu/HDF5/papers/netcdfh5.html">NetCDF-H5
+Prototype</a>" explored a fairly complete implementation of netCDF on top
+of HDF5.[<a href="#ref1">1</a>] This work proposed a storage scheme and
+software to implement netCDF's model of dimensions.&nbsp; A later study,
+"<a href="http://hdf.ncsa.uiuc.edu/HDF5/XML/nctoh5/writeup.htm">Experiment
+with XSL</a>," converted netCDF files to HDF5 files via XML and XSL style
+sheets.[<a href="#ref2">2</a>] This latter experiment used a different
+storage layout for dimensions from [<a href="#ref1">1</a>], and did not
+address any issues of programming model or compatibility.
+<p>The <a href="http://hdf.ncsa.uiuc.edu/HDF5/papers/h4toh5/">HDF4 to HDF5
+Mapping</a> is an official specification for a default representation of
+HDF4 objects in an HDF5 file. This specification includes a specification
+for storing dimension names and scales from an HDF4 object in an HDF5 file.
+Dimension scales are stored as one-dimensional datasets. The names and
+dimensions are associated with a dataset in conventional attributes. The
+attributes have a list of strings for the names, and a list of object references
+that point to the dimension datasets. ([<a href="#ref3">3</a>], section
+3.1). This specification has been implemented by the <i>h4toh5</i> utility
+and library, and it is already in use by important users.
+<p>Our brainstorming sessions floated a number of approaches to dimension
+scales, such as a facility to define 'generating functions' for dimension
+scales.&nbsp; These ideas seem to blend into the experimental 'transformation
+and units' activities.&nbsp; These approaches may be interesting in the
+long run, but it appears they require changes to the HDF5 library and/or
+format (which likely could not happen until 2002 at the earliest). Also,
+there hasn't been any consideration of how to support the dimension scales
+already being created by the <i>h4toh5</i> utility.
+<p>It is important that we provide our uses with some basic support for
+dimension scales in HDF5 as soon as possible.&nbsp; This support should
+be compatible with the <i>h4toh5</i> utility that is already in the hands
+of users.&nbsp; Based on the earlier work above, it seems likely that these
+features can be initially implemented as part of the HDF5 'convenience'
+suite, with no changes to the core HDF5 library.&nbsp; This could be done
+immediately, and could be in the hands of users this year.
+<h3>
+2. Suggested Product</h3>
+The main requirements are:
+<ol>
+<li>
+Early release</li>
+
+<li>
+Compatibility with files produced by <i>h4toh5</i></li>
+
+<li>
+API functions similar to the features of HDF4</li>
+
+<ol>
+<li>
+ability to attach a name to a dimension of a dataset, and to retrieve a
+list of the names of dimensions</li>
+
+<li>
+ability to attach a one-dimensional array of values to a dimension of a
+dataset, and to retrieve the scales for the dimensions of a dataset.</li>
+</ol>
+</ol>
+I would suggest that this be implemented immediately as part of the convenience
+library.&nbsp; The basic functions should be something like:
+<br>&nbsp;
+<br>&nbsp;
+<center><table BORDER COLS=2 WIDTH="100%" >
+<caption><b>Sketch of a minimal API for dimension scales</b></caption>
+
+<tr>
+<td><b>Function</b></td>
+
+<td><b>Description</b></td>
+</tr>
+
+<tr>
+<td>hid_t H5Ccreate_dimscale(hsize_t size, char *name)</td>
+
+<td>Create a 1D dataset, marked as a dimension scale, with name 'name'</td>
+</tr>
+
+<tr>
+<td>H5Cset_dim( int dimindex, hid_t dataset, hid_t dimscale)</td>
+
+<td>Attach dimension scale to dataset, associated with dimension number
+'<i>dimindex</i>'.</td>
+</tr>
+
+<tr>
+<td>H5Cset_name( int dimindex, hid_t dataset, char * dname)</td>
+
+<td>Attach dimension name to dataset, associated with dimension number
+'<i>dimindex</i>'.</td>
+</tr>
+
+<tr>
+<td>hid_t[] H5Cget_dim_scales(hid_t dataset)</td>
+
+<td>Get a list of the dimension scales.&nbsp; Some convention to represent
+dimensions with no scale defined.&nbsp; This list is in the order of the
+dimensions of the dataset.</td>
+</tr>
+
+<tr>
+<td>char * H5Cget_dim_name(hid_t dimindex)</td>
+
+<td>Get the name of dimension <i>dimindex</i>.</td>
+</tr>
+</table></center>
+
+<p>Note that these functions are intended to work with the datasets created
+by the <i>h4toh5</i> utility.&nbsp; We may define a more general storage
+model, but it is important that this API deal with HDF4_DIMSCALES and the
+storage conventions of the current 4 to 5 mapping.
+<p>Dimension scales also can have attributes, and we may want to define
+other standard attributes (other than name).&nbsp; E.g., <i>offset,scale</i>,
+<i>units</i>, <i>format</i>.&nbsp; If defined, we can provide get/set methods.
+<h3>
+3. Features that are difficult to support without library or format changes</h3>
+There are some simple and obvious features that will be difficult to support
+with the current storage model using a convenience API.
+<p><b><i>Global order of dimensions, a la netCDF</i></b>
+<p>Many users are used to the netCDF concept of dimensions that are global
+to the file, and that can be manipulated as a set.&nbsp; For instance,
+dimensions can be retrieved in order of creation, and have a global index
+for each dimension.
+<p>This feature could be supported using an approach similar to the HDF5
+netCDF prototype [<a href="#ref1">1</a>].&nbsp; If something like this
+is adopted, we will need to bring up HDF4 to HDF5 mapping to use this.
+<p><b><i>Management of Shared Dimensions</i></b>
+<p>The <i>h4toh5</i> conventions can adequately represent shared dimensions.&nbsp;
+However, it currently has no way to handle 'shared names'.&nbsp; In addition,
+since the association of dimension names and scales is an attribute of
+each dataset, when the API deletes a dimension, it will have to have some
+way to delect the reference to the dimension in all datasets that might
+be using it. This could be done be adding a table of which datasets are
+using which dimensions.&nbsp; This has not been specified.
+<p><b><i>Unlimited Dimensions</i></b>
+<p>While both the dataspace and the dimension scale dataset can be UNLIMITED,
+i.e., expandable, there is no way to keep them coordinated without library
+support. That is, if the dimension is extended, there is no way to automatically
+extend the dimension scale dataset that is assigned to it.
+<p>Furthermore, users may expect the magical effect that expansion of a
+dimension expands the dataspaces of any dataset using that dimension.&nbsp;
+This is extremely difficult to provide without library support.
+<h3>
+4. Summary</h3>
+I strongly recommend we give a high priority to providing a basic API to
+manage dimension names and scales, a la HDF4, in HDF5.&nbsp; This can be
+done as part of the 'convenience' library work.
+<p>Our users need this now, so we should do what we can as soon as possible.
+We cannot do everything we might want, so we will simply have to do our
+best and document what can't be done.
+<h3>
+<b>References</b></h3>
+<a NAME="ref1"></a>1. Nancy Yeager, "Implementation of the NetCDF-H5 prototype",
+August 20, 1999. <a href="http://hdf.ncsa.uiuc.edu/HDF5/papers/netcdfh5.html">http://hdf.ncsa.uiuc.edu/HDF5/papers/netcdfh5.html</a>
+<p><a NAME="ref2"></a>2. Robert E. McGrath, "Experiment with XSL: translating
+scientific data", February 21, 2001. <a href="http://hdf.ncsa.uiuc.edu/HDF5/XML/nctoh5/writeup.htm">http://hdf.ncsa.uiuc.edu/HDF5/XML/nctoh5/writeup.htm</a>
+<p><a NAME="ref3"></a>3.&nbsp; Mike Folk, Robert E. McGrath, Kent Yang,
+"Mapping HDF4 Objects to HDF5 Objects" Revised: October, 2000. <a href="http://hdf.ncsa.uiuc.edu/HDF5/papers/h4toh5/">http://hdf.ncsa.uiuc.edu/HDF5/papers/h4toh5/</a>
+<br>&nbsp;
+<br>&nbsp;
+<br>&nbsp;
+</body>
+</html>

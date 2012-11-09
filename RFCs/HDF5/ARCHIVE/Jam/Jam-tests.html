@@ -1,0 +1,1001 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"><html><head><title>Jam Tests</title><meta http-equiv="content-type" content="text/html; charset=ISO-8859-1"></head><body> <div align="center"><b>Summary of Tests for the Jam/Unjam Utility</b><br>
+July 28, 2004<br>
+</div>
+<b><br>
+Tests for 'Jam'<br>
+<br>
+Case 1: &nbsp;add a user block to an HDF5 file with no ub, output to new HDF5 file<br>
+</b><br>
+The output file is the same HDF5 file with the user block at the front, padded as needed. The input file is unchanged.<b><br>
+<br>
+Example invocation: &nbsp;jam -u ub.txt -i ifile.h5 -o ofile.h5<br>
+<br>
+Correct Result:<br>
+</b>
+<ol>
+  <li>user block of new file (ofile) should be the same as the input user block file (plus padding).<br>
+Test: extract (size of ub.txt) bytes from ofile.h5, compare to ub.txt</li>
+  <li>The output file should be the same HDF5 file as the input file<br>
+Test: &nbsp;</li>
+  <ol>
+    <li>h5dump ifile,</li>
+    <li>&nbsp;h5dump ofile,&nbsp;</li>
+    <li>compare dump output.</li>
+  </ol>
+
+</ol>
+<div align="center"><b>Table 1. Tests for Case 1</b><br>
+</div>
+<b>
+<br>
+</b>
+<table cellpadding="2" cellspacing="2" border="1" width="100%">
+  <tbody>
+    <tr>
+      <td valign="top"><b>Case<br>
+      </b></td>
+      <td valign="top"><b>Test<br>
+      </b></td>
+    </tr>
+    <tr>
+      <td valign="top">small input user block file (10 bytes)<br>
+      </td>
+      <td valign="top">./jam -u ub10.txt -i tall.h5 -o ta.h5<br>
+      </td>
+    </tr>
+    <tr>
+      <td valign="top">input near the alignment<br>
+      </td>
+      <td valign="top">./jam -u ub511.txt -i tall.h5 -o ta.h5<br>
+      </td>
+    </tr>
+    <tr>
+      <td valign="top">input exactly fills the user block<br>
+      </td>
+      <td valign="top">./jam -u ub512.txt -i tall.h5 -o ta.h5<br>
+      </td>
+    </tr>
+    <tr>
+      <td valign="top">input over the alignment boundary, must fill to next alignment<br>
+      </td>
+      <td valign="top">./jam -u ub513.txt -i tall.h5 -o ta.h5<br>
+      </td>
+    </tr>
+  </tbody>
+</table>
+<b><br><br>
+</b>
+<div align="center"><b>Table 2. Correct results for tests</b><br>
+<b>
+</b></div>
+
+<table cellpadding="2" cellspacing="2" border="1" width="100%">
+
+  <tbody>
+    
+    <tr>
+      <td valign="top"><b>New user block<br>
+      </b></td>
+      <td valign="top"><b>Output File User Block<br>
+      </b>
+      </td>
+      
+    </tr>
+    <tr>
+      <td valign="top">10 bytes<br>
+      </td>
+      <td valign="top">512 bytes:&nbsp; &nbsp;10 input bytes+pad to 512<br>
+      </td>
+      
+    </tr>
+    <tr>
+      <td valign="top">511bytes<br>
+      </td>
+      <td valign="top">512 bytes;&nbsp; &nbsp;511input bytes+pad to 512<br>
+      </td>
+      
+    </tr>
+    <tr>
+      <td valign="top">512bytes<br>
+      </td>
+      <td valign="top">512 bytes:&nbsp; &nbsp;512 input bytes<br>
+      </td>
+      
+    </tr>
+    <tr>
+      <td valign="top">513bytes<br>
+      </td>
+      <td valign="top">1024 bytes: 513 input bytes+ pad to 1024<br>
+      </td>
+      
+    </tr>
+  </tbody>
+</table>
+<br>
+<b><br>
+<br>
+Case 2: Add user block to HDF file with no ub (rewrite the existing file)<br>
+<br>
+</b>Add the user block to the front of the input file. &nbsp;Same as Case 1, except the original file is rewritten.<b><br>
+<br>
+</b><b>Example invocation: &nbsp;jam -u ub.txt -i ifile.h5<br>
+<br>
+Correct Result:<br>
+</b>
+<ol>
+<li>user block of input file (ifile) should be the same as the input user block file (plus padding).<br>
+Test: extract (size of ub.txt) bytes from ifile.h5, compare to ub.txt</li><li>The input file should be the same HDF5 file as the original input file<br>
+Test:</li>
+  <ol>
+    <li>save copy of original file,</li>
+    <li>h5dump original file,&nbsp;</li>
+    <li>h5dump ifile (after jam),&nbsp;</li>
+    <li>compare dump output.</li>
+  </ol>
+
+</ol>
+<div align="center"><b>Table 3. Tests for Case 2</b><br>
+</div>
+
+
+<table cellpadding="2" cellspacing="2" border="1" width="100%">
+
+  <tbody>
+    <tr>
+      <td valign="top"><b>Cases<br>
+      </b>
+      </td>
+      <td valign="top"><b>Test<br>
+      </b>
+      </td>
+    </tr>
+    <tr>
+      <td valign="top">small input user block file (10 bytes)<br>
+      </td>
+      <td valign="top">cp tall.h5 ta.h5; ./jam -u ub10.txt -i ta.h5<br>
+      </td>
+    </tr>
+    <tr>
+      <td valign="top">input near the alignment<br>
+      </td>
+      <td valign="top">cp tall.h5 ta.h5; ./jam -u ub511.txt -i ta.h5<br>
+      </td>
+    </tr>
+    <tr>
+      <td valign="top">input exactly fills the user block<br>
+      </td>
+      <td valign="top">cp tall.h5 ta.h5; ./jam -u ub512.txt -i ta.h5<br>
+      </td>
+    </tr>
+    <tr>
+      <td valign="top">input over the alignment boundary, must fill to next alignment<br>
+      </td>
+      <td valign="top">cp tall.h5 ta.h5; ./jam -u ub513.txt -i ta.h5<br>
+      </td>
+    </tr>
+  </tbody>
+</table>
+<br>
+<br>
+<div align="center"><b>Table 4. Correct output (in the original file)</b><br>
+</div>
+<b><br>
+</b>
+<table cellpadding="2" cellspacing="2" border="1" width="100%">
+
+
+  <tbody>
+    
+    <tr>
+      <td valign="top"><b>New user block<br>
+      </b></td>
+      <td valign="top"><b>Output File User Block</b><br>
+      </td>
+      
+    </tr>
+    <tr>
+      <td valign="top">10 bytes<br>
+      </td>
+      <td valign="top">512 bytes: &nbsp;10 input bytes+pad to 512<br>
+      </td>
+      
+    </tr>
+    <tr>
+      <td valign="top">511bytes<br>
+      </td>
+      <td valign="top">512 bytes: &nbsp;511input bytes+pad to 512<br>
+      </td>
+      
+    </tr>
+    <tr>
+      <td valign="top">512bytes<br>
+      </td>
+      <td valign="top">512 bytes: &nbsp;512 input bytes<br>
+      </td>
+      
+    </tr>
+    <tr>
+      <td valign="top">513bytes<br>
+      </td>
+      <td valign="top">1024 bytes: 513 input bytes+ pad to 1024<br>
+      </td>
+      
+    </tr>
+  </tbody>
+</table>
+<br>
+<b><br>
+<br>
+Case 3: Add user block to HDF file with a ub, output to new file<br>
+<br>
+</b>Same as Case 1, except the input file already has a user block. The input
+user block is added to the end of the existing user block.<b><br>
+<br>
+</b><b>Example invocation: &nbsp;jam -u ub.txt -i ifilewithub.h5 -o ofile.h5<br>
+<br>
+Correct Result:<br>
+</b>
+<ol>
+<li>user block of new file (ofile) should be the concatination of the original
+user block (including padding, then the new user blocksamem then padding.<br>
+ Test: extract (sizeof old ub) bytest from original file, concatinate input
+(ub.txt). Extract (size of old ub + size of ub.txt)&nbsp; bytes from the
+output file. Compare the extracted bytes with the concatinated files.</li><li>The input file should be the same HDF5 file as the original input file<br>
+Test:</li>
+  <ol>
+    <li>&nbsp;save copy of original,&nbsp;</li>
+    <li>h5dump original file,&nbsp;</li>
+    <li>h5dump ifile,&nbsp;</li>
+    <li>compare dump output.</li>
+  </ol>
+
+</ol>
+<div align="center"><b>Table 5. Test Cases for Case 3</b><br>
+</div>
+
+<table cellpadding="2" cellspacing="2" border="1" width="100%">
+
+  <tbody>
+    <tr>
+      <td valign="top"><b>Cases<br>
+      </b></td>
+      <td valign="top"><b>Test<br>
+      </b></td>
+    </tr>
+    <tr>
+      <td valign="top">small input file (10 bytes), H5 file has small ub (10 bytes + pad)<br>
+      </td>
+      <td valign="top">./jam -u ub10.txt -i twithub.h5 -o ta.h5<br>
+      </td>
+    </tr>
+    <tr>
+      <td valign="top">input near the alignment, H5 file has small ub (10 bytes + pad)<br>
+      </td>
+      <td valign="top">./jam -u ub511.txt -i twithub.h5 -o ta.h5<br>
+      </td>
+    </tr>
+    <tr>
+      <td valign="top">input exactly fills the user block, H5 file has small ub (10 bytes + pad)<br>
+      </td>
+      <td valign="top">./jam -u ub512.txt -i twithub.h5 -o ta.h5<br>
+      </td>
+    </tr>
+    <tr>
+      <td valign="top">input over the alignment boundary, must fill to next alignment,&nbsp; H5 file has small ub (10 bytes +data)<br>
+      </td>
+      <td valign="top">./jam -u ub513.txt -i twithub.h5 -o ta.h5<br>
+      </td>
+    </tr><tr>
+      <td valign="top">small input file (10 bytes), H5 file has ub &gt;513 <br>
+      </td>
+      <td valign="top">./jam -u ub10.txt -i twithub513.h5 -o ta.h5<br>
+      </td>
+    </tr>
+    <tr>
+      <td valign="top">input near the alignment, H5 file has ub &gt;513 <br>
+      </td>
+      <td valign="top">./jam -u ub511.txt -i twithub513.h5 -o ta.h5<br>
+      </td>
+    </tr>
+    <tr>
+      <td valign="top">input exactly fills the user block, H5 file has small ub (10 bytes + pad)<br>
+      </td>
+      <td valign="top">./jam -u ub512.txt -i twithub513.h5 -o ta.h5<br>
+      </td>
+    </tr>
+    <tr>
+      <td valign="top">input over the alignment boundary, must fill to next alignment,&nbsp; H5 file has small ub (10 bytes +data)<br>
+      </td>
+      <td valign="top">./jam -u ub513.txt -i twithub513.h5 -o ta.h5<br>
+      </td>
+    </tr>
+
+  </tbody>
+</table>
+<br>
+<br>
+<div align="center"><b>Table 6. Correct Results</b><br>
+</div>
+
+<br>
+<table cellpadding="2" cellspacing="2" border="1" width="100%">
+  <tbody>
+    <tr>
+      <td valign="top"><br>
+      </td>
+      <td valign="top"><b>Input HDF5 file user block:</b><br>
+      </td>
+      <td valign="top"><br>
+      </td>
+    </tr>
+    <tr>
+      <td valign="top"><b>New user block<br>
+      </b></td>
+      <td valign="top">10 original bytes + pad<br>
+      </td>
+      <td valign="top">513 original bytes+pad<br>
+      </td>
+    </tr>
+    <tr>
+      <td valign="top">10 bytes<br>
+      </td>
+      <td valign="top">1024 bytes : &nbsp;10 original bytes+pad to 512+10 input bytes+ pad to 1024<br>
+      </td>
+      <td valign="top">2048 bytes: 513 original bytes+pad to 1024+10 input bytes + pad to 2048<br>
+      </td>
+    </tr>
+    <tr>
+      <td valign="top">511 bytes<br>
+      </td>
+      <td valign="top">1024 bytes: &nbsp;10 original bytes+pad to 512+511 input bytes+ pad to 1024<br>
+      </td>
+      <td valign="top">2048 bytes: 513 original bytes+pad to 1024+511 input bytes + pad to 2048<br>
+      </td>
+    </tr>
+    <tr>
+      <td valign="top">512 bytes<br>
+      </td>
+      <td valign="top">1024 bytes: &nbsp;10 original bytes+pad to 512+512 input bytes<br>
+      </td>
+      <td valign="top">2048 bytes: 513 original bytes+pad to 1024+512 input bytes + pad to 2048<br>
+      </td>
+    </tr>
+    <tr>
+      <td valign="top">513 bytes<br>
+      </td>
+      <td valign="top">2048 bytes: 10 original bytes+pad to 512+513 input bytes + pad to 2048<br>
+      </td>
+      <td valign="top">2048 bytes: 513 original bytes+pad to 1024+513 input bytes + pad to 2048<br>
+      </td>
+    </tr>
+  </tbody>
+</table>
+<br>
+<br>
+<b>Case 4: Add user block to HDF file with existing ub, replace the ub, write to a new file </b><br>
+<br>
+Same as Case 2, except the original HDF5&nbsp; file already has a user block.
+The input user block replaces the original user block.<br>
+<br>
+<b>Example invocation: &nbsp;jam -u ub.txt -i ifilewithub.h5 -o ofile.h5 --clobber<br>
+<br>
+Correct Result:<br>
+</b>
+<ol>
+<li>user block of new file (ofile) should be the  the same as the input user block file (plus padding).<br>Test: extract (size of ub.txt) bytes from ofile.h5, compare to ub.txt</li><li>The input file should be the same HDF5 file as the original input file<br>Test:</li>
+  <ol>
+    <li>&nbsp;h5dump ifile,</li>
+    <li>&nbsp;h5dump ofile,&nbsp;</li>
+    <li>compare dump output.</li>
+  </ol>
+
+</ol>
+<div align="center"><b>Table 7. Test Cases</b><br>
+</div>
+
+<table cellpadding="2" cellspacing="2" border="1" width="100%">
+
+
+  <tbody>
+    <tr>
+      <td valign="top"><b>Cases<br>
+      </b></td>
+      <td valign="top"><b>Test<br>
+      </b></td>
+    </tr>
+    <tr>
+      <td valign="top">small input file (10 bytes), H5 ile has small ub (10 bytes + pad)<br>
+      </td>
+      <td valign="top">./jam -u ub10.txt -i twithub.h5 -o ta.h5 --clobber<br>
+      </td>
+    </tr>
+    <tr>
+      <td valign="top">input near the alignment, H5 file has small ub (10 bytes + pad)<br>
+      </td>
+      <td valign="top">./jam -u ub511.txt -i twithub.h5 -o ta.h5 --clobber<br>
+      </td>
+    </tr>
+    <tr>
+      <td valign="top">input exactly fills the user block, H5 file has small ub (10 bytes + pad)<br>
+      </td>
+      <td valign="top">./jam -u ub512.txt -i twithub.h5 -o ta.h5 --clobber<br>
+      </td>
+    </tr>
+    <tr>
+      <td valign="top">input over the alignment boundary, must fill to next alignment,&nbsp; H5 file has small ub (10 bytes +data)<br>
+      </td>
+      <td valign="top">./jam -u ub513.txt -i twithub.h5 -o ta.h5 --clobber<br>
+      </td>
+    </tr><tr>
+      <td valign="top">small input file (10 bytes), H5 file has ub &gt;513 <br>
+      </td>
+      <td valign="top">./jam -u ub10.txt -i twithub513.h5 -o ta.h5 --clobber<br>
+      </td>
+    </tr>
+    <tr>
+      <td valign="top">input near the alignment, H5 file has ub &gt;513 <br>
+      </td>
+      <td valign="top">./jam -u ub511.txt -i twithub513.h5 -o ta.h5 --clobber<br>
+      </td>
+    </tr>
+    <tr>
+      <td valign="top">input exactly fills the user block, H5 file has small ub (10 bytes + pad)<br>
+      </td>
+      <td valign="top">./jam -u ub512.txt -i twithub513.h5 -o ta.h5 --clobber<br>
+      </td>
+    </tr>
+    <tr>
+      <td valign="top">input over the alignment boundary, must fill to next alignment,&nbsp; file has small ub (10 bytes +data)<br>
+      </td>
+      <td valign="top">./jam -u ub513.txt -i twithub513.h5 -o ta.h5 --clobber<br>
+      </td>
+    </tr>
+
+  </tbody>
+</table>
+<br>
+<br>
+<div align="center"><b>Table 8. Correct results</b><br>
+</div>
+
+<table cellpadding="2" cellspacing="2" border="1" width="100%">
+
+  <tbody>
+    <tr>
+      <td valign="top"><br>
+      </td>
+      <td valign="top"><b>Input HDF5 file user block:</b><br>
+      </td>
+      <td valign="top"><br>
+      </td>
+    </tr>
+    <tr>
+      <td valign="top"><b>New user block<br>
+      </b></td>
+      <td valign="top">10 original bytes + pad to 512<br>
+      </td>
+      <td valign="top">513 original bytes+pad to 1024 bytes<br>
+      </td>
+    </tr>
+    <tr>
+      <td valign="top">10 input bytes<br>
+      </td>
+      <td valign="top">512 bytes: &nbsp;10 input bytes+pad to 512<br>
+      </td>
+      <td valign="top">512 bytes: 10 input bytes+pad to 512 (file shrinks)<br>
+      </td>
+    </tr>
+    <tr>
+      <td valign="top">511 input ytes<br>
+      </td>
+      <td valign="top">512 bytes: &nbsp; 511 input bytes+pad to 512<br>
+      </td>
+      <td valign="top">512 bytes:&nbsp; 511input&nbsp; bytes+pad to 512 (file shrinks)<br>
+      </td>
+    </tr>
+    <tr>
+      <td valign="top">512 input bytes<br>
+      </td>
+      <td valign="top">512 bytes: &nbsp; 512 input&nbsp; bytes (no pad)<br>
+      </td>
+      <td valign="top">512 bytes:&nbsp; 512 input&nbsp; bytes (no pad) (file shrinks)<br>
+      </td>
+    </tr>
+    <tr>
+      <td valign="top">513input bytes<br>
+      </td>
+      <td valign="top">1024 bytes:&nbsp; 513 input bytes+pad to 1024<br>
+      </td>
+      <td valign="top">1024 bytes:&nbsp; 513 input bytes+pad to 1024<br>
+      </td>
+    </tr>
+  </tbody>
+</table>
+<br>
+<br>
+<b>Case 5: Add user block to HDF file with existing ub, replace the ub, write to same file</b><br>
+
+<br>
+Same as Case 4, except the original file is rewritten. &nbsp;The input user block replaces the original user block.<br>
+
+<br>
+
+<b>Example invocation: &nbsp;jam -u ub.txt -i ifilewithub.h5&nbsp; --clobber<br>
+<br>
+Correct Result:<br>
+</b>
+<ol>
+  <li>user block of input file (ofile) should be the  the same as the input user block file (plus padding).<br>Test: extract (size of ub.txt) bytes from ofile.h5, compare to ub.txt</li>
+  <li>The input file should be the same HDF5 file as the original input file<br>Test:&nbsp;</li>
+  <ol>
+    <li>h5dump ifile,&nbsp;</li>
+    <li>h5dump ofile,&nbsp;</li>
+    <li>compare dump output.</li>
+  </ol>
+
+  <li>The input file ub should be no larger than needed by the input. (?? not sure how to implement)</li>
+</ol><br>
+<div align="center"><b>Table 9. Test Cases</b><br>
+</div>
+
+<table cellpadding="2" cellspacing="2" border="1" width="100%">
+
+  <tbody>
+    <tr>
+      <td valign="top"><b>Cases<br>
+      </b></td>
+      <td valign="top"><b>Test<br>
+      </b></td>
+    </tr>
+    <tr>
+      <td valign="top">small input file (10 bytes), H5 file has small ub (10 bytes + pad)<br>
+      </td>
+      <td valign="top">cp twithub.h5 ta.h5; ./jam -u ub10.txt -i ta.h5 --clobber<br>
+      </td>
+    </tr>
+    <tr>
+      <td valign="top">input near the alignment, H5 file has small ub (10 bytes + pad)<br>
+      </td>
+      <td valign="top">.cp twithub.h5 ta.h5; ./jam -u ub511.txt -i ta.h5 --clobber<br>
+      </td>
+    </tr>
+    <tr>
+      <td valign="top">input exactly fills the user block, H5 file has small ub (10 bytes + pad)<br>
+      </td>
+      <td valign="top">cp twithub.h5 ta.h5; ./jam -u ub512.txt -i ta.h5 --clobber<br>
+      </td>
+    </tr>
+    <tr>
+      <td valign="top">input over the alignment boundary, must fill to next alignment, H5 file has small ub (10 bytes +data)<br>
+      </td>
+      <td valign="top">cp twithub.h5 ta.h5; ./jam -u ub513.txt -i ta.h5 --clobber<br>
+      </td>
+    </tr><tr>
+      <td valign="top">small input file (10 bytes), H5file has ub &gt;513 <br>
+      </td>
+      <td valign="top">cp twithub513.h5 ta.h5; ./jam -u ub10.txt -i ta.h5 --clobber<br>
+      </td>
+    </tr>
+    <tr>
+      <td valign="top">input near the alignment, H5 file has ub &gt;513 <br>
+      </td>
+      <td valign="top">cp twithub513.h5 ta.h5; ./jam -u ub511.txt -i ta.h5 --clobber<br>
+      </td>
+    </tr>
+    <tr>
+      <td valign="top">input exactly fills the user block, H5 file has ub &gt;513 <br>
+      </td>
+      <td valign="top">cp twithub513.h5 ta.h5; ./jam -u ub512.txt -i ta.h5 --clobber<br>
+      </td>
+    </tr>
+    <tr>
+      <td valign="top">input over the alignment boundary, must fill to next alignment,&nbsp; H5 file has ub &gt;513 <br>
+      </td>
+      <td valign="top">cp twithub513.h5 ta.h5; ./jam -u ub513.txt -i ta.h5 --clobber<br>
+      </td>
+    </tr>
+
+  </tbody>
+</table>
+<br>
+<br>
+<div align="center"><b>Table 10. Correct Results</b><br>
+</div>
+
+<table cellpadding="2" cellspacing="2" border="1" width="100%">
+
+
+  <tbody>
+    <tr>
+      <td valign="top"><br>
+      </td>
+      <td valign="top"><b>Input HDF5 file user block:</b><br>
+      </td>
+      <td valign="top"><br>
+      </td>
+    </tr>
+    <tr>
+      <td valign="top"><b>New user block<br>
+      </b></td>
+      <td valign="top"><b>10 original bytes + pad to 512<br>
+      </b>
+      </td>
+      <td valign="top"><b>513 original bytes+pad to 1024<br>
+      </b>
+      </td>
+    </tr>
+    <tr>
+      <td valign="top">10 input bytes<br>
+      </td>
+      <td valign="top">512 bytes :&nbsp; 10 input bytes+pad to 512<br>
+      </td>
+      <td valign="top">51 bytes: 10 input bytes+pad to 512 (file shrinks)<br>
+      </td>
+    </tr>
+    <tr>
+      <td valign="top">511 input bytes<br>
+      </td>
+      <td valign="top">512 bytes:&nbsp; 511 input bytes+pad to 512<br>
+      </td>
+      <td valign="top">512 bytes:&nbsp; 511 input bytes+pad to 512 (file shrinks)<br>
+      </td>
+    </tr>
+    <tr>
+      <td valign="top">512 input bytes<br>
+      </td>
+      <td valign="top">512 bytes:&nbsp; 512 input bytes (no pad)<br>
+      </td>
+      <td valign="top">512 bytes:&nbsp; 512 input bytes (no pad) (file shrinks)<br>
+      </td>
+    </tr>
+    <tr>
+      <td valign="top">513 input bytes<br>
+      </td>
+      <td valign="top">1024 bytes:&nbsp; 513 input bytes+pad to 1024<br>
+      </td>
+      <td valign="top">1024 bytes:&nbsp; 513 input bytes+pad to 1024<br>
+      </td>
+    </tr>
+  </tbody>
+</table>
+<br>
+<br>
+<b>Tests for 'Unjam'<br>
+<br>
+Case 1: &nbsp;remove a user block from an HDF5 file, output to new HDF5 file</b> <b>and user block file</b><br>
+<br>
+The output file is the same HDF5 file with the user block removed. &nbsp;The
+user block (including padding) is written to the designated file. The input
+file is unchanged.<b><br>
+<br>
+Example invocation: &nbsp;unjam -i ifile.h5 -o ofile.h5 -u ubout.txt<br>
+<br>
+Correct Result:<br>
+</b>
+<ol>
+<li>The output file (ofile) should have no user block.<br>
+Test: H5Fget_user_blocksize should be 0.</li><li>The output file should be the same HDF5 file as the input file<br>
+Test: &nbsp;</li><ol><li>h5dump ifile,</li><li>&nbsp;h5dump ofile,&nbsp;</li><li>compare dump output</li></ol><li>The output user block file should be the same as the original user block, including padding.<br>
+Test:</li>
+  <ol>
+    <li>get H5Fget_user_blocksize from original</li>
+    <li>compare (original user block) with ubout.txt<br>
+    </li>
+  </ol>
+</ol>
+
+<div align="center"><b>Table 11. Tests for Case 1</b><br>
+</div>
+
+<b>
+<br>
+</b>
+<table cellpadding="2" cellspacing="2" border="1" width="100%">
+
+  <tbody>
+    <tr>
+      <td valign="top"><b>Case<br>
+      </b></td>
+      <td valign="top"><b>Test<br>
+      </b></td>
+    </tr>
+    <tr>
+      <td valign="top">Input H5 file has small user block&nbsp; (10 bytes)<br>
+      </td>
+      <td valign="top">cp withub10.h5 ta.h5; ./unjam -i ta.h5 -o tao.h5 -u ub10.txt <br>
+      </td>
+    </tr>
+    <tr>
+      <td valign="top">Input H5 file has user block&nbsp; (513&nbsp; bytes)<br>
+</td>
+      <td valign="top">cp withub513.h5 ta.h5; ./unjam -i ta.h5 -o tao.h5 -u ub513.txt <br>
+</td>
+    </tr>
+    
+    
+  </tbody>
+</table>
+
+<b><br><br>
+</b>
+<div align="center"><b>Table 2. Correct results for tests</b><br>
+<b>
+</b></div>
+
+
+<table cellpadding="2" cellspacing="2" border="1" width="100%">
+
+
+  <tbody>
+    
+    <tr>
+      <td valign="top"><b>input HDF5 file with user block<br>
+      </b></td>
+      <td valign="top"><b>Output HDF5 File</b><br>
+      </td>
+<td valign="top"><b>Output File User Block<br>
+      </b>
+      </td>
+      
+    </tr>
+    <tr>
+      <td valign="top">512 bytes:&nbsp; &nbsp;10 input bytes+pad to 512<br>
+      </td>
+      <td valign="top">0&nbsp;bytes (no user block)<br>
+      </td>
+<td valign="top">512 bytes:&nbsp; &nbsp;10 input bytes+pad to 512<br>
+      </td>
+      
+    </tr>
+    
+    
+    <tr>
+      <td valign="top">1024 bytes: 513 input bytes+ pad to 1024 <br>
+      </td>
+      <td valign="top">0 bytes (no user block)<br>
+      </td>
+<td valign="top">1024 bytes: 513 input bytes+ pad to 1024<br>
+      </td>
+      
+    </tr>
+  </tbody>
+</table>
+
+<br>
+
+<b><br></b><b>
+Case 2: &nbsp;remove a user block from an HDF5 file, rewrite the HDF5 file</b> <b>and write user block to file</b><br>
+
+<br>
+The HDF5 file is rewritten without the user block removed. &nbsp;The user
+block (including padding) is written to the designated file.<b><br>
+<br>
+Example invocation: &nbsp;unjam -i ifile.h5 -u ubout.txt<br>
+<br>
+Correct Result:<br>
+</b>
+<ol>
+<li>The input file (ofile) should have no user block.<br>
+Test: H5Fget_user_blocksize should be 0.</li><li>The input file should be the same HDF5 file as the original file<br>
+Test: &nbsp;</li><ol><li>h5dump ifile,</li><li>&nbsp;h5dump original&nbsp;</li><li>compare dump output</li></ol><li>The output user block file should be the same as the original user block, including padding.<br>
+Test:</li><ol><li>get H5Fget_user_blocksize from original</li><li>compare (original user block) with ubout.txt<br>
+    </li></ol>
+</ol>
+
+
+<div align="center"><b>Table 13. Tests for Case 2</b><br>
+</div>
+
+
+<b>
+<br>
+</b>
+<table cellpadding="2" cellspacing="2" border="1" width="100%">
+
+
+  <tbody>
+    <tr>
+      <td valign="top"><b>Case<br>
+      </b></td>
+      <td valign="top"><b>Test<br>
+      </b></td>
+    </tr>
+    <tr>
+      <td valign="top">Input H5 file has small user block&nbsp; (10 bytes)<br>
+      </td>
+      <td valign="top">cp withub10.h5 ta.h5; ./unjam -i ta.h5 -u ub10.txt <br>
+      </td>
+    </tr>
+    <tr>
+      <td valign="top">Input H5 file has user block&nbsp; (513&nbsp; bytes)<br>
+</td>
+      <td valign="top">cp withub513.h5 ta.h5; ./unjam -i ta.h5 -u ub513.txt <br>
+</td>
+    </tr>
+    
+    
+  </tbody>
+</table>
+
+
+<b><br><br>
+</b>
+<div align="center"><b>Table 2. Correct results for tests</b><br>
+<b>
+</b></div>
+
+
+
+<table cellpadding="2" cellspacing="2" border="1" width="100%">
+
+
+
+  <tbody>
+    
+    <tr>
+      <td valign="top"><b>Input HDF5 file with user block<br>
+      </b></td>
+      <td valign="top"><b>HDF5 File after test</b><br>
+      </td>
+<td valign="top"><b>Output File User Block<br>
+      </b>
+      </td>
+      
+    </tr>
+    <tr>
+      <td valign="top">512 bytes:&nbsp; &nbsp;10 input bytes+pad to 512<br>
+      </td>
+      <td valign="top">0&nbsp;bytes (no user block)<br>
+      </td>
+<td valign="top">512 bytes:&nbsp; &nbsp;10 input bytes+pad to 512<br>
+      </td>
+      
+    </tr>
+    
+    
+    <tr>
+      <td valign="top">1024 bytes: 513 input bytes+ pad to 1024 <br>
+      </td>
+      <td valign="top">0 bytes (no user block)<br>
+      </td>
+<td valign="top">1024 bytes: 513 input bytes+ pad to 1024<br>
+      </td>
+      
+    </tr>
+  </tbody>
+</table>
+
+
+<br>
+
+
+<b>
+Case 3: &nbsp;remove a user block from an HDF5 file, rewrite the HDF5 file; don't write user block.</b><br>
+
+
+<br>
+
+The HDF5 file is rewritten without the user block removed. &nbsp;The user
+block (including padding) is siacarded.<b><br>
+<br>
+Example invocation: &nbsp;unjam -i ifile.h5 -u ubout.txt --delete<br>
+<br>
+Correct Result:<br>
+</b>
+<ol>
+<li>The input file (ifile) should have no user block.<br>
+Test: H5Fget_user_blocksize should be 0.</li><li>The input file should be the same HDF5 file as the original file<br>
+Test: &nbsp;</li><ol><li>h5dump ifile,</li><li>&nbsp;h5dump original&nbsp;</li><li>compare dump output</li></ol>
+</ol>
+
+
+
+<div align="center"><b>Table 13. Tests for Case 2</b><br>
+</div>
+
+
+
+<b>
+<br>
+</b>
+<table cellpadding="2" cellspacing="2" border="1" width="100%">
+
+
+
+  <tbody>
+    <tr>
+      <td valign="top"><b>Case<br>
+      </b></td>
+      <td valign="top"><b>Test<br>
+      </b></td>
+    </tr>
+    <tr>
+      <td valign="top">Input H5 file has small user block&nbsp; (10 bytes)<br>
+      </td>
+      <td valign="top">cp withub10.h5 ta.h5; ./unjam -i ta.h5 -o ofile.h5&nbsp; --delete<br>
+      </td>
+    </tr>
+    <tr>
+      <td valign="top">Input H5 file has user block&nbsp; (513&nbsp; bytes)<br>
+</td>
+      <td valign="top">cp withub513.h5 ta.h5; ./unjam -i ta.h5&nbsp;-o ofile.h5&nbsp; --delete<br>
+</td>
+    </tr>
+    
+    
+  </tbody>
+</table>
+
+
+
+<b><br><br>
+</b>
+<div align="center"><b>Table 2. Correct results for tests</b><br>
+<b>
+</b></div>
+
+
+
+
+<table cellpadding="2" cellspacing="2" border="1" width="100%">
+
+
+
+
+  <tbody>
+    
+    <tr>
+      <td valign="top"><b>Input HDF5 file with user block<br>
+      </b></td>
+      <td valign="top"><b>HDF5 File after test</b><br>
+      </td>
+<td valign="top"><b>Output File User Block<br>
+      </b>
+      </td>
+      
+    </tr>
+    <tr>
+      <td valign="top">512 bytes:&nbsp; &nbsp;10 input bytes+pad to 512<br>
+      </td>
+      <td valign="top">0&nbsp;bytes (no user block)<br>
+      </td>
+<td valign="top">not written<br>
+      </td>
+      
+    </tr>
+    
+    
+    <tr>
+      <td valign="top">1024 bytes: 513 input bytes+ pad to 1024 <br>
+      </td>
+      <td valign="top">0 bytes (no user block)<br>
+      </td>
+<td valign="top">not written<br>
+      </td>
+      
+    </tr>
+  </tbody>
+</table>
+
+
+
+<br>
+
+
+
+<b><br></b><br>
+<b>Other Tests (Not Yet Implemented)</b><br>
+<br>
+Test similar cases for different HDF5 files, especially:<br>
+<ol>
+  <li>Small file, large user block</li>
+  <li>Large HDF5 file</li>
+  <li>File with &nbsp;data after the end of HDF5<br>
+  </li>
+  <li>File with external storage</li>
+  <li>File with mounted file(?)</li>
+  <li>Mount file with user block(?)</li>
+  <li>File with object references (make sure object ref's are correct after adding/removing user block)</li>
+</ol>
+Test similar cases with binary data in the user block (instead of ASCII)<br>
+</body></html>

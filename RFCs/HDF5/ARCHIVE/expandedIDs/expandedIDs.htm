@@ -1,0 +1,314 @@
+<html xmlns:o="urn:schemas-microsoft-com:office:office"
+xmlns:w="urn:schemas-microsoft-com:office:word"
+xmlns:st1="urn:schemas-microsoft-com:office:smarttags"
+xmlns="http://www.w3.org/TR/REC-html40">
+
+<head>
+<meta http-equiv=Content-Type content="text/html; charset=windows-1252">
+<meta name=ProgId content=Word.Document>
+<meta name=Generator content="Microsoft Word 10">
+<meta name=Originator content="Microsoft Word 10">
+<link rel=File-List href="expandedIDs_files/filelist.xml">
+<title>Allowing Users to Use HDF5’s ID System</title>
+<o:SmartTagType namespaceuri="urn:schemas-microsoft-com:office:smarttags"
+ name="date"/>
+<!--[if gte mso 9]><xml>
+ <o:DocumentProperties>
+  <o:Author>jlaird</o:Author>
+  <o:LastAuthor>jlaird</o:LastAuthor>
+  <o:Revision>4</o:Revision>
+  <o:TotalTime>314</o:TotalTime>
+  <o:Created>2004-04-28T15:41:00Z</o:Created>
+  <o:LastSaved>2004-05-03T19:33:00Z</o:LastSaved>
+  <o:Pages>1</o:Pages>
+  <o:Words>924</o:Words>
+  <o:Characters>5270</o:Characters>
+  <o:Company>NCSA</o:Company>
+  <o:Lines>43</o:Lines>
+  <o:Paragraphs>12</o:Paragraphs>
+  <o:CharactersWithSpaces>6182</o:CharactersWithSpaces>
+  <o:Version>10.4219</o:Version>
+ </o:DocumentProperties>
+</xml><![endif]--><!--[if gte mso 9]><xml>
+ <w:WordDocument>
+  <w:SpellingState>Clean</w:SpellingState>
+  <w:GrammarState>Clean</w:GrammarState>
+  <w:Compatibility>
+   <w:BreakWrappedTables/>
+   <w:SnapToGridInCell/>
+   <w:WrapTextWithPunct/>
+   <w:UseAsianBreakRules/>
+  </w:Compatibility>
+  <w:BrowserLevel>MicrosoftInternetExplorer4</w:BrowserLevel>
+ </w:WordDocument>
+</xml><![endif]--><!--[if !mso]><object
+ classid="clsid:38481807-CA0E-42D2-BF39-B33AF135CC4D" id=ieooui></object>
+<style>
+st1\:*{behavior:url(#ieooui) }
+</style>
+<![endif]-->
+<style>
+<!--
+ /* Style Definitions */
+ p.MsoNormal, li.MsoNormal, div.MsoNormal
+	{mso-style-parent:"";
+	margin:0in;
+	margin-bottom:.0001pt;
+	mso-pagination:widow-orphan;
+	font-size:12.0pt;
+	font-family:"Times New Roman";
+	mso-fareast-font-family:"Times New Roman";}
+span.SpellE
+	{mso-style-name:"";
+	mso-spl-e:yes;}
+span.GramE
+	{mso-style-name:"";
+	mso-gram-e:yes;}
+@page Section1
+	{size:8.5in 11.0in;
+	margin:1.0in 1.25in 1.0in 1.25in;
+	mso-header-margin:.5in;
+	mso-footer-margin:.5in;
+	mso-paper-source:0;}
+div.Section1
+	{page:Section1;}
+-->
+</style>
+<!--[if gte mso 10]>
+<style>
+ /* Style Definitions */
+ table.MsoNormalTable
+	{mso-style-name:"Table Normal";
+	mso-tstyle-rowband-size:0;
+	mso-tstyle-colband-size:0;
+	mso-style-noshow:yes;
+	mso-style-parent:"";
+	mso-padding-alt:0in 5.4pt 0in 5.4pt;
+	mso-para-margin:0in;
+	mso-para-margin-bottom:.0001pt;
+	mso-pagination:widow-orphan;
+	font-size:10.0pt;
+	font-family:"Times New Roman";}
+</style>
+<![endif]-->
+</head>
+
+<body lang=EN-US style='tab-interval:.5in'>
+
+<div class=Section1>
+
+<p class=MsoNormal style='line-height:150%'><span style='font-size:16.0pt;
+line-height:150%'>Allowing Users to Access HDF5’s ID System<o:p></o:p></span></p>
+
+<p class=MsoNormal>Nat <span class=SpellE>Furrer</span> and James Laird</p>
+
+<p class=MsoNormal style='line-height:150%'><st1:date Year="2004" Day="3"
+Month="5">May 3, 2004</st1:date></p>
+
+<p class=MsoNormal><o:p>&nbsp;</o:p></p>
+
+<p class=MsoNormal style='line-height:150%'><u>Introduction:<o:p></o:p></u></p>
+
+<p class=MsoNormal style='line-height:150%'>HDF5 has an ID interface to store
+data that is referenced by a single ID number, essentially providing the
+functionality of a <span class=SpellE>struct</span> in C.<span
+style='mso-spacerun:yes'>  </span>This is implemented in H5I.c, H5Ipublic.h,
+H5Iprivate.h, and H5Ipkg.h.</p>
+
+<p class=MsoNormal style='line-height:150%'>These IDs are organized by
+“group”—that is, by the type of object they point to (<span class=SpellE>Datatype</span>,
+File, Attribute, etc.).<span style='mso-spacerun:yes'>  </span>While the IDs
+can be used outside the library, they can only be created inside the library<span
+class=GramE>; <span style='mso-spacerun:yes'> </span>valid</span> ID groups are
+enumerated in H5Ipublic.h and cannot be altered without actually recompiling
+the library.<span style='mso-spacerun:yes'>  </span>The majority of functions
+that access IDs are also private; users can get the type of an ID, but cannot
+access any of the information stored in it.</p>
+
+<p class=MsoNormal style='line-height:150%'><o:p>&nbsp;</o:p></p>
+
+<p class=MsoNormal style='line-height:150%'><u>Current Implementation:</u></p>
+
+<p class=MsoNormal style='line-height:150%'>Currently, each ID is 32 bits <span
+class=GramE>long,</span> with 5 bits devoted to the “group” and 26 bits devoted
+to the object ID within that group (one bit is only used to mark invalid IDs).<span
+style='mso-spacerun:yes'>  </span>The strength of this system is that finding
+an ID’s group is extremely fast, since the group is stored as part of the ID
+itself.</p>
+
+<p class=MsoNormal style='line-height:150%'>Since group numbers are enumerated
+in the source code, they are always equal to the same value and can be referenced
+as constants.<span style='mso-spacerun:yes'>  </span>Each group has a hash table
+containing the data to which the IDs point.</p>
+
+<p class=MsoNormal style='line-height:150%'><o:p>&nbsp;</o:p></p>
+
+<p class=MsoNormal style='line-height:150%'><u>Proposed Change:<o:p></o:p></u></p>
+
+<p class=MsoNormal style='line-height:150%'>It would be useful to extend this
+same ID system to store information about user-defined objects without
+sacrificing the current system’s speed (since IDs are accessed very frequently)
+and without having to change the functions that are currently used throughout
+the HDF5 library.<span style='mso-spacerun:yes'>  </span>Thus, high-level APIs
+could be designed that would be able to <span class=GramE>use <span
+style='mso-spacerun:yes'> </span>the</span> functionality of <span
+class=SpellE>structs</span> while still being compatible with FORTRAN.</p>
+
+<p class=MsoNormal style='line-height:150%'>We can accomplish this by registering
+group numbers at run-time instead of <span class=SpellE>hardcoding</span>
+them.<span style='mso-spacerun:yes'>  </span>If we also expand the current
+32-bit IDs to 64-bit IDs, we will have room to store a much larger number of
+groups, which will be necessary to accommodate additional groups registered by
+users at run-time.</p>
+
+<p class=MsoNormal style='line-height:150%'>A number of functions must be added
+to allow users outside the library to register new groups and use IDs in those
+groups, most of which are simply public wrappers for existing private
+functions.<span style='mso-spacerun:yes'>  </span>The <span style='font-size:
+10.0pt;line-height:150%;font-family:"Courier New"'>H5I_register_group </span>function
+must now keep track of the number of groups allocated and search for available
+group numbers (from groups that were allocated and deleted) if the maximum
+number of groups have already been allocated.<span style='mso-spacerun:yes'> 
+</span>Some minor changes must also be made to the existing H5I code to
+accommodate an increasing number of valid groups, including storing the number
+of groups that have been allocated in a static variable.</p>
+
+<p class=MsoNormal style='line-height:150%'>The library-wide constants that
+refer to group numbers (H5I_DATATYPE, H5I_FILE, etc.) must become variables,
+since we no longer know ahead of time what numbers they will be assigned.<span
+style='mso-spacerun:yes'>  </span>A new function, H5I_register_group, must be
+called when they are initialized instead of H5I_init_group.<span
+style='mso-spacerun:yes'>  </span>The only other significant change is that the
+group numbers can no longer be used as cases in switch statements, since they
+are no longer constants (and a number of existing switch statements must be
+changed to if-else statements).</p>
+
+<p class=MsoNormal style='line-height:150%'>As proposed, these new 64-bit IDs
+have 10 bits for group numbers and 53 bits for IDs within groups, so we do not
+anticipate running out of either groups or IDs in the foreseeable future.<span
+style='mso-spacerun:yes'>  </span>Allowing ample room for expansion seems more
+important to us than the memory that would be saved by keeping the size of the <span
+class=SpellE>hid_t</span> type to 32 bits, which would require limiting the
+number of user-defined groups to 16 or reducing the number of available IDs.</p>
+
+<p class=MsoNormal style='line-height:150%'><o:p>&nbsp;</o:p></p>
+
+<p class=MsoNormal style='line-height:150%'><u>Potential Issues:<o:p></o:p></u></p>
+
+<p class=MsoNormal style='line-height:150%'>Since a number of formerly-private
+functions now have public wrappers, it is possible for users to extract
+information from internal library structures or even destroy groups of IDs that
+the library is still using.<span style='mso-spacerun:yes'>  </span>As long as
+users use only group numbers they register themselves, this should not be a
+problem.</p>
+
+<p class=MsoNormal style='line-height:150%'>It is true that the creation of new
+groups slows down considerably once the maximum number of groups has been
+allocated and the system must search for groups that have been deleted.<span
+style='mso-spacerun:yes'>  </span>This is also an issue with the current
+implementation of IDs, and increasing the number of available groups and IDs
+(by increasing the size of <span class=GramE>an</span> <span class=SpellE>hid_t</span>
+as we have done) is the simplest solution to this issue.</p>
+
+<p class=MsoNormal style='line-height:150%'>The only other issues we foresee
+from this change are those resulting from the change from a 32- to a 64-bit <span
+class=SpellE>hid_<span class=GramE>t</span></span><span class=GramE> ,</span>
+primarily the additional memory use.<span style='mso-spacerun:yes'>  </span>We
+believe that this change will be inevitable eventually as users take advantage
+of this functionality to create their own groups and IDs.</p>
+
+<p class=MsoNormal style='line-height:150%'><o:p>&nbsp;</o:p></p>
+
+<p class=MsoNormal style='line-height:150%'><u>Functions added to H5I.c:<o:p></o:p></u></p>
+
+<p class=MsoNormal style='line-height:150%'>H5Iregister_group (public wrapper
+for H5I_register_group):</p>
+
+<p class=MsoNormal style='line-height:150%'>H5I_register_group:</p>
+
+<p class=MsoNormal>This function finds the next free number for an ID “group,”
+then creates that group with a call to H5I_init_group, passing along its
+arguments.<span style='mso-spacerun:yes'>  </span>If fewer than the maximum
+number of groups have been allocated, it simply allocates the next group
+number.<span style='mso-spacerun:yes'>  </span>Otherwise, it searches through
+the valid group numbers to find a free group ID.<span
+style='mso-spacerun:yes'>  </span>It fails if there are no available group
+numbers.<span style='mso-spacerun:yes'>  </span>On success, it returns the
+number of the newly-created group.</p>
+
+<p class=MsoNormal><o:p>&nbsp;</o:p></p>
+
+<p class=MsoNormal style='mso-layout-grid-align:none;text-autospace:none'><span
+style='font-size:10.0pt;font-family:"Courier New"'>H5I_type_t H5Iregister_<span
+class=GramE>group(</span><span class=SpellE>size_t</span> <span class=SpellE>hash_size</span>,
+<span style='color:blue'>unsigned</span> reserved, H5I_free_t <span
+class=SpellE>free_func</span>);<o:p></o:p></span></p>
+
+<p class=MsoNormal style='mso-layout-grid-align:none;text-autospace:none'><span
+style='font-size:10.0pt;font-family:"Courier New"'>H5I_type_t H5I_register_<span
+class=GramE>group(</span><span class=SpellE>size_t</span> <span class=SpellE>hash_size</span>,
+<span style='color:blue'>unsigned</span> reserved, H5I_free_t <span
+class=SpellE>free_func</span>);<o:p></o:p></span></p>
+
+<p class=MsoNormal style='line-height:150%'><o:p>&nbsp;</o:p></p>
+
+<p class=MsoNormal style='line-height:150%'>Other wrapper functions:</p>
+
+<p class=MsoNormal style='mso-layout-grid-align:none;text-autospace:none'>All of
+these functions call the corresponding private functions, descriptions of which
+can be found in H5I.c.<span style='mso-spacerun:yes'>  </span>The only private
+function which is not supported with a public wrapper is <span
+style='font-size:10.0pt;font-family:"Courier New"'>H5Iobject</span>, which
+provides the same functionality as <span style='font-size:10.0pt;font-family:
+"Courier New"'>H5Iobject_verify</span> without verifying the ID’s group (this
+provides an extra level of error-checking for the system’s use).<span
+style='mso-spacerun:yes'>  </span>H5Idestroy_group frees a group’s number so
+that it can be used again by H5I_register_group.<span style='font-size:10.0pt;
+font-family:"Courier New"'><o:p></o:p></span></p>
+
+<p class=MsoNormal style='mso-layout-grid-align:none;text-autospace:none'><span
+style='font-size:10.0pt;font-family:"Courier New"'><o:p>&nbsp;</o:p></span></p>
+
+<p class=MsoNormal style='mso-layout-grid-align:none;text-autospace:none'><span
+class=SpellE><span style='font-size:10.0pt;font-family:"Courier New"'>hid_t</span></span><span
+style='font-size:10.0pt;font-family:"Courier New"'> <span class=GramE>H5Iregister(</span>H5I_type_t
+<span class=SpellE>grp</span>, <span style='color:blue'>void</span> *object);<o:p></o:p></span></p>
+
+<p class=MsoNormal style='mso-layout-grid-align:none;text-autospace:none'><span
+class=GramE><span style='font-size:10.0pt;font-family:"Courier New";color:blue'>void</span></span><span
+style='font-size:10.0pt;font-family:"Courier New"'> *H5Iremove(<span
+class=SpellE>hid_t</span> id);<o:p></o:p></span></p>
+
+<p class=MsoNormal style='mso-layout-grid-align:none;text-autospace:none'><span
+class=GramE><span style='font-size:10.0pt;font-family:"Courier New";color:blue'>void</span></span><span
+style='font-size:10.0pt;font-family:"Courier New"'> *H5Isearch(H5I_type_t <span
+class=SpellE>grp</span>, H5I_search_func_t <span class=SpellE>func</span>, <span
+style='color:blue'>void</span> *key);<o:p></o:p></span></p>
+
+<p class=MsoNormal style='mso-layout-grid-align:none;text-autospace:none'><span
+class=GramE><span style='font-size:10.0pt;font-family:"Courier New";color:blue'>void</span></span><span
+style='font-size:10.0pt;font-family:"Courier New"'> *H5Iobject_verify(<span
+class=SpellE>hid_t</span> id, H5I_type_t <span class=SpellE>id_type</span>);<o:p></o:p></span></p>
+
+<p class=MsoNormal style='mso-layout-grid-align:none;text-autospace:none'><span
+class=SpellE><span class=GramE><span style='font-size:10.0pt;font-family:"Courier New";
+color:blue'>int</span></span></span><span style='font-size:10.0pt;font-family:
+"Courier New"'> H5Inmembers(H5I_type_t <span class=SpellE>grp</span>);<o:p></o:p></span></p>
+
+<p class=MsoNormal style='mso-layout-grid-align:none;text-autospace:none'><span
+class=SpellE><span style='font-size:10.0pt;font-family:"Courier New"'>herr_t</span></span><span
+style='font-size:10.0pt;font-family:"Courier New"'> H5Iclear_<span class=GramE>group(</span>H5I_type_t
+<span class=SpellE>grp</span>, <span class=SpellE>hbool_t</span> force);<o:p></o:p></span></p>
+
+<p class=MsoNormal style='line-height:150%'><span class=SpellE><span
+style='font-size:10.0pt;line-height:150%;font-family:"Courier New"'>herr_t</span></span><span
+style='font-size:10.0pt;line-height:150%;font-family:"Courier New"'>
+H5Idestroy_<span class=GramE>group(</span>H5I_type_t <span class=SpellE>grp</span>);<o:p></o:p></span></p>
+
+<p class=MsoNormal style='line-height:150%'><o:p>&nbsp;</o:p></p>
+
+</div>
+
+</body>
+
+</html>

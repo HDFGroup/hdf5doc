@@ -1,0 +1,422 @@
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+<html>
+<head>
+    <title>DDL for HDF5</title>
+
+<!-- #BeginLibraryItem "/ed_libs/styles_UG.lbi" -->
+<!--
+  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+  * Copyright by the Board of Trustees of the University of Illinois.         *
+  * All rights reserved.                                                      *
+  *                                                                           *
+  * This file is part of HDF5.  The full HDF5 copyright notice, including     *
+  * terms governing use, modification, and redistribution, is contained in    *
+  * the files COPYING and Copyright.html.  COPYING can be found at the root   *
+  * of the source code distribution tree; Copyright.html can be found at the  *
+  * root level of an installed copy of the electronic HDF5 document set and   *
+  * is linked from the top-level documents page.  It can also be found at     *
+  * http://hdf.ncsa.uiuc.edu/HDF5/doc/Copyright.html.  If you do not have     *
+  * access to either file, you may request a copy from hdfhelp@ncsa.uiuc.edu. *
+  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+ -->
+
+<link href="../ddl/ed_styles/UGelect.css" rel="stylesheet" type="text/css">
+<!-- #EndLibraryItem --></head>
+
+<body bgcolor="#FFFFFF">
+
+
+<!-- #BeginLibraryItem "/ed_libs/NavBar_UG.lbi" --><hr>
+<!-- #EndLibraryItem --><h1>DDL in BNF for HDF5</h1>
+
+
+<h2>1. Introduction</h2>
+
+This document contains the data description language (DDL) for an HDF5 file. 
+The description is in Backus-Naur Form.  
+
+<h2>2. Explanation of Symbols</h2>
+
+This section contains a brief explanation of the symbols used in the DDL.
+
+<PRE>
+    ::=                      defined as
+    &lt;tname&gt;                  a token with the name tname
+    &lt;a&gt; | &lt;b&gt;                one of &lt;a&gt; or &lt;b&gt;
+    &lt;a&gt;<FONT SIZE=1.7>opt</FONT>                    zero or one occurrence of &lt;a&gt;
+    &lt;a&gt;*                     zero or more occurrence of &lt;a&gt;
+    &lt;a&gt;+                     one or more occurrence of &lt;a&gt;
+    [0-9]                    an element in the range between 0 and 9
+    `['                      the token within the quotes (used for special characters)
+    TBD                      To Be Decided
+</pre>
+
+<h2>3. The DDL</h2>
+
+<dir>
+<pre>
+&lt;file&gt; ::= HDF5 &lt;file_name&gt; { <b>&lt;file_super_block&gt;</b><FONT SIZE=1.7>opt</FONT> 
+                              &lt;root_group&gt;  }
+
+&lt;file_name&gt; ::= &lt;identifier&gt;
+
+<b>&lt;file_super_block&gt; ::= SUPER_BLOCK { &lt;super_block_content&gt; &lt;file_istore&gt;<font size="1.7">  </font>&lt;file_driver&gt;<font size="1.7">*</font> }</b></PRE>
+<pre><b>&lt;super_block_content&gt; ::= SUPERBLOCK_VERSION &lt;superblock_version&gt; FREELIST_VERSION &lt;freelist_version&gt; 
+                          SYMBOLTABLE_VERSION &lt;symboltable_version&gt; 
+                          OBJECTHEADER_VERSION &lt;objectheader_version&gt;
+                          USERBLOCK_SIZE &lt;userblock_size&gt; OFFSET_SIZE &lt;offset_size&gt; 
+                          LENGTH_SIZE &lt;length_size&gt; BTREE_RANK &lt;btree_rank&gt; 
+                          BTREE_LEAF &lt;btree_leaf&gt;</b></PRE>
+<pre><b>&lt;superblock_version&gt; </b><b>::= &lt;integer&gt; </b></PRE>
+<pre><b>&lt;freelist_version&gt; </b><b>::= &lt;integer&gt; </b></PRE>
+<pre><b>&lt;objectheader_version&gt; </b><b>::= &lt;integer&gt; </b></PRE>
+<pre><b>&lt;symboltable_version&gt; </b><b>::= &lt;integer&gt; </b></PRE>
+<pre><b>&lt;userblock_size&gt; </b><b>::= &lt;integer&gt; </b></PRE>
+<pre><b>&lt;offset_size&gt; </b><b>::= &lt;integer&gt; </b></PRE>
+<pre><b>&lt;length_size&gt; </b><b>::= &lt;integer&gt; </b></PRE>
+<pre><b>&lt;btree_rank&gt; </b><b>::= &lt;integer&gt;</b></PRE>
+<pre><b>&lt;btree_leaf&gt; </b><b>::= &lt;integer&gt;</b></PRE>
+<pre><b>&lt;file_driver&gt; ::= &lt;file_driver_identifier&gt;</b></PRE>
+<pre><b>&lt;file_driver_identifier&gt; ::= FILE_DRIVER H5FD_CORE |
+ FILE_DRIVER H5FD_DPSS |
+ FILE_DRIVER H5FD_FAMILY |
+ FILE_DRIVER H5FD_GASS |
+ FILE_DRIVER H5FD_LOG |
+ FILE_DRIVER H5FD_MPIO |
+ FILE_DRIVER H5FD_MULTI |
+ FILE_DRIVER H5FD_SEC2 |
+ FILE_DRIVER H5FD_STDIO</b></PRE>
+<pre><b>&lt;file_istore&gt; ::= &lt;integer&gt; </b>
+
+&lt;root_group&gt; ::= GROUP &quot;/&quot; {
+                           &lt;unamed_datatype&gt;*
+                           &lt;object_id&gt;<FONT SIZE=1.7>opt</FONT>
+                           &lt;group_comment&gt;<FONT SIZE=1.7>opt</FONT>
+                           &lt;group_attribute&gt;*
+                           &lt;group_member&gt;*
+                       }
+
+&lt;datatype&gt; ::= &lt;atomic_type&gt; | &lt;compound_type&gt; | &lt;variable_length_type&gt; | &lt;array_type&gt;
+
+&lt;unamed_datatype&gt; ::= DATATYPE &lt;unamed_type_name&gt; { &lt;datatype&gt; }
+
+&lt;unamed_type_name&gt; ::= the assigned name for unamed type is in the form of 
+                       #oid1:oid2, where oid1 and oid2 are the object ids
+                       of the type
+
+&lt;atomic_type&gt; ::= &lt;integer&gt;  | &lt;float&gt;  | &lt;time&gt;      | &lt;string&gt; |
+                  &lt;bitfield&gt; | &lt;opaque&gt; | &lt;reference&gt; | &lt;enum&gt;
+
+&lt;integer&gt; ::=  H5T_STD_I8BE     | H5T_STD_I8LE      |
+               H5T_STD_I16BE    | H5T_STD_I16LE     |
+               H5T_STD_I32BE    | H5T_STD_I32LE     |
+               H5T_STD_I64BE    | H5T_STD_I64LE     |
+               H5T_STD_U8BE     | H5T_STD_U8LE      |
+               H5T_STD_U16BE    | H5T_STD_U16LE     |
+               H5T_STD_U32BE    | H5T_STD_U32LE     |
+               H5T_STD_U64BE    | H5T_STD_U64LE     |
+               H5T_NATIVE_CHAR  | H5T_NATIVE_UCHAR  |
+               H5T_NATIVE_SHORT | H5T_NATIVE_USHORT |
+               H5T_NATIVE_INT   | H5T_NATIVE_UINT   |
+               H5T_NATIVE_LONG  | H5T_NATIVE_ULONG  |
+               H5T_NATIVE_LLONG | H5T_NATIVE_ULLONG
+
+&lt;float&gt; ::= H5T_IEEE_F32BE   | H5T_IEEE_F32LE     |
+            H5T_IEEE_F64BE   | H5T_IEEE_F64LE     |
+            H5T_NATIVE_FLOAT |  H5T_NATIVE_DOUBLE |
+            H5T_NATIVE_LDOUBLE
+
+&lt;time&gt; ::= TBD
+
+&lt;string&gt; ::= H5T_STRING { STRSIZE &lt;strsize&gt; ;
+               STRPAD &lt;strpad&gt; ;
+               CSET &lt;cset&gt; ;
+               CTYPE &lt;ctype&gt; ; }  
+
+&lt;strsize&gt; ::= &lt;int_value&gt;
+
+&lt;strpad&gt; ::= H5T_STR_NULLTERM | H5T_STR_NULLPAD | H5T_STR_SPACEPAD
+
+&lt;cset&gt; ::= H5T_CSET_ASCII
+
+&lt;ctype&gt; ::= H5T_C_S1 | H5T_FORTRAN_S1
+
+&lt;bitfield&gt; ::= TBD
+
+&lt;opaque&gt; ::= H5T_OPAQUE { &lt;identifier&gt; }
+
+&lt;reference&gt; ::= H5T_REFERENCE { &lt;ref_type&gt; }
+
+&lt;ref_type&gt; ::= H5T_STD_REF_OBJECT | H5T_STD_REF_DSETREG
+
+&lt;compound_type&gt; ::= H5T_COMPOUND { &lt;member_type_def&gt;+ }
+
+&lt;member_type_def&gt; ::= &lt;datatype&gt; &lt;field_name&gt; ;
+
+&lt;field_name&gt; ::= &lt;identifier&gt;
+
+&lt;variable_length_type&gt; ::= H5T_VLEN { &lt;datatype&gt; }
+
+&lt;array_type&gt; ::= H5T_ARRAY { &lt;dim_sizes&gt; &lt;datatype&gt; }
+
+&lt;dim_sizes&gt; ::= `['&lt;dimsize&gt;`]' | `['&lt;dimsize&gt;`]'&lt;dim_sizes&gt;
+
+&lt;dimsize&gt; ::= &lt;int_value&gt;
+
+&lt;attribute&gt; ::= ATTRIBUTE &lt;attr_name&gt; { &lt;dataset_type&gt;    
+                                        &lt;dataset_space&gt;
+                                        &lt;data&gt;<FONT SIZE=1.7>opt</FONT>  } 
+
+&lt;attr_name&gt; ::= &lt;identifier&gt;
+
+&lt;dataset_type&gt; ::= DATATYPE &lt;path_name&gt; | &lt;datatype&gt;
+
+&lt;enum&gt; ::= H5T_ENUM { &lt;enum_base_type&gt; &lt;enum_def&gt;+  }
+
+&lt;enum_base_type&gt; ::= &lt;integer&gt;
+// Currently enums can only hold integer type data, but they may be expanded
+// in the future to hold any datatype
+
+&lt;enum_def&gt; ::= &lt;enum_symbol&gt; &lt;enum_val&gt;;
+
+&lt;enum_symbol&gt; ::= &lt;identifier&gt;
+
+&lt;enum_val&gt; ::= &lt;int_value&gt;
+
+&lt;path_name&gt; ::= &lt;path_part&gt;+
+
+&lt;path_part&gt; ::= /&lt;identifier&gt;
+
+&lt;dataspace&gt; ::= &lt;scalar_space&gt; | &lt;simple_space&gt; | &lt;complex_space&gt; | <b>&lt;null_space&gt;</b>
+
+&lt;scalar_space&gt; ::= SCALAR</PRE>
+<pre><b>&lt;null_space&gt; ::= NULL //only to 1.7</b>
+
+&lt;simple_space&gt; ::= SIMPLE { &lt;current_dims&gt; / &lt;max_dims&gt; }
+
+&lt;complex_space&gt; ::= COMPLEX { &lt;complex_space_definition&gt; }
+
+&lt;dataset_space&gt; ::= DATASPACE &lt;path_name&gt; | &lt;dataspace&gt;
+
+&lt;current_dims&gt; ::= &lt;dims&gt;
+
+&lt;max_dims&gt; ::= `(' &lt;max_dim_list&gt; `)'
+
+&lt;max_dim_list&gt; ::= &lt;max_dim&gt; | &lt;max_dim&gt;, &lt;max_dim_list&gt;
+
+&lt;max_dim&gt; ::= &lt;int_value&gt; | H5S_UNLIMITED
+
+&lt;complex_space_definition&gt; ::= TBD
+
+&lt;data&gt; ::= DATA { &lt;scalar_space_data&gt; | &lt;simple_space_data&gt; | &lt;complex_space_data&gt; } | &lt;subset&gt;
+
+&lt;scalar_space_data&gt; ::= &lt;any_element&gt;
+
+&lt;any_element&gt; ::= &lt;atomic_element&gt; | &lt;compound_element&gt; | 
+                  &lt;variable_length_element&gt; | &lt;array_element&gt;
+
+&lt;any_data_seq&gt; ::= &lt;any_element&gt; | &lt;any_element&gt;, &lt;any_data_seq&gt;
+
+&lt;atomic_element&gt; :: = &lt;integer_data&gt; | &lt;float_data&gt;    | &lt;time_data&gt;   |
+                      &lt;string_data&gt;  | &lt;bitfield_data&gt; | &lt;opaque_data&gt; |
+                      &lt;enum_data&gt;    | &lt;reference_data&gt;
+
+&lt;subset&gt; ::= SUBSET { &lt;start&gt;;
+                      &lt;stride&gt;;
+                      &lt;count&gt;;
+                      &lt;block&gt;;
+                 DATA { &lt;simple_space_data&gt; }
+             }
+
+&lt;start&gt; ::= START (&lt;coor_list&gt;)
+
+&lt;stride&gt; ::= STRIDE (&lt;pos_list&gt;)
+
+&lt;count&gt; ::= COUNT (&lt;coor_list&gt;)
+
+&lt;block&gt; ::= BLOCK (&lt;coor_list&gt;)
+
+&lt;coor_list&gt; ::= &lt;int_value&gt;, &lt;coor_list&gt; | &lt;int_value&gt;
+
+&lt;integer_data&gt; ::= &lt;int_value&gt;
+
+&lt;float_data&gt; ::= a floating point number
+
+&lt;time_data&gt; ::= TBD
+
+&lt;string_data&gt; ::= a string
+// A string is enclosed in double quotes. 
+// If a string is displayed on more than one line, string concatenate
+// operator '//'is used.
+
+&lt;bitfield_data&gt; ::= TBD
+
+&lt;opaque_data&gt; ::= TBD
+
+&lt;enum_data&gt; ::= &lt;enum_symbol&gt;
+
+&lt;reference_data&gt; ::= &lt;object_ref_data&gt; | &lt;data_region_data&gt; | NULL
+
+&lt;object_ref_data&gt; ::= &lt;object_type&gt; &lt;object_num&gt;
+
+&lt;object_type&gt; ::= DATASET | GROUP | DATATYPE
+
+&lt;object_id&gt; ::= OBJECTID { &lt;object_num&gt; }
+
+&lt;object_num&gt; ::= &lt;int_value&gt;:&lt;int_value&gt; | &lt;int_value&gt;
+
+&lt;data_region_data&gt; ::= H5T_STD_REF_DSETREG &lt;object_num&gt; { &lt;data_region_data_list&gt; }
+
+&lt;data_region_data_list&gt; ::= &lt;data_region_data_info&gt;, &lt;data_region_data_list&gt; | &lt;data_region_data_info&gt;
+
+&lt;data_region_data_info&gt; ::= &lt;region_info&gt; | &lt;point_info&gt;
+
+&lt;region_info&gt; ::= (&lt;region_vals&gt;)
+
+&lt;region_vals&gt; ::= &lt;lower_bound&gt;:&lt;upper_bound&gt;, &lt;region_vals&gt; | &lt;lower_bound&gt;:&lt;upper_bound&gt;
+
+&lt;lower_bound&gt; ::= &lt;int_value&gt;
+
+&lt;upper_bound&gt; ::= &lt;int_value&gt;
+
+&lt;point_info&gt; ::= (&lt;point_vals&gt;)
+
+&lt;point_vals&gt; ::= &lt;int_value&gt; | &lt;int_value&gt;, &lt;point_vals&gt;
+
+&lt;compound_element&gt; ::= { &lt;any_data_seq&gt; }
+
+&lt;atomic_simple_data&gt; :: = &lt;atomic_element&gt;, &lt;atomic_simple_data&gt; | &lt;atomic_element&gt;
+
+&lt;simple_space_data&gt; :: = &lt;any_data_seq&gt;
+
+&lt;variable_length_element&gt; ::= ( &lt;any_data_seq&gt; )
+
+&lt;array_element&gt; ::= `[' &lt;any_data_seq&gt; `]'
+
+&lt;complex_space_data&gt; ::= TBD
+
+&lt;named_datatype&gt; ::= DATATYPE &lt;type_name&gt; { &lt;datatype&gt; }
+
+&lt;type_name&gt; ::= &lt;identifier&gt;
+
+&lt;named_dataspace&gt; ::= TBD
+
+&lt;hardlink&gt; ::= HARDLINK &lt;path_name&gt; 
+
+&lt;group&gt; ::= GROUP &lt;group_name&gt; { &lt;hardlink&gt; | &lt;group_info&gt; }
+
+&lt;group_comment&gt; ::= COMMENT &lt;string_data&gt;
+            
+&lt;group_name&gt; ::= &lt;identifier&gt;
+
+&lt;group_info&gt; ::= &lt;object_id&gt;<FONT SIZE=1.7>opt</FONT> &lt;group_comment&gt;<FONT SIZE=1.7>opt</FONT> &lt;group_attribute&gt;* &lt;group_member&gt;* 
+            
+&lt;group_attribute&gt; ::= &lt;attribute&gt; 
+
+&lt;group_member&gt; ::= &lt;named_datatype&gt; | &lt;named_dataspace&gt; | &lt;group&gt; |
+                   &lt;dataset&gt; | &lt;softlink&gt;
+
+&lt;dataset&gt; ::= DATASET &lt;dataset_name&gt; { &lt;hardlink&gt; | &lt;dataset_info&gt; }
+
+&lt;dataset_info&gt; ::= &lt;dataset_name&gt; <b>&lt;comment&gt;<FONT SIZE=1.7>opt </FONT></b>&lt;dataset_type&gt;  &lt;dataset_space&gt; <b>
+                   &lt;storagelayout&gt;<FONT SIZE=1.7>opt</FONT></b>
+                   <b>&lt;filters&gt;<font size="1.7">*</font></b> <b>&lt;fill_value&gt;<FONT SIZE=1.7>opt </FONT></b>&lt;object_id&gt;<FONT SIZE=1.7>opt</FONT> &lt;dataset_attribute&gt;* <FONT SIZE=1.7>
+                              </FONT>&lt;data&gt;<FONT SIZE=1.7>opt</FONT>
+<b>// Tokens must be in this order </b>
+
+&lt;dataset_name&gt; ::= &lt;identifier&gt;</PRE>
+<pre><b>&lt;comment&gt;          :: = COMMENT &lt;comment_string&gt;</b></PRE>
+<pre><b>&lt;comment_string&gt;   :: = a string</b></PRE>
+<pre><b>&lt;storagelayout&gt; :: = STORAGE_LAYOUT { &lt;contiguous_layout&gt;  |  
+                            &lt;chunked_layout&gt;     |
+                            &lt;compact_layout&gt;     |
+                            &lt;external_layout&gt; }</b></pre>
+<pre><b>
+&lt;contiguous_layout&gt; ::= CONTIGUOUS    // default
+
+&lt;chunked_layout&gt; ::=  CHUNKED &lt;chunk_dims&gt; </b></PRE>
+<pre><b>&lt;chunk_dims&gt; ::= &lt;dims&gt;</b></PRE>
+<pre><b>&lt;compact_layout&gt; ::=  COMPACT</b></PRE>
+<pre><b>&lt;external_layout&gt; ::=  EXTERNAL &lt;external_info&gt;</b></PRE>
+<pre><b>&lt;external_info&gt; ::= {OFFSET &lt;offset&gt; FILENAME &lt;file_name&gt; SIZE &lt;file_size&gt; }</b></PRE>
+<pre><b>&lt;offset&gt; ::= integer</b></PRE>
+<pre><b>&lt;file_name&gt; ::= string</b></PRE>
+<pre><b>&lt;file_size&gt; ::= integer //size in Kb</b></PRE>
+<pre><b>&lt;filters&gt; :: = FILTERS { 
+                &lt;shuffle_filter&gt;    
+                &lt;fletcher32_filter&gt;     
+                &lt;deflate_filter&gt;     
+                &lt;szip_filter&gt; 
+                &lt;user_defined_filter&gt;
+                }
+
+&lt;shuffle_filter&gt; ::= SHUFFLE | PREPROCESSING SHUFFLE</b></PRE>
+<pre><b>&lt;fletcher32_filter&gt; ::= FLETCHER32 | CHECKSUM FLETCHER32</b></PRE>
+<pre><b>&lt;deflate_filter&gt; ::= DEFLATE &lt;LEVEL &lt;deflate_level&gt;&gt; |
+                     COMPRESSION DEFLATE &lt;LEVEL &lt;deflate_level&gt;&gt;</b></PRE>
+<pre><b>&lt;deflate_level&gt; ::= [1-9]</b></PRE>
+<pre><b>&lt;szip_filter&gt; ::= SZIP &lt;PIXELS PER BLOCK &lt;pixels_per_block&gt;, MODE &lt;mode&gt;, 
+                  CODING &lt;coding&gt;, BYTE ORDER &lt;byte_order&gt;, HEADER &lt;header&gt;<FONT SIZE=1.7>opt</FONT>|
+                  COMPRESSION SZIP &lt;PIXELS PER BLOCK &lt;pixels_per_block&gt;, MODE &lt;mode&gt;, 
+                  CODING &lt;coding&gt;, BYTE ORDER &lt;byte_order&gt;, HEADER &lt;header&gt;<FONT SIZE=1.7>opt</FONT></b></PRE>
+<pre><b>&lt;pixels_per_block&gt; ::= 2|4|6|8|10|12|14|16|18|20|22|24|26|28|30|32</b></PRE>
+<pre><b>&lt;mode&gt; ::= HARDWARE | K13</b></PRE>
+<pre><b>&lt;coding&gt; ::= ENTROPY | NN</b></PRE>
+<pre><b>&lt;byte_order&gt; ::= LSB | MSB</b></PRE>
+<pre><b>&lt;header&gt; ::= raw</b></PRE>
+<pre><b>&lt;user_defined_filter&gt; ::= UNKNOWN_FILTER &lt;filter_id&gt; PARAMS {&lt;filter_params&gt;}</b></PRE>
+<pre><b>&lt;filter_id&gt; ::= integer</b></PRE>
+<pre><b>&lt;filter_params&gt; ::= comma separated numeric values</b></PRE>
+<pre><b>&lt;fill_info&gt; :: = FILLVALUE FILL_TIME &lt;fill_time&gt; ALLOC_TIME</b>  <b>&lt;alloc_time&gt; VALUE &lt;fill_value&gt;</b></pre>
+<pre><b>&lt;fill_time&gt; :: = IFSET | ALLOC | NEVER</b></pre>
+<pre><b>&lt;alloc_time&gt; :: = EARLY | INCR | LATE</b></pre>
+<pre><b>&lt;fill_value&gt; :: = {&lt;data&gt;}</b></pre>
+<pre>&lt;dims&gt; ::= (&lt;dims_values&gt;)
+
+&lt;dims_values&gt; ::= &lt;int_value&gt; | &lt;int_value&gt;, &lt;dims_values&gt;
+
+&lt;compact_layout&gt; ::= TBD           
+
+&lt;external_layout&gt; ::= {EXTERNAL &lt;external_file&gt;+ }
+
+&lt;external_file&gt; ::= (&lt;file_name&gt; &lt;offset&gt; &lt;size&gt;) 
+
+&lt;offset&gt; ::= &lt;int_value&gt;
+
+&lt;size&gt; ::= &lt;int_value&gt;
+
+&lt;compression&gt; :: = COMPRESSION { TBD }  
+
+&lt;dataset_attribute&gt; ::= &lt;attribute&gt; 
+
+&lt;softlink&gt; ::= SOFTLINK &lt;softlink_name&gt; { LINKTARGET &lt;target&gt; }
+
+&lt;softlink_name&gt; ::= &lt;identifier&gt;
+
+&lt;target&gt; ::= &lt;identifier&gt;
+
+&lt;identifier&gt; ::= a string
+// character '/' should be used with care. 
+
+&lt;pos_list&gt;  ::= &lt;pos_int&gt;, &lt;pos_list&gt; | &lt;pos_int&gt;
+
+&lt;int_value&gt; ::= 0 | &lt;pos_int&gt;
+
+&lt;pos_int&gt;   ::= [1-9][0-9]*
+
+&nbsp;</PRE>
+</DIR>
+
+
+<hr>
+<!-- #EndLibraryItem --><!-- #BeginLibraryItem "/ed_libs/Footer.lbi" --><address>
+&nbsp;
+</address><!-- #EndLibraryItem --> 
+
+
+Last modified: <!--webbot bot="Timestamp" S-Type="EDITED"
+S-Format="%A, %B %d, %Y" startspan -->Wednesday, May 12, 2004<!--webbot bot="Timestamp" endspan i-checksum="46676" -->
+
+ 
+</body>
+</html>

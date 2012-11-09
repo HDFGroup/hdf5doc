@@ -1,0 +1,241 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"><html><head><title>h5toh4 update</title><meta http-equiv="content-type" content="text/html; charset=ISO-8859-1"></head><body>
+<h2><b>Update to h5toh4: design notes</b></h2>
+<br>
+May 27, 2003<br>
+<br>
+The current specification: <i>Mapping HDF4 Objects to HDF5 Objects</i> (Oct. 2000)
+[<b><a href="http://hdf.ncsa.uiuc.edu/HDF5/doc/ADGuide/H4toH5Mapping.pdf">pdf</a></b>]<br>
+<br>
+The man page for the current utiltity: <a href="http://hdf.ncsa.uiuc.edu/HDF5/doc/Tools.html#Tools-H5toh4">http://hdf.ncsa.uiuc.edu/HDF5/doc/Tools.html#Tools-H5toh4</a><br>
+<br>
+This document summarizes changes in the tool, the documents must be updated.<br>
+<br>
+<h3>Summary of HDF5 to HDF4 mapping</h3>
+HDF5 supports two primary objects<br>
+<ol>
+  <li>	Groups</li>
+  <li>	Datasets</li>
+</ol>
+<br>
+	Only HDF5 datasets and groups and their attributes can have HDF4 counterparts.
+ &nbsp;All other HDF5 objects should be assumed to have no HDF4 counterpart.
+ For &nbsp;instance, the HDF5 "named  datatype" object has no HDF4 counterpart.
+Certain <br>
+	HDF5 datasets, attributes and groups also have no HDF4 counterpart.  These include:<br>
+	<br>
+<ul>
+  <li>	Any HDF5 dataset or attribute whose datatype is not equivalent to
+an HDF4 datatype.  HDF4 datatypes include unsigned and signed 8-, 16-, 32-
+and 64-bit integers, and 32- and 64-bit IEEE floats.  </li>
+  <li>	Datasets with datatypes of multiplicity greater than 1, unless they map to Vdatas.</li>
+  <li>	Any HDF5 object whose size is greater than 2^31-1.</li>
+  <li>	Any HDF5 attribute that is associated with an HDF5 dataset whose HDF4 counterpart is a palette.</li>
+  <li>	Any HDF5 soft link that does not point to a corresponding HDF4-compatible object.</li>
+</ul>
+<br>
+<h3>Changes</h3>
+<br>
+<h4>	A. GROUPS</h4>
+	HDF5 groups map to HDF4 Vgroups by default. <br>
+<br>
+<h4><i>Attributes of Groups</i></h4>
+If the HDF5 file was originally	converted from an HDF4 file (using h4toh5),
+an HDF5 group may have attributes with names prefixed by "HDF4_VGROUP_ATTR_".
+&nbsp;These attributes are written to the HDF4 Vgroup after stripping off
+the prefix. (NOT IMPLEMENTED YET)<br>
+<br>
+	All other attributes are written to the HDF4 Vgroup without any change.<br>
+<br>
+<h4><i>The HDF5 root group</i></h4>
+<br>
+	The HDF5 root group is a special case. HDF5 has a strictly single rooted
+tree structure, whereas HDF4 supports a forest structure (can have two or
+more disconnected trees).  In the current version of <i>h5toh4,</i> the HDF5 root group is mapped to a corresponding HDF4 Vgroup, &nbsp;with all HDF4
+objects descending from that group. In essence, this is a 'dummy' (of no
+use) group as far as the HDF4 file is concerned. <br>
+	<br>
+In the new version of <i>h5toh4,</i> by default, the HDF5 root group is removed
+from the file after all the root group attributes are processed. For maintaining
+the behaviour of the previous implementations, there is an option to override
+the default mapping. <br>
+<br>
+<h4><i>Attributes of the Root Group</i></h4>
+<br>
+	In both cases, the HDF5 root group attributes are processed in the same
+manner. &nbsp;Global attributes are set as attributes of the corresponding
+interface. &nbsp;Attributes suffixed with GLO_SDS are written as global to
+the SD interface. Similarly, attributes suffixed with GLO_GR are written
+as global to the GR interface. <br>
+<br>
+	In case of an HDF5 input file originally converted from an HDF4 file, there
+may be HDF4 file annotations (file labels and/or file descriptions) written
+as &nbsp;HDF5 root group attributes with the name HDF4_FILE_LABEL&lt;n&gt;
+for a file label <br>
+	and the name HDF4_FILE_DESC&lt;n&gt; for a file description. These attributes are recreated as HDF4 file annotations. <br>
+<br>
+	All other root group attributes are written as HDF4 file descriptions with
+the value "HDF5_&lt;AttributeName&gt; = &lt;AttributeValue&gt;"<br>
+<br>
+	It should be noted that the root group attributes are processed, even if
+the &nbsp;'do not suppress' root group option is specified, but the attributes
+are not removed from the dummy vgroup. <br>
+<br>
+<h4>	B. DATASETS</h4>
+	HDF5 datasets can represent SDS, GR Images, palettes and Vdatas. If there
+is no metadata to indicate which particular HDF4 object, the HDF5 dataset
+corresponds to, an HDF5 dataset with an HDF4-compatible scalar datatype is assumed to be an HDF4 SDS.<br>
+<br>
+<h4><i>	HDF5 Image Dataset to HDF4 GR Image</i></h4>
+	Image data is stored as an HDF5 dataset with values of HDF5 class Integer or Float. The HDF5 Image specification (<a href="http://hdf.ncsa.uiuc.edu/HDF5/doc/ADGuide/ImageSpec.html">http://hdf.ncsa.uiuc.edu/HDF5/doc/ADGuide/ImageSpec.html</a>: Section 1) defines certain standard attributes for an Image dataset. <br>
+<br>
+	The HDF5 dataset for an image is distinguished from other datasets by giving
+it an attribute "CLASS=IMAGE". A HDF5 dataset with this attribute name-value
+pair is converted into an HDF4 GR Image.<br>
+		<br>
+	In addition, the HDF5 Image dataset may have an optional attribute "PALETTE"
+that is an array of object references for zero or more palettes. However,
+HDF4 supports only one palette per image. Only the first object reference
+from the <br>
+	array of object reference is converted into a corresponding HDF4 palette
+and set as the default palette for the particular image. In the current implementation,
+other palettes are discarded WITHOUT warning.<br>
+<br>
+	The HDF5 Image dataset may have an optional attribute "INTERLACE_MODE" that
+specifies the layout of the data for images with more than one component
+for each pixel. The value "INTERLACE_PIXEL" maps to MFGR_INTERLACE_PIXEL"
+in HDF4. The value "INTERLACE_PLANE" maps to "MFGR_INTERLACE_COMPONENT" in
+HDF4. If the attribute is not defined, the default value is assumed to be
+"INTERLACE_PIXEL".<br>
+<br>
+	Apart from these attributes ("CLASS", "PALETTE", "INTERLACE_MODE"), all
+other standard attributes defined by the Image Specification are written
+to the HDF4 GR Image with the attribute names prefixed with "HDF5_". <br>
+	<br>
+	If the HDF5 Image dataset was created from an HDF4 GR Image (using h4toh5),
+the dataset may contain attributes with names prefixed by "HDF4_IMAGE_ATTR_".
+These attributes are written to the HDF4 GR Image by stripping off the prefix.
+(NOT IMPLEMENTED YET)<br>
+<br>
+	The HDF5 Image dataset may have additional non-standard attributes (not
+defined in the Image Specification) to describe the image. These attributes
+are written to the HDF4 GR Image without any change.<br>
+<br>
+<h4><i>	HDF5 Palette Dataset to HDF4 Palette</i></h4>
+	Palette data is stored as an HDF5 dataset with values of any HDF5 atomic
+numeric type. &nbsp;The dataset will have dimensions (nentries by ncomponents),
+where 'nentries' is the number of colors (usually 256) and 'ncomponents'
+is the number of values per color (3 for RGB, 4 for CMYK, etc.). <br>
+<br>
+	The HDF5 Palette Specification (<a href="http://hdf.ncsa.uiuc.edu/HDF5/doc/ADGuide/ImageSpec.html">http://hdf.ncsa.uiuc.edu/HDF5/doc/ADGuide/ImageSpec.html</a>: Section 2) defines certain standard attributes for a Palette dataset. <br>
+<br>
+	The HDF5 dataset for a palette is distinguished from other datasets by giving
+it an attribute "CLASS=PALETTE". As mentioned in section 4.B.a, an HDF5 Image
+Dataset may have an attribute "PALETTE" that is an array of object references
+for zero or more palette datasets, each of which has an attribute "CLASS=PALETTE".
+The first object reference in <br>
+	the array corresponds to the default pallete and is converted into an HDF4
+palette and attached to the GR Image. All other palette datasets in the array
+are discarded WITHOUT warning in this implementation.<br>
+<br>
+	Apart from this attribute (CLASS), all other standard attributes defined
+by the Palette Specification are written to the HDF4 GR Image as palette
+attributes (Tag value: "DFTAG_LUT") with the attribute names prefixed with
+"HDF5_". (NOT IMPLEMENTED YET)<br>
+<br>
+	If the HDF5 Image dataset to which the HDF5 Palette dataset corresponds
+to, was created from an HDF4 GR Image (using h4toh5), the dataset may contain
+attributes with names prefixed by "HDF4_PALETTE_ATTR_". These attributes
+are written to the HDF4 GR Image as palette attributes (Tag value: "DFTAG_LUT")
+by stripping off the prefix. (NOT IMPLEMENTED YET)<br>
+<br>
+	The HDF5 Palette dataset may have additional non-standard attributes (not
+defined in the Palette Specification &amp; not prefixed by "HDF4_PALETTE_ATTR")
+to describe the palette. These attributes are written to the HDF4 GR Image
+as palette attributes (Tag value: "DFTAG_LUT") without any change. (NOT IMPLEMENTED
+YET)<br>
+<br>
+<h4><i>	HDF5 Table Dataset to HDF4 vdata</i></h4>
+	Table data is stored as an HDF5 one dimensional compound dataset. The HDF5 Table specification &nbsp;(<a href="http://hdf.ncsa.uiuc.edu/HDF5/hdf5_hl/doc/RM_hdf5tb_spec.htm">http://hdf.ncsa.uiuc.edu/HDF5/hdf5_hl/doc/RM_hdf5tb_spec.htm</a>l) defines certain standard attributes for a table dataset. <br>
+<br>
+	The HDF5 dataset for a table is distinguished from other datasets by giving
+it an attribute "CLASS=TABLE". A HDF5 dataset with this attribute name-value
+pair is converted into an HDF4 vdata.<br>
+	<br>
+	Apart from this attribute (CLASS), all other standard attributes defined
+by the Table Specification are written to the HDF4 vdata with the attribute
+names prefixed with "HDF5_". <br>
+<br>
+	The HDF5 table dataset may have additional non-standard attributes (not
+defined in the Table Specification) to describe the table. These attributes
+are written to the HDF4 vdata without any change. <br>
+<br>
+<h4><i>	Other HDF5 Dataset mappings</i></h4>
+	For any other dataset (not covered in sections above), the conversion is the same as in the current tool.<br>
+<br>
+* If the datatype is an HDF4-compatible scalar datatype, it is converted to an HDF4 SDS. <br>
+<br>
+If the HDF5 dataset was converted from an HDF4 dataset (using h4toh5), then
+it may contain attributes with names prefixed by "HDF_SDS_ATTR_". These attributes
+are written to the HDF4 SDS after stripping off the prefix. (NOT IMPLEMENTED
+YET)<br>
+<br>
+	    All other attributes are written without any change.<br>
+	<br>
+	  * If the datatype is one dimensional compound, it is converted to an HDF4 vdata.<br>
+<br>
+<h3>"Reversibility" Features, Not Implemented Yet</h3>
+Many attributes are created by the <i>h4toh5</i> utility or library, which are given special names to identify the original HDF4 object. &nbsp;Ideally, the <i>h5toh4</i>
+tool should "reverse" the conversion, and convert these into an HDF4 annotation
+or attribute resembling the original. &nbsp;Table 1 lists cases that have
+been identified but not implemented yet.<br>
+<br>
+<table cellpadding="2" cellspacing="2" border="1" width="100%">
+  <tbody>
+    <tr>
+      <td valign="top">	Attributes with names prefixed by "HDF4_VGROUP_ATTR_".
+&nbsp;These attributes should be written to the HDF4 Vgroup after stripping off the
+prefix. (NOT IMPLEMENTED YET)<br>
+      </td>
+    </tr>
+    <tr>
+      <td valign="top">An image dataset may contain attributes with names prefixed by "HDF4_IMAGE_ATTR_".
+These attributes should be written to the HDF4 GR Image by stripping off the prefix.
+(NOT IMPLEMENTED YET)<br>
+      </td>
+    </tr>
+    <tr>
+      <td valign="top">	Apart from this attribute (CLASS), all other standard attributes defined
+by the Palette Specification should be written to the HDF4 GR Image as palette
+attributes (Tag value: "DFTAG_LUT") with the attribute names prefixed with
+"HDF5_". (NOT IMPLEMENTED YET)<br>
+      </td>
+    </tr>
+    <tr>
+      <td valign="top">	If the HDF5 Image dataset to which the HDF5 Palette
+dataset corresponds to, was created from an HDF4 GR Image (using h4toh5),
+the dataset may contain attributes with names prefixed by "HDF4_PALETTE_ATTR_".
+These attributes should be written to the HDF4 GR Image as palette attributes
+(Tag value: "DFTAG_LUT") by stripping off the prefix. (NOT IMPLEMENTED YET)<br>
+      </td>
+    </tr>
+    <tr>
+      <td valign="top">The HDF5 Palette dataset may have additional non-standard attributes (not
+defined in the Palette Specification &amp; not prefixed by "HDF4_PALETTE_ATTR")
+to describe the palette. These attributes should be written to the HDF4 GR Image
+as palette attributes (Tag value: "DFTAG_LUT") without any change. (NOT IMLEMENTED
+YET)<br>
+      </td>
+    </tr>
+    <tr>
+      <td valign="top">If the HDF5 dataset was converted from an HDF4 dataset
+(using h4toh5), then it may contain attributes with names prefixed by "HDF_SDS_ATTR_".
+These attributes should be written to the HDF4 SDS after stripping off the
+prefix. (NOT IMPLEMENTED YET)<br>
+      </td>
+    </tr>
+  </tbody>
+</table>
+<br>
+<br>
+<br>
+</body></html>

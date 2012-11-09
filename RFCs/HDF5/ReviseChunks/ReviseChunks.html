@@ -1,0 +1,312 @@
+<html>
+<head>
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+   <title>Revising Chunked Dataset Storage in HDF5</title>
+</head>
+
+<body text="#000000" bgcolor="#FFFFFF">
+<STYLE type="text/css">
+OL.upperroman { list-style-type: upper-roman }
+OL.upperalpha { list-style-type: upper-alpha }
+OL.numeric { list-style-type: numeric }
+OL.loweralpha { list-style-type: lower-alpha }
+OL.lowerroman { list-style-type: lower-roman }
+</STYLE>
+
+<CENTER>
+<H3>Revising Chunked Dataset Storage in HDF5</H3>
+Quincey Koziol<BR>
+The HDF Group<BR>
+koziol@hdfgroup.org<BR>
+Version 0.2<BR>
+June 12<sup>rd</sup>, 2008
+</CENTER>
+
+<ol class="upperroman">
+<li><h3><u>This Document's Intended Audience</u></h3>
+<P>This document is written for the HDF5 development team, and outside
+developers who are familiar with HDF5's current data model.
+Certain commonly used terms in
+HDF5 are not explained in detail, please see the HDF5 documentation at
+<a href="http://www.hdfgroup.org/HDF5">http://www.hdfgroup.org/HDF5</a>
+for more information about HDF5.
+
+<li><h3><u>Current Implementation of Indexing for Chunked HDF5 Datasets</u></h3>
+<P>
+HDF5 datasets that are stored in
+"chunked" form.  To retrieve elements in the dataset, the chunk containing
+those elements must be located and accessed.  The locations of chunks for a
+dataset are stored in a B-tree data structure, which maps the index of the
+chunk to the file offset where the chunk's elements are stored.  This diagram
+shows an example of a B-tree that maps chunk indices to file offsets for a
+dataset with one dimension and a chunk size of 30 elements:
+<center><table><tr><td><img src=skip_lists/figure1.png><tr><td align=center><strong>Figure 1</strong></table></center>
+</P>
+
+<P>
+The algorithms for operating on these B-trees follow the normal rules for
+searching, inserting and deleting records in B-trees.  For example, to locate
+the chunk containing element 108, the following nodes/chunks are accessed:
+I(0) -> I(1) -> L(1) -> C(90).  (This assumes that C(0) is the address of the
+chunk with elements 0-29, C(30) is the address of the chunk with elements
+30-59, etc.)
+</P>
+
+<P>
+The record stored in the B-tree for locating the chunk (the "chunk record")
+stores the following information:
+    <ul>
+    <li>
+        <P>
+        The coordinates of the chunk in the dataset's dataspace.  This is used
+        as the "key" for locating chunks in the B-tree.
+        </P>
+    <li>
+        <P>
+        The size of the chunk, in bytes.
+        </P>
+    <li>
+        <P>
+        The "filter mask" for the chunk, which controls which of the I/O filters
+        defined for the chunk's dataset should be applied to this chunk.
+        </P>
+    <li>
+        <P>
+        The address of the chunk in the file.
+        </P>
+    </ul>
+</P>
+
+<li><h3><u>Requirements of Index Method for Chunked HDF5 Datasets</u></h3>
+<P>
+Data structures chosen to index chunked datasets in HDF5 must achieve certain
+minimum requirements:
+    <ul>
+    <li>
+        <P>
+        Chunk records are indexed with coordinate offset in dataset (as the
+        record's key) and have the chunk's filter mask, size in bytes and
+        address in the file as the record's value.
+        </P>
+    <li>
+        <P>
+        Chunk records can be added/inserted at any coordinate location, in
+        O(log n) or better time.
+        </P>
+    <li>
+        <P>
+        Chunk records can be looked up in O(log n) or better time.
+        </P>
+    <li>
+        <P>
+        Chunks can be sparse in the dataset's dataspace.
+        </P>
+    <li>
+        <P>
+        The index for the chunks must reside in the same HDF5 file as the
+        chunks themselves.
+        </P>
+    </ul>
+</P>
+
+<li><h3><u>Drawbacks of Current B-tree Implementation for Indexing Chunked HDF5 Datasets</u></h3>
+<P>
+The current (as of version 1.8.x) method of using B-trees to index chunks in
+chunked HDF5 datasets fulfills all the minimum requirements for chunked dataset
+indices.  However, there are some drawbacks to the current B-tree index
+implementation:
+    <ul>
+    <li>
+        <P>
+        Most chunked datasets are either fixed dimension or extend in only
+        one dimension.  Very few users take advantage of the ability to
+        extend multiple dimensions of a dataset.  So, the current B-tree
+        implementation is overkill for these users.
+        </P>
+    <li>
+        <P>
+        Some users have small numbers of small chunks in a dataset and the
+        overhead of the B-tree nodes for the index imposes a significant
+        overhead for the file's size.  This is especially true with files
+        containing many hundreds or thousands of small datasets.
+        </P>
+    <li>
+        <P>
+        Datasets with no chunks stored still store an [empty] B-tree node
+        in the file.  This imposes a size overhead on files, again.  (Note
+        that this could be eliminated without changing the actual indexing
+        method)
+        </P>
+    <li>
+        <P>
+        Chunked datasets the don't have any I/O filters still store the
+        number of bytes and filter mask information in their chunk records,
+        even though this information is not needed.
+        </P>
+    <li>
+        <P>
+        The chunk coordinates stored in each chunk record include the size of
+        elements in the dataset, even though this is constant for the dataset.
+        </P>
+    <li>
+        <P>
+        Chunks at the "edges" of the dataset may have "ghost" elements allocated
+        in the chunk which have no data stored in them.  This occurs when the
+        chunk overlaps the boundary of the dataset's dimension and the chunk's
+        dimension size is not an integral multiple of the dataset's dimension
+        size for that axis.  The HDF5 library has enough information to avoid
+        storing these ghost elements in the file.  (Note that this doesn't
+        directly relate to the B-tree index, and could be changed without
+        changing the index method)
+        </P>
+    </ul>
+</P>
+
+<li><h3><u>Improvements to Storing Chunked HDF5 Datasets</u></h3>
+<P>
+In order to avoid the drawbacks of the current chunking algorithms, two types
+of changes to how chunks are stored and indexed should be made: "intrinsic"
+changes to chunked dataset storage (which don't involve explicitly changing the
+indexing method for chunks), and changes to the indexing method for looking up
+the address of a chunk in the file.
+</P>
+
+<P>
+The following "intrinsic" changes are suggested:
+    <ul>
+    <li>
+        <P>
+        Eliminate the size of dataset elements from the coordinates stored
+        as the chunk record key.  This can be retrieved from the dataset at
+        run-time, if needed.
+        </P>
+    <li>
+        <P>
+        When a dataset does not have any I/O filters applied to its chunks,
+        eliminate the unnecessary 'number of bytes' and 'filter mask'
+        information from the chunk record stored in the index.
+        </P>
+    <li>
+        <P>
+        Change the policy of always storing a full-sized chunk to allow
+        chunks at the "edges" of the dataset's dataspace to store partial
+        chunks, with only the elements actually contained in the dataset's
+        dataspace stored.
+        </P>
+    </ul>
+</P>
+
+<P>
+The following changes to how chunks are indexed are suggested:
+    <ul>
+    <li>
+        <P>
+        Allow a small [user-specified] number of chunk records to be
+        stored directly in the object header for the dataset.  This will
+        eliminate the need for creating a chunk indexing structure for a
+        dataset when the number of chunks is small.
+        </P>
+
+        <P>
+        Combined with allowing partial chunks to be stored for a dataset, this
+        change will allow chunked datasets that are small small to be stored
+        with very little overhead.
+        </P>
+
+        <P>
+        <b>Note:</b> these chunk records can be stored as object header messages for
+        the dataset, making this solution very similar to the "compact" &
+        "dense" group idea.  It may be useful to have three "phases" for
+        datasets: "compact", "sparse" and "optimal",  Compact indexing would
+        use object header messages, sparse indexing would use a v2 B-tree (or
+        dynamic hash table), and optimal indexing would use the "best" index
+        type for the particular dataset (possibly an array, extensible array
+        or stay with v2 B-tree/dynamic hash table).
+        </P>
+
+    <li>
+        <P>
+        When a chunked dataset has fixed dimensions, an array should be stored
+        as the index for the chunk records.  This would allow a single
+        I/O access to retrieve any chunk record and would be much more space
+        and speed efficient than the current B-tree indexing method.  It may
+        use <u>more</u> space when chunks are very sparse for the dataset however,
+        so the application should have control over when to use this structure.
+        </P>
+
+    <li>
+        <P>
+        When a chunked dataset has only 1 unlimited dimension, changes to the
+        array size can only affect the upper limit for the unlimited dimension,
+        all other dimension sizes for the dataset are fixed.  We should use an
+        indexing structure that takes advantage of this aspect of the way
+        datasets are extended & shrunk in HDF5.  The final data structure in
+        this paper describes the data structure we are planning to use:
+        <A href="skip_lists/SkipListChunkIndex.html">Skip Lists to Extensible Arrays</A>
+        Again, this data structure may use <u>more</u> space when chunks are
+        very sparse for the dataset, so the application should have control over
+        when to use it.
+        </P>
+
+        <P>This white paper compares using existing (v1) B-trees to the
+        proposed extensible array data structure for locating the chunks in
+        chunked HDF5 datasets with one unlimited dimension:
+        <A href="skip_lists/BtreeVSExtensibleArray.html">B-Trees vs. Extensible
+        Arrays for Locating Chunks in HDF5 Datasets</A>
+        </P>
+
+        <P>This document describes the results from comparing inserting records
+        into existing (v1) B-trees vs. v2 B-trees vs. Extensible Arrays, which
+        is the underlying operation for creating a chunked dataset index:
+        <A href="skip_lists/PerformanceComparison.html">B-Trees vs. Extensible
+        Arrays in HDF5 Performance Comparison</A>
+        </P>
+
+    <li>
+        <P>
+        When a chunked dataset has >1 unlimited dimensions, a mechanism similar
+        to the current B-tree index needs to be used.  We should switch from
+        using the current B-tree index, which is very space inefficient, to
+        either the new "v2" B-tree index (already used for indexing links in
+        groups and other purposes) or implement a dynamic hashing algorithm
+        on top of the extensible array structure (mentioned above).
+        </P>
+    </ul>
+</P>
+
+<P>
+Note that the default storage for chunked datasets must continue to be the
+current B-tree indexing, etc. in order to retain as much "forward"
+compatibility as possible.  All the improvements above will only be used when
+the H5F_LIBVER_LATEST value is used for the "high bound" to <a href="http://www.hdfgroup.org/HDF5/doc/RM/RM_H5P.html#Property-SetLibverBounds">H5Pset_libver_bounds</a>.
+</P>
+
+
+<li><h3><u>Other Improvements to Chunked HDF5 Datasets</u></h3>
+<P>
+Some other improvements could be made to the internal HDF5 library algorithms
+for handling chunks, and are listed here:
+    <ul>
+    <li>
+        <P>
+        Revise the chunk cache replacement strategy to move away from the
+        [slightly odd] replacement policy currently in place, to a more
+        standard LRU-style policy.
+        </P>
+    <li>
+        <P>
+        Build on the metadata journaling effort to journal changes to the
+        chunks, so that if updating the chunk fails, the changes can be
+        recovered.
+        </P>
+    </ul>
+</P>
+
+</ol>
+
+<hr>
+
+<i>QAK:06/12/2008</i>
+</body>
+</html>
+

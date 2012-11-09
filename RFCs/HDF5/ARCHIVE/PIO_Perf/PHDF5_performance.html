@@ -1,0 +1,373 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN"
+    "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html xmlns="http://www.w3.org/TR/REC-html40" lang="en-US">
+
+<head>
+  <title>Parallel HDF5 Performance Measurment</title>
+</head>
+
+<body bgcolor="white" lang="EN-US" link="blue" vlink="blue">
+
+<h1 align="center" style="text-align:center">Parallel HDF5 Performance
+Measuring</h1>
+
+<h3 align="center" style="text-align:center">DRAFT VERSION</h3>
+
+<h2>1 Introduction</h2>
+
+<ul>
+    <p>
+    Currently, measuring performance for parallel HDF5 on different
+    platforms isn't formalized. Having in place a formalized way of
+    measuring performance is a good way to determine what our strengths
+    and weaknesses are on different platforms. The performance test
+    results from different platforms can be compared against each other
+    since they are tested in a consistent way.
+    </p>
+
+    <p>
+    The HDF5 library also has a list of adjustable parameters that affect
+    performance of the library. The performance tools can help identify
+    the proper parameter values according to characteristics of
+    individual platforms or file systems.
+    </p>
+</ul>
+
+
+<h2>2 Goals</h2>
+
+<ul>
+    <p>
+    There are many types of performance measurements (see Appendix A).
+    The goals of this project are concentrated on the parallel I/O performance
+    in an MPI environment. They focus on measuring the programming
+    interfaces of Raw I/O interface, MPI-IO interface and HDF5 library
+    calls. Initial Data models would be the Synthetic model and then
+    the Application model.
+    </p>
+</ul>
+
+
+<h2>3 Requirements</h2>
+
+<ul>
+    <p>
+    I/O speeds vs parameters of
+
+    <ul>
+	<li>Types of IO interface (Raw such as POSIX, MPI-IO, PHDF5)</li>
+        <li>Number of processes</li>
+        <li>Dataset sizes</li>
+        <li>Number of datasets per file</li>
+        <li>Data file total sizes</li>
+        <li>Number of data files</li>
+        <li>Transfer buffer sizes</li>
+    </ul>
+    </p>
+
+    <p>
+    Output in formats of
+
+    <ul>
+        <li>Text for human reading</li>
+        <li>Binary for plotting such as Gnu plot</li>
+    </ul>
+    </p>
+
+    <p>
+    User interface
+
+    <ul>
+        <li>Command line option to control the various parameters.</li>
+        <li>Environment variables to control the various parameters.</li>
+    </ul>
+    </p>
+</ul>
+
+<h2>4 Algorithm Design</h2>
+
+<ul>
+</ul>
+
+<h3>4.1 Current IOR Algorithm Design</h3>
+
+<ul>
+    The <a href="IOR_Algorithm.html">IOR algorithm</a>.
+</ul>
+
+<h3>4.2 NCSA's Performance Design Overview</h3>
+
+<ul>
+    <p>
+    This is a broad overview of the desired algorithmic features. We will
+    implement the algorithm in stages: starting at the simplest design
+    and adding more and more features. The basic features are:
+    </p>
+
+    <li>Output in ASCII (leave hooks for binary format).</li>
+    <li>Use raw I/O. Don't assume there are <code>read()</code> and
+        <code>write()</code> functions</li>
+    <li>Calculate Base Times</li>
+    <ul>
+        <li>HDF5 Overhead</li>
+        <ul>
+            <li>File Open/Close (<code>HDF5_FILE_OPENCLOSE</code>)</li>
+                <ul>
+                    <li>Average time to open and close a file by
+                        performing <i>n</i> opens and closes on <i>m</i>
+                        files</li>
+            <li>Dataset Creation (<code>HDF5_DATASET_CREATE</code>)</li>
+                <ul>
+                    <li>Average time to create a dataset by performing
+                        <i>n</i> dataset creations on a file</li>
+                </ul>
+        </ul>
+    </ul>
+    <li>File I/O</li>
+    <ul>
+        <li>Calculate read/write times using (in order of implementation)</li>
+        <ol>
+            <li><i>Fixed Dimensions</i> (HDF5_WRITE/READ_FIXED_DIMS)</li>
+            <li><i>Chunked/Fixed Dimensions</i> (HDF5_WRITE/READ_CHUNKED_FIXED_DIMS)</li>
+            <li><i>Chunked/Unlimited Dimensions</i> (HDF5_WRITE/READ_CHUNKED_UNLIM_DIMS)</li>
+        </ol>
+        <li>Data Conversions</li>
+        <li>Hyperslab Performance; Partial I/O</li>
+    </ul>
+    <li>Variance (<i>Print statistics after each loop iteration</i>)</li>
+    <ul>
+        <li>Number of Processors</li>
+        <li>Data Size</li>
+        <li>I/O Buffer Size</li>
+    </ul>
+    </ul>
+</ul>
+
+<h3>4.3 NCSA's Algorithm Design</h3>
+
+<h4>4.3.1 pio_perf.c</h4>
+
+<ul>
+    <pre>
+<b>main():</b>
+    call MPI_Init()
+    call MPI_Comm_size()
+
+    opts = call parse_command_line()
+    output = call fopen(opts.output_file)
+
+    call run_test_loop(output, opts)
+
+    call MPI_Finalize()
+
+<b>run_test_loop(output, opts):</b>
+    for (num_procs = opts.min_num_procs;
+              num_procs &lt;= opts.max_num_procs; num_procs = num_procs * 2) do
+
+        call create_comm_world(num_procs)
+        call output("Number of processors = " + num_procs)
+
+        for (buf_size = opts.min_xfer_size;
+                  buf_size &lt;= opts.max_xfer_size; buf_size = buf_size * 2) do
+
+            num_elmts = opts.file_size / (num_dsets * sizeof(int))
+
+            call output("Transfer Buffer Size: " + buf_size)
+            call output("  # of files: " + num_files + ", # of dsets " +
+                        num_dsets + ", # of elmts per dset: " + num_elmts)
+
+            if (run_raw_test)
+                call run_test(output, RAW, opts)
+
+            if (run_mpi_test)
+                call run_test(output, MPIO, opts)
+
+            if (run_phdf5_test)
+                call run_test(output, PHDF5, opts)
+
+            call destroy_comm_world()
+        endfor
+    endfor
+
+<b>run_test(output, type, parms):</b>
+    raw_size = opts.num_dsets * opts.num_elmts * sizeof(int)
+    call output("Type of IO = ")
+
+    switch (type) do
+      case RAW:
+        call output("RAW")
+        break
+      case MPIO:
+        call output("MPIO")
+        break
+      case PHDF5:
+        call output("PHDF5")
+        break
+    endswitch
+
+    call MPI_Comm_size()
+
+    initialize write and read Max/Min tables
+
+    for (i = 0; i < parms.num_iters; ++i) do
+        call MPI_Barrier()
+        call do_pio(parms)
+
+        collect Max/Min time for writes
+        collect Max/Min time for reads
+    endfor
+
+    total_mm = accumulate_minmax_stuff(write_mm_table, parms.num_iters)
+
+    call output("Write (" + parms.num_iters + " iterations)")
+    call output("Minimum Time: " + total_mm.min + " (" + MB_PER_SEC(raw_size, total_mm.min) + "MB/s)")
+    call output("Maximum Time: " + total_mm.max + " (" + MB_PER_SEC(raw_size, total_mm.max) + "MB/s)")
+    call output("Average Time: " + total_mm.avg + " (" + MB_PER_SEC(raw_size, total_mm.max) + "MB/s)")
+
+    total_mm = accumulate_minmax_stuff(read_mm_table, parms.num_iters)
+
+    call output("Read (" + parms.num_iters + " iterations)")
+    call output("Minimum Time: " + total_mm.min + " (" + MB_PER_SEC(raw_size, total_mm.min) + "MB/s)")
+    call output("Maximum Time: " + total_mm.max + " (" + MB_PER_SEC(raw_size, total_mm.max) + "MB/s)")
+    call output("Average Time: " + total_mm.avg + " (" + MB_PER_SEC(raw_size, total_mm.max) + "MB/s)")
+    </pre>
+</ul>
+
+<h4>4.3.2 Usage</h4>
+
+<ul>
+  <pre>
+usage: pio_perf [OPTIONS]
+  OPTIONS
+     -h, --help                  Print a usage message and exit
+     -d N, --num-dsets=N         Number of datasets per file [default:1]
+     -f S, --file-size=S         Size of a single file [default: 64M]
+     -F N, --num-files=N         Number of files [default: 1]
+     -H, --hdf5                  Run HDF5 performance test
+     -i, --num-iterations        Number of iterations to perform [default: 1]
+     -m, --mpiio                 Run MPI/IO performance test
+     -o F, --output=F            Output raw data into file F [default: none]
+     -P N, --max-num-processes=N Maximum number of processes to use [default: 1]
+     -p N, --min-num-processes=N Minimum number of processes to use [default: 1]
+     -r, --raw                   Run raw (UNIX) performance test
+     -X S, --max-xfer-size=S     Maximum transfer buffer size [default: 1M]
+     -x S, --min-xfer-size=S     Minimum transfer buffer size [default: 1K]
+
+  F - is a filename.
+  N - is an integer >=0.
+  S - is a size specifier, an integer >=0 followed by a size indicator:
+
+          K - Kilobyte
+          M - Megabyte
+          G - Gigabyte
+
+      Example: 37M = 37 Megabytes
+  </pre>
+</ul>
+
+<h2>5 Implementation Steps</h2>
+
+<ul>
+    We would like to model our program's behaviour after LLNL's IOR
+    programs. We need to do this without copying the actual programs. To
+    achieve this, we need to:
+
+    <ol>
+        <li>Determine the algorithm used by the IOR programs
+            (<i>Done</i>)</li>
+        <li>Replicate some of the basic functions of the IOR
+            programs</li>
+        <li>Verify that our program behaves in the "expected" way. I.e.,
+            that it measures performance in the same way that the IOR
+            programs do</li>
+        <li>Continue adding more and more of the features of the IOR
+            programs into our version verifying the accuracy at each
+            step</li>
+    </ol>
+</ul>
+
+<h2>6 Conclusion</h2>
+
+<ul>
+</ul>
+
+<h2>Appendix A: Types of Performance Tests</h2>
+
+<ul>
+    <p>
+    Our goal is to have in place an automated way of doing performance
+    tests for as many platforms as we support. The kinds of tests are
+    grouped into three categories.
+    </p>
+
+    <ol>
+        <li>Tests by Processing</li>
+        <li>Tests by Programming Model</li>
+        <li>Tests by Programming Interface</li>
+    </ol>
+</ul>
+
+<h3>A.1 Tests by Processing</h3>
+
+<ul>
+    <ol>
+        <li>I/O performance: read/write speeds, file open/close speeds,
+            etc.</li>
+        <li>Data conversion speed: conversions of endianess, floating
+            point representations, etc.</li>
+    </ol>
+</ul>
+
+<h3>A.2 Tests by Programming Model</h3>
+
+<ul>
+    <ol>
+        <li>Sequential</li>
+        <li>MPI parallel</li>
+    </ol>
+</ul>
+
+<h3>A.3 Tests by Programming Interface</h3>
+
+<ul>
+    <ol>
+        <li>Raw Interface - using basic C programming I/O calls such as
+            fread/fwrite.</li>
+        <li>Special I/O library Interface - using I/O library calls built
+            on the Raw Interface (e.g., MPI-IO).</li>
+        <li>Data Management Interface - using data management library
+            calls (e.g., HDF, netCDF)</li>
+        <li>Application Model Interface - using application library built
+            on the Data Management Interface.</li>
+    </ol>
+</ul>
+
+<h3>A.4 Tests by data model</h3>
+
+<ul>
+    <ol>
+        <li>Synthetic Model - Arbitrary datasets with arbitrary data are
+            processed. This can also be named as the Computer Science
+            model.</li>
+        <li>Application Model - Datasets are defined according to the
+            general data model of a class of applications (e.g.,
+            AMR).</li>
+        <li>Specific application - Real application programs are
+            measured. E.g., the FLASH application of Univ. of
+            Chicago.</li>
+    </ol>
+</ul>
+
+
+<hr width="100%" align=center />
+
+<p>
+Albert Cheng &amp; Bill Wendling<br>
+National Center for Supercomputing Applications<br>
+Send comments to<br>
+<a href="mailto:hdfparallel@ncsa.uiuc.edu">hdfparallel@ncsa.uiuc.edu</a></p>
+
+<h6>Last Modified: 27. December, 2001</h6>
+
+</body>
+</html>

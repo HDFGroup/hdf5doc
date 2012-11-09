@@ -1,0 +1,807 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+  <title>Modifying VFL 'flush' function in HDF5</title>
+                                  
+  <meta http-equiv="content-type" content="text/html; charset=ISO-8859-1">
+                   
+  <meta name="author" content="Quincey Koziol">
+</head>
+<body text="#000000" bgcolor="#FFFFFF">
+<STYLE type="text/css">
+OL.loweralpha { list-style-type: lower-alpha }
+OL.upperroman { list-style-type: upper-roman }
+</STYLE>
+       
+<CENTER><H1>Modifying VFL 'flush' function in HDF5</H1></CENTER>
+<CENTER><H3>Quincey Koziol<br>
+            koziol@ncsa.uiuc.edu<BR>
+            May 13, 2002
+</H3></CENTER>
+
+<ol class="upperroman">
+
+<li><h3><u>Document's Audience:</u></h3>
+         
+<ul>
+    <li>Current H5 library designers and knowledgable external developers.</li>
+</ul>
+         
+<li><h3><u>Background Reading:</u></h3>
+         
+<ul>
+    <li><A HREF="http://hdf.ncsa.uiuc.edu/HDF5/doc/TechNotes/VFL.html">
+        VFL Specifications</A>: <A HREF="http://hdf.ncsa.uiuc.edu/HDF5/doc/TechNotes/VFL.html#SEC21">
+        'flush'</A> function</li>
+    <li><A HREF="http://hdf.ncsa.uiuc.edu/HDF5/doc/TechNotes/VFLfunc.html">
+        VFL Functions</A></li>
+       
+</ul>
+         
+<li><h3><u>Motivation:</u></h3>
+            
+<dl>
+    <dt>Why Modify the VFL 'flush' function?</dt>
+        <dd>During investigations of parallel I/O performance issues, it was
+            discovered that the MPI_File_sync call in the MPI-I/O VFL file
+            driver's 'flush' implementation was slowing down the benchmark
+            reports by a large amount.  Note the differences between the
+            "Write Open-Close" times (as well as all the read times) in the
+            MPI-I/O and PHDF5 cases in the following tables:
+        <BR> <BR>
+        <TABLE BORDER=1>
+        <TR>
+            <TD COLSPAN=4 ALIGN=CENTER> Type of IO = MPIO
+            </TD>
+        </TR>
+        <TR>
+            <TD>
+            </TD>
+            <TD>Minimum Throughput
+            </TD>
+            <TD>Maximum Throughput
+            </TD>
+            <TD>Average Throughput
+            </TD>
+        </TR>
+        <TR>
+            <TD>Raw Write
+            </TD>
+            <TD>88.59 MB/s (1.445 s)
+            </TD>
+            <TD>93.24 MB/s (1.373 s)
+            </TD>
+            <TD>90.46 MB/s (1.415 s)
+            </TD>
+        </TR>
+        <TR>
+            <TD>Dataset Write
+            </TD>
+            <TD>88.59 MB/s (1.445 s)
+            </TD>
+            <TD>93.24 MB/s (1.373 s)
+            </TD>
+            <TD>90.46 MB/s (1.415 s)
+            </TD>
+        </TR>
+        <TR>
+            <TD>Write Open-Close
+            </TD>
+            <TD>88.35 MB/s (1.449 s)
+            </TD>
+            <TD>92.95 MB/s (1.377 s)
+            </TD>
+            <TD>90.04 MB/s (1.422 s)
+            </TD>
+        </TR>
+        <TR>
+            <TD>Raw Read
+            </TD>
+            <TD>612.43 MB/s (0.209 s)
+            </TD>
+            <TD>666.66 MB/s (0.192 s)
+            </TD>
+            <TD>628.93 MB/s (0.204 s)
+            </TD>
+        </TR>
+        <TR>
+            <TD>Dataset Read
+            </TD>
+            <TD>612.39 MB/s (0.209 s)
+            </TD>
+            <TD>666.62 MB/s (0.192 s)
+            </TD>
+            <TD>628.91 MB/s (0.204 s)
+            </TD>
+        </TR>
+        <TR>
+            <TD>Read Open-Close
+            </TD>
+            <TD>606.01 MB/s (0.211 s)
+            </TD>
+            <TD>659.11 MB/s (0.194 s)
+            </TD>
+            <TD>622.20 MB/s (0.206 s)
+            </TD>
+        </TR>
+        <TR>
+            <TD COLSPAN=4 ALIGN=CENTER> Type of IO = PHDF5
+            </TD>
+        </TR>
+        <TR>
+            <TD>
+            </TD>
+            <TD>Minimum Throughput
+            </TD>
+            <TD>Maximum Throughput
+            </TD>
+            <TD>Average Throughput
+            </TD>
+        </TR>
+        <TR>
+            <TD>Raw Write
+            </TD>
+            <TD>82.24 MB/s (1.557 s)
+            </TD>
+            <TD>85.81 MB/s (1.492 s)
+            </TD>
+            <TD>84.22 MB/s (1.520 s)
+            </TD>
+        </TR>
+        <TR>
+            <TD>Dataset Write
+            </TD>
+            <TD>82.02 MB/s (1.561 s)
+            </TD>
+            <TD>85.72 MB/s (1.493 s)
+            </TD>
+            <TD>84.07 MB/s (1.522 s)
+            </TD>
+        </TR>
+        <TR>
+            <TD>Write Open-Close
+            </TD>
+            <TD> 8.70 MB/s (14.714 s)
+            </TD>
+            <TD>10.06 MB/s (12.723 s)
+            </TD>
+            <TD> 9.44 MB/s (13.565 s)
+            </TD>
+        </TR>
+        <TR>
+            <TD>Raw Read
+            </TD>
+            <TD> 77.39 MB/s (1.654 s)
+            </TD>
+            <TD>234.39 MB/s (0.546 s)
+            </TD>
+            <TD>142.05 MB/s (0.901 s)
+            </TD>
+        </TR>
+        <TR>
+            <TD>Dataset Read
+            </TD>
+            <TD> 73.43 MB/s (1.743 s)
+            </TD>
+            <TD>232.74 MB/s (0.550 s)
+            </TD>
+            <TD>138.83 MB/s (0.922 s)
+            </TD>
+        </TR>
+        <TR>
+            <TD>Read Open-Close
+            </TD>
+            <TD> 72.87 MB/s (1.757 s)
+            </TD>
+            <TD>229.44 MB/s (0.558 s)
+            </TD>
+            <TD>137.23 MB/s (0.933 s)
+            </TD>
+        </TR>
+        <TR>
+            <CAPTION ALIGN=BOTTOM>
+                <STRONG>Table 1: </STRONG> Before modifying VFL 'flush'
+                    function, 128MB file<BR>
+            </CAPTION>
+        </TR>
+        </TABLE>
+        <BR> <BR>
+        <TABLE BORDER=1>
+        <TR>
+            <TD COLSPAN=4 ALIGN=CENTER> Type of IO = MPIO
+            </TD>
+        </TR>
+        <TR>
+            <TD>
+            </TD>
+            <TD>Minimum Throughput
+            </TD>
+            <TD>Maximum Throughput
+            </TD>
+            <TD>Average Throughput
+            </TD>
+        </TR>
+        <TR>
+            <TD>Raw Write
+            </TD>
+            <TD>87.83 MB/s (1.457 s)
+            </TD>
+            <TD>94.97 MB/s (1.348 s)
+            </TD>
+            <TD>90.92 MB/s (1.408 s)
+            </TD>
+        </TR>
+        <TR>
+            <TD>Dataset Write
+            </TD>
+            <TD>87.83 MB/s (1.457 s)
+            </TD>
+            <TD>94.97 MB/s (1.348 s)
+            </TD>
+            <TD>90.91 MB/s (1.408 s)
+            </TD>
+        </TR>
+        <TR>
+            <TD>Write Open-Close
+            </TD>
+            <TD>87.52 MB/s (1.463 s)
+            </TD>
+            <TD>93.58 MB/s (1.368 s)
+            </TD>
+            <TD>90.44 MB/s (1.415 s)
+            </TD>
+        </TR>
+        <TR>
+            <TD>Raw Read
+            </TD>
+            <TD>578.94 MB/s (0.221 s)
+            </TD>
+            <TD>686.00 MB/s (0.187 s)
+            </TD>
+            <TD>622.84 MB/s (0.206 s)
+            </TD>
+        </TR>
+        <TR>
+            <TD>Dataset Read
+            </TD>
+            <TD>578.90 MB/s (0.221 s)
+            </TD>
+            <TD>685.95 MB/s (0.187 s)
+            </TD>
+            <TD>622.79 MB/s (0.206 s)
+            </TD>
+        </TR>
+        <TR>
+            <TD>Read Open-Close
+            </TD>
+            <TD>572.88 MB/s (0.223 s)
+            </TD>
+            <TD>677.37 MB/s (0.189 s)
+            </TD>
+            <TD>615.97 MB/s (0.208 s)
+            </TD>
+        </TR>
+        <TR>
+            <TD COLSPAN=4 ALIGN=CENTER> Type of IO = PHDF5
+            </TD>
+        </TR>
+        <TR>
+            <TD>
+            </TD>
+            <TD>Minimum Throughput
+            </TD>
+            <TD>Maximum Throughput
+            </TD>
+            <TD>Average Throughput
+            </TD>
+        </TR>
+        <TR>
+            <TD>Raw Write
+            </TD>
+            <TD>82.64 MB/s (1.549 s)
+            </TD>
+            <TD>84.72 MB/s (1.511 s)
+            </TD>
+            <TD>83.93 MB/s (1.525 s)
+            </TD>
+        </TR>
+        <TR>
+            <TD>Dataset Write
+            </TD>
+            <TD>82.55 MB/s (1.551 s)
+            </TD>
+            <TD>84.63 MB/s (1.512 s)
+            </TD>
+            <TD>83.77 MB/s (1.528 s)
+            </TD>
+        </TR>
+        <TR>
+            <TD>Write Open-Close
+            </TD>
+            <TD>80.62 MB/s (1.588 s)
+            </TD>
+            <TD>83.93 MB/s (1.525 s)
+            </TD>
+            <TD>82.66 MB/s (1.549 s)
+            </TD>
+        </TR>
+        <TR>
+            <TD>Raw Read
+            </TD>
+            <TD>469.99 MB/s (0.272 s)
+            </TD>
+            <TD>599.26 MB/s (0.214 s)
+            </TD>
+            <TD>524.36 MB/s (0.244 s)
+            </TD>
+        </TR>
+        <TR>
+            <TD>Dataset Read
+            </TD>
+            <TD>463.16 MB/s (0.276 s)
+            </TD>
+            <TD>588.44 MB/s (0.218 s)
+            </TD>
+            <TD>515.60 MB/s (0.248 s)
+            </TD>
+        </TR>
+        <TR>
+            <TD>Read Open-Close
+            </TD>
+            <TD>451.87 MB/s (0.283 s)
+            </TD>
+            <TD>569.75 MB/s (0.225 s)
+            </TD>
+            <TD>500.64 MB/s (0.256 s)
+            </TD>
+        </TR>
+        <TR>
+            <CAPTION ALIGN=BOTTOM>
+                <STRONG>Table 2: </STRONG> After modifying VFL 'flush'
+                    function, 128MB file<BR>
+            </CAPTION>
+        </TR>
+        </TABLE>
+        <BR> <BR>
+        <TABLE BORDER=1>
+        <TR>
+            <TD COLSPAN=4 ALIGN=CENTER> Type of IO = MPIO
+            </TD>
+        </TR>
+        <TR>
+            <TD>
+            </TD>
+            <TD>Minimum Throughput
+            </TD>
+            <TD>Maximum Throughput
+            </TD>
+            <TD>Average Throughput
+            </TD>
+        </TR>
+        <TR>
+            <TD>Raw Write
+            </TD>
+            <TD>80.63 MB/s (6.350 s)
+            </TD>
+            <TD>83.41 MB/s (6.138 s)
+            </TD>
+            <TD>82.52 MB/s (6.204 s)
+            </TD>
+        </TR>
+        <TR>
+            <TD>Dataset Write
+            </TD>
+            <TD>80.63 MB/s (6.350 s)
+            </TD>
+            <TD>83.41 MB/s (6.138 s)
+            </TD>
+            <TD>82.52 MB/s (6.204 s)
+            </TD>
+        </TR>
+        <TR>
+            <TD>Write Open-Close
+            </TD>
+            <TD>80.58 MB/s (6.354 s)
+            </TD>
+            <TD>83.37 MB/s (6.141 s)
+            </TD>
+            <TD>82.36 MB/s (6.217 s)
+            </TD>
+        </TR>
+        <TR>
+            <TD>Raw Read
+            </TD>
+            <TD>617.25 MB/s (0.829 s)
+            </TD>
+            <TD>658.48 MB/s (0.778 s)
+            </TD>
+            <TD>634.87 MB/s (0.806 s)
+            </TD>
+        </TR>
+        <TR>
+            <TD>Dataset Read
+            </TD>
+            <TD>617.23 MB/s (0.830 s)
+            </TD>
+            <TD>658.47 MB/s (0.778 s)
+            </TD>
+            <TD>634.86 MB/s (0.806 s)
+            </TD>
+        </TR>
+        <TR>
+            <TD>Read Open-Close
+            </TD>
+            <TD>615.46 MB/s (0.832 s)
+            </TD>
+            <TD>656.54 MB/s (0.780 s)
+            </TD>
+            <TD>633.09 MB/s (0.809 s)
+            </TD>
+        </TR>
+        <TR>
+            <TD COLSPAN=4 ALIGN=CENTER> Type of IO = PHDF5
+            </TD>
+        </TR>
+        <TR>
+            <TD>
+            </TD>
+            <TD>Minimum Throughput
+            </TD>
+            <TD>Maximum Throughput
+            </TD>
+            <TD>Average Throughput
+            </TD>
+        </TR>
+        <TR>
+            <TD>Raw Write
+            </TD>
+            <TD>76.89 MB/s (6.659 s)
+            </TD>
+            <TD>86.79 MB/s (5.899 s)
+            </TD>
+            <TD>82.27 MB/s (6.224 s)
+            </TD>
+        </TR>
+        <TR>
+            <TD>Dataset Write
+            </TD>
+            <TD>76.83 MB/s (6.664 s)
+            </TD>
+            <TD>86.76 MB/s (5.901 s)
+            </TD>
+            <TD>82.23 MB/s (6.226 s)
+            </TD>
+        </TR>
+        <TR>
+            <TD>Write Open-Close
+            </TD>
+            <TD> 6.08 MB/s (84.213 s)
+            </TD>
+            <TD> 6.31 MB/s (81.087 s)
+            </TD>
+            <TD> 6.24 MB/s (82.012 s)
+            </TD>
+        </TR>
+        <TR>
+            <TD>Raw Read
+            </TD>
+            <TD> 23.12 MB/s (22.144 s)
+            </TD>
+            <TD> 78.41 MB/s (6.530 s)
+            </TD>
+            <TD> 31.45 MB/s (16.281 s)
+            </TD>
+        </TR>
+        <TR>
+            <TD>Dataset Read
+            </TD>
+            <TD> 23.12 MB/s (22.148 s)
+            </TD>
+            <TD> 78.04 MB/s (6.561 s)
+            </TD>
+            <TD> 31.43 MB/s (16.291 s)
+            </TD>
+        </TR>
+        <TR>
+            <TD>Read Open-Close
+            </TD>
+            <TD> 23.11 MB/s (22.156 s)
+            </TD>
+            <TD> 77.72 MB/s (6.588 s)
+            </TD>
+            <TD> 31.40 MB/s (16.306 s)
+            </TD>
+        </TR>
+        <TR>
+            <CAPTION ALIGN=BOTTOM>
+                <STRONG>Table 3: </STRONG> Before modifying VFL 'flush'
+                    function, 512MB file<BR>
+            </CAPTION>
+        </TR>
+        </TABLE>
+        <BR> <BR>
+        <TABLE BORDER=1>
+        <TR>
+            <TD COLSPAN=4 ALIGN=CENTER> Type of IO = MPIO
+            </TD>
+        </TR>
+        <TR>
+            <TD>
+            </TD>
+            <TD>Minimum Throughput
+            </TD>
+            <TD>Maximum Throughput
+            </TD>
+            <TD>Average Throughput
+            </TD>
+        </TR>
+        <TR>
+            <TD>Raw Write
+            </TD>
+            <TD>71.18 MB/s (7.193 s)
+            </TD>
+            <TD>87.93 MB/s (5.823 s)
+            </TD>
+            <TD>83.43 MB/s (6.137 s)
+            </TD>
+        </TR>
+        <TR>
+            <TD>Dataset Write
+            </TD>
+            <TD>71.18 MB/s (71.93 s)
+            </TD>
+            <TD>87.93 MB/s (5.823 s)
+            </TD>
+            <TD>83.43 MB/s (6.137 s)
+            </TD>
+        </TR>
+        <TR>
+            <TD>Write Open-Close
+            </TD>
+            <TD>71.01 MB/s (7.210 s)
+            </TD>
+            <TD>87.86 MB/s (5.827 s)
+            </TD>
+            <TD>83.28 MB/s (6.148 s)
+            </TD>
+        </TR>
+        <TR>
+            <TD>Raw Read
+            </TD>
+            <TD>575.98 MB/s (0.889 s)
+            </TD>
+            <TD>648.56 MB/s (0.789 s)
+            </TD>
+            <TD>618.10 MB/s (0.828 s)
+            </TD>
+        </TR>
+        <TR>
+            <TD>Dataset Read
+            </TD>
+            <TD>575.97 MB/s (0.889 s)
+            </TD>
+            <TD>648.55 MB/s (0.789 s)
+            </TD>
+            <TD>618.09 MB/s (0.828 s)
+            </TD>
+        </TR>
+        <TR>
+            <TD>Read Open-Close
+            </TD>
+            <TD>574.48 MB/s (0.891 s)
+            </TD>
+            <TD>646.71 MB/s (0.792 s)
+            </TD>
+            <TD>616.39 MB/s (0.831 s)
+            </TD>
+        </TR>
+        <TR>
+            <TD COLSPAN=4 ALIGN=CENTER> Type of IO = PHDF5
+            </TD>
+        </TR>
+        <TR>
+            <TD>
+            </TD>
+            <TD>Minimum Throughput
+            </TD>
+            <TD>Maximum Throughput
+            </TD>
+            <TD>Average Throughput
+            </TD>
+        </TR>
+        <TR>
+            <TD>Raw Write
+            </TD>
+            <TD>79.10 MB/s (6.473 s)
+            </TD>
+            <TD>81.75 MB/s (6.263 s)
+            </TD>
+            <TD>80.44 MB/s (6.365 s)
+            </TD>
+        </TR>
+        <TR>
+            <TD>Dataset Write
+            </TD>
+            <TD>78.40 MB/s (6.531 s)
+            </TD>
+            <TD>81.73 MB/s (6.264 s)
+            </TD>
+            <TD>80.27 MB/s (6.378 s)
+            </TD>
+        </TR>
+        <TR>
+            <TD>Write Open-Close
+            </TD>
+            <TD>75.77 MB/s (6.757 s)
+            </TD>
+            <TD>81.57 MB/s (6.277 s)
+            </TD>
+            <TD>79.58 MB/s (6.434 s)
+            </TD>
+        </TR>
+        <TR>
+            <TD>Raw Read
+            </TD>
+            <TD>540.19 MB/s (0.948 s)
+            </TD>
+            <TD>613.93 MB/s (0.834 s)
+            </TD>
+            <TD>585.09 MB/s (0.875 s)
+            </TD>
+        </TR>
+        <TR>
+            <TD>Dataset Read
+            </TD>
+            <TD>537.91 MB/s (0.952 s)
+            </TD>
+            <TD>610.90 MB/s (0.838 s)
+            </TD>
+            <TD>582.37 MB/s (0.879 s)
+            </TD>
+        </TR>
+        <TR>
+            <TD>Read Open-Close
+            </TD>
+            <TD>533.92 MB/s (0.959 s)
+            </TD>
+            <TD>605.22 MB/s (0.846 s)
+            </TD>
+            <TD>577.41 MB/s (0.887 s)
+            </TD>
+        </TR>
+        <TR>
+            <CAPTION ALIGN=BOTTOM>
+                <STRONG>Table 4: </STRONG> After modifying VFL 'flush'
+                    function, 512MB file<BR>
+            </CAPTION>
+        </TR>
+        </TABLE>
+        <P>All tests performed on NCSA's SGI O2K (modi4) with 8 processors and
+        5 iterations of each test.  Tables 1 & 2 were performed with the
+        following parameters: Transfer Buffer Size: 512KB, File size:
+        128MB, # of files: 1, # of dsets: 1, # of elmts per dset: 33554432
+        (i.e. pio_perf -m -H -i 5 -p 8 -P 8 -x 512K -X 512K -f 128M).  Tables
+        3 & 4 were performed with the following parameters: Transfer Buffer
+        Size: 1MB, File size: 512 MB, # of files: 1, # of dsets:
+        1, # of elmts per dset: 134217728
+        (i.e. pio_perf -m -H -i 5 -p 8 -P 8 -x 1M -X 1M -f 512M)
+        </P>
+        <P>Comparing Table 1 with Table 2 and Table 3 with Table 4, the "Write
+        Open-Close" time is significantly improved with the change proposed in
+        this document.  Additionally, all the PHDF5 read times are improved as
+        well.
+        </P>
+        <P>Note: Because modi4 does not have a true parallel filesystem,
+        these investigations are being performed on the ASCI 'blue' machine
+        as well and further results on that machine will be reported.
+        </P>
+        </dd>
+</dl>
+                                      
+<li><h3><u>Feature's Primary Users:</u></h3>
+                                                                 
+<dl>
+    <dt>Current & Future PHDF5 Applications</dt>
+        <dd>This feature has an impact for all applications which use the
+            MPI-I/O file driver in HDF5.
+</dl>
+                                                                 
+<li><h3><u>Design Goals & Requirements:</u></h3>
+                                                                 
+<ul>
+    <li>Improve I/O speed of MPI-I/O VFL driver.</li>
+    <li>Don't change the v1.4 branch's APIs.</li>
+    <li>Impact the v1.5 branch's APIs in as minimal way as possible.</li>
+</ul>
+                                                                 
+<li><h3><u>Proposed Changes and Additions to Library Behavior:</u></h3>
+
+<P>The proposed change to the VFL 'flush' function is to add a parameter
+which indicates that the file will be immediately closed after this 'flush'
+call.  This allows VFL drivers which perform duplicated actions in the 'flush'
+and 'close' functions to omit taking those actions in the 'flush' function.
+In the case of the MPI-I/O VFL driver, this allows the 'flush' function to
+avoid calling the MPI_File_sync function, whose actions are duplicated by
+the MPI_File_close function called in the 'close' function.  Other VFL drivers
+may benefit from similar optimizations.
+</P>
+
+<li><h3><u>VFL 'flush' Change Details:</u></h3>
+
+<P>The current VFL 'flush' APIs have parameter lists (see VFL background
+documents referenced at the top of this document for more details) with only
+the VFL file driver information (H5FD_t *) being passed in:
+<PRE>
+    herr_t H5FDflush(H5FD_t *file);
+
+    herr_t (*flush)(H5FD_t *file);
+</PRE>
+The revised form of these functions would have these parameter lists:
+<PRE>
+    herr_t H5FDflush(H5FD_t *file, hbool_t closing);
+
+    herr_t (*flush)(H5FD_t *file, hbool_t closing);
+</PRE>
+The 'closing' parameter would be set by the library and indicate that the
+file referenced by the 'file' parameter will be closed immediately after this
+call to the 'flush' function.
+</P>
+
+<li><h3><u>Alternate Approachs:</u></h3>
+
+<P>This document describes a method of adding a parameter to the VFL 'flush'
+function as a clean and maintainable method of passing information down to
+the VFL driver about the library's future actions on the file.  Because the
+main target of this improvement is improving the performance of the MPI-I/O
+VFL driver, an alternate approach could be taken in the library which did not
+change the VFL 'flush' API, at the expense of thread-safety and maintainability.
+</P>
+<P>The alternate approach would be to add code to the internal flush function
+in the library which would only be compiled if the library was compiled to
+support parallel I/O.  Additionally, the code would only be invoked if a file
+was using the MPI-I/O VFL driver.  This code would make a custom call directly
+to the MPI-I/O driver to indicate that the file was being closed and the 'flush'
+function could avoid duplicated work to be performed later in the 'close'
+function.  This method is not thread-safe, but that is not currently a
+requirement when operating on files with the MPI-I/O VFL driver, so there
+should be no negative impact from this aspect of the change.  This method does
+require a higher maintainence cost in the library due to the diligence which
+must be performed when adding or removing internal flush calls.  Failure to
+flag a flush before a close would cause these same performance problems again
+and flagging a flush without a close could cause the file not to be in
+sync at a point when an application had assumed it to be.
+</P>
+<P>However, because of the large performance benefits of this change and the
+strong desire of our customers to have improvements to the performance of the
+library in the v1.4 release branch, it is recommended that this somewhat unsafe
+and higher maintainence code be added to the v1.4 branch.  Adding the 'closing'
+parameter to the v1.5 branch, where API changes are better tolerated, is the
+optimal long-term course of action.
+</P>
+
+
+<li><h3><u>Forward/Backward Compatibility Repercussions:</u></h3>
+
+<P>Backward compatibility is the ability for applications using the HDF5
+library to compile and link with future versions of the library.
+Forward compatibility is the ability for applications using the 
+HDF5 library to compile and link with previous versions of the library.
+</P>
+
+<P>Forward compatibility has not been supported in the library APIs, and that
+issue is not addressed here.  The change proposed above (in the Alternate
+Approaches section) has no backward compatibility issues and is proposed for
+the v1.4 branch of the library.  Changing the VFL 'flush' API will be a
+backward compatibility break for the v1.5 branch of the library.  However,
+the impact is limited to only those developers who are writing VFL drivers
+for the library and has no affect on applications who only use the VFL drivers
+shipped with the HDF5 library.
+
+<li><h3><u>File Format Changes:</u></h3>
+<P>None.
+</P>
+                   
+</ol>
+
+</body>
+</html>

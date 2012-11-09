@@ -1,0 +1,172 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+	<meta http-equiv="content-type" content="text/html; charset=utf-8">
+	<meta name="generator" content="VoodooPad">
+	<title>MPI-POSIX VFD</title>
+		<style type="text/css">
+
+body
+{
+	margin: 20px;
+	color: #000;
+	font-size: 16px;
+	background-color: #BCCCAB;
+}
+
+.main
+{
+	min-width: 400px;
+	border: solid 1px #aaaaaa;
+	padding: 5px;
+	font-family: verdana, arial, helvetica, sans-serif;
+	font-size: 9pt;
+	background: #fff;
+	margin-top: 10px;
+}
+
+.header
+{
+	color: black;
+	font-size: 24px;
+	font-variant: small-caps;
+	font-weight: bold;
+	border: solid 1px #aaaaaa;
+	background: #fff;
+}
+
+	
+	</style>
+	
+	
+</head>
+
+<body>
+    <div class="header" align="center">
+        MPI-POSIX VFD
+    </div>
+    
+    <div class="main">
+        <style type="text/css">
+p.p1 {margin: 0.0px 0.0px 0.0px 0.0px; font: 18.0px 'Lucida Grande'}
+p.p2 {margin: 0.0px 0.0px 0.0px 0.0px; font: 18.0px 'Lucida Grande'; min-height: 21.0px}
+li.li1 {margin: 0.0px 0.0px 0.0px 0.0px; font: 18.0px 'Lucida Grande'}
+span.s1 {text-decoration: underline}
+span.Apple-tab-span {white-space:pre}
+ul.ul1 {list-style-type: hyphen}
+</style>
+
+<p class="p1"><b>Features:</b></p>
+<p class="p2"><br></p>
+<ul class="ul1">
+<li class="li1">POSIX I/O calls to operate on file</li>
+<li class="li1">MPI calls to coordinate file access</li>
+<li class="li1">Can not perform collective I/O</li>
+</ul>
+<p class="p2"><br></p>
+<p class="p1"><b>Source Code Files:</b></p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-tab-span">	</span><a href="http://svn.hdfgroup.uiuc.edu/hdf5/trunk/src/H5FDmpiposix.c"><span class="s1">src/H5FDmpiposix.c</span></a> and <a href="http://svn.hdfgroup.uiuc.edu/hdf5/trunk/src/H5FDmpiposix.h"><span class="s1">src/H5FDmpiposix.h</span></a></p>
+<p class="p2"><br></p>
+<p class="p1"><b>API calls:</b></p>
+<p class="p2"><br></p>
+<ul class="ul1">
+<li class="li1">H5Pset_fapl_mpio</li>
+<ul class="ul1">
+<li class="li1">Dups the MPI Comm object (passed as parameter) and stores it in the FAPL for future use</li>
+</ul>
+<li class="li1">H5Pget_fapl_mpio</li>
+<ul class="ul1">
+<li class="li1">Dups the MPI Comm object (from FAPL) and passes it back to application</li>
+</ul>
+</ul>
+<p class="p2"><br></p>
+<p class="p1"><b>VFD callbacks implemented:</b></p>
+<p class="p2"><br></p>
+<ul class="ul1">
+<li class="li1">open (H5FD_mpiposix_open)</li>
+<ul class="ul1">
+<li class="li1">Dups the MPI Comm object (from the FAPL) for use in coordination operations</li>
+<li class="li1">Gets rank &amp; size from file's Comm</li>
+<li class="li1">if ( rank == 0)</li>
+<ul class="ul1">
+<li class="li1">Possibly set different file access flags (from other processes)</li>
+<li class="li1">POSIX open() file (possibly creating it)</li>
+</ul>
+<li class="li1">MPI_Bcast() results of file open from rank 0 to other ranks</li>
+<li class="li1">&lt;check for failed open on all ranks&gt;</li>
+<li class="li1">If (rank != 0)</li>
+<ul class="ul1">
+<li class="li1">POSIX open file (without creating it)</li>
+</ul>
+<li class="li1">if (rank == 0)</li>
+<ul class="ul1">
+<li class="li1">Use stat() to get file's size</li>
+</ul>
+<li class="li1">MPI_Bcast() file size from rank 0 to other ranks</li>
+<li class="li1">&lt;set special GPFS fcntl() values, if enabled&gt;</li>
+</ul>
+<li class="li1">close (H5FD_mpiposix_close)</li>
+<ul class="ul1">
+<li class="li1">POSIX close()</li>
+<li class="li1">MPI_Barrier()</li>
+<li class="li1">Free file's Comm object</li>
+</ul>
+<li class="li1">cmp (H5FD_mpiposix_cmp)</li>
+<ul class="ul1">
+<li class="li1">Use inode value (set in open callback) to check if files are same</li>
+</ul>
+<li class="li1">query (H5FD_mpiposix_query)</li>
+<ul class="ul1">
+<li class="li1">Sets flags to indicate it's OK to aggregate allocation of file metadata and small raw data</li>
+<li class="li1">No other flags set</li>
+</ul>
+<li class="li1">get_eoa (H5FD_mpiposix_get_eoa)</li>
+<ul class="ul1">
+<li class="li1">retrieve (local) EOA value</li>
+</ul>
+<li class="li1">set_eoa (H5FD_mpiposix_set_eoa)</li>
+<ul class="ul1">
+<li class="li1">set (local) EOA value</li>
+</ul>
+<li class="li1">get_eof (H5FD_mpiposix_get_eof)</li>
+<ul class="ul1">
+<li class="li1">get (local) EOF value</li>
+</ul>
+<li class="li1">get_handle (H5FD_mpiposix_get_handle)</li>
+<ul class="ul1">
+<li class="li1">Directly copies POSIX file handle value back into application buffer</li>
+</ul>
+<li class="li1">read (H5FD_mpiposix_read)</li>
+<ul class="ul1">
+<li class="li1">&lt;seek to correct location, if not there already&gt;</li>
+<li class="li1">use POSIX read() call to read from file</li>
+<li class="li1">if ( (&lt;I/O size&gt; - &lt;bytes read&gt;) &gt; 0)</li>
+<ul class="ul1">
+<li class="li1">memset() the application buffer with the number of bytes that weren't read</li>
+</ul>
+<li class="li1">&lt;update seek position&gt;</li>
+</ul>
+<li class="li1">write (H5FD_mpiposix_write)</li>
+<ul class="ul1">
+<li class="li1">&lt;same as for read callback, with POSIX write call instead&gt;</li>
+</ul>
+<li class="li1">truncate (H5FD_mpiposix_truncate)</li>
+<ul class="ul1">
+<li class="li1">if ( &lt;EOA&gt; is &gt; than &lt;last EOA&gt; )</li>
+<ul class="ul1">
+<li class="li1">POSIX truncate() call</li>
+<li class="li1">MPI_Barrier()</li>
+<li class="li1">set &lt;last EOA&gt; to &lt;EOA&gt;</li>
+</ul>
+</ul>
+</ul>
+
+    </div>
+    <div class="main">
+        <a href="_page_index.html">Page Index</a>
+    </div>
+</body>
+</html>
+

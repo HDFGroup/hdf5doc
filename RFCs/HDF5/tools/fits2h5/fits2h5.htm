@@ -1,0 +1,369 @@
+<html>
+
+<head>
+<meta http-equiv="Content-Language" content="en-us">
+<meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+<title>FITS to HDF5 mapping</title>
+</head>
+
+<body>
+
+<h2>RFC: Mapping FITS data to HDF5</h2>
+<p>Pedro Vicente Nunes, <a href="mailto:pvn@ncsa.uiuc.edu">pvn@ncsa.uiuc.edu</a></p>
+<h2>Rationale</h2>
+<blockquote>
+	<p>Just as cars come in many makes and models, scientific data is available in a 
+wide variety of formats. These range from the &quot;home grown&quot;, project-specific 
+formats to the standard formats of the &quot;Big 3&quot; (FITS, HDF, netCDF). Unlike cars, 
+where there is rarely a need to transform Toyotas into Chevys, it is often 
+desirable to convert data from one format into another for archival, transport 
+and analysis purposes<br>
+	(Jennings <i>et all, 1995</i>).</p>
+</blockquote>
+<p>FITS is a data format mostly used within the astronomy community, while HDF5 
+is a general purpose library and file format for storing scientific data, used 
+in a variety of communities. This RFC proposes a software tool, named fits2h5, 
+that aims to read a FITS file and generate a HDF5 file with the corresponding 
+data. Some of HDF5 features that potentially could be useful in the translation 
+are</p>
+<ul>
+	<li>HDF5 allows data to be organized into <i>groups</i>, analogous to UNIX 
+	file folders</li>
+	<li>HDF5 provides random (fast) access to its data objects</li>
+	<li>Data compression</li>
+	<li>Chunking. Chunking refers to a storage layout where a dataset is 
+	partitioned into fixed-size multi-dimensional chunks. This has many 
+	efficiency advantages when doing I/O to the file, particularly in very large 
+	files.</li>
+	<li>An API that defines a standard for arrays that are to be interpreted as 
+	images, with palette and true color (RGB) support</li>
+	<li>The ability to define fill values in the data</li>
+	<li>A variety of free and commercial visualization packages that read HDF5.</li>
+</ul>
+<p>The goals that fits2h5 tries to achieve are thus, to facilitate the transport 
+of space and Earth science data between different science disciplines, data 
+analysis packages, and hardware platforms. </p>
+<h2>The FITS data format</h2>
+<p>FITS (Flexible Image Transport System) is a data format widely used within the astronomy community for transporting, analyzing, and archiving 
+scientific data files. <a href="http://fits.gsfc.nasa.gov/">FITS</a> has a support 
+office page. FITS is primarily designed to store scientific data sets 
+consisting of multidimensional arrays (images) and 2-dimensional tables 
+organized into rows and columns of information. Like HDF and HDF5, the 
+underlying goal of FITS is to provide a standardized, simple, and extensible 
+means to transport data between computers of different architectures. </p>
+<p>A FITS file is comprised of segments called Header + Data Units (HDUs), where 
+the first HDU is called the `Primary HDU', or `Primary Array'. The primary data 
+array can contain a N dimensional array of 1, 2 or 4 byte integers or 4 or 8 
+byte floating point numbers using IEEE representations.&nbsp; <br>
+Any number of additional HDUs may follow the primary array. These additional 
+HDUs are referred to as FITS `extensions'. Three types of standard extensions 
+are currently defined: </p>
+<ul>
+	<li>Image Extensions contain a N dimensional array of pixels, similar to 
+	a primary array <br>
+&nbsp;</li>
+	<li>ASCII Table Extensions store tabular information with all numeric 
+	information stored in ASCII formats. While ASCII tables are generally less 
+	efficient than binary tables, they can be made relatively human readable and 
+	can store numeric information with essentially arbitrary size and accuracy.
+	<br>
+&nbsp;</li>
+	<li>Binary Table Extensions store tabular information in a binary 
+	representation. Each cell in the table can be an array but the 
+	dimensionality of the array must be constant within a column. </li>
+</ul>
+<h3>Header Units</h3>
+<p>Every HDU consists of an ASCII formatted `Header Unit' followed by an 
+optional `Data Unit'. Each header or data unit is a multiple of 2880 bytes long. 
+If necessary, the header or data unit is padded out to the required length with 
+ASCII blanks or NULLs depending on the type of unit. <br>
+Each header unit contains a sequence of fixed-length 80-character keyword 
+records which have the general form: </p>
+<p>KEYNAME = value / comment string </p>
+<p>The keyword names may be up to 8 characters long and can only contain 
+uppercase letters A to Z, the digits 0 to 9, the hyphen, and the underscore 
+character. The keyword name is (usually) followed by an equals sign and a space 
+character in columns 9 and 10 of the record, followed by the value of the 
+keyword which may be either an integer, a floating point number, a complex value 
+(i.e., a pair of numbers), a character string (enclosed in single quotes), or a 
+Boolean value (the letter T or F). Some keywords, (e.g., COMMENT and HISTORY) 
+are not followed by an equals sign and in that case columns 9 - 80 of the record 
+may contain any string of ASCII text. </p>
+<p>Each header unit begins with a series of required keywords that specify the 
+size and format of the following data unit. A 2-dimensional image primary array 
+header, for example, begins with the following keywords: </p>
+<p>SIMPLE = T / file conforms to FITS standard<br>
+BITPIX = 16 / number of bits per data pixel<br>
+NAXIS = 2 / number of data axes<br>
+NAXIS1 = 440 / length of data axis 1<br>
+NAXIS2 = 300 / length of data axis 2 </p>
+<p>The required keywords may be followed by other optional keywords to describe 
+various aspects of the data, such as the date and time of the observation. 
+COMMENT or HISTORY keywords are also frequently added to further document the 
+contents of the data file. <br>
+The last keyword in the header is always the `END' keyword which has blank value 
+and comment fields. The header is padded with additional blank records if 
+necessary so that it is a multiple of 2880 bytes (equivalent to 36 80-byte 
+keywords) long. Note that the header unit may only contain ASCII text characters 
+ranging from hexadecimal 20 to 7E); non-printing ASCII characters such as tabs, 
+carriage-returns, or line-feeds are not allowed anywhere within the header unit.
+</p>
+<h3>Data Units</h3>
+<p>The data unit, if present, immediately follows the last 2880-byte block in 
+the header unit. Note that the data unit is not required, so some HDUs only 
+contain the header unit. <br>
+The image pixels in a primary array or an image extension may have one of 5 
+supported data types: </p>
+<ul>
+	<li>8-bit (unsigned) integer bytes </li>
+	<li>16-bit (signed) integers </li>
+	<li>32-bit (signed) integers </li>
+	<li>64-bit (signed) integers</li>
+	<li>32-bit single precision floating point real numbers </li>
+	<li>64-bit double precision floating point real numbers </li>
+</ul>
+<p>Unsigned 16-bit and 32-bit integers are supported by subtracting an offset 
+from the raw pixel values (e.g., 32768 (2**15) is subtracted from each unsigned 
+16-bit integer pixel value to shift the values into the range of a signed 16-bit 
+integer) before writing them to the FITS file. This offset is then added to the 
+pixels when reading the FITS image to restore the original values. <br>
+The other 2 types of standard extensions, ASCII tables and binary tables, 
+contain tabular information organized into rows and columns. </p>
+<p>All the entries within a given column of an ASCII or Binary table extension 
+have the same datatype. The allowed data formats for an ASCII table column are: 
+integer, single or double precision floating point value, or character string. 
+Binary table extensions also support logical (T/F), bit, and complex data 
+formats. </p>
+<p>Each entry, or field, in an ASCII table may only contain 1 scalar value. 
+Binary tables are more flexible and allow N-dimensional arrays of data (either 
+fixed length or variable length) to be stored within each field. Variable-length 
+arrays are implemented by storing a pointer in the field of the table which 
+defines the length and byte offset to the start of the data array which is 
+located in the &quot;heap&quot; area that follows the table proper. The 
+variable-length-arrays convention is not strictly part of the FITS standard but 
+is widely used. </p>
+<h2>Mapping FITS to HDF5</h2>
+<p>The FITS file is read in a linear fashion using the concept of a HDU 
+position. This is a 1 based index that identifies the position of a HDU in the 
+file. There is an API function that returns this index</p>
+<p><code>fits_get_hdu_num(fptr, &amp;hdupos); /* Get the current HDU position */</code></p>
+<p>After opening the FITS file, this function returns 1, identifying the 
+position of the primary HDU. A cycle can be constructed, where in each iteration 
+there is an attempt to move to the next HDU position using the API function</p>
+<p><code>fits_movrel_hdu(fptr, 1, NULL, &amp;status); </code></p>
+<p>which moves to the next HDU in the file. At each HDU, there is a query to 
+find the type of HDU (image or table) using the API function</p>
+<p><code>fits_get_hdu_type(fptr, &amp;hdutype, &amp;status);</code></p>
+<p>which returns the HDU type.</p>
+<h3>Writing the HDF5 file</h3>
+<p>At each HDU iteration an HDF5 object is created according to</p>
+<table border="1" width="100%" id="table1">
+	<tr>
+		<td width="242">Type of HDU</td>
+		<td>HDF5 object</td>
+	</tr>
+	<tr>
+		<td width="242">Image</td>
+		<td>Dataset</td>
+	</tr>
+	<tr>
+		<td width="242">Table</td>
+		<td>Dataset with compound type, with the number of fields corresponding 
+		to the number of columns in the table</td>
+	</tr>
+	<tr>
+		<td width="242">Header </td>
+		<td>Attribute of the HDU group (see below)</td>
+	</tr>
+</table>
+<h4>Image HDUs</h4>
+<p>Each of the five FITS Image data types are converted to HDF5 datatypes using 
+the following table</p>
+<table border="1" width="100%" id="table3">
+	<tr>
+		<td width="244"><b>FITS Image data type</b></td>
+		<td><b>HDF5 dataset datatype</b></td>
+	</tr>
+	<tr>
+		<td width="244">8-bit (unsigned) integer</td>
+		<td>H5T_NATIVE_UCHAR</td>
+	</tr>
+	<tr>
+		<td width="244">16-bit (signed) integer</td>
+		<td>H5T_NATIVE_SHORT</td>
+	</tr>
+	<tr>
+		<td width="244">32-bit (signed) integer</td>
+		<td>H5T_NATIVE_INT</td>
+	</tr>
+	<tr>
+		<td width="244">64-bit (signed) integer</td>
+		<td>H5T_NATIVE_LLONG</td>
+	</tr>
+	<tr>
+		<td width="244">32-bit single precision floating point</td>
+		<td>H5T_NATIVE_FLOAT</td>
+	</tr>
+	<tr>
+		<td width="244">64-bit double precision floating point</td>
+		<td>H5T_NATIVE_DOUBLE</td>
+	</tr>
+</table>
+<h4>Table HDUs</h4>
+<p>Allowed values for the data type in ASCII tables are: TSTRING, TSHORT, TLONG, 
+TFLOAT, and TDOUBLE. Binary tables also support these types: TLOGICAL, TBIT, 
+TBYTE, TCOMPLEX and TDBLCOMPLEX. The following table shows the corresponding 
+mapping to HDF5 datatypes:</p>
+<table border="1" width="100%" id="table4">
+	<tr>
+		<td width="242">FITS Table data type</td>
+		<td>HDF5 datatype</td>
+	</tr>
+	<tr>
+		<td width="242">TSTRING</td>
+		<td>H5T_C_S1</td>
+	</tr>
+	<tr>
+		<td width="242">TSHORT</td>
+		<td>H5T_NATIVE_SHORT</td>
+	</tr>
+	<tr>
+		<td width="242">TLONG</td>
+		<td>H5T_NATIVE_LONG</td>
+	</tr>
+	<tr>
+		<td width="242">TFLOAT</td>
+		<td>H5T_NATIVE_FLOAT</td>
+	</tr>
+	<tr>
+		<td width="242">TDOUBLE</td>
+		<td>H5T_NATIVE_DOUBLE</td>
+	</tr>
+	<tr>
+		<td width="242">TLOGICAL</td>
+		<td>TBD (to be determined)</td>
+	</tr>
+	<tr>
+		<td width="242">TBIT</td>
+		<td>TBD</td>
+	</tr>
+	<tr>
+		<td width="242">TBYTE</td>
+		<td>TBD</td>
+	</tr>
+	<tr>
+		<td width="242">TCOMPLEX</td>
+		<td>TBD</td>
+	</tr>
+	<tr>
+		<td width="242">TDBLCOMPLEX</td>
+		<td>TBD</td>
+	</tr>
+</table>
+<h3>Naming HDF5 objects</h3>
+<p>This RFC proposes a way to the FITS data to be organized in the HDF5 file.</p>
+<p>For each HDU, a group is created with the name &quot;HDU_N&quot;, where the &quot;_N&quot; refers to the index of the object read (1 based).</p>
+<table border="1" width="43%" id="table7">
+	<tr>
+		<td width="157">HDU index</td>
+		<td>Object (group)</td>
+	</tr>
+	<tr>
+		<td width="157">1</td>
+		<td>HDU_1</td>
+	</tr>
+	<tr>
+		<td width="157">2</td>
+		<td>HDU_2</td>
+	</tr>
+	<tr>
+		<td width="157">3</td>
+		<td>HDU_3</td>
+	</tr>
+	</table>
+<p>Each group would contain either a header and image or a header and table or 
+just a header.</p>
+<p>The FITS data model does not define a name for its objects, which are instead 
+identified by its position in the file. When creating the corresponding HDF5 
+objects the following naming convention is used. </p>
+<table border="1" width="100%" id="table6">
+	<tr>
+		<td width="242">Type of HDU</td>
+		<td>HDF5 object name</td>
+	</tr>
+	<tr>
+		<td width="242">Image</td>
+		<td>FITS_IMAGE_N</td>
+	</tr>
+	<tr>
+		<td width="242">Table</td>
+		<td>FITS_TABLE_N</td>
+	</tr>
+	</table>
+<h4>FITS Headers</h4>
+<p>A FITS header is created in the HDF5 file as an attribute of the group HDU. For each 
+FITS HDU an attribute named 'FITS_HEADER_N' is created, as a compound datatype with 
+3 
+fields: the keyword name, the keyword value, and the keyword comment (all of 
+which are optional in the FITS header). The fields are of HDF5 string datatype 
+(H5T_C_S1). The number of elements in the this array (rows) is as many as FITS header keywords.</p>
+<p>For the previous keyword example, one would have this FITS_HEADER_N attribute, 
+the form on the FITS file as</p>
+<p>SIMPLE = T / file conforms to FITS standard</p>
+<p>translated to the HDF5 attribute as</p>
+<table border="1" width="100%" id="table5">
+	<tr>
+		<td width="130"><b>keyword name</b></td>
+		<td><b>keyword value</b></td>
+		<td width="438"><b>keyword comment </b></td>
+	</tr>
+	<tr>
+		<td width="130">SIMPLE </td>
+		<td>&nbsp;T </td>
+		<td width="438">file conforms to FITS standard</td>
+	</tr>
+	<tr>
+		<td width="130">BITPIX </td>
+		<td>&nbsp;16 </td>
+		<td width="438">number of bits per data pixel</td>
+	</tr>
+	<tr>
+		<td width="130">NAXIS </td>
+		<td>&nbsp;2 </td>
+		<td width="438">number of data axes</td>
+	</tr>
+	<tr>
+		<td width="130">NAXIS1 </td>
+		<td>&nbsp;440 </td>
+		<td width="438">length of data axis 1</td>
+	</tr>
+	<tr>
+		<td width="130">NAXIS2 </td>
+		<td>&nbsp;300 </td>
+		<td width="438">length of data axis 2 </td>
+	</tr>
+</table>
+<h2>Usage</h2>
+<p>The fits2h5 usage is</p>
+<p>./fits2h5 &lt;filename&gt;</p>
+<p>where &lt;filename&gt; is the name of an existing FITS file. The output of the 
+program is an HDF5 file that has the same name as &lt;filename&gt; with the extension 
+.h5. If the input file name has an extension (usually .fits or .fit), that is 
+removed. For example </p>
+<p>./fits2h5 file.fits</p>
+<p>produces a HDF5 file named file.h5</p>
+<h2>References</h2>
+<p>Convert: Bridging the Scientific Data Format Chasm. (1995) D. G. Jennings, W. 
+D. Pence. M. Folk. ASP Conference Series, Vol. 77, 1995.</p>
+<p>CFITSIO User's Reference Guide, Version 2.5 (2004). HEASARC. Goddard Space 
+Flight Center, Greenbelt, MD</p>
+<hr>
+<p>Last updated</p>
+<p>1/24/2006</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+
+</body>
+
+</html>

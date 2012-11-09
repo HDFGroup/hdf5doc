@@ -1,0 +1,92 @@
+Ideas About Tools Support for new Group Iteration Features
+==========================================================
+Robert E. McGrath
+March 10, 2005
+
+An overview of the approach to new features for groups is in:
+  http://hdf.ncsa.uiuc.edu/RFC/ReviseGroups/GroupReviseOutline.txt
+
+This note has thoughts about about the impact of the new Group iteration 
+feature on tools (h5dump, h5repack, h5diff).  The impact on other software,
+such as HDF-EOS5, can't be determined without more information about
+the new API and compatibility with 1.6.
+
+Assumptions
+===========
+
+It is still uncertain what the features will be or what the API is,
+but based on conversations it seems likely that utilities
+will be faced with:
+
+   groups with index-by-name  (to an application the same as now, 
+                              though different in library.)
+   groups with index-by-name and index-by-creation
+
+I would say we should not allow the case of index-by-creation without
+any names, or else provide a default result for get name, e.g., return 
+the string "1" as the name of the first object.  This will assure that
+all existing programs will continue to work.
+
+Assuming this is the general flavor of the API, then a calling program 
+should be able to:
+
+  get the name of an object (always,, fake if needed)
+  get the creation order of the object, if available
+  iterate by name (always, fake it if need be)
+  iterate by creation order, if available
+
+
+Preliminary analysis of standard utilities
+==========================================
+
+Here is my analysis of the tasks to upgrade the utilities.  IMO,
+all of these are enhancements that do not have to be done for the 1.8.0
+release. 
+
+
+h5dump
+------
+
+Should work OK without modification: default ignores creation order
+if available
+
+New options:
+
+1. display creation order in DDL
+2. sort by creation order, if available
+
+
+h5repack
+--------
+
+Should work OK without modification, but will not preserve creation
+order.
+
+New feature:
+
+1. if creation order indexed in source file, create the objects in
+the same creation order in the output.  Create creation order index
+in output.
+
+New options:
+
+1. don't make creation order index
+2. make creation order index even if input didn't have one.
+
+h5diff
+------
+
+Should work OK.
+
+New option:
+
+1. compare and report if creation order is different. E.g., /foo/bar is
+in both files, but was the 2nd object in /foo in one, and the 3rd in the
+other file.
+
+
+Other tools, e.g., HDFview
+--------------------------
+
+Current code should work, default will ignore creation order.
+Probably will want new options similar to above, TBD.

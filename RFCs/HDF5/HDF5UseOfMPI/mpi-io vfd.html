@@ -1,0 +1,222 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+	<meta http-equiv="content-type" content="text/html; charset=utf-8">
+	<meta name="generator" content="VoodooPad">
+	<title>MPI-IO VFD</title>
+		<style type="text/css">
+
+body
+{
+	margin: 20px;
+	color: #000;
+	font-size: 16px;
+	background-color: #BCCCAB;
+}
+
+.main
+{
+	min-width: 400px;
+	border: solid 1px #aaaaaa;
+	padding: 5px;
+	font-family: verdana, arial, helvetica, sans-serif;
+	font-size: 9pt;
+	background: #fff;
+	margin-top: 10px;
+}
+
+.header
+{
+	color: black;
+	font-size: 24px;
+	font-variant: small-caps;
+	font-weight: bold;
+	border: solid 1px #aaaaaa;
+	background: #fff;
+}
+
+	
+	</style>
+	
+	
+</head>
+
+<body>
+    <div class="header" align="center">
+        MPI-IO VFD
+    </div>
+    
+    <div class="main">
+        <style type="text/css">
+p.p1 {margin: 0.0px 0.0px 0.0px 0.0px; font: 18.0px 'Lucida Grande'}
+p.p2 {margin: 0.0px 0.0px 0.0px 0.0px; font: 18.0px 'Lucida Grande'; min-height: 21.0px}
+li.li1 {margin: 0.0px 0.0px 0.0px 0.0px; font: 18.0px 'Lucida Grande'}
+span.s1 {text-decoration: underline}
+span.Apple-tab-span {white-space:pre}
+ul.ul1 {list-style-type: hyphen}
+</style>
+
+<p class="p1"><b>Features</b><span class="s1"><b>:</b></span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<ul class="ul1">
+<li class="li1">MPI I/O calls to operate on file</li>
+<li class="li1">MPI calls to coordinate file access</li>
+<li class="li1">Can perform collective I/O</li>
+</ul>
+<p class="p2"><br></p>
+<p class="p1"><b>Source Code Files:</b></p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-tab-span">	</span><a href="http://svn.hdfgroup.uiuc.edu/hdf5/trunk/src/H5FDmpio.c"><span class="s1">src/H5FDmpio.c</span></a> and <a href="http://svn.hdfgroup.uiuc.edu/hdf5/trunk/src/H5FDmpio.h"><span class="s1">src/H5FDmpio.h</span></a></p>
+<p class="p2"><br></p>
+<p class="p1"><b>API calls:</b></p>
+<p class="p2"><br></p>
+<ul class="ul1">
+<li class="li1">H5Pset_fapl_mpio</li>
+<ul class="ul1">
+<li class="li1">Dups the MPI Comm &amp; Info objects (passed as parameters) and stores them in the FAPL for future use</li>
+</ul>
+<li class="li1">H5Pget_fapl_mpio</li>
+<ul class="ul1">
+<li class="li1">Dups the MPI Comm &amp; info objects (from FAPL) and passes them back to application</li>
+</ul>
+</ul>
+<p class="p2"><br></p>
+<p class="p1"><b>VFD callbacks implemented:</b></p>
+<p class="p2"><br></p>
+<ul class="ul1">
+<li class="li1">open (H5FD_mpio_open)</li>
+<ul class="ul1">
+<li class="li1">Dups the MPI Comm &amp; Info objects (from the FAPL) for use in file &amp; coordination operations</li>
+<li class="li1">MPI_File_Open() w/file's Comm &amp; Info objects</li>
+<li class="li1">Gets rank &amp; size from file's Comm</li>
+<li class="li1">If (rank == 0)</li>
+<ul class="ul1">
+<li class="li1">If MPI_File_get_size() available, get file's size with that, otherwise use stat() file to get its size</li>
+<li class="li1">[MPI_File_get_size() detected at configure time]</li>
+</ul>
+<li class="li1">MPI_Bcast() file size to all ranks</li>
+<li class="li1">if (size &gt; 0 &amp; truncate flag set)</li>
+<ul class="ul1">
+<li class="li1">MPI_File_set_size() to 0 size</li>
+<li class="li1">MPI_Barrier()</li>
+</ul>
+</ul>
+<li class="li1">close (H5FD_mpio_close)</li>
+<ul class="ul1">
+<li class="li1">MPI_File_close()</li>
+<li class="li1">Free file's Comm &amp; Info objects</li>
+</ul>
+<li class="li1">query (H5FD_mpio_query)</li>
+<ul class="ul1">
+<li class="li1">Sets flags to indicate it's OK to aggregate allocation of file metadata and small raw data</li>
+<li class="li1">No other flags set</li>
+</ul>
+<li class="li1">get_eoa (H5FD_mpio_get_eoa)</li>
+<ul class="ul1">
+<li class="li1">retrieve (local) EOA value</li>
+</ul>
+<li class="li1">set_eoa (H5FD_mpio_set_eoa)</li>
+<ul class="ul1">
+<li class="li1">set (local) EOA value</li>
+</ul>
+<li class="li1">get_eof (H5FD_mpio_get_eof)</li>
+<ul class="ul1">
+<li class="li1">get (local) EOF value</li>
+</ul>
+<li class="li1">get_handle (H5FD_mpio_get_handle)</li>
+<ul class="ul1">
+<li class="li1">Directly copies MPI_File value back into application buffer</li>
+</ul>
+<li class="li1">read (H5FD_mpio_read)</li>
+<ul class="ul1">
+<li class="li1">set buffer's MPI type (&lt;buf_type&gt;) to MPI_BYTE</li>
+<li class="li1">memset() MPI_Status to 0's</li>
+<li class="li1">convert address of I/O to MPI_Offset value (&lt;mpi offset&gt;)</li>
+<li class="li1">if ( I/O type is "raw data")</li>
+<ul class="ul1">
+<li class="li1">Get &lt;xfer mode&gt; property from DXPL</li>
+<li class="li1">if ( &lt;xfer mode&gt; is Collective)</li>
+<ul class="ul1">
+<li class="li1">Set &lt;use view&gt; flag</li>
+<li class="li1">get MPI type for buffer (&lt;buf_type&gt;) from DXPL</li>
+<li class="li1">get MPI type for file (&lt;file_type&gt;) from DXPL</li>
+<li class="li1">MPI_File_set_view() with &lt;mpi offset&gt;, &lt;file type&gt; &amp; &lt;buf type&gt;</li>
+<li class="li1">Set &lt;mpi offset&gt; to 0</li>
+</ul>
+</ul>
+<li class="li1">if ( &lt;use view&gt; set)<span class="Apple-tab-span">	</span>[i.e. we're doing collective I/O, and &lt;mpi offset&gt; = 0]</li>
+<ul class="ul1">
+<li class="li1">get &lt;collective opt&gt; property from DXPL<span class="Apple-converted-space">&nbsp; &nbsp; &nbsp; &nbsp; </span>[chunked datasets only]</li>
+<li class="li1">if ( &lt;collective opt&gt; flag set)</li>
+<ul class="ul1">
+<li class="li1">MPI_File_read_at_all() with &lt;mpi offset&gt;, &lt;file type&gt; &amp; &lt;buf type&gt;</li>
+</ul>
+<li class="li1">else</li>
+<ul class="ul1">
+<li class="li1">MPI_File_read_at() with &lt;mpi offset&gt;, &lt;file type&gt; &amp; &lt;buf type&gt;</li>
+</ul>
+<li class="li1">MPI_File_set_view() with offset = 0 and MPI type = MPI_BYTE</li>
+</ul>
+<li class="li1">else</li>
+<ul class="ul1">
+<li class="li1">MPI_File_read_at() with &lt;mpi offset&gt; and &lt;buf_type&gt; ( == MPI_BYTE)</li>
+</ul>
+<li class="li1">&lt;compute number of bytes actually read&gt;</li>
+<ul class="ul1">
+<li class="li1">MPI_Get_elements() with MPI_Status from read call, MPI type set to MPI_BYTE to get the number of bytes read &lt;bytes read&gt;</li>
+<li class="li1">Get the &lt;buf type&gt;'s size with MPI_Type_size</li>
+<li class="li1">Compute the &lt;I/O size&gt;</li>
+<li class="li1">[This works (only) because the "basic elements" we use for all our MPI derived datatypes are MPI_BYTE.<span class="Apple-converted-space">&nbsp; </span>We should be using the &lt;buf_type&gt; in MPI_Get_elements(), but aren't because it caused the LANL "qsc" machine to dump core]</li>
+</ul>
+<li class="li1">if ( (&lt;I/O size&gt; - &lt;bytes read&gt;) &gt; 0)</li>
+<ul class="ul1">
+<li class="li1">memset() the application buffer with the number of bytes that weren't read</li>
+</ul>
+</ul>
+<li class="li1">write (H5FD_mpio_write)</li>
+<ul class="ul1">
+<li class="li1">&lt;same as for read callback, with MPI write calls instead&gt;</li>
+<ul class="ul1">
+<li class="li1">Except, doesn't 0-fill application buffer (of course)</li>
+<li class="li1">Also, reset (local) EOF value to "undefined"</li>
+</ul>
+</ul>
+<li class="li1">flush (H5FD_mpio_flush)</li>
+<ul class="ul1">
+<li class="li1">if ( &lt;not closing file&gt; )</li>
+<ul class="ul1">
+<li class="li1">MPI_File_sync()</li>
+</ul>
+</ul>
+<li class="li1">truncate (H5FD_mpio_truncate)</li>
+<ul class="ul1">
+<li class="li1">if ( &lt;EOA&gt; is &gt; than &lt;last EOA&gt; )</li>
+<ul class="ul1">
+<li class="li1">if ( &lt;MPI_File_set_size() works correctly&gt; )<span class="Apple-converted-space">&nbsp; &nbsp; &nbsp; </span>[set at configure time]</li>
+<ul class="ul1">
+<li class="li1">Convert &lt;EOA&gt; value to MPI Offset</li>
+<li class="li1">MPI_File_set_size() w/ &lt;EOA&gt; (as MPI Offset)</li>
+</ul>
+<li class="li1">else</li>
+<ul class="ul1">
+<li class="li1">MPI_Barrier()</li>
+<li class="li1">if (rank == 0 )</li>
+<ul class="ul1">
+<li class="li1">Read byte at &lt;EOA - 1&gt;</li>
+<li class="li1">Write byte back to &lt;EOA -1&gt;</li>
+</ul>
+</ul>
+<li class="li1">MPI_Barrier()</li>
+<li class="li1">set &lt;last EOA&gt; to &lt;EOA&gt;</li>
+</ul>
+</ul>
+</ul>
+
+    </div>
+    <div class="main">
+        <a href="_page_index.html">Page Index</a>
+    </div>
+</body>
+</html>
+

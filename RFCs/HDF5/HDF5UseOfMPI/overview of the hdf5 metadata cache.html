@@ -1,0 +1,342 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+	<meta http-equiv="content-type" content="text/html; charset=utf-8">
+	<meta name="generator" content="VoodooPad">
+	<title>Overview of the HDF5 Metadata Cache</title>
+		<style type="text/css">
+
+body
+{
+	margin: 20px;
+	color: #000;
+	font-size: 16px;
+	background-color: #BCCCAB;
+}
+
+.main
+{
+	min-width: 400px;
+	border: solid 1px #aaaaaa;
+	padding: 5px;
+	font-family: verdana, arial, helvetica, sans-serif;
+	font-size: 9pt;
+	background: #fff;
+	margin-top: 10px;
+}
+
+.header
+{
+	color: black;
+	font-size: 24px;
+	font-variant: small-caps;
+	font-weight: bold;
+	border: solid 1px #aaaaaa;
+	background: #fff;
+}
+
+	
+	</style>
+	
+	
+</head>
+
+<body>
+    <div class="header" align="center">
+        Overview of the HDF5 Metadata Cache
+    </div>
+    
+    <div class="main">
+        <style type="text/css">
+p.p1 {margin: 0.0px 0.0px 0.0px 0.0px; font: 18.0px 'Lucida Grande'}
+p.p2 {margin: 0.0px 0.0px 0.0px 0.0px; font: 18.0px 'Lucida Grande'; min-height: 21.0px}
+span.s1 {text-decoration: underline}
+table.t1 {border-collapse: collapse}
+td.td1 {border-style: solid; border-width: 1.0px 1.0px 1.0px 1.0px; border-color: #cbcbcb #cbcbcb #cbcbcb #cbcbcb; padding: 0.0px 5.0px 0.0px 5.0px}
+</style>
+
+<p class="p1"><b>Introduction:</b></p>
+<p class="p2"><br></p>
+<p class="p1">The following outline of the HDF5 metadata cache is based on the HDF5 User's guide entry on the cache. The major changes are an increased emphasis on the particulars of metadata I/O with particular reference to the parallel case, and the removal of all discussion of the particulars of cache configuration and control. A discussion of likely future directions in parallel metadata I/O is also included.</p>
+<p class="p2"><br></p>
+<p class="p2"><br></p>
+<p class="p1"><b>Metadata Caching in HDF5:</b></p>
+<p class="p2"><br></p>
+<p class="p1"><span class="s1"><a href="the%20old%20metadata%20cache.html">The old metadata cache</a></span> (used prior to the 1.6.4 release) indexed the cache with a hash table which had poor provisions for collisions and caused very poor performance for certain I/O sequences. In the 1.6.4 release, we introduced a re-implementation of the metadata cache. The version in the 1.6.4+ releases contains an incomplete version of the cache which could not be controlled via the API. The version in the 1.8.x releases is more mature and includes new API calls that allow the user program to configure the cache behavior.</p>
+<p class="p2"><br></p>
+<p class="p1">From the user perspective, the most striking effect of the new cache should be a large reduction in the cache memory requirements when working with complex HDF5 files.<span class="Apple-converted-space">&nbsp; </span>Those working with such files may also notice a reduction in file close time.<span class="Apple-converted-space">&nbsp; </span>Those working with HDF5 files with simple structures shouldn't notice any particular changes in most cases. In rare cases, there may be a significant improvement in performance.</p>
+<p class="p2"><br></p>
+<p class="p2"><br></p>
+<p class="p1"><b>The New Metadata Cache Eviction Algorithm Overview:</b></p>
+<p class="p2"><br></p>
+<p class="p1">Structurally, the new metadata cache can be thought of as a heavily modified version of the UNIX buffer cache as described in chapter three of M. J. Bach's "The Design of the UNIX Operating System". In essence, the UNIX buffer cache uses a hash table with chaining to index a pool of fixed size buffers. It uses the LRU replacement policy to select candidates for eviction.</p>
+<p class="p2"><br></p>
+<p class="p1">Since HDF5 metadata entries are not of fixed size, and may grow arbitrarily large, the size of the new metadata cache cannot be controlled by setting a maximum number of entries. Instead the new cache keeps a running sum of the sizes of all entries, and attempts to evict entries as necessary to stay within a user specified maximum size. (Note the use of the word "attempts" here - as will be seen, it is possible for the cache to exceed its currently specified maximum size.)</p>
+<p class="p2"><br></p>
+<p class="p1">While the new metadata cache only supports the LRU replacement policy for selecting candidates to eviction at present, that may change. Support for multiple replacement policies was very much in mind when the cache was designed, as was the ability to switch replacement policies at run time. The situation has been complicated by the later addition of the adaptive cache resizing requirement, as two of the resizing algorithms piggyback on the LRU list. However, if there is need for additional replacement policies, it shouldn't be too hard to implement them.</p>
+<p class="p2"><br></p>
+<p class="p1">Per the standard Unix buffer cache, dirty entries are given two passes through the LRU list before being evicted. The first time they reach the end of the LRU list, they are flushed, marked as clean, and moved to the head of the LRU list. When a clean entry reaches the end of the LRU list, it is simply evicted if space is needed.</p>
+<p class="p2"><br></p>
+<p class="p2"><br></p>
+<p class="p1"><b>The New Metadata Cache Size Algorithm Overview:</b></p>
+<p class="p2"><b></b><br></p>
+<p class="p1">After implementing the new metadata cache, it became evident that the working set size for HDF5 files varies widely depending on both structure and access pattern. Thus it was necessary to add support for cache size adjustment under either automatic or user program control.</p>
+<p class="p2"><br></p>
+<p class="p1">When the cache is operating under direct user program control, it is also possible to temporarily disable evictions from the metadata cache so as to maximize raw data I/O throughput at the expense of allowing the cache to grow without bound until evictions are enabled again.</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="s1"><a href="the%20adaptive%20cache%20resizing%20algorithm.html">The adaptive cache resizing algorithm</a></span> controls the automatic cache size adjustment, but isn’t directly relevant to parallel applications other than to note that each process’ cache may be a different size, depending on the independent metadata operations the process performs.</p>
+<p class="p2"><br></p>
+<p class="p1">The cache cannot evict entries that are locked by another part of the HDF5 library, and thus it may temporarily grow beyond its maximum size if there are insufficient unlocked entries available for eviction.</p>
+<p class="p2"><br></p>
+<p class="p2"><br></p>
+<p class="p1"><b>Evicting Dirty Metadata Entries from the Cache when using a Parallel Application:</b></p>
+<p class="p2"><br></p>
+<p class="p1">In the parallel version of the library, only the cache running under process 0 of the file communicator is allowed to write metadata to file. All the other caches must retain dirty metadata until the process 0 cache tells them that the metadata is clean.</p>
+<p class="p2"><br></p>
+<p class="p1">Since all operations modifying metadata must be collective, all caches see the same stream of dirty metadata. This fact is used to allow them to synchronize every n bytes of dirty metadata, where n is a user configurable value that defaults to 256KB.</p>
+<p class="p2"><br></p>
+<p class="p1">To avoid sending the other processes a “message from the future”, process 0 must not write any dirty entries until it reaches a synchronization point. When it reaches a synchronization point, it writes entries as needed, and then broadcasts the list of flushed entries to the other caches. The caches on the other processes use this list to mark entries clean before they leave the synchronization point, allowing them to evict those entries as needed.</p>
+<p class="p2"><br></p>
+<p class="p1">This protocol for maintaining cache consistency for MPI applications is below:</p>
+<p class="p2"><br></p>
+<table cellspacing="0" cellpadding="0" class="t1">
+<tbody>
+<tr>
+<td valign="middle" class="td1">
+<p class="p1">Process 0 cache:</p>
+</td>
+<td valign="middle" class="td1">
+<p class="p1">Process n (n &gt; 0) cache:</p>
+</td>
+</tr>
+<tr>
+<td valign="middle" class="td1">
+<p class="p1">1) Read/modify metadata until either flush or the dirty metadata limit is reached.</p>
+</td>
+<td valign="middle" class="td1">
+<p class="p1">1) Read/modify metadata until either flush or the dirty metadata limit is reached.</p>
+</td>
+</tr>
+<tr>
+<td valign="middle" class="td1">
+<p class="p1">2) Barrier.</p>
+</td>
+<td valign="middle" class="td1">
+<p class="p1">2) Barrier.</p>
+</td>
+</tr>
+<tr>
+<td valign="middle" class="td1">
+<p class="p1">3) Write dirty metadata to disk until the minimum clean size is reached (or until the cache is clean in the case of a flush).</p>
+</td>
+<td valign="middle" class="td1">
+<p class="p1">3) Wait.</p>
+</td>
+</tr>
+<tr>
+<td valign="middle" class="td1">
+<p class="p1">4) Broadcast list of metadata cache entries that were dirty but are now clean to the other caches.</p>
+</td>
+<td valign="middle" class="td1">
+<p class="p1">4) Receive list of metadata cache entries that were dirty but are now clean from the process 0 cache. Mark these entries as clean.</p>
+</td>
+</tr>
+<tr>
+<td valign="middle" class="td1">
+<p class="p1">5) Goto 1).</p>
+</td>
+<td valign="middle" class="td1">
+<p class="p1">5) Goto 1).</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="p2"><br></p>
+<p class="p1">The caches will also synchronize on a user initiated flush. To minimize overhead when running in parallel, the cache maintains a "clean" LRU list in addition to the regular LRU list. This list contains only clean entries, and is used as a source of candidates for eviction when flushing dirty entries is not allowed.</p>
+<p class="p2"><br></p>
+<p class="p1">Since flushing entries is forbidden most of the time when running in parallel, the caches can be forced to exceed their maximum sizes if they run out of clean entries to evict.</p>
+<p class="p2"><br></p>
+<p class="p1">To decrease the likelihood of this event, the new cache allows the user to specify a minimum clean size -- which is a minimum total size of all the entries on the clean LRU plus all unused space in the cache.</p>
+<p class="p2"><br></p>
+<p class="p1">While the clean LRU list is only maintained in the parallel version of the HDF5 library, the notion of a minimum clean size still applies in the serial case. Here it is used to force a mix of clean and dirty entries in the cache even in the write only case.</p>
+<p class="p2"><br></p>
+<p class="p1">This in turn reduces the number of redundant flushes by avoiding the case in which the cache fills with dirty metadata and all entries must be flushed before a clean entry can be evicted to make room for a new entry.</p>
+<p class="p2"><br></p>
+<p class="p1">Observe that in both the serial and parallel cases, the maintenance of a minimum clean size modifies the replacement policy, as dirty entries may be flushed earlier than would otherwise be the case so as to maintain the desired amount of clean and/or empty space in the cache.</p>
+<p class="p2"><br></p>
+<p class="p2"><br></p>
+<p class="p1"><b>Future Directions in Metadata Cache I/O in the Parallel case:</b></p>
+<p class="p2"><br></p>
+<p class="p1">As should be obvious from the above discussion, our current management of metadata I/O in the parallel case is far from optimal, as all metadata writes are performed by the process 0 metadata cache, and all other processes must wait while these writes are in progress.</p>
+<p class="p2"><br></p>
+<p class="p1">We have considered a number of ways of addressing this issue, most of which are discussed below. We have not decided which if any these solutions we will attempt to implement.</p>
+<p class="p2"><br></p>
+<p class="p1">1 - Distribute writes across the processes:</p>
+<p class="p2"><br></p>
+<p class="p1">In this scenario, the process 0 cache would come up with a list of entries to be written, an assignment of entries to process detailed to write it, and then broadcast this list to all processes. This would change the protocol to:</p>
+<p class="p2"><br></p>
+<table cellspacing="0" cellpadding="0" class="t1">
+<tbody>
+<tr>
+<td valign="middle" class="td1">
+<p class="p1">Process 0 cache:</p>
+</td>
+<td valign="middle" class="td1">
+<p class="p1">Process n (n &gt; 0) cache:</p>
+</td>
+</tr>
+<tr>
+<td valign="middle" class="td1">
+<p class="p1">1) Read/modify metadata until either flush or the dirty metadata limit is reached.</p>
+</td>
+<td valign="middle" class="td1">
+<p class="p1">1) Read/modify metadata until either flush or the dirty metadata limit is reached.</p>
+</td>
+</tr>
+<tr>
+<td valign="middle" class="td1">
+<p class="p1">2) Barrier.</p>
+</td>
+<td valign="middle" class="td1">
+<p class="p1">2) Barrier.</p>
+</td>
+</tr>
+<tr>
+<td valign="middle" class="td1">
+<p class="p1">3) Select the entries to be written to disk, and assign a process to each such entry.</p>
+</td>
+<td valign="middle" class="td1">
+<p class="p1">3) Wait.</p>
+</td>
+</tr>
+<tr>
+<td valign="middle" class="td1">
+<p class="p1">4) Broadcast the list of entries to be flushed to disk along with the process assignment.</p>
+</td>
+<td valign="middle" class="td1">
+<p class="p1">4) Receive list of entries to be written to disk along with the process assignment.</p>
+</td>
+</tr>
+<tr>
+<td valign="middle" class="td1">
+<p class="p1">5) Flush assigned entries to disk and mark all entries to be flushed as clean.</p>
+</td>
+<td valign="middle" class="td1">
+<p class="p1">5) Flush assigned entries to disk and mark all entries to be flushed as clean.</p>
+</td>
+</tr>
+<tr>
+<td valign="middle" class="td1">
+<p class="p1">6) Barrier.</p>
+</td>
+<td valign="middle" class="td1">
+<p class="p1">6) Barrier.</p>
+</td>
+</tr>
+<tr>
+<td valign="middle" class="td1">
+<p class="p1">7) Goto 1).</p>
+</td>
+<td valign="middle" class="td1">
+<p class="p1">7) Goto 1).</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="p2"><br></p>
+<p class="p2"><br></p>
+<p class="p1">2 - Do all metadata I/O from process 0:</p>
+<p class="p2"><br></p>
+<p class="p1">Since only process 0 is allowed to write metadata, the notion routing most metadata I/O through the process 0 metadata cache has been considered. Since all operations that modify metadata must be collective, the thought is that process 0 could broadcast metadata to the other processes when such operations were encountered.</p>
+<p class="p2"><br></p>
+<p class="p1">The problem with this is the fact that processes may read metadata independently – which will cause a bit of a scalability problem if we have to route such reads through the process 0 cache.</p>
+<p class="p2"><br></p>
+<p class="p1">However, since the library can tell when metadata modification is in progress, we could set up to allow processes to do their own reads when metadata changes are not in the offing, and await a broadcast from process 0 when they are.</p>
+<p class="p2"><br></p>
+<p class="p1">3 - Bundle up the metadata writes at each sync point in an MPI derived type:</p>
+<p class="p2"><br></p>
+<p class="p1">Another possible approach to reducing the overhead of writing dirty metadata at a sync point is to bundle up the dirty metadata to be flushed in an MPI derived type. The resulting derived type could be written either synchronously or asynchronously (see below).</p>
+<p class="p2"><br></p>
+<p class="p1">4 - Use AIO for metadata writes:</p>
+<p class="p2"><br></p>
+<p class="p1">We have considered the possibility of writing dirty metadata writes asynchronously. this would change the metadata write protocol as follows. Note that these changes don't apply to the flush case – we handle that as before. This would change the protocol to:</p>
+<p class="p2"><br></p>
+<table cellspacing="0" cellpadding="0" class="t1">
+<tbody>
+<tr>
+<td valign="middle" class="td1">
+<p class="p1">Process 0 cache:</p>
+</td>
+<td valign="middle" class="td1">
+<p class="p1">Process n (n &gt; 0) cache:</p>
+</td>
+</tr>
+<tr>
+<td valign="middle" class="td1">
+<p class="p1">1) Read/modify metadata until either flush or the dirty metadata limit is reached.</p>
+</td>
+<td valign="middle" class="td1">
+<p class="p1">1) Read/modify metadata until either flush or the dirty metadata limit is reached.</p>
+</td>
+</tr>
+<tr>
+<td valign="middle" class="td1">
+<p class="p1">2) Barrier.</p>
+</td>
+<td valign="middle" class="td1">
+<p class="p1">2) Barrier.</p>
+</td>
+</tr>
+<tr>
+<td valign="middle" class="td1">
+<p class="p1">3) Check to see if one or more asynchronous metadata writes were queued at the last sync point. If so, test to see if they have completed. If they have not, stall until all metadata writes are complete.</p>
+</td>
+<td valign="middle" class="td1">
+<p class="p1">3) Wait.</p>
+</td>
+</tr>
+<tr>
+<td valign="middle" class="td1">
+<p class="p1">4) Construct a list of entries written asynchronously at the last sync point that have not been dirtied again since last sync point.</p>
+</td>
+<td valign="middle" class="td1">
+<p class="p1">4) Wait.</p>
+</td>
+</tr>
+<tr>
+<td valign="middle" class="td1">
+<p class="p1">5) Broadcast the list of clean entries to all the caches.</p>
+</td>
+<td valign="middle" class="td1">
+<p class="p1">5) Receive list of metadata cache entries that were dirty but are now clean from the process 0 cache. Mark the specified entries as clean.</p>
+</td>
+</tr>
+<tr>
+<td valign="middle" class="td1">
+<p class="p1">6) Goto 1).</p>
+</td>
+<td valign="middle" class="td1">
+<p class="p1">6) Goto 1).</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="p2"><br></p>
+<p class="p1">5 - Allow writes between sync points:</p>
+<p class="p2"><br></p>
+<p class="p1">If a piece of metadata was dirty at the last sync point, process 0 can flush it between sync points without risk of creating a message from the future, as that entry must reside in all caches. The other processes would be informed of the flush at the next sync point.</p>
+<p class="p2"><br></p>
+<p class="p1">We should consider either synchronous or asynchronous writes in this case.<span class="Apple-converted-space">&nbsp;</span></p>
+<p class="p2"><br></p>
+<p class="p1">6 - Journaling:</p>
+<p class="p2"><br></p>
+<p class="p1">In closing we should mention that we have implemented metadata journaling in the serial case, and hope to be working on the parallel case in the relatively near future. While journaling is largely orthogonal to the issues at hand, it will add the overhead of writes to the journal file, and increase the number of metadata writes.</p>
+
+    </div>
+    <div class="main">
+        <a href="_page_index.html">Page Index</a>
+    </div>
+</body>
+</html>
+

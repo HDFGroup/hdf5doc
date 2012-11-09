@@ -1,0 +1,398 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+
+<HEAD>
+  <TITLE>Revising Links in HDF5 Groups</TITLE>
+  <META http-equiv="content-type" content="text/html; charset=ISO-8859-1">
+  <META name="author" content="Quincey Koziol">
+</HEAD>
+
+<BODY TEXT="#000000" BGCOLOR="#FFFFFF">
+
+<STYLE TYPE="text/css">
+OL.loweralpha { list-style-type: lower-alpha }
+OL.upperroman { list-style-type: upper-roman }
+</STYLE>
+       
+<CENTER><H1>Revising Links in HDF5 Groups</H1></CENTER>
+<CENTER><H3>Quincey Koziol<br>
+            koziol@ncsa.uiuc.edu<BR>
+            May 6, 2004
+</H3></CENTER>
+
+<OL class="upperroman">
+
+<LI><H3><U>Document's Audience:</U></H3>
+         
+<UL>
+    <LI>Current H5 library designers and knowledgable external developers.</li>
+</UL>
+         
+<LI><H3><U>Background Reading:</U></H3>
+         
+<DL>
+    <DT>The HDF5 file format description:
+        <DD><A HREF="http://hdf.ncsa.uiuc.edu/HDF5/doc/H5.format.html#Btrees">B-Tree Nodes</A>
+        <DD><A HREF="http://hdf.ncsa.uiuc.edu/HDF5/doc/H5.format.html#SymbolTable">Group Nodes</A>
+        <DD><A HREF="http://hdf.ncsa.uiuc.edu/HDF5/doc/H5.format.html#SymbolTableEntry">Group Node Entries</A>
+        <DD><A HREF="http://hdf.ncsa.uiuc.edu/HDF5/doc/H5.format.html#LocalHeap">Local Heaps</A>
+</DL>
+         
+<LI><H3><U>Introduction:</U></H3>
+            
+<DL>
+    <DT><STRONG>What is this document about?</STRONG></DT>
+        <DD>This document describes some enhancements to the information
+            stored for each link in an HDF5 group.
+        </DD> <BR>
+
+    <DT><STRONG>How do links in HDF5 groups currently operate?</STRONG></DT>
+        <DD>
+            <P>Links in HDF5 groups are the method that indicates an object's
+                inclusion in a group.  Objects in HDF5 files don't
+                have names themselves (due to being able to be included in
+                multiple groups with different names), so the link to the object
+                has a name for that particular reference to the object.
+            </P>
+            <P>Fundamentally, links store certain required information,
+                such as the name of the link and either the object header
+                address in the file (for hard links) or the target name (for
+                soft links).  Additionally, hard links can cache certain
+                additional information about the target object (such as it's
+                B-tree root and local heap addresses, for group objects) in
+                an attempt to speed up operations on that object.
+            </P>
+            <P>Currently, the information for each link in a group is split into
+                two pieces.  A fixed size portion is stored in the
+                <A HREF="http://hdf.ncsa.uiuc.edu/HDF5/doc/H5.format.html#SymbolTableEntry">group node entry</A>,
+                and the name is stored in the
+                <A HREF="http://hdf.ncsa.uiuc.edu/HDF5/doc/H5.format.html#LocalHeap">local heap</A>
+                for the group.
+            </P>
+            <P>Links in a group are indexed by a
+                <A HREF="http://hdf.ncsa.uiuc.edu/HDF5/doc/H5.format.html#Btrees">B-Tree</A>,
+                where the B-tree keys are the names of the objects (using the
+                offset of the name in the local heap) and leaf nodes of the
+                B-tree point to 
+                <A HREF="http://hdf.ncsa.uiuc.edu/HDF5/doc/H5.format.html#SymbolTable">group nodes</A>,
+                which contain lists of 
+                <A HREF="http://hdf.ncsa.uiuc.edu/HDF5/doc/H5.format.html#SymbolTableEntry">group node entries</A>.
+            </P>
+        </DD> <BR>
+
+    <DT><STRONG>What are limitations of the current design?</STRONG></DT>
+        <DD>
+            <P>Over time, we've learned more about how HDF5 groups are used
+                and have determined a few limitations in the current design.
+                One difficulty is the way the B-tree and local heap addresses
+                are cached for groups.  Because the empty B-tree and local heap
+                are allocated for each new group (in order to put them into the
+                cached information for the new link to that group), if the
+                group remains empty, the space used by the B-tree and local
+                heap is wasted.  It would be better to allocate the B-tree and
+                local heap on demand, when links are created in an empty group.
+            </P>
+            <P>Additionally, the information about each link
+                is split into two locations (the group node entry and the
+                local heap) in a way which wastes space for linking to common
+                objects, like datasets.  The information about each link also
+                includes "cached" information about the object linked to, which
+                breaks the modularity of the design.
+            </P>
+            <P>Also, each time the B-tree is traversed, the local heap must be
+                mapped into memory, in order to compare the names of the links.
+                It would be possible to avoid this penalty by creating a
+                hash-value of each name to store in the B-tree keys and avoid
+                touching the local heap at all during B-tree traversals.
+            </P>
+        </DD> <BR>
+
+    <DT><STRONG>How are object references and group links related?</STRONG></DT>
+        <DD>
+            <P>Object references in datasets point to other objects in an
+                HDF5 file.
+                Object references are stored in datasets as an address of the
+                object referenced.  They are similar in this respect to the
+                way hard links are stored (hard links also directly store the
+                address of the object linked to).  However creating an object
+                reference to an object <EM>doesn't</EM> increment the reference
+                count of the target object, which allows an object reference
+                to "dangle" like a soft link.
+            </P>
+        </DD> <BR>
+</DL>
+
+<LI><H3><U>New Requirements:</U></H3>
+
+<P>There are several new requirements listed here, in order of decreasing
+importance:
+    <UL>
+        <LI>Support a "creation ordering" in a group.  Multiple applications,
+            including netCDF-3/4 require a mechanism for accessing linked
+            objects
+            in the order they were created.  netCDF in particular requires a
+            way to get the n<SUP>th</SUP> object in a group, according to
+            the order the links were created, ideally as fast as locating
+            a link by its name.  Supporting this fast lookup would require
+            adding a B-tree to the group which was indexed according to the
+            creation order.  (Note that this is about the
+            creation <EM>order</EM>, not the creation <EM>time</EM>.)
+        <LI>Reduce the amount of space taken by an empty group.  Several
+            HDF5 customers, including Boeing, are using empty groups as
+            "place holders" to attach attributes to.  Having these 
+            groups allocate space for empty B-trees and local heaps can
+            waste enormous amounts of space.  (This may belong better in the
+            "suggested changes" section, since we don't have explicit
+            funding for this effort)
+    </UL>
+</P>
+
+<LI><H3><U>Additional Suggested Changes:</U></H3>
+
+<P>Since we are planning to revise the format of the links, there are several
+other changes that would be beneficial to make at this time.  Suggested changes
+are listed here:
+    <UL>
+        <LI>Unify the information about a link.  Since we need to access the
+            local heap in order to retrieve the name on a link, all the
+            information for a link should be stored in the local heap.  This
+            will allow the information stored for each link to be smaller and
+            more flexible as well as possibly vary in size.
+        <LI>Allow more information to be stored about a link.  We need to allow
+            creation order information to be added to links, for netCDF-3/4
+            support.  How about certain other predefined information about
+            each link, such as the creation time, etc?
+        <LI>We should allow link names to be stored with non-ASCII
+            character sets, such as Unicode.  Probably all the links in a
+            group should be stored with the same character set though, so the
+            actual character set chosen should probably be stored at a higher
+            level.
+        <LI>If links are more of a "real" object, we can change object
+            references to use links instead of the current format.  Links
+            as object references in a dataset would be stored in a local heap
+            for the dataset.  We would have to decide whether to keep object
+            references the way they are now (pointing to an object like a
+            hard link, but not incrementing the target's reference count like
+            a soft link), or change them to be closer to the way hard or soft
+            links in groups operate.
+        <LI>If links are particular objects that can be referenced from anywhere
+            in the file (as offsets in a local heap at a particular address),
+            we can add back-pointers to HDF5 files.  This would be done by
+            adding a list of "back-pointers" to each HDF5 object, each
+            of which referred to the link that pointed to the object.  This
+            would allow
+            file compaction to be performed much more easily than without
+            back-pointers.  It may also allow browsers to more easily traverse
+            and present objects in a file.
+        <LI>If links are closer to a "real" object, we can allow attributes to
+            be added to them.  The attributes on links would allow the links
+            to be colored or weighted by graph traversal routines that used
+            HDF5 links and groups to describe a graph.  Possibly, the
+            attributes on a link could be treated as additions to the
+            attributes on the target object by an application, allowing
+            different sets of attributes to be seen on an
+            object, depending on the path taken to arrive there.
+        <LI>Change the default format for B-tree keys to a hash-value, to
+            speed up name lookups in the B-tree.  This would also have the
+            advantage of avoiding comparing names encoded with different
+            character sets during B-tree traversal.  Of course, the downside
+            is that the order of the objects iterated with this B-tree would
+            appear in random alphabetical name order.  This could be addressed
+            by adding an additional B-tree to track the alphabetical ordering,
+            if a user desired.
+    </UL>
+</P>
+
+<!--
+
+<LI><H3><U>Suggested Changes:</U></H3>
+
+<P>To accomodate the requirements above, changing the prototype of the
+"overflow" callback is necessary, as well as attaching it to a data transfer
+property list and changing the library's behavior for the return values of
+the callback.  I would also suggest changing the name from an "overflow"
+callback to the more generic "type conversion exception callback".
+</P>
+
+<P>After accomodating the changes above, the prototype would look like this:
+    <pre>H5T_conv_ret_t (*H5T_conv_except_func_t)(H5T_conv_except_t exception_type,
+        hid_t src_id, hid_t dst_id, void *fill_buf, void *src_buf, void *dst_buf,
+        void *user_data);</pre>
+</P>
+
+<P>The parameters are as follows:
+<UL>
+    <LI><CODE>exception_type</CODE> - The type of exception (enum described
+        below).
+    <LI><CODE>src_id</CODE> - A datatype ID describing the source datatype.
+    <LI><CODE>dst_id</CODE> - A datatype ID describing the destination datatype.
+    <LI><CODE>fill_buf</CODE> - A pointer to the fill value for this dataset, or NULL if
+        no fill value is defined.
+    <LI><CODE>src_buf</CODE> - A pointer to the buffer containing the source value.
+    <LI><CODE>dst_buf</CODE> - A pointer to the buffer where the destination value should
+        be placed.
+    <LI><CODE>user_data</CODE> - A pointer to the "user data" set by the application that
+        registered the conversion callback.
+</UL>
+</P>
+
+<P>The <CODE>H5T_conv_except_t</CODE> enumerated type has the following values:
+<UL>
+    <LI><CODE>H5T_CONV_EXCEPT_RANGE_HI</CODE> - The source value is greater
+        than the range of values that can be encoded in the destination value.
+    <LI><CODE>H5T_CONV_EXCEPT_RANGE_LO</CODE> - The source value is less than
+        the range of values that can be encoded in the destination value.
+    <LI><CODE>H5T_CONV_EXCEPT_PRECISION</CODE> - The source value will suffer a
+        loss of precision when it is represented in the destination type.
+        (This generally occurs when very large integers are converted to
+        floating-point types)
+    <LI><CODE>H5T_CONV_EXCEPT_TRUNCATE</CODE> - The source value will suffer a
+        truncation in value when it is represented in the destination type.
+        (This generally occurs when floating-point values with fractional
+        values are converted to integer datatypes)
+</UL>
+</P>
+
+<P>The return value from conversion callbacks is <CODE>H5T_conv_ret_t</CODE>,
+a new enumerated type with the following values:
+<UL>
+    <LI><CODE>H5T_CONV_ABORT</CODE> - Abort type conversion immediately (-1).
+    <LI><CODE>H5T_CONV_NOT_HANDLED</CODE> - Conversion callback did not
+        handled the conversion exception and the HDF5 library should perform
+        whatever default conversion it normally applies (0).
+    <LI><CODE>H5T_CONV_HANDLED</CODE> - Conversion callback 
+        handled the conversion exception and the HDF5 library should
+        <EM>not</EM> perform whatever default conversion it normally applies (1).
+</UL>
+</P>
+
+<P>Additionally, the 
+<A HREF="http://hdf.ncsa.uiuc.edu/HDF5/doc/RM_H5T.html#Datatype-SetOverflow"><CODE>H5Tset_overflow</CODE></A>
+and
+<A HREF="http://hdf.ncsa.uiuc.edu/HDF5/doc/RM_H5T.html#Datatype-GetOverflow"><CODE>H5Tget_overflow</CODE></A>
+routines would be retired in favor of the following routines:
+
+<HR>
+<UL> <DL>
+    <DT><STRONG>Name:</STRONG></DT>
+        <DD>H5Pset_type_conversion_cb
+        </DD>
+    <DT><STRONG>Purpose:</STRONG></DT>
+        <DD>Register a type conversion callback.
+        </DD>
+    <DT><STRONG>Signature:</STRONG></DT>
+        <DD>herr_t H5Pset_type_conversion_cb(hid_t <EM>dxpl_id</EM>,
+            H5T_conv_except_func_t *<EM>op</EM>,
+            void *<EM>operator_data</EM>)
+        </DD>
+    <DT><STRONG>Parameters:</STRONG></DT>
+        <DD>
+        <DL>
+            <DT>hid_t <EM>dxpl_id</EM></DT>
+                <DD>IN: ID of dataset transfer property list.
+                </DD>
+            <DT>H5T_conv_except_func_t *<EM>op</EM></DT>
+                <DD>IN: Pointer to callback function to call for when a
+                    type conversion exception occurs.
+                </DD>
+            <DT>void *<EM>operator_data</EM></DT>
+                <DD>IN: Pointer that will be passed to callback function when a
+                    type conversion exception occurs.
+                </DD>
+        </DL>
+        </DD>
+    <DT><STRONG>Return Value:</STRONG></DT>
+        <DD>Returns non-negative on success, negative on failure.
+        </DD>
+    <DT><STRONG>Description:</STRONG></DT>
+        <DD><P>This function sets the callback function that the HDF5 library
+            will call when a type conversion exception occurs.
+            Type conversion exceptions occur under the following
+            circumstances:
+            <UL>
+                <LI>A source value is outside the range of values able to
+                    be represented with the destination value (a range error).
+                <LI>A source value would lose precision when converted to a
+                    value in the destination type (a loss of precision error).
+                <LI>A source value would have it's value truncated when
+                    converted to a value in the destination type (a truncation
+                    error).
+            </UL>
+            </P>
+
+            <P>The conversion exception callback (<CODE>H5T_conv_except_func_t</CODE>)
+            has the following prototype:  (QAK: Fill in description from above
+            when creating final reference manual page)
+            </P>
+        </DD>
+</DL> </UL>
+<HR>
+
+<UL> <DL>
+    <DT><STRONG>Name:</STRONG></DT>
+        <DD>H5Pget_type_conversion_cb
+        </DD>
+    <DT><STRONG>Purpose:</STRONG></DT>
+        <DD>Retrieve the type conversion callback.
+        </DD>
+    <DT><STRONG>Signature:</STRONG></DT>
+        <DD>herr_t H5Pget_type_conversion_cb(hid_t <EM>dxpl_id</EM>,
+            H5T_conv_except_func_t **<EM>op</EM>,
+            void **<EM>operator_data</EM>)
+        </DD>
+    <DT><STRONG>Parameters:</STRONG></DT>
+        <DD>
+        <DL>
+            <DT>hid_t <EM>dxpl_id</EM></DT>
+                <DD>IN: ID of dataset transfer property list.
+                </DD>
+            <DT>H5T_conv_except_func_t **<EM>op</EM></DT>
+                <DD>OUT: Pointer to location to place pointer to type conversion
+                    exception callback function.
+                </DD>
+            <DT>void **<EM>operator_data</EM></DT>
+                <DD>OUT: Pointer to location to place pointer that will be
+                    passed to type conversion exception callback function when a
+                    type conversion exception occurs.
+                </DD>
+        </DL>
+        </DD>
+    <DT><STRONG>Return Value:</STRONG></DT>
+        <DD>Returns non-negative on success, negative on failure.
+        </DD>
+    <DT><STRONG>Description:</STRONG></DT>
+        <DD><P>This function retrieves the callback function that the HDF5
+            library will call when a type conversion exception occurs.
+        </DD>
+</DL> </UL>
+<HR>
+
+</P>
+
+
+<LI><H3><U>Discussion:</U></H3>
+
+<P>With the above changes to the library, the datatype conversion code will be
+able to fulfill all the new requirements listed.  Supporting the new type
+conversion exception callback and detecting the new exception types (loss of
+precision and truncation) will require some additional coding, but not a huge
+amount.  Adding support for detecting the new exception types will make the
+int &lt;-&gt; float conversions slightly slower and more complex though.
+</P>
+
+<P>A weakness in the changes proposed above is that there is no way to set
+the fill value for a "direct" memory buffer datatype conversion (i.e. calling
+H5Tconvert() directly, instead of the datatype conversion occurring during the
+process of accessing data in a file).  I would suggest not worrying about this
+and internally passing NULL for the fill value pointer during application calls
+to H5Tconvert() until we get requests from users to enable this feature.  At
+that point, we can revise the H5Tconvert() API routine.
+</P>
+
+-->
+
+</OL>
+
+</BODY>
+</HTML>
+

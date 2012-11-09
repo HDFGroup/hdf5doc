@@ -1,0 +1,94 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"><html><head><title>HDF5/Tools API Specification</title>
+
+<!-- #BeginLibraryItem "/ed_libs/styles_RM.lbi" -->
+
+<!--
+  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+  * Copyright by the Board of Trustees of the University of Illinois.         *
+  * All rights reserved.                                                      *
+  *                                                                           *
+  * This file is part of HDF5.  The full HDF5 copyright notice, including     *
+  * terms governing use, modification, and redistribution, is contained in    *
+  * the files COPYING and Copyright.html.  COPYING can be found at the root   *
+  * of the source code distribution tree; Copyright.html can be found at the  *
+  * root level of an installed copy of the electronic HDF5 document set and   *
+  * is linked from the top-level documents page.  It can also be found at     *
+  * http://hdf.ncsa.uiuc.edu/HDF5/doc/Copyright.html.  If you do not have     *
+  * access to either file, you may request a copy from hdfhelp@ncsa.uiuc.edu. *
+  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+ -->
+
+<link href="ed_styles/RMelect.css" rel="stylesheet" type="text/css">
+<!-- #EndLibraryItem --></head><body bgcolor="#ffffff"><big><b>RFC: &nbsp;A Tool To Fiddle with HDF5 User Blocks</b></big><br>
+Robert E. McGrath<br>
+June 30, 2004<br>
+<br>
+Overview<br>
+<br>
+HDF5 files may have arbitrary user data at the front of the file. &nbsp;At
+this time, there are no tools to put or get such a user block for an exiting
+file.<br>
+<br>
+This RFC presents a proposal for some new utilities to add, show, and remove the user block from an <i>existing HDF5 file</i>. &nbsp;These tools can be used with any HDF5 file.<br>
+<br>
+The fundamental algorithm is to create a file that contains:<br>
+<br>
+<ol>
+  <li>the user block data (can be anything, text or binary)</li>
+  <li>pads to 512, 1024, etc.</li>
+  <li>the HDF5 file</li>
+</ol>
+This is a simple concatination, except that the HDF5 header block must be at one of the required offsets.<br>
+<br>
+Removing a user block reversese this operation.<br>
+<br>
+Server variations of this operation are described below. &nbsp;These differ
+in how the files are managed. &nbsp;There are, no doubt, many other permutations.<br>
+<br>
+If we can decide on one or more of these variations, it will only take a
+few days to implement them. &nbsp;Most of the time will be needed to try
+to create tests!<br>
+<br>
+<br>
+<hr width="100%" size="2"><br>
+<br>
+
+<dl><dt><strong>Tool Name:</strong> jam<br>
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; unjam<br>
+
+</dt><dt><strong>Syntax:</strong>
+    </dt><dd><code>jam user_block hdf5_file out_file.h5</code></dd><dd><code>jam -h</code></dd></dl>
+<dl><dd><code>unjam hdf5_file </code><code>user_block </code><code>out_file.h5</code></dd><dd><code>unjam -h</code></dd></dl>
+<dl><dd><code>h5put_user_block user_block hdf5_file</code></dd><dd><code>h5put_user_block</code><code>&nbsp;-h</code></dd><dt><br>
+  </dt><dd><code>h5get_user_block hdf5_file</code></dd><dd><code>h5get_user_block</code><code>&nbsp;-h</code></dd><dt><br>
+    <strong>Purpose:</strong>
+    </dt><dd>Add user block to front of an HDF5 file, to create a new concatenated file. Get user block from file.</dd><dd>Split user block and HDF5 file into two files.</dd><dd><br>
+  </dd><dt><strong>Description:</strong>
+    </dt><dd><code>jam</code>&nbsp; concatenates
+a file and and HDF5 file to create an HDF5 file with a user block. The user
+block can be any test (binary or text). &nbsp;The output file is padded so
+that the HDF5 header begins on byte 512, 1024, etc.. &nbsp;See the HDF5 File
+Format.<p><code>unjam</code><code></code> splits an HDF5 file, writing the
+user block to a file and the HDF5 file to an HDF5 file with a header at byte
+0 (i.e., with no user block).<code></code></p></dd><dd>
+    <p><code>h5put_user_block</code>&nbsp; adds <code>user_block</code> to the fron of the HDF5 file,&nbsp;<code>hdf5_file</code>.&nbsp; The user block can be any test (binary or text).
+&nbsp;The output file is padded so that the HDF5 header begins on byte 512, 1024,
+etc.. &nbsp;See the HDF5 File Format.<code></code></p>
+  </dd><dd>
+    <p><code>h5get_user_block</code>&nbsp; prints the user block, if any,
+to stdout. &nbsp;Note that the user block may be any data (not just text),
+and may include padding or junk bytes up to the beginning of the HDF5 header
+block. &nbsp;</p>
+  </dd><dd><br>
+  </dd></dl>
+<dl><dt><strong>See Also:</strong>
+    <ul>
+    <li>HDF5 Format at <a href="ddl.html"><cite>&lt;&lt;link to hdf5 spec.&gt;&gt;</cite></a>
+
+    </li></ul></dt></dl>
+
+<dl><dl><dl><dl><dd>
+        <br>
+</dd></dl></dl></dl></dl><br>
+<br>
+</body></html>
