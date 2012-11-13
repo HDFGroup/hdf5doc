@@ -1,0 +1,81 @@
+
+
+
+<p></p>
+<br>
+<strong>
+<a name="CreateVLString">
+Creating variable-length string datatypes</a>
+</strong>
+
+<table border="0" align="right"><tr><td align="right">
+<font color=999999 size=-1><i>
+Last modified: 25 September 2012
+</i></font>
+</td></tr></table>
+
+    <p>
+    As the term implies, 
+    variable-length strings are strings of varying lengths;
+    they can be arbitrarily long,
+    anywhere from 1 character to thousands of characters.
+    <p>
+    HDF5 provides the ability to create a variable-length string datatype.
+    Like all string datatypes, this type is based on the 
+    atomic string datatype: 
+    <code>H5T_C_S1</code> in C or
+    <code>H5T_FORTRAN_S1</code> in Fortran.
+    While these datatypes default to one character in size, 
+    they can be resized to specific fixed lengths 
+    or to variable length.
+    <p>
+    Variable-length strings will transparently accommodate ASCII strings
+    or UTF-8 strings.  This characteristic is set with 
+    <a href="../RM/RM_H5T.html#Datatype-SetCset"><code>H5Tset_cset</a></code>
+    in the process of creating the datatype.
+
+    <p>
+    The following HDF5 calls create a 
+    C-style variable-length string datatype, 
+    <code>vls_type_c_id</code>:
+    <pre>
+    vls_type_c_id = H5Tcopy(H5T_C_S1)
+    status        = H5Tset_size(vls_type_c_id, H5T_VARIABLE) </pre>
+
+    In a C environment, variable-length strings will always be 
+    <small>NULL</small>-terminated, so the buffer to hold such 
+    a string must be one byte larger than the string itself 
+    to accommodate the <small>NULL</small> terminator.
+
+    <p>
+    In Fortran, strings are normally of fixed length.  
+    Variable-length strings come into play only when data
+    is shared with a C application that uses them.
+    For such situations, the datatype class <code>H5T_STRING</code> is
+    predefined by the HDF5 Library to accommodate variable-length strings.  
+    The first HDF5 call below creates a Fortran string, 
+    <code>vls_type_f_id</code>, that will handle variable-length string data.
+    The second call sets the string padding value to space padding:
+    <pre>
+    h5tcopy_f(H5T_STRING, vls_type_f_id, hdferr)
+    h5tset_strpad_f(vls_type_f_id, H5T_STR_SPACEPAD_F, hdferr) </pre>
+
+    While Fortran-style strings are generally space-padded, 
+    they may be <small>NULL</small>-terminated 
+    in cases where the data is also used in a C environment. 
+
+    <p>
+    <b>Note:</b> &nbsp;
+    Under the covers, variable-length strings are stored in a heap, 
+    potentially impacting efficiency in the following ways:
+    <ul style="compact">
+        <li>Heap storage requires more space than regular raw data storage.
+        <li>Heap access generally reduces I/O efficiency because 
+            it requires individual read or write operations for each 
+            data element rather than one read or write per dataset or 
+            per data selection. 
+        <li>Chunking and filters, including compression,
+            are not available for heaps.
+    </ul>
+
+
