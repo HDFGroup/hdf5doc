@@ -79,22 +79,24 @@ And in this document, the
 <h2>HDF5 Packet Table API&nbsp;Reference</h2>
 
 <p>The HDF5 Packet Table API is designed to allow records to be appended
-to and read from a table.  These records can be of fixed length
-(having an HDF5 datatype) or of variable-length, with each record potentially
-having a different size on disk.
-The Packet Table API with the H5PT prefix is not to be confused with the H5TB
-Table API (H5TB prefix).  The H5TB APIs are stateless (Tables do not need
+to and read from a table.  
+Packet Table datasets are chunked, allowing them to grow as needed.
+</p><p>
+The Packet Table API, with the H5PT prefix, is not to be confused with the H5TB
+Table API (H5TB prefix).  The H5TB APIs are stateless (H5TB Tables do not need
 to be opened or closed) but H5PT Packet Tables require less performance
 overhead.  Also, H5TB Tables support insertions and deletions, while
-H5PT Packet Tables support variable-length records.  H5TB functions should
+H5PT Packet Tables support only append operations.  
+H5TB functions should
 not be called on tables created with the H5PT API, or vice versa.
+</p><p>
 Packet Tables are datasets in an HDF5 file, so while their contents
 should not be changed outside of the H5PT API calls, the datatypes
-of fixed-length Packet Tables can be queried using 
+of Packet Tables can be queried using 
 <a href="../RM/RM_H5D.html#Dataset-GetType"><code>H5Dget_type</code></a>.
 Packet Tables can also be given attributes using the normal HDF5 APIs.</p>
-
-<p>The following functions are part of the HDF5 Packet Table API.&nbsp; </p>
+</p><p>
+The following functions are part of the HDF5 Packet Table API.&nbsp; </p>
 
 <p><strong>Programming Hint:</strong>
 
@@ -195,8 +197,10 @@ Packet Tables can also be given attributes using the normal HDF5 APIs.</p>
     <dt><em>hid_t </em><code>dtype_id</code> </dt>
     <dd>IN: The datatype of a packet. </dd>
     <dt><em>hsize_t </em><code>chunk_size</code> </dt>
-    <dd>IN: The packet table uses HDF5 chunked storage to allow it to grow.  This
-            value allows the user to set the size of a chunk.  The chunk size
+    <dd>IN: Chunk size, in number of table entries per chunk.
+            <br>
+            Packet table datasets use HDF5 chunked storage to allow them to grow.  
+            This value allows the user to set the size of a chunk.  The chunk size
             affects performance. </dd>
     <dt><em>int</em> <code>compression</code> </dt>
     <dd>IN: Compression level, 
@@ -224,8 +228,8 @@ Packet Tables can also be given attributes using the normal HDF5 APIs.</p>
   <dl><dt> <em>hid_t</em>       H5PTcreate_vl( <em>hid_t</em>    loc_id,
     <em>const char</em>    *dset_name, <em>hsize_t</em>
       chunk_size )</dt>
-
   </dl>
+
   <dt><strong>Purpose:</strong> </dt>
   <dd>Creates a packet table to store variable-length packets. </dd>
 
@@ -235,16 +239,18 @@ Packet Tables can also be given attributes using the normal HDF5 APIs.</p>
     the object specified by the identifier <code>loc_id</code>.  This dataset can
     then be written to as a packet table.  It should be closed with
     <code>H5PTclose</code>.&nbsp; </dd>
-  <dt><strong>Parameters:</strong> </dt>
 
+  <dt><strong>Parameters:</strong> </dt>
     <dl>
     <dt><em>hid_t</em> <code>loc_id</code> </dt>
     <dd>IN: Identifier of the file or group to create the table within. </dd>
     <dt><em>const char *</em><code>dset_name</code> </dt>
     <dd>IN: The name of the dataset to create. </dd>
     <dt><em>hsize_t </em><code>chunk_size</code> </dt>
-    <dd>IN: The packet table uses HDF5 chunked storage to allow it to grow.  This
-            value allows the user to set the size of a chunk.  The chunk size
+    <dd>IN: Chunk size, in number of table entries per chunk.
+            <br>
+            Packet table datasets use HDF5 chunked storage to allow them to grow.  
+            This value allows the user to set the size of a chunk.  The chunk size
             affects performance. </dd>
   </dl>
 </dl>
@@ -702,7 +708,7 @@ And in this document, the
 document.writeln(' \
 <address> \
   THG Help Desk: <img src="../Graphics/help.png" align=top height=16> <br> \
-  Last modified: 20 October 2011 <br> \
+  Last modified: 12 February 2013 <br> \
 </address> \
 ');
 -->
