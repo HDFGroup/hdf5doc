@@ -1,0 +1,445 @@
+<html>
+
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+<title> HDF5 Optimized Functions</title>
+</head>
+
+<body bgcolor="#FFFFFF">
+
+
+<!--
+  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+  * Copyright by The HDF Group.                                               *
+  * Copyright by the Board of Trustees of the University of Illinois.         *
+  * All rights reserved.                                                      *
+  *                                                                           *
+  * This file is part of HDF5.  The full HDF5 copyright notice, including     *
+  * terms governing use, modification, and redistribution, is contained in    *
+  * the files COPYING and Copyright.html.  COPYING can be found at the root   *
+  * of the source code distribution tree; Copyright.html can be found at the  *
+  * root level of an installed copy of the electronic HDF5 document set and   *
+  * is linked from the top-level documents page.  It can also be found at     *
+  * http://hdfgroup.org/HDF5/doc/Copyright.html.  If you do not have          *
+  * access to either file, you may request a copy from help@hdfgroup.org.     *
+  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+ -->
+
+
+
+<a name="TopofRM">
+</a>
+
+<!-- #BeginLibraryItem "/ed_libs/NavBar_RMHL.lbi" -->
+<hr>
+<center>
+<table border=0 width=98%>
+<tr><td valign=top align=left>
+<a href="../index.html">HDF5 documents and links</a>&nbsp;<br>
+<a href="../H5.intro.html">Introduction to HDF5</a>&nbsp;<br>
+<a href="../UG/index.html">HDF5 User Guide</a>&nbsp;<br>
+<a href="index.html">Other High-level API documents</a>
+<!--
+<a href="Glossary.html">Glossary</a><br>
+-->
+</td>
+<td valign=top align=right>
+And in this document, the 
+<a href="../RM/RM_H5Front.html">HDF5 Reference Manual</a>&nbsp;&nbsp;
+<br>
+<a href="RM_H5DS.html">H5DS</a>&nbsp;&nbsp;
+<a href="RM_H5IM.html">H5IM</a>&nbsp;&nbsp;
+<a href="RM_H5LT.html">H5LT</a>&nbsp;&nbsp;
+<a href="RM_H5PT.html">H5PT</a>&nbsp;&nbsp;
+<a href="RM_H5TB.html">H5TB</a>&nbsp;&nbsp;
+<br>
+<a href="../RM/RM_H5.html">H5</a>&nbsp;&nbsp;
+<a href="../RM/RM_H5A.html">H5A</a>&nbsp;&nbsp;
+<a href="../RM/RM_H5D.html">H5D</a>&nbsp;&nbsp;
+<a href="../RM/RM_H5E.html">H5E</a>&nbsp;&nbsp;
+<a href="../RM/RM_H5F.html">H5F</a>&nbsp;&nbsp;
+<a href="../RM/RM_H5G.html">H5G</a>&nbsp;&nbsp;
+<a href="../RM/RM_H5I.html">H5I</a>&nbsp;&nbsp;
+<a href="../RM/RM_H5L.html">H5L</a>&nbsp;&nbsp;
+<br>
+<a href="../RM/RM_H5O.html">H5O</a>&nbsp;&nbsp;
+<a href="../RM/RM_H5P.html">H5P</a>&nbsp;&nbsp;
+<a href="../RM/RM_H5R.html">H5R</a>&nbsp;&nbsp;
+<a href="../RM/RM_H5S.html">H5S</a>&nbsp;&nbsp;
+<a href="../RM/RM_H5T.html">H5T</a>&nbsp;&nbsp;
+<a href="../RM/RM_H5Z.html">H5Z</a>&nbsp;&nbsp;
+<a href="../RM/Tools.html">Tools</a>&nbsp;&nbsp;
+<a href="../RM/PredefDTypes.html">Datatypes</a>&nbsp;&nbsp;
+</td></tr>
+</table>
+</center>
+<hr>
+<!-- #EndLibraryItem -->
+
+<h1 align="center">HDF5 Optimized Functions</h1>
+
+<!-- HEADER RIGHT " " -->
+<!-- HEADER RIGHT " " -->
+
+<!--
+<h2>HDF5 Optimized Functions</h2>
+-->
+
+<p>HDF5 functions described is this section are implemented in the 
+HDF5 High-level Library as optimized functions.  
+These functions generally require careful setup and testing 
+as they enable an application to bypass portions of the 
+HDF5 Library&rsquo;s I/O pipeline for performance purposes.
+</p>
+
+<p>These functions are distributed in the standard HDF5 distribution
+and are available any time the HDF5 High-level Library is available. 
+</p>
+
+<!--
+<p><strong>Programming Hints:</strong></p>
+
+    <p>
+    </p>
+-->
+
+<p><strong>The C Interfaces:</strong>
+
+</p>
+
+<table border="0" width="100%">
+  <tr>
+    <td width="50%" valign="top">
+      <p align="left"><i>Dataset I/O Optimization</i>
+      <ul>
+        <li><a href="#H5DOwrite_chunk">H5DOwrite_chunk</a></li>
+      </ul>
+<!--
+          <p align="left"><i>Fabricated Category</i>
+      <ul>
+        <li><a href="#H5OOfunction">H5OOfunction</a></li>
+      </ul>
+-->
+    </td>
+    <td width="50%" valign="top">
+    &nbsp;
+<!--
+      <p align="left"><i>Fabricated Category</i>
+      <ul>
+        <li><a href="#H5OOfabrication">H5OOfabrication</a></li>
+      </ul>
+-->
+    </td>
+  </tr>
+</table>
+
+<!--
+<strong>FORTRAN Interfaces:</strong>
+<br>
+In general, each FORTRAN90 subroutine performs exactly the same task 
+as the corresponding C function. There are four types supported: <code>integer</code>,
+<code>real, double precision</code> and <code>character</code> array. The
+&lt;TYPE&gt; notation below is one of these four types.&nbsp; In FORTRAN, only
+the functions that read and write data by fields are&nbsp; available. The <code>h5tbmake_table_f</code>
+function only creates the table, it does not write data to it.</p>
+
+<table border="0" width="100%">
+  <tr>
+    <td width="50%" valign="top">
+      <p align="left"><i>Dataset I/O Optimization</i>
+      <ul>
+        <li><a href="#H5DOwrite_chunk">h5dowrite_chunk_f</a></li>
+      </ul>
+
+    </td>
+    <td width="50%" valign="top">
+      <p align="left"><i>Fabricated Category</i>
+      <ul>
+        <li><a href="#H5OOfabrication">h5oofabrication_f</a></li>
+      </ul>
+    </td>
+  </tr>
+</table>
+-->
+
+
+
+<!-- NEW PAGE -->
+<!-- HEADER RIGHT "H5DOwrite_chunk" -->
+<hr>
+<dl>
+
+  <dt><div align=right><font color=999999 size=-1><i>
+      /ast modified: 28 February 2013
+      </i></font></div>
+
+  <dt style="background-color: #CCCCFF"><strong>Name:</strong>        
+    <a name="H5DOwrite_chunk">H5DOwrite_chunk</a>
+    
+  <dt><strong>Signature:</strong>
+    <dd><em>herr_t</em> <code>H5DOwrite_chunk</code>(
+            <em>hid_t</em><code> dset_id</code>,
+            <em>hid_t</em><code> dxpl_id</code>,
+            <em>uint32_t</em><code> filter_mask</code>,
+            <em>hsize_t *</em><code>offset</code>,
+            <em>size_t</em><code> data_size</code>,
+            <em>const void *</em><code>buf</code>
+      )
+
+  <p>
+  <dt><strong>Purpose:</strong>
+    <dd>Writes a raw data chunk from a buffer directly to a dataset.
+    
+  <p>
+  <dt><strong>Description:</strong>
+    <dd><code>H5DOwrite_chunk</code> writes a raw data chunk 
+        from the application memory buffer <code>buf</code>
+        directly to its logical destination <code>offset</code>
+        in a dataset <code>dset_id</code>. 
+        Typically, the data in <code>buf</code> is preprocessed in memory 
+        by a custom transformation, such as compression. 
+        The data chunk will bypass the library&rsquo;s internal data 
+        transfer pipeline, including filters, and 
+        will be written directly to the file.
+        <p>
+        <code>dxpl_id</code> is a data transfer property list identifier. 
+        <i>(Currently unused.)</i>
+        </p>
+        <p>
+        <code>filter_mask</code> is a mask providing a record of which 
+        filters are used with the chunk. 
+        The default value of the mask is zero (<code>0</code>), 
+        indicating that all enabled filters are applied.
+        A filter is skipped if the bit corresponding to the filter&rsquo;s 
+        position in the pipeline 
+        (<code>0&nbsp;&le;&nbsp;position&nbsp;&lt;&nbsp;32</code>) is turned on.
+        This mask is saved with the data chunk in the file. 
+        </p>
+        <p>
+        <code>offset</code> is an array specifying the logical position 
+        of the first element of the data chunk in the dataset&rsquo;s 
+        dataspace. The length of the offset array must equal the number 
+        of dimensions, or rank, of the dataspace. 
+        The values in <code>offset</code> must not exceed the dimension 
+        limits and must specify a point that falls on a data chunk boundary.
+        </p>
+        <p>
+        <code>data_size</code> is the size in bytes of the raw data chunk, 
+        representing the number of bytes to be read from the buffer 
+        <code>buf</code>. If the data chunk has been precompressed, 
+        <code>data_size</code> should be the size of the compressed data.
+        </p>
+        <p>
+        <code>buf</code> is the memory buffer for the data chunk.
+
+  <p>
+  <dt><strong>Parameters:</strong>
+    <dd>
+      <table>
+        <tr>
+          <td valign="top">
+            <em>hid_t</em><code> dset_id</code></td>
+          <td valign="top">IN: Identifier for the dataset to write to</td>
+        </tr>
+        <tr>
+          <td valign="top">
+            <em>hid_t</em><code> dxpl_id</code></td>
+          <td valign="top">IN: Transfer property list identifier for 
+            this I/O operation
+            <br>
+            <i>(Currently unused)</i>
+            </td>
+        </tr>
+        <tr>
+          <td valign="top">
+            <em>uint32_t</em><code>&nbsp;filter_mask&nbsp;&nbsp;&nbsp;</code></td>
+          <td valign="top">IN: Mask for identifying the filters in use</td>
+        </tr>
+        <tr>
+          <td valign="top">
+            <em>hsize_t *</em><code>offset</code></td>
+          <td valign="top">IN: Logical position of the chunk&rsquo;s 
+            first element in the dataspace</td>
+        </tr>
+        <tr>
+          <td valign="top">
+            <em>size_t</em><code> data_size</code></td>
+          <td valign="top">IN: Size of the actual data to be written 
+            in bytes</td>
+        </tr>
+        <tr>
+          <td valign="top">
+            <em>const void *</em><code>buf</code></td>
+          <td valign="top">IN: Buffer containing data to be written 
+            to the file</td>
+        </tr>
+      </table>
+    </dd>
+
+  <p>
+  <dt><strong>Returns:</strong>
+    <dd>Returns a non-negative value if successful; 
+        otherwise returns a negative value.
+
+<!-- NEW PAGE -->
+<!--
+  <p>
+  <dt><strong>Fortran Interface:</strong> h5dowrite_chunk_f
+    <dd>Note: <code>h5tbmake_table_f</code>
+        only creates the table, it does not write data to it.
+        <p>
+
+      <pre>
+subroutine h5dowrite_chunk_f(
+                            ) 
+  implicit none
+     .
+     .
+     .
+end subroutine h5dowrite_chunk_f
+      </pre>
+-->
+
+  <p>
+  <dt><strong>See Also:</strong>
+    <dd>&ldquo;<a 
+        href="../Advanced/DirectChunkWrite/UsingDirectChunkWrite.pdf">Using
+        the Direct Chunk Write Function</a>&rdquo; 
+        in &ldquo;<a href="../Advanced.html">Advanced Topics in HDF5</a>&rdquo; 
+        <i>(PDF only)</i>
+    <dd>Design document for this feature:
+        &ldquo;<a 
+        href="../Advanced/DirectChunkWrite/DECTRISIntegrationRFC2013-1-25.pdf">RFC: 
+        Direct Chunk Write</a>&rdquo;
+        <i>(PDF only)</i>
+
+  <p>
+  <dt><strong>Example Usage:</strong>
+    <dd>The following code illustrates the use of <code>H5DOwrite_chunk</code> 
+        to write an entire dataset, chunk by chunk:
+
+<pre>
+#include &lt;zlib.h&gt;
+#include &lt;math.h&gt;
+#define DEFLATE_SIZE_ADJUST(s) (ceil(((double)(s))*1.001)+12)
+                :
+                :
+size_t       buf_size = CHUNK_NX*CHUNK_NY*sizeof(int);
+const Bytef *z_src = (const Bytef*)(direct_buf);
+Bytef       *z_dst;             /* Destination buffer            */
+uLongf       z_dst_nbytes = (uLongf)DEFLATE_SIZE_ADJUST(buf_size);
+uLong        z_src_nbytes = (uLong)buf_size;
+int          aggression = 9;    /* Compression aggression setting */
+uint32_t     filter_mask = 0;
+size_t       buf_size = CHUNK_NX*CHUNK_NY*sizeof(int);
+
+/* Create the data space */
+if((dataspace = H5Screate_simple(RANK, dims, maxdims)) &lt; 0)
+            goto error;
+    
+/* Create a new file */
+if((file = H5Fcreate(FILE_NAME5, H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT)) &lt; 0)
+            goto error;
+    
+/* Modify dataset creation properties, i.e. enable chunking and compression */
+if((cparms = H5Pcreate(H5P_DATASET_CREATE)) &lt; 0)
+            goto error;
+    
+if((status = H5Pset_chunk( cparms, RANK, chunk_dims)) &lt; 0)
+            goto error;
+    
+if((status = H5Pset_deflate( cparms, aggression)) &lt; 0)
+            goto error;
+
+/* Create a new dataset within the file using cparms creation properties */
+if((dset_id = H5Dcreate2(file, DATASETNAME, H5T_NATIVE_INT, dataspace, H5P_DEFAULT,
+                        cparms, H5P_DEFAULT)) &lt; 0)
+        goto error;
+
+/* Initialize data for one chunk */
+for(i = n = 0; i &lt; CHUNK_NX; i++)
+    for(j = 0; j &lt; CHUNK_NY; j++)
+        direct_buf[i][j] = n++;
+
+/* Allocate output (compressed) buffer */
+outbuf = malloc(z_dst_nbytes);
+z_dst = (Bytef *)outbuf;
+
+/* Perform compression from the source to the destination buffer */
+ret = compress2(z_dst, &z_dst_nbytes, z_src, z_src_nbytes, aggression);
+
+/* Check for various zlib errors */
+if(Z_BUF_ERROR == ret) {
+        fprintf(stderr, "overflow");
+        goto error;
+} else if(Z_MEM_ERROR == ret) {
+        fprintf(stderr, "deflate memory error");
+        goto error;
+} else if(Z_OK != ret) {
+        fprintf(stderr, "other deflate error");
+        goto error;
+}
+
+/* Write the compressed chunk data repeatedly to cover all the 
+ * chunks in the dataset, using the direct write function.     */
+for(i=0; i&lt;NX/CHUNK_NX; i++) {
+    for(j=0; j&lt;NY/CHUNK_NY; j++) {
+        status = H5DOwrite_chunk(dset_id, H5P_DEFAULT, filter_mask, 
+                                offset, z_dst_nbytes, outbuf);
+        offset[1] += CHUNK_NY;
+    }
+    offset[0] += CHUNK_NX;
+    offset[1] = 0;
+}
+
+/* Overwrite the first chunk with uncompressed data.  Set the filter mask to 
+ * indicate the compression filter is skipped */
+filter_mask = 0x00000001;
+offset[0] = offset[1] = 0;
+if(H5DOwrite_chunk(dset_id, H5P_DEFAULT, filter_mask, offset, buf_size, 
+             direct_buf) &lt; 0)
+        goto error;
+
+/* Read the entire dataset back for data verification converting ints to longs */
+if(H5Dread(dataset, H5T_NATIVE_LONG, H5S_ALL, H5S_ALL, H5P_DEFAULT, 
+             outbuf_long) &lt; 0)
+        goto error;
+
+/* Data verification here */
+            :
+            :
+</pre>
+
+  <p>
+  <dt><strong>History:</strong>
+    <dd><table width="90%">
+        <tr>
+          <td valign="top" align="left" width="10%">
+            <strong>Release</strong>&nbsp;&nbsp;&nbsp;&nbsp;</td>
+          <td valign="top" align="left">
+            <strong>Change</strong></td></tr>
+        <tr>
+          <td valign="top">1.8.11</td>
+          <td valign="top">
+            C function introduced in this release.</td></tr>
+    </table>
+
+</dl>
+
+
+  
+<hr> 
+<SCRIPT LANGUAGE="JAVASCRIPT">
+<!--
+document.writeln(' \
+<address> \
+  THG Help Desk: <img src="../Graphics/help.png" align=top height=16> <br> \
+  Last modified: 28 February 2013<br> \
+</address> \
+');
+-->
+</SCRIPT>
+
+
+</body>
+</html>
