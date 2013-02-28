@@ -1,0 +1,207 @@
+
+
+<!--
+  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+  * Copyright by The HDF Group.                                               *
+  * Copyright by the Board of Trustees of the University of Illinois.         *
+  * All rights reserved.                                                      *
+  *                                                                           *
+  * This file is part of HDF5.  The full HDF5 copyright notice, including     *
+  * terms governing use, modification, and redistribution, is contained in    *
+  * the files COPYING and Copyright.html.  COPYING can be found at the root   *
+  * of the source code distribution tree; Copyright.html can be found at the  *
+  * root level of an installed copy of the electronic HDF5 document set and   *
+  * is linked from the top-level documents page.  It can also be found at     *
+  * http://hdfgroup.org/HDF5/doc/Copyright.html.  If you do not have          *
+  * access to either file, you may request a copy from help@hdfgroup.org.     *
+  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+ -->
+
+
+<!-- NEW PAGE -->
+<!-- HEADER RIGHT "H5Dscatter" -->
+<hr>
+<dl>
+
+  <dt><div align=right><font color=999999 size=-1><i>
+      Last modified: 7 January 2013
+      </i></font></div>
+
+  <dt><strong>Name:</strong> <a name="Dataset-Scatter">H5Dscatter</a>
+  <dt><strong>Signature:</strong>
+    <dd><em>herr_t</em> <code>H5Dscatter</code>(
+            <em>H5D_scatter_func_t</em> <code>op</code>,
+            <em>void *</em> <code>op_data</code>,
+            <em>hid_t</em> <code>type_id</code>,
+            <em>hid_t</em> <code>dst_space_id</code>,
+            <em>void *</em><code>dst_buf</code>
+        )
+  <p>
+  <dt><strong>Purpose:</strong>
+    <dd>Scatters data into a selection within a memory buffer.
+  <p>
+  <dt><strong>Description:</strong>
+    <dd><code>H5Dscatter</code> retrieves data from the supplied callback
+      <code>op</code> and scatters it to the supplied buffer
+      <code>dst_buf</code> in a manner similar to data being written to a
+      dataset.
+      <code>dst_space_id</code> is a dataspace which defines the extent of
+      dst_buf and the selection within it to scatter the data to.
+      <code>type_id</code> is the datatype of the data to be scattered in both
+      the source and destination buffers.
+      <code>dst_buf</code> must be at least as large as the number of elements
+      in the extent of <code>dst_space_id</code> times the size of
+      <code>type_id</code>.
+      <p>
+      To retrieve the data to be scattered, <code>H5Dscatter</code> repeatedly
+      calls <code>op</code>, which should return a valid source buffer, until
+      enough data to fill the selection has been retrieved.
+      The protoype of the callback function <code>op</code> is as follows
+      (as defined in the source code file <code>H5Dpublic.h</code>):
+      <dir>
+          <em>herr_t</em> <code>(*H5D_scatter_func_t)(</code>
+              <em>void **</em> <code>src_buf/*out*/,</code> 
+              <em>size_t *</em><code>src_buf_bytes_used/*out*/,</code> 
+              <em>void *</em><code>op_data)</code>
+      </dir>
+
+      <p>
+      The parameters of this callback function have the following
+      values or meanings: 
+      <table>
+          <tr valign=top><td><code>&nbsp;&nbsp;&nbsp;&nbsp;</code></td><td>
+              <code>src_buf</code>
+              </td><td>
+              Pointer to the buffer holding the next set of elements to scatter.
+              On entry, the value of <code>*src_buf</code> is undefined.
+              The callback function should set <code>*src_buf</code> to point to
+              the next set of elements.
+              </td></tr>
+          <tr valign=top><td><code>&nbsp;&nbsp;&nbsp;&nbsp;</code></td><td>
+              <code>src_buf_bytes_used</code>
+              </td><td>
+              Pointer to the number of valid bytes in <code>src_buf</code>.
+              On entry, the value of <code>*src_buf_bytes_used</code> is
+              undefined.
+              The callback function should set <code>*src_buf_bytes_used</code>
+              to the number of valid bytes in <code>src_buf</code>.
+              This number must be a multiple of the datatype size.
+              </td></tr>
+          <tr valign=top><td><code>&nbsp;&nbsp;&nbsp;&nbsp;</code></td><td>
+              <code>op_data</code>
+              </td><td>
+              User-defined pointer to data required by the callback function;
+              a pass-through of the <code>op_data</code> pointer provided
+              with the <code>H5Dscatter</code> function call
+              </td></tr>
+      </table>
+
+      <p>
+      The callback function should always return at least one element in
+      src_buf, and must not return more elements than are remaining to be
+      scattered.
+      This function will be repeatedly called until all elements to be scattered
+      have been returned.
+      The callback function should return zero to indicate success, and a
+      negative value to indicate failure.
+
+  <p>
+  <dt><strong>Programming Note for C++ Developers Using C Functions:</strong>
+    <dd>
+      <p>If a C routine that takes a function pointer as an argument is 
+      called from within C++ code, the C routine should be returned from 
+      normally. </p>
+
+      <p>Examples of this kind of routine include callbacks such as 
+      <code>H5Pset_elink_cb</code> and <code>H5Pset_type_conv_cb</code> 
+      and functions such as <code>H5Tconvert</code> and 
+      <code>H5Ewalk2</code>.</p>
+
+      <p>Exiting the routine in its normal fashion allows the HDF5 C 
+      Library to clean up its work properly. In other words, if the C++ 
+      application jumps out of the routine back to the C++ 
+      &ldquo;catch&rdquo; statement, the library is not given the 
+      opportunity to close any temporary data structures that were set 
+      up when the routine was called. The C++ application should save 
+      some state as the routine is started so that any problem that 
+      occurs might be diagnosed.</p>
+
+  <p>
+  <dt><strong>Parameters:</strong>
+    <dd><table>
+      <tr>
+        <td valign="top">
+            <em>H5D_scatter_func_t</em> <code>op</code>
+        </td>
+        <td valign="top">IN: Callback function which provides data to be
+            scattered.
+        </td></tr>
+      <tr>
+        <td valign="top">
+            <em>void *</em> <code>op_data</code> 
+        </td>
+        <td valign="top">IN: User-defined pointer to data required by
+            <code>op</code>.
+        </td></tr>
+      <tr>
+        <td valign="top">
+            <em>hid_t</em> <code>type_id</code> 
+        </td>
+        <td valign="top">IN: Datatype ID describing the data in both the source
+            and definition buffers.
+            This is only used to calculate the element size.
+        </td></tr>
+      <tr>
+        <td valign="top">
+            <em>hid_t</em> <code>dst_space_id</code>
+        </td>
+        <td valign="top">IN: Dataspace ID descibing both the dimensions of the
+            destination buffer and the selection within the destination buffer
+            that data will be scattered to.
+        </td></tr>
+      <tr>
+        <td valign="top">
+            <em>void *</em><code>dst_buf</code>
+        </td>
+        <td valign="top">OUT: Destination buffer which the data will be
+            scattered to.
+        </td></tr>
+    </table>
+
+  <p>
+  <dt><strong>Returns:</strong>
+    <dd>Returns a non-negative value if successful;
+        otherwise returns a negative value.
+
+
+<!--__ *** FORTRAN90 INTERFACE  **********************************  -->
+<!--__ When the Fortran90 interface is complete, replace this       -->
+<!--__ section with the Fortran90 subroutine description.           -->
+<!--__                                                              -->
+<!--__ See the file h5fortran_f_insert.htm for a template and       -->
+<!--__ instructions.                                                -->
+<!--__ ***********************************************************  -->
+
+
+  <p>
+  <dt><strong>See Also:</strong>
+    <dd><a href="RM_H5S.html#Dataset-Gather">
+        <code>H5Dgather</code></a>
+
+  <p>
+  <dt><strong>History:</strong>
+    <dd><table width="90%">
+        <tr>
+          <td valign="top" align="left" width="10%">
+            <strong>Release</strong>&nbsp;&nbsp;&nbsp;&nbsp;</td>
+          <td valign="top" align="left">
+            <strong>Change</strong></td></tr>
+        <tr>
+          <td valign="top">1.8.11</td>
+          <td valign="top">
+            C function introduced.</td></tr>
+    </table>
+</dl>
+
+
+
