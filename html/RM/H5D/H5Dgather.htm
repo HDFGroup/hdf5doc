@@ -24,7 +24,7 @@
 <dl>
 
   <dt><div align=right><font color=999999 size=-1><i>
-      Last modified: 7 January 2013
+      Last modified: 1 March 2013
       </i></font></div>
 
   <dt><strong>Name:</strong> <a name="Dataset-Gather">H5Dgather</a>
@@ -48,28 +48,33 @@
     <dd><code>H5Dgather</code> retrieves data from a selection within the
       supplied buffer <code>src_buf</code> and passes it to the supplied
       callback function <code>op</code> in a contiguous form.
-      <code>src_space_id</code> is a dataspace which defines the extent of
-      src_buf and the selection within it to gather the data from.
-      <code>type_id</code> is the datatype of the data to be gathered in both
-      the source and destination buffers.
-      <code>src_buf</code> must be at least as large as the number of elements
-      in the extent of <code>src_space_id</code> times the size of
-      <code>type_id</code>.
-      The data is gathered into <code>dst_buf</code>, which needs to be large
-      enough to hold all the data if the callback function <code>op</code>
-      is not provided.
       <p>
-      If no callback function is provided <code>H5Dgather</code> simply gathers
-      the data into <code>dst_buf</code> and returns.
-      If a callback function is provided <code>H5Dgather</code>repeatedly
-      gathers up to <code>dst_buf_size</code> bytes <code>op</code> to process
-      the serialized data.
-      The protoype of the callback function <code>op</code> is as follows (as
-      defined in the source code file <code>H5Dpublic.h</code>):
+      <code>src_space_id</code> is a dataspace which defines the extent 
+      of <code>src_buf</code> and the selection within it to gather the 
+      data from.
+      <p>
+      <code>type_id</code> is the datatype of the data to be gathered in 
+      both the source and destination buffers.
+      <p>
+      <code>src_buf</code> must be at least as large as the number of 
+      elements in the extent of <code>src_space_id</code> times the size 
+      in bytes of <code>type_id</code>.
+      <p>
+      The data is gathered into <code>dst_buf</code>, which needs to be 
+      large enough to hold all the data if the callback function 
+      <code>op</code> is not provided.
+      <p>
+      If no callback function is provided, <code>H5Dgather</code> 
+      simply gathers the data into <code>dst_buf</code> and returns.
+      If a callback function is provided, <code>H5Dgather</code> repeatedly
+      gathers up to <code>dst_buf_size</code> bytes <code>op</code> to 
+      process the serialized data.
+      The protoype of the callback function <code>op</code> is as follows 
+      (as defined in the source code file <code>H5Dpublic.h</code>):
       <dir>
           <em>herr_t</em> <code>(*H5D_gather_func_t)(</code>
               <em>const void *</em> <code>dst_buf,</code> 
-              <em>size_t</em><code>dst_buf_bytes_used,</code> 
+              <em>size_t</em> <code>dst_buf_bytes_used,</code> 
               <em>void *</em><code>op_data)</code>
       </dir>
 
@@ -86,7 +91,7 @@
               to <code>H5Dgather</code>.
               </td></tr>
           <tr valign=top><td><code>&nbsp;&nbsp;&nbsp;&nbsp;</code></td><td>
-              <code>dst_buf_bytes_used</code>
+              <code>dst_buf_bytes_used&nbsp;&nbsp;&nbsp;</code>
               </td><td>
               Pointer to the number of valid bytes in <code>dst_buf</code>.
               This number must be a multiple of the datatype size.
@@ -96,18 +101,18 @@
               </td><td>
               User-defined pointer to data required by the callback function;
               a pass-through of the <code>op_data</code> pointer provided
-              with the <code>H5Dgather</code> function call
+              with the <code>H5Dgather</code> function call.
               </td></tr>
       </table>
 
       <p>
-      The callback function should process, store, or otherwise make use of the
-      data returned in <code>dst_buf</code> before it returns, because the
-      buffer will be overwritten, unless it is the last call to the callback.
+      The callback function should process, store, or otherwise make use of 
+      the data returned in <code>dst_buf</code> before it returns, because the
+      buffer will be overwritten unless it is the last call to the callback.
       This function will be repeatedly called until all gathered elements have
       been passed to the callback in <code>dst_buf</code>.
-      The callback function should return zero to indicate success, and a
-      negative value to indicate failure.
+      The callback function should return zero (<code>0</code>) to indicate 
+      success, and a negative value to indicate failure.
 
   <p>
   <dt><strong>Programming Note for C++ Developers Using C Functions:</strong>
@@ -124,8 +129,8 @@
       <p>Exiting the routine in its normal fashion allows the HDF5 C 
       Library to clean up its work properly. In other words, if the C++ 
       application jumps out of the routine back to the C++ 
-      &ldquo;catch&rdquo; statement, the library is not given the 
-      opportunity to close any temporary data structures that were set 
+      &ldquo;catch&rdquo; statement, the The HDF5 C Library is not given 
+      the opportunity to close any temporary data structures that were set 
       up when the routine was called. The C++ application should save 
       some state as the routine is started so that any problem that 
       occurs might be diagnosed.</p>
@@ -137,44 +142,47 @@
         <td valign="top">
             <em>hid_t</em> <code>src_space_id</code>
         </td>
-        <td valign="top">IN: Dataspace ID descibing both the dimensions of the
-            source buffer and the selection within the source buffer to gather
-            data from.
+        <td valign="top">IN: Identifier for the dataspace describing 
+            both the dimensions of the source buffer and
+            the selection within the source buffer to gather data from.
         </td></tr>
       <tr>
         <td valign="top">
             <em>void *</em><code>src_buf</code>
         </td>
-        <td valign="top">IN: Source buffer which the data will be gathered from.
+        <td valign="top">IN: Source buffer which the data will be gathered 
+            from.
         </td></tr>
       <tr>
         <td valign="top">
             <em>hid_t</em> <code>type_id</code> 
         </td>
-        <td valign="top">IN: Datatype ID describing the data in both the source
-            and definition buffers.
+        <td valign="top">IN: Identifier for the datatype describing the 
+            data in both the source and definition buffers.
             This is only used to calculate the element size.
         </td></tr>
       <tr>
         <td valign="top">
             <em>size_t</em> <code>dst_buf_size</code> 
         </td>
-        <td valign="top">IN: Size (in bytes) of <code>dst_buf</code>.
+        <td valign="top">IN: Size in bytes of <code>dst_buf</code>.
         </td></tr>
       <tr>
         <td valign="top">
             <em>void *</em><code>dst_buf</code>
         </td>
-        <td valign="top">OUT: Destination buffer where the gathered data will be
-            placed.
+        <td valign="top">OUT: Destination buffer where the gathered data 
+            will be placed.
         </td></tr>
       <tr>
         <td valign="top">
-            <em>H5D_gather_func_t</em> <code>op</code>
+            <em>H5D_gather_func_t</em>&nbsp;<code>op&nbsp;&nbsp;&nbsp;</code>
         </td>
-        <td valign="top">IN: Callback function which handles the gathered data.
-            Optional if <code>dst_buf</code> is large enough to hold all of the
-            gathered data, required otherwise.
+        <td valign="top">IN: Callback function which handles the gathered 
+            data.
+            <br>
+            Optional if <code>dst_buf</code> is large enough to hold all of 
+            the gathered data; required otherwise.
         </td></tr>
       <tr>
         <td valign="top">

@@ -24,7 +24,7 @@
 <dl>
 
   <dt><div align=right><font color=999999 size=-1><i>
-      Last modified: 7 January 2013
+      Last modified: 1 March 2013
       </i></font></div>
 
   <dt><strong>Name:</strong> <a name="Dataset-Scatter">H5Dscatter</a>
@@ -39,23 +39,28 @@
   <p>
   <dt><strong>Purpose:</strong>
     <dd>Scatters data into a selection within a memory buffer.
+
   <p>
   <dt><strong>Description:</strong>
     <dd><code>H5Dscatter</code> retrieves data from the supplied callback
       <code>op</code> and scatters it to the supplied buffer
       <code>dst_buf</code> in a manner similar to data being written to a
       dataset.
-      <code>dst_space_id</code> is a dataspace which defines the extent of
-      dst_buf and the selection within it to scatter the data to.
-      <code>type_id</code> is the datatype of the data to be scattered in both
-      the source and destination buffers.
-      <code>dst_buf</code> must be at least as large as the number of elements
-      in the extent of <code>dst_space_id</code> times the size of
-      <code>type_id</code>.
       <p>
-      To retrieve the data to be scattered, <code>H5Dscatter</code> repeatedly
-      calls <code>op</code>, which should return a valid source buffer, until
-      enough data to fill the selection has been retrieved.
+      <code>dst_space_id</code> is a dataspace which defines the extent of
+      <code>dst_buf</code> and the selection within it to scatter the data 
+      to.
+      <p>
+      <code>type_id</code> is the datatype of the data to be scattered in 
+      both the source and destination buffers.
+      <p>
+      <code>dst_buf</code> must be at least as large as the number of 
+      elements in the extent of <code>dst_space_id</code> times the size 
+      in bytes of <code>type_id</code>.
+      <p>
+      To retrieve the data to be scattered, <code>H5Dscatter</code> 
+      repeatedly calls <code>op</code>, which should return a valid source 
+      buffer, until enough data to fill the selection has been retrieved.
       The protoype of the callback function <code>op</code> is as follows
       (as defined in the source code file <code>H5Dpublic.h</code>):
       <dir>
@@ -72,15 +77,18 @@
           <tr valign=top><td><code>&nbsp;&nbsp;&nbsp;&nbsp;</code></td><td>
               <code>src_buf</code>
               </td><td>
-              Pointer to the buffer holding the next set of elements to scatter.
+              Pointer to the buffer holding the next set of elements 
+              to scatter.
+              <br>
               On entry, the value of <code>*src_buf</code> is undefined.
-              The callback function should set <code>*src_buf</code> to point to
-              the next set of elements.
+              The callback function should set <code>*src_buf</code> 
+              to point to the next set of elements.
               </td></tr>
           <tr valign=top><td><code>&nbsp;&nbsp;&nbsp;&nbsp;</code></td><td>
-              <code>src_buf_bytes_used</code>
+              <code>src_buf_bytes_used&nbsp;&nbsp;&nbsp;</code>
               </td><td>
               Pointer to the number of valid bytes in <code>src_buf</code>.
+              <br>
               On entry, the value of <code>*src_buf_bytes_used</code> is
               undefined.
               The callback function should set <code>*src_buf_bytes_used</code>
@@ -92,18 +100,18 @@
               </td><td>
               User-defined pointer to data required by the callback function;
               a pass-through of the <code>op_data</code> pointer provided
-              with the <code>H5Dscatter</code> function call
+              with the <code>H5Dscatter</code> function call.
               </td></tr>
       </table>
 
       <p>
       The callback function should always return at least one element in
-      src_buf, and must not return more elements than are remaining to be
-      scattered.
-      This function will be repeatedly called until all elements to be scattered
-      have been returned.
-      The callback function should return zero to indicate success, and a
-      negative value to indicate failure.
+      <code>src_buf</code>, and must not return more elements than are 
+      remaining to be scattered.
+      This function will be repeatedly called until all elements to be 
+      scattered have been returned.
+      The callback function should return zero (<code>0</code>) to indicate 
+      success, and a negative value to indicate failure.
 
   <p>
   <dt><strong>Programming Note for C++ Developers Using C Functions:</strong>
@@ -120,7 +128,7 @@
       <p>Exiting the routine in its normal fashion allows the HDF5 C 
       Library to clean up its work properly. In other words, if the C++ 
       application jumps out of the routine back to the C++ 
-      &ldquo;catch&rdquo; statement, the library is not given the 
+      &ldquo;catch&rdquo; statement, the HDF5 C Library is not given the 
       opportunity to close any temporary data structures that were set 
       up when the routine was called. The C++ application should save 
       some state as the routine is started so that any problem that 
@@ -131,14 +139,14 @@
     <dd><table>
       <tr>
         <td valign="top">
-            <em>H5D_scatter_func_t</em> <code>op</code>
+            <em>H5D_scatter_func_t</em>&nbsp;<code>op&nbsp;&nbsp;&nbsp;</code>
         </td>
         <td valign="top">IN: Callback function which provides data to be
             scattered.
         </td></tr>
       <tr>
         <td valign="top">
-            <em>void *</em> <code>op_data</code> 
+            <em>void *</em><code>op_data</code> 
         </td>
         <td valign="top">IN: User-defined pointer to data required by
             <code>op</code>.
@@ -147,17 +155,17 @@
         <td valign="top">
             <em>hid_t</em> <code>type_id</code> 
         </td>
-        <td valign="top">IN: Datatype ID describing the data in both the source
-            and definition buffers.
+        <td valign="top">IN: Identifier for the datatype describing the 
+            data in both the source and definition buffers.
             This is only used to calculate the element size.
         </td></tr>
       <tr>
         <td valign="top">
             <em>hid_t</em> <code>dst_space_id</code>
         </td>
-        <td valign="top">IN: Dataspace ID descibing both the dimensions of the
-            destination buffer and the selection within the destination buffer
-            that data will be scattered to.
+        <td valign="top">IN: Identifier for the dataspace describing 
+            both the dimensions of the destination buffer and the selection 
+            within the destination buffer that data will be scattered to.
         </td></tr>
       <tr>
         <td valign="top">
