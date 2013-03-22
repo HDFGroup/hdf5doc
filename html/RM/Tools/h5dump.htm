@@ -26,7 +26,7 @@
 <dl>
 
 <dt><div align=right><font color=999999 size=-1><i>
-    Last modified: 25 October 2012
+    Last modified: 22 March 2013
     </i></font></div>
 
 <dt><strong>Tool Name:</strong> <a name="Tools-Dump">h5dump</a>
@@ -185,8 +185,8 @@
         XML output.  This output contains a complete description of the file, 
         marked up in XML.  The XML conforms to the HDF5 Document Type 
         Definition (DTD) available at 
-        <a href="http://www.hdfgroup.org/HDF5/XML/software.html">
-        &ldquo;HDF5 XML Software&rdquo;</a>.
+        &ldquo;<a href="http://www.hdfgroup.org/HDF5/XML/software.html">HDF5
+        XML Software</a>.&rdquo;
         <p>
         The XML output is suitable for use with other tools, including the 
         <a href="http://www.hdfgroup.org/hdf-java-html/" 
@@ -294,7 +294,49 @@
         <tr> 
           <td valign="top"><code>-o <em>F</em></code> &nbsp;&nbsp;or&nbsp;&nbsp; 
             <code>--output=<em>F</em></code></td>
-          <td valign="top">Output raw data into file F.</td>
+          <td valign="top">Output raw data into file F.
+              <p>
+              The files specified for the <code>-o</code> and <code>-O</code> 
+              options must be different files. 
+              The output from these options must not be comingled.
+              <p>
+              To suppress the raw data display, use this option with no filename,
+              as in either of the following examples.  This has the effect 
+              of sending the output to a <small>NULL</small> file:
+              <br>
+                  &nbsp;&nbsp;&nbsp;&nbsp;
+                  <code>-o </code>
+              <br>
+                  &nbsp;&nbsp;&nbsp;&nbsp;
+                  <code>--output= </code>
+              </td>
+        </tr>
+        <tr> 
+          <td valign="top"><code>-O <em>F</em></code> &nbsp;&nbsp;or&nbsp;&nbsp; 
+            <code>--ddl=<em>F</em></code></td>
+          <td valign="top">Output DDL text into file F.
+              <p>
+              The files specified for the <code>-o</code> and <code>-O</code> 
+              options must be different files. 
+              The output from these options must not be comingled.
+              <p>
+              <a href="#Tools-Import"><code>h5import</code></a>
+              can use the files output by the <code>-o</code> and 
+              <code>-O</code> when importing HDF5 data.
+              See &ldquo;<a href="#Tools-Import-UsingDump">Using 
+              <code>h5dump</code> to create input for 
+              <code>h5import</code></a>.&rdquo;
+              <p>
+              To suppress the DDL display, use this option with no filename,
+              as in either of the following examples.  This has the effect 
+              of sending the output to a <small>NULL</small> file:
+              <br>
+                  &nbsp;&nbsp;&nbsp;&nbsp;
+                  <code>-O </code>
+              <br>
+                  &nbsp;&nbsp;&nbsp;&nbsp;
+                  <code>--ddl= </code>
+              </td>
         </tr>
         <tr> 
           <td valign="top"><code>-b <em>B</em></code> &nbsp;&nbsp;or&nbsp;&nbsp; 
@@ -676,8 +718,8 @@
            in the file <code>quux.h5</code>:<br>
               <code>&nbsp;&nbsp;&nbsp;&nbsp; 
                     h5dump -d /GroupFoo/databar --start="1,1" --stride="2,3" 
-                    <br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                    --count="3,19" --block="1,1" quux.h5</code>
+                    <br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                           --count="3,19" --block="1,1" quux.h5</code>
               <br>
               <br>
        <li>The same example, using the short form to specify the 
@@ -691,10 +733,41 @@
            form, to the output file <code>FreshDataD.bin</code>:<br>
               <code>&nbsp;&nbsp;&nbsp;&nbsp; 
                     h5dump -d "/GroupD/FreshData" -b LE 
-                    <br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                    -o "FreshDataD.bin" quux.h5</code>
+                    <br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                           -o "FreshDataD.bin" quux.h5</code>
               <br>
               <br>
+       <li>Display two sets of packed bits (bits 0-1 and bits 4-6) in the 
+           dataset <code>/dset</code> of the file <code>quux.h5</code>:<br>
+              <code>&nbsp;&nbsp;&nbsp;&nbsp;
+                    h5dump -d /dset -M 0,1,4,3 quux.h5 </code>
+              <br>
+              <br>
+       <li>Dump the dataset <code>/GroupFoo/GroupBar/Fnord</code> 
+           to the file <code>quux.h5</code> and 
+           output the DDL into the file <code>ddl.txt</code> and 
+           the raw data into the file <code>data.txt</code>:<br>
+              <code>&nbsp;&nbsp;&nbsp;&nbsp;
+                    h5dump -d /GroupFoo/GroupBar/Fnord --ddl=ddl.txt -y 
+                    <br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                           -o data.txt quux.h5 </code>
+              <br>
+              <br>
+       <li>Dump the dataset <code>/GroupFoo/GroupBar/Fnord</code> 
+           to the file <code>quux.h5</code>,
+           suppress the DDL output,
+           and output the raw data into the file <code>data.txt</code>:<br>
+              <code>&nbsp;&nbsp;&nbsp;&nbsp;
+                    h5dump -d /GroupFoo/GroupBar/Fnord --ddl -y 
+                    <br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                           -o data.txt quux.h5</code>
+              <br>
+              <br>
+
+
+
+
+
      </ol></td></tr>
      </table>
 <dt><strong>Current Status:</strong>
@@ -862,6 +935,22 @@
                           user block content is now properly displayed within 
                           the superblock.
                       </ul>
+       </td></tr>
+      <tr>
+        <td valign="top">1.8.11</td>
+        <td valign="top">
+          The following option added in this release:
+          <br>
+          <code>&nbsp;&nbsp;&nbsp;-O <em>F</em></code>
+          or
+          <code>--ddl=<em>F</em></code> 
+          <p>
+          This option can be used to suppress the DDL output.
+          <br>
+          This option, combined with the <code>'--output=<em>F</em>'</code> 
+          (or <code>'-o <em>F'</em></code>) option
+          will generate files that can be used as input to
+          <a href="#Tools-Import"><code>h5import</code></a>.
        </td></tr>
   </table></dd>
 
