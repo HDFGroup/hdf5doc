@@ -23,7 +23,7 @@
 <hr>
 <dl>
 <dt><div align=right><font color=999999 size=-1><i>
-    Last modified: 15 May 2009
+    Last modified: 18 June 2013
     </i></font></div>
 
 <dt><strong>Name:</strong> <a name="File-Open">H5Fopen</a>
@@ -68,7 +68,7 @@
             <code>H5Fclose</code> when it is no longer needed. 
             <p>
 
-            <b>Special case -- Multiple opens:</b>
+            <b>Special cases &mdash; Multiple opens:</b>
             <br>
             A file can often be opened with a new <code>H5Fopen</code> 
             call without closing an already-open identifier established 
@@ -76,8 +76,13 @@
             call.  Each such <code>H5Fopen</code> call will return a 
             unique identifier and the file can be accessed through any 
             of these identifiers as long as the identifier remains valid.
-            In such multiply-opened cases, all the open calls should 
-            use the same <code>flags</code> argument. 
+            In such multiply-opened cases, 
+            the open calls must use the same <code>flags</code> argument 
+            and the file access property lists must use the same 
+            file close degree property setting 
+            (see the external link discussion below and 
+            <a href="RM_H5P.html#Property-SetFcloseDegree">
+            <code>H5Pset_fclose_degree</code></a>).
             <p>
             In some cases, such as files on a local Unix file system, 
             the HDF5 library can detect that a file is multiply opened and 
@@ -95,6 +100,21 @@
             <p>
             It is generally recommended that applications avoid 
             multiple opens of the same file.
+            <p>
+            <b>Special restriction on multiple opens of a file first 
+            opened by means of an external link:</b>
+            When an external link is followed, the external file is always 
+            opened  with the weak file close degree property setting, 
+            <code>H5F_CLOSE_WEAK</code>  (see 
+            <a href="RM_H5L.html#Link-CreateExternal">
+            <code>H5Lcreate_external</code></a> and
+            <a href="RM_H5P.html#Property-SetFcloseDegree">
+            <code>H5Pset_fclose_degree</code></a>).
+            If the file is reopened with <code>H5Fopen</code> while 
+            it remains held open from such an external link call, 
+            the file access proeprty list used in the open call must include 
+            the file close degree setting <code>H5F_CLOSE_WEAK</code> 
+            or the open will fail.
 
 <p>
 <dt><strong>Parameters:</strong>
