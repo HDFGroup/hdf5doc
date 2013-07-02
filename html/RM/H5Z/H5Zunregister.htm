@@ -22,33 +22,59 @@
 <!-- HEADER RIGHT "H5Zunregister" -->
 <hr>
 <dl>
+
+  <dt><div align=right><font color=999999 size=-1><i>
+    Last modified: 2 July 2013
+    </i></font></div>
+
   <dt><strong>Name:</strong> <a name="Compression-Unregister">H5Zunregister</a>
   <dt><strong>Signature:</strong>
     <dd><em>herr_t</em> <code>H5Zunregister</code>(<em>H5Z_filter_t</em> <code>filter</code>)
+
+  <p>
   <dt><strong>Purpose:</strong>
     <dd>Unregisters a filter.
+
+  <p>
   <dt><strong>Description:</strong>
     <dd><code>H5Zunregister</code> unregisters the filter 
-        specified in <code>filter</code>.  
-	<p>
-	After a call to <code>H5Zunregister</code>, the filter
-	specified in <code>filter</code> will no longer be 
-	available to the application.
+        specified in <code>filter</code>.
+        <p>
+        This function first iterates through all opened datasets and groups.  
+        If an open object that uses this filter is found, the function
+        will fail with a message indicating that an object using the filter 
+        is still open.  
+        All open files are then flushed to make sure that all cached data 
+        that may use this filter are written out.  
+        <p>
+        If the application is a parallel program, all processes that 
+        participate in collective data write should call this function 
+        to ensure that all data is flushed.   
+        <p>
+        After a call to <code>H5Zunregister</code>, the filter
+        specified in <code>filter</code> will no longer be 
+        available to the application.
+
+  <p>
   <dt><strong>Parameters:</strong>
-    <ul><table>
+    <dd><table>
         <tr>
-		    <td valign="top"><em>H5Z_filter_t</em>&nbsp;<code>filter&nbsp;&nbsp;&nbsp;&nbsp;</code></td>
+            <td valign="top"><em>H5Z_filter_t</em>&nbsp;<code>filter&nbsp;&nbsp;&nbsp;&nbsp;</code></td>
             <td valign="top">IN: Identifier of the filter to be unregistered.
                 See the introduction to this section of the reference manual 
                 for a list of identifiers for standard filters
                 distributed with the HDF5 Library.</td></tr>
-    </table></ul>
+        </table></dd>
+
+  <p>
   <dt><strong>Returns:</strong>
     <dd>Returns a non-negative value if successful;
         otherwise returns a negative value.
+
+  <p>
   <dt><strong>Fortran90 Interface:</strong> h5zunregister_f
     <dd>
-	<pre>
+    <pre>
 SUBROUTINE h5zunregister_f(filter, hdferr) 
   IMPLICIT NONE
   INTEGER, INTENT(IN)  :: filter  ! Filter; one of the possible values:
@@ -59,25 +85,25 @@ SUBROUTINE h5zunregister_f(filter, hdferr)
   INTEGER, INTENT(OUT) :: hdferr  ! Error code
                                   ! 0 on success, and -1 on failure
 END SUBROUTINE h5zunregister_f
-	</pre>		
-		
-		<!--<dt><strong>Non-C API(s):</strong>
-    	<dd>
-        
-        <img src="Graphics/Java.gif"> 
-        <img src="Graphics/C++.gif">
-        -->
+    </pre>
+
+  <p>
   <dt><strong>History:</strong>
     <ul><table width="90%">
         <tr>
-		  <td valign="top" align="left" width="10%">
-		    <strong>Release</strong>&nbsp;&nbsp;&nbsp;&nbsp;</td>
+          <td valign="top" align="left" width="10%">
+            <strong>Release</strong>&nbsp;&nbsp;&nbsp;&nbsp;</td>
           <td valign="top" align="left">
-		    <strong>C</strong></td></tr>
+            <strong>C</strong></td></tr>
         <tr>
-		  <td valign="top">1.6.0</td>
+          <td valign="top">1.8.12</td>
           <td valign="top">
-		    Function introduced in this release.</td></tr>
+            Function modified to check for open objects using the 
+            filter.</td></tr>
+        <tr>
+          <td valign="top">1.6.0</td>
+          <td valign="top">
+            Function introduced in this release.</td></tr>
     </table></ul>
 </dl>
 
