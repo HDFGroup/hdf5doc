@@ -6,7 +6,7 @@
   * Copyright by the Board of Trustees of the University of Illinois.         *
   * All rights reserved.                                                      *
   *                                                                           *
-  * This file is part of HDF5.  The full HDF5 copyright notice, including     *
+
   * terms governing use, modification, and redistribution, is contained in    *
   * the files COPYING and Copyright.html.  COPYING can be found at the root   *
   * of the source code distribution tree; Copyright.html can be found at the  *
@@ -26,7 +26,7 @@
 <dl>
 
 <dt><div align=right><font color=999999 size=-1><i>
-    Last modified: 4 April 2013
+    Last modified: 1 August 2013
     </i></font></div>
 
 <dt><strong>Tool Name:</strong> <a name="Tools-Dump">h5dump</a>
@@ -122,27 +122,38 @@
         &nbsp;<code>split</code>, &nbsp;and &nbsp;<code>multi</code>.
         <!--, and &nbsp;<code>stream</code>.-->
         If the file driver flag is not specified, 
-        then the file will be opened with each driver in turn
-        and in the order specified above 
+        then the file will be opened with each driver in turn,
+        and in the order specified above, 
         until one driver succeeds in opening the file.
         </p>
         <p>
         Special file naming restrictions apply when using <code>h5dump</code>
         with either the <code>split</code> or the <code>multi</code> driver.
+
         <p>
         <i>To dump a split file,</i> <code>h5dump</code> requires that 
         the metadata and raw data filenames end with 
         <code>-m.h5</code> and <code>-r.h5</code>, respectively,
-        and that the entire virtual HDF5 file be referred to 
+        and that the entire virtual HDF5 file, 
+        or the <i>logical HDF5 file</i>, be referred to 
         on the command line by the common portion of the filename preceding 
         the <code>-m</code> and <code>-r</code>.
+        </p>
+        <p>
         For example, assume that a split HDF5 file has its 
         metadata in a file named <code>splitfile-m.h5</code> and its
         raw data in a file named <code>splitfile-r.h5</code>.
-        The following command would dump the contents of this HDF5 file: 
+        The following command would dump the contents of this 
+        logical HDF5 file: 
         <br><code>&nbsp;&nbsp;&nbsp;&nbsp; 
             h5dump --filedriver="split" splitfile</code>
         </p>
+        <p>
+        Note that the above split filename restrictions are specific to 
+        <code>h5dump</code>; 
+        HDF5 applications do not necessarily have the same limitations.
+        </p>
+
         <p>
         <i>To dump a multi file,</i> <code>h5dump</code> requires that 
         the metadata and raw data filenames end with a subset of the following:
@@ -163,6 +174,8 @@
         The entire virtual HDF5 file must also be referred to 
         on the command line by the common portion of the filename preceding 
         those special tags.
+        </p>
+        <p>
         For example, assume that a multi HDF5 file has its 
         userblock, superblock, and driver information block data 
         in a file named <code>multifile-s.h5</code>, its
@@ -170,14 +183,35 @@
         raw data in a file named <code>multifile-r.h5</code>, its
         global heap data in a file named <code>multifile-g.h5</code>,
         et cetera.
-        The following command would dump the contents of this HDF5 file: 
+        The following command would dump the contents of this 
+        logical HDF5 file: 
         <br><code>&nbsp;&nbsp;&nbsp;&nbsp; 
             h5dump --filedriver="multi" multifile</code>
         </p>
         <p>
-        Note that the above filename restrictions are specific to 
+        Note that the above multi filename restrictions are specific to 
         <code>h5dump</code>; 
         HDF5 applications do not necessarily have the same limitations.
+        </p>
+
+        <p>
+        <i>To dump a family file,</i> <code>h5dump</code> requires that
+        the logical file&rsquo;s name on the command line include the
+        <code>printf(3c)</code>-style integer format specifier that
+        specifies the format of the family file member numbers.
+        For example, if an HDF5 family of files consists of the files
+        <code>family_000.h5</code>,
+        <code>family_001.h5</code>,
+        <code>family_002.h5</code>, and
+        <code>family_003.h5</code>, 
+        the logical HDF5 file would be specified on the command line as 
+        <code>family_%3d.h5</code>.
+        </p>
+        <p>
+        The following command would dump the contents of this 
+        logical HDF5 file: 
+        <br><code>&nbsp;&nbsp;&nbsp;&nbsp; 
+            h5dump --filedriver="family" family_%3d.h5</code>
         </p>
 
 <dt><strong>XML Output:</strong>
