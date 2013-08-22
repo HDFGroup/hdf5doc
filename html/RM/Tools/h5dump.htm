@@ -26,7 +26,7 @@
 <dl>
 
 <dt><div align=right><font color=999999 size=-1><i>
-    Last modified: 20 August 2013
+    Last modified: 22 August 2013
     </i></font></div>
 
 <dt><strong>Tool Name:</strong> <a name="Tools-Dump">h5dump</a>
@@ -183,8 +183,8 @@
         For example, assume that a multi HDF5 file has its 
         userblock, superblock, and driver information block data 
         in a file named <code>multifile-s.h5</code>, its
-        B-tree node information in a file named <code>multifile-b.h5</code>, its
-        raw data in a file named <code>multifile-r.h5</code>, its
+        B-tree node information in a file named <code>multifile-b.h5</code>, 
+        its raw data in a file named <code>multifile-r.h5</code>, its
         global heap data in a file named <code>multifile-g.h5</code>,
         et cetera.
         The following command would dump the contents of this 
@@ -236,70 +236,294 @@
     <dd>
       <table>
         <tr> 
-          <td valign="top"><code>-h</code> &nbsp;&nbsp;or&nbsp;&nbsp; <code>--help</code></td>
+          <td valign="top"><code>-h</code> &nbsp;&nbsp;or&nbsp;&nbsp; 
+              <code>--help</code></td>
           <td valign="top">Print a usage message and exit.</td>
         </tr>
         <tr> 
-          <td valign="top"><code>-V</code> &nbsp;&nbsp;or&nbsp;&nbsp; <code>--version</code></td>
+          <td valign="top"><code>-V</code> &nbsp;&nbsp;or&nbsp;&nbsp; 
+              <code>--version</code></td>
           <td valign="top">Print version number and exit.</td>
         </tr>
         <tr><td>&nbsp;</td><td>&nbsp;</td></tr>
+
         <tr>
-          <td valign="top"><code>-n</code> &nbsp;&nbsp;or&nbsp;&nbsp; <code>--contents</code></td>
+          <td colspan="2" align="left">
+              <strong>Formatting options:</strong></td>
+        </tr>
+        <tr>
+          <td valign="top"><code>-e</code> &nbsp;&nbsp;or&nbsp;&nbsp; 
+              <code>--escape</code></td>
+          <td valign="top">Escape non-printing characters.</td>
+        </tr>
+        <tr> 
+          <td valign="top"><code>-r</code> &nbsp;&nbsp;or&nbsp;&nbsp; 
+              <code>--string</code></td>
+          <td valign="top">Print 1-byte integer datasets as ASCII.</td>
+        </tr>
+        <tr>
+          <td valign="top"><code>-y</code> &nbsp;&nbsp;or&nbsp;&nbsp; 
+              <code>--noindex</code></td>
+          <td valign="top">Do not print array indices with data.</td>
+        </tr>
+        <tr> 
+          <td valign="top"><code>-m <em>T</em></code> 
+              &nbsp;&nbsp;or&nbsp;&nbsp;
+              <code>--format=<em>T</em></code></td>
+          <td valign="top">Set the floating point output format.
+              <br>
+              <em>T</em> is a string defining the floating point format,
+              e.g., <code>'%.3f'</code>.
+              </td>
+        </tr>
+        <tr> 
+          <td valign="top"><code>-q <em>Q</em></code> 
+              &nbsp;&nbsp;or&nbsp;&nbsp;
+              <code>--sort_by=<em>Q</em></code></td>
+          <td valign="top">Sort groups and attributes by the specified
+              index type, <em>Q</em>.  
+              Valid values of <em>Q</em> are as follows:
+                <br>
+                &nbsp;&nbsp;&nbsp;&nbsp;
+                <code>name&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code>
+                    Alpha-numeric index by name <em>(Default)</em>
+                <br>
+                &nbsp;&nbsp;&nbsp;&nbsp;
+                <code>creation_order &nbsp;&nbsp;</code>
+                    Index by creation order 
+                <br>
+              </td>
+        </tr>
+        <tr> 
+          <td valign="top"><code>-z <em>Z</em></code> 
+              &nbsp;&nbsp;or&nbsp;&nbsp;
+              <code>--sort_order=<em>Z</em></code></td>
+          <td valign="top">Sort groups and attributes in the specified
+              order, <em>Z</em>.  
+              Valid values of <em>Z</em> are as follows:
+                <br>
+                &nbsp;&nbsp;&nbsp;&nbsp;
+                <code>ascending&nbsp;&nbsp;&nbsp;</code>
+                    Sort in ascending order <em>(Default)</em>
+                <br>
+                &nbsp;&nbsp;&nbsp;&nbsp;
+                <code>descending&nbsp;&nbsp;</code>
+                    Sort in descending order 
+            </td>
+        </tr>
+        <tr> 
+          <td valign="top"><code>--enable-error-stack</code></td>
+          <td valign="top">Prints messages from the HDF5 error stack 
+              as they occur.
+              <p>
+              Injects error stack information, which is normally suppressed, 
+              directly into the output stream.
+              This will disrupt normal <code>h5dump</code> output but is a 
+              useful diagnostic tool when data is not being correctly dumped.  
+              Consider the case when an <code>h5dump</code> call produces this 
+              message:
+              <pre>&nbsp;&nbsp;&nbsp;&nbsp;dump error: unable to print data</pre>
+              <code>h5dump</code> can be called again with 
+              &lsquo;<code>--enable-error-stack</code>&rsquo; plus the original 
+              options to reveal error stack messages.
+              </td>
+        </tr>
+        <tr> 
+          <td valign="top"><code>--no-compact-subset</code></td>
+          <td valign="top">
+              Enables recognition of the left square bracket 
+              ( <code><font size="+1">[</font></code> )
+              as a character in a dataset name.
+              <p>
+              This option must disable compact subsetting, 
+              which is described at the end of this 
+              &ldquo;Options and Parameters&rdquo; section.
+              </td>
+        </tr>
+        <tr> 
+          <td valign="top"><code>-w <em>N</em></code> &nbsp;&nbsp;or&nbsp;&nbsp;
+              <code>--width=<em>N</em></code></td>
+          <td valign="top">Set the number of columns of output. 
+              <br>
+              A value of 0 (zero) sets the number of columns 
+              to the maximum (65535). 
+              <br>
+              Default width is 80 columns.</td>
+        </tr>
+
+        <tr>
+          <td colspan="2" align="left">
+              <strong>File options:</strong></td>
+        </tr>
+        <tr>
+          <td valign="top"><code>-n</code> &nbsp;&nbsp;or&nbsp;&nbsp; 
+              <code>--contents</code></td>
           <td valign="top">Print a list of the file contents and exit.</td>
         </tr>
         <tr>
-          <td valign="top"><code>-n 1</code> &nbsp;&nbsp;or&nbsp;&nbsp; <code>--contents=1</code></td>
+          <td valign="top"><code>-n 1</code> &nbsp;&nbsp;or&nbsp;&nbsp; 
+              <code>--contents=1</code></td>
           <td valign="top">The optional value <code>1</code> (one) 
               on the <code>-n, --contents</code> option adds attributes 
               to the output.</td>
         </tr>
         <tr> 
-          <td valign="top"><code>-B</code> &nbsp;&nbsp;or&nbsp;&nbsp; <code>--bootblock</code></td>
-          <td valign="top">Print the content of the boot block.</td>
+          <td valign="top"><code>-B</code> &nbsp;&nbsp;or&nbsp;&nbsp; 
+              <code>--superblock</code></td>
+          <td valign="top">Print the content of the superblock.</td>
         </tr>
         <tr> 
-          <td valign="top"><code>-H</code> &nbsp;&nbsp;or&nbsp;&nbsp; <code>--header</code></td>
+          <td valign="top"><code>-H</code> &nbsp;&nbsp;or&nbsp;&nbsp; 
+              <code>--header</code></td>
           <td valign="top">Print the header only; no data is displayed.</td>
         </tr>
         <tr> 
-          <td valign="top"><code>-A</code> &nbsp;&nbsp;or&nbsp;&nbsp; <code>--onlyattr</code></td>
-          <td valign="top">Print the header and value of attributes; 
-            data of datasets is not displayed.</td>
+          <td valign="top"><code>-f<em>&nbsp;D</em></code> 
+              &nbsp;&nbsp;or&nbsp;&nbsp;
+              <code>--filedriver=<em>D</em></code></td>
+          <td valign="top">Specify which driver to open the file with.</td>
         </tr>
         <tr> 
-          <td valign="top"><code>-A 0</code> &nbsp;&nbsp;or&nbsp;&nbsp; <code>--onlyattr=0</code></td>
-          <td valign="top">The optional value <code>0</code> (zero)
-              on the <code>-A, --onlyattr</code> option prints everything 
-              <i>except</i> attributes.</td>
+          <td valign="top"><code>-o <em>F</em></code> 
+              &nbsp;&nbsp;or&nbsp;&nbsp; 
+              <code>--output=<em>F</em></code></td>
+          <td valign="top">Output raw data into file F.
+              <p>
+              The files specified for the <code>-o</code> and <code>-O</code> 
+              options must be different files. 
+              The output from these options must not be comingled.
+              <p>
+              To suppress the raw data display, use this option with no 
+              filename, as in either of the following examples.  This has the 
+              effect of sending the output to a <small>NULL</small> file:
+              <br>
+                  &nbsp;&nbsp;&nbsp;&nbsp;
+                  <code>-o </code>
+              <br>
+                  &nbsp;&nbsp;&nbsp;&nbsp;
+                  <code>--output= </code>
+              </td>
         </tr>
         <tr> 
-          <td valign="top"><code>-i</code> &nbsp;&nbsp;or&nbsp;&nbsp; <code>--object-ids</code></td>
-          <td valign="top">Print the object ids.</td>
+          <td valign="top"><code>-b <em>B</em></code> 
+              &nbsp;&nbsp;or&nbsp;&nbsp; 
+              <code>--binary=<em>B</em></code></td>
+          <td valign="top">Output dataset to a binary file 
+                using the datatype specified by <code><em>B</em></code>.
+              <br>
+              <code><em>B</em></code> must have one of the following values:
+                <br>
+                &nbsp;&nbsp;&nbsp;&nbsp;
+                <code>LE &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code>
+                    Little-endian 
+                <br>
+                &nbsp;&nbsp;&nbsp;&nbsp;
+                <code>BE &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code>
+                    Big-endian 
+                <br>
+                &nbsp;&nbsp;&nbsp;&nbsp;
+                <code>MEMORY &nbsp;&nbsp;</code>
+                    Memory datatype 
+                <br>
+                &nbsp;&nbsp;&nbsp;&nbsp;
+                <code>FILE &nbsp;&nbsp;&nbsp;&nbsp;</code>
+                    File datatype 
+              <br>
+              Recommended usage is with the <code>-d</code> and <code>-o</code>
+              options.
+          </td>
         </tr>
         <tr> 
-          <td valign="top"><code>-r</code> &nbsp;&nbsp;or&nbsp;&nbsp; <code>--string</code></td>
-          <td valign="top">Print 1-byte integer datasets as ASCII.</td>
+          <td valign="top"><code>-O <em>F</em></code> 
+              &nbsp;&nbsp;or&nbsp;&nbsp; 
+              <code>--ddl=<em>F</em></code></td>
+          <td valign="top">Output DDL text into file F.
+              <p>
+              The files specified for the <code>-o</code> and <code>-O</code> 
+              options must be different files. 
+              The output from these options must not be comingled.
+              <p>
+              <a href="#Tools-Import"><code>h5import</code></a>
+              can use the files output by the <code>-o</code> and 
+              <code>-O</code> when importing HDF5 data.
+              See &ldquo;<a href="#Tools-Import-UsingDump">Using 
+              <code>h5dump</code> to create input for 
+              <code>h5import</code></a>.&rdquo;
+              <p>
+              To suppress the DDL display, use this option with no filename,
+              as in either of the following examples.  This has the effect 
+              of sending the output to a <small>NULL</small> file:
+              <br>
+                  &nbsp;&nbsp;&nbsp;&nbsp;
+                  <code>-O </code>
+              <br>
+                  &nbsp;&nbsp;&nbsp;&nbsp;
+                  <code>--ddl= </code>
+              </td>
         </tr>
+
         <tr>
-          <td valign="top"><code>-e</code> &nbsp;&nbsp;or&nbsp;&nbsp; <code>--escape</code></td>
-          <td valign="top">Escape non-printing characters.</td>
+          <td colspan="2" align="left">
+              <strong>Object options:</strong></td>
         </tr>
         <tr> 
           <td valign="top"><code>-a&nbsp;<em>P</em></code>&nbsp;&nbsp;or&nbsp;&nbsp;<code>--attribute=<em>P</em>&nbsp;&nbsp;&nbsp;&nbsp;</code></td>
           <td valign="top">Print the specified attribute.</td>
         </tr>
         <tr> 
-          <td valign="top"><code>-d <em>P</em></code> &nbsp;&nbsp;or&nbsp;&nbsp; 
-            <code>--dataset=<em>P</em></code></td>
+          <td valign="top"><code>-d <em>P</em></code> 
+              &nbsp;&nbsp;or&nbsp;&nbsp; 
+              <code>--dataset=<em>P</em></code></td>
           <td valign="top">Print the specified dataset.</td>
         </tr>
+        <tr> 
+          <td valign="top"><code>-g <em>P</em></code> 
+              &nbsp;&nbsp;or&nbsp;&nbsp; 
+              <code>--group=<em>P</em></code></td>
+          <td valign="top">Print the specified group and all members.</td>
+        </tr>
+
+<!-- NEW PAGE -->
+
+        <tr> 
+          <td valign="top"><code>-l&nbsp;<em>P</em></code>
+              &nbsp;&nbsp;or&nbsp;&nbsp;
+              <code>--soft-link=<em>P</em></code></td>
+          <td valign="top">Print the value(s) of the specified soft link.
+              </td>
+        </tr>
+        <tr> 
+          <td valign="top"><code>-t <em>P</em></code> 
+              &nbsp;&nbsp;or&nbsp;&nbsp; 
+              <code>--datatype=<em>P</em></code></td>
+          <td valign="top">Print the specified named datatype.</td>
+        </tr>
+        <tr> 
+          <td valign="top"><code>-A</code> &nbsp;&nbsp;or&nbsp;&nbsp; 
+              <code>--onlyattr</code></td>
+          <td valign="top">Print the header and value of attributes; 
+              data of datasets is not displayed.</td>
+        </tr>
+        <tr> 
+          <td valign="top"><code>-A 0</code> &nbsp;&nbsp;or&nbsp;&nbsp; 
+              <code>--onlyattr=0</code></td>
+          <td valign="top">The optional value <code>0</code> (zero)
+              on the <code>-A, --onlyattr</code> option prints everything 
+              <i>except</i> attributes.</td>
+        </tr>
+
         <tr>
-          <td valign="top"><code>-y</code> &nbsp;&nbsp;or&nbsp;&nbsp; <code>--noindex</code></td>
-          <td valign="top">Do not print array indices with data.</td>
+          <td colspan="2" align="left">
+              <strong>Object property options:</strong></td>
+        </tr>
+        <tr> 
+          <td valign="top"><code>-i</code> &nbsp;&nbsp;or&nbsp;&nbsp; 
+              <code>--object-ids</code></td>
+          <td valign="top">Print the object ids.</td>
         </tr>
         <tr>
-          <td valign="top"><code>-p</code> &nbsp;&nbsp;or&nbsp;&nbsp; <code>--properties</code>
+          <td valign="top"><code>-p</code> &nbsp;&nbsp;or&nbsp;&nbsp; 
+              <code>--properties</code>
               <br>
               <code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code>
               </td>
@@ -325,298 +549,253 @@
               <code>H5Pset_alloc_time</code></a>.
         </tr>
         <tr> 
-          <td valign="top"><code>-f<em>&nbsp;D</em></code> 
+          <td valign="top"><code>-M <em>L</em></code> 
               &nbsp;&nbsp;or&nbsp;&nbsp;
-              <code>--filedriver=<em>D</em></code></td>
-          <td valign="top">Specify which driver to open the file with.</td>
-        </tr>
-        <tr> 
-          <td valign="top"><code>-g <em>P</em></code> &nbsp;&nbsp;or&nbsp;&nbsp; 
-            <code>--group=<em>P</em></code></td>
-          <td valign="top">Print the specified group and all members.</td>
-        </tr>
-
-<!-- NEW PAGE -->
-
-        <tr> 
-          <td valign="top"><code>-l&nbsp;<em>P</em></code>
-              &nbsp;&nbsp;or&nbsp;&nbsp;
-              <code>--soft-link=<em>P</em></code></td>
-          <td valign="top">Print the value(s) of the specified soft link.</td>
-        </tr>
-        <tr> 
-          <td valign="top"><code>-o <em>F</em></code> &nbsp;&nbsp;or&nbsp;&nbsp; 
-            <code>--output=<em>F</em></code></td>
-          <td valign="top">Output raw data into file F.
-              <p>
-              The files specified for the <code>-o</code> and <code>-O</code> 
-              options must be different files. 
-              The output from these options must not be comingled.
-              <p>
-              To suppress the raw data display, use this option with no filename,
-              as in either of the following examples.  This has the effect 
-              of sending the output to a <small>NULL</small> file:
-              <br>
-                  &nbsp;&nbsp;&nbsp;&nbsp;
-                  <code>-o </code>
-              <br>
-                  &nbsp;&nbsp;&nbsp;&nbsp;
-                  <code>--output= </code>
-              </td>
-        </tr>
-        <tr> 
-          <td valign="top"><code>-O <em>F</em></code> &nbsp;&nbsp;or&nbsp;&nbsp; 
-            <code>--ddl=<em>F</em></code></td>
-          <td valign="top">Output DDL text into file F.
-              <p>
-              The files specified for the <code>-o</code> and <code>-O</code> 
-              options must be different files. 
-              The output from these options must not be comingled.
-              <p>
-              <a href="#Tools-Import"><code>h5import</code></a>
-              can use the files output by the <code>-o</code> and 
-              <code>-O</code> when importing HDF5 data.
-              See &ldquo;<a href="#Tools-Import-UsingDump">Using 
-              <code>h5dump</code> to create input for 
-              <code>h5import</code></a>.&rdquo;
-              <p>
-              To suppress the DDL display, use this option with no filename,
-              as in either of the following examples.  This has the effect 
-              of sending the output to a <small>NULL</small> file:
-              <br>
-                  &nbsp;&nbsp;&nbsp;&nbsp;
-                  <code>-O </code>
-              <br>
-                  &nbsp;&nbsp;&nbsp;&nbsp;
-                  <code>--ddl= </code>
-              </td>
-        </tr>
-        <tr> 
-          <td valign="top"><code>-b <em>B</em></code> &nbsp;&nbsp;or&nbsp;&nbsp; 
-            <code>--binary=<em>B</em></code></td>
-          <td valign="top">Output dataset to a binary file 
-            using the datatype specified by <code><em>B</em></code>.
-            <br>
-            <code><em>B</em></code> must have one of the following values:
-                <br>
-                &nbsp;&nbsp;&nbsp;&nbsp;
-                <code>LE &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code>
-                    Little-endian 
-                <br>
-                &nbsp;&nbsp;&nbsp;&nbsp;
-                <code>BE &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code>
-                    Big-endian 
-                <br>
-                &nbsp;&nbsp;&nbsp;&nbsp;
-                <code>MEMORY &nbsp;&nbsp;</code>
-                    Memory datatype 
-                <br>
-                &nbsp;&nbsp;&nbsp;&nbsp;
-                <code>FILE &nbsp;&nbsp;&nbsp;&nbsp;</code>
-                    File datatype 
-            <br>
-            Recommended usage is with the <code>-d</code> and <code>-o</code>
-            options.
-          </td>
-        </tr>
-        <tr> 
-          <td valign="top"><code>-t <em>P</em></code> &nbsp;&nbsp;or&nbsp;&nbsp; 
-            <code>--datatype=<em>P</em></code></td>
-          <td valign="top">Print the specified named datatype.</td>
-        </tr>
-        <tr> 
-          <td valign="top"><code>-w <em>N</em></code> &nbsp;&nbsp;or&nbsp;&nbsp;
-            <code>--width=<em>N</em></code></td>
-          <td valign="top">Set the number of columns of output. 
-            <br>
-            A value of 0 (zero) sets the number of columns 
-            to the maximum (65535). 
-            <br>
-            Default width is 80 columns.</td>
-        </tr>
-        <tr> 
-          <td valign="top"><code>-m <em>T</em></code> &nbsp;&nbsp;or&nbsp;&nbsp;
-            <code>--format=<em>T</em></code></td>
-          <td valign="top">Set the floating point output format.
-            <br>
-            <em>T</em> is a string defining the floating point format,
-            e.g., <code>'%.3f'</code>.
-            </td>
-        </tr>
-        <tr> 
-          <td valign="top"><code>-q <em>Q</em></code> &nbsp;&nbsp;or&nbsp;&nbsp;
-            <code>--sort_by=<em>Q</em></code></td>
-          <td valign="top">Sort groups and attributes by the specified
-            index type, <em>Q</em>.  
-            Valid values of <em>Q</em> are as follows:
-                <br>
-                &nbsp;&nbsp;&nbsp;&nbsp;
-                <code>name&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code>
-                    Alpha-numeric index by name <em>(Default)</em>
-                <br>
-                &nbsp;&nbsp;&nbsp;&nbsp;
-                <code>creation_order &nbsp;&nbsp;</code>
-                    Index by creation order 
-                <br>
-            </td>
-        </tr>
-        <tr> 
-          <td valign="top"><code>-z <em>Z</em></code> &nbsp;&nbsp;or&nbsp;&nbsp;
-            <code>--sort_order=<em>Z</em></code></td>
-          <td valign="top">Sort groups and attributes in the specified
-            order, <em>Z</em>.  
-            Valid values of <em>Z</em> are as follows:
-                <br>
-                &nbsp;&nbsp;&nbsp;&nbsp;
-                <code>ascending&nbsp;&nbsp;&nbsp;</code>
-                    Sort in ascending order <em>(Default)</em>
-                <br>
-                &nbsp;&nbsp;&nbsp;&nbsp;
-                <code>descending&nbsp;&nbsp;</code>
-                    Sort in descending order 
-            </td>
-        </tr>
-        <tr> 
-          <td valign="top"><code>-M <em>L</em></code> &nbsp;&nbsp;or&nbsp;&nbsp;
-            <code>--packedbits=<em>L</em></code></td>
+              <code>--packedbits=<em>L</em></code></td>
           <td valign="top">Print packed bits as unsigned integers, 
-            using the mask format <em>L</em> for an integer dataset 
-            specified with option <code>-d</code>.
-            <br>
-	    <em>L</em> is a list of <em>offset</em>,<em>length</em> values, 
-            separated by commas. 
-            <br>
-            <em>offset</em> is the beginning bit in the data value.
-            <br>
-            <em>length</em> is the number of bits in the mask.
+              using the mask format <em>L</em> for an integer dataset 
+              specified with option <code>-d</code>.
+              <br>
+	      <em>L</em> is a list of <em>offset</em>,<em>length</em> values, 
+              separated by commas. 
+              <br>
+              <em>offset</em> is the beginning bit in the data value.
+              <br>
+              <em>length</em> is the number of bits in the mask.
 	  </td>
         </tr>
         <tr>
-          <td valign="top"><code>-R <em></em></code> &nbsp;&nbsp;or&nbsp;&nbsp; 
-            <code>--region</code></td>
+          <td valign="top"><code>-R <em></em></code> 
+              &nbsp;&nbsp;or&nbsp;&nbsp; 
+              <code>--region</code></td>
           <td valign="top">Print dataset pointed by region references.</td>
         </tr>
-        <tr> 
-          <td valign="top"><code>-x <em></em></code> &nbsp;&nbsp;or&nbsp;&nbsp; 
-            <code>--xml</code></td>
-          <td valign="top">Output XML using XML schema (default) 
-            instead of DDL.</td>
+
+        <tr>
+          <td colspan="2" align="left">
+              <strong>XML options:</strong></td>
         </tr>
         <tr> 
-          <td valign="top"><code>-u <em></em></code> &nbsp;&nbsp;or&nbsp;&nbsp; 
-            <code>--use-dtd</code></td>
+          <td valign="top"><code>-x <em></em></code> 
+              &nbsp;&nbsp;or&nbsp;&nbsp; 
+              <code>--xml</code></td>
+          <td valign="top">Output XML using XML schema (default) 
+              instead of DDL.</td>
+        </tr>
+        <tr> 
+          <td valign="top"><code>-u <em></em></code> 
+              &nbsp;&nbsp;or&nbsp;&nbsp; 
+              <code>--use-dtd</code></td>
           <td valign="top">Output XML using XML DTD instead of DDL.</td>
         </tr>
         <tr> 
-          <td valign="top"><code>-D <em>U</em></code> &nbsp;&nbsp;or&nbsp;&nbsp; 
-            <code>--xml-dtd=<em>U</em></code></td>
-          <td valign="top">In XML output, refer to the DTD or schema at <em>U</em> 
-            instead of the default schema/DTD.</td>
+          <td valign="top"><code>-D <em>U</em></code> 
+              &nbsp;&nbsp;or&nbsp;&nbsp; 
+              <code>--xml-dtd=<em>U</em></code></td>
+          <td valign="top">In XML output, refer to the DTD or schema 
+              at <em>U</em> 
+              instead of the default schema/DTD.</td>
         </tr>
         <tr> 
-          <td valign="top"><code>-X <em>S</em></code> &nbsp;&nbsp;or&nbsp;&nbsp; 
-            <code>--xml-dns=<em>S</em></code></td>
+          <td valign="top"><code>-X <em>S</em></code> 
+              &nbsp;&nbsp;or&nbsp;&nbsp; 
+              <code>--xml-ns=<em>S</em></code></td>
           <td valign="top">In XML output, (XML Schema) use qualified names in 
-            the XML:<br> &nbsp;&nbsp; &nbsp;&nbsp; ":": no namespace, default: 
-            "hdf5:"</td>
+              the XML:<br> &nbsp;&nbsp; &nbsp;&nbsp; ":": no namespace, 
+              default: "hdf5:"</td>
         </tr>
-        <tr> 
-          <td valign="top"><code>--enable-error-stack</code></td>
-          <td valign="top">Prints messages from the HDF5 error stack 
-            as they occur.
-            <p>
-            Injects error stack information, which is normally suppressed, 
-            directly into the output stream.
-            This will disrupt normal <code>h5dump</code> output but is a 
-            useful diagnostic tool when data is not being correctly dumped.  
 
 <!-- NEW PAGE -->
 
-            Consider the case when an <code>h5dump</code> call produces this 
-            message:
-            <pre>&nbsp;&nbsp;&nbsp;&nbsp;dump error: unable to print data</pre>
-            <code>h5dump</code> can be called again with 
-            &lsquo;<code>--enable-error-stack</code>&rsquo; plus the original 
-            options to reveal error stack messages.
-            <br>&nbsp;</td>
+
+        <tr>
+          <td colspan="2" align="left">
+              <strong>Subsetting options and compact subsetting:</strong>
+              </td>
+        </tr>
+        <tr> 
+          <td>&nbsp;</td>
+          <td valign="top" align="left">
+               Subsetting is available by using the following options with 
+               the dataset option, <code>-d</code> or <code>--dataset</code>. 
+               Subsetting is accomplished by selecting a hyperslab from the 
+               data, so the options mirror those for performing a hyperslab 
+               selection.
+               <p>
+               At least one of the <code>START</code>, <code>COUNT</code>, 
+               <code>STRIDE</code>, or <code>BLOCK</code> options is 
+               mandatory if you do subsetting; the remainder are optional,
+               with default values as follows:  
+               <br>
+               &bullet; <code>STRIDE</code>, <code>COUNT</code>, and 
+               <code>BLOCK</code> default to <code>1</code> 
+               in each dimension. 
+               <br>
+               &bullet; <code>START</code> defaults to <code>0</code> 
+               in each dimension.
+          </td>
         </tr>
         <tr> 
           <td valign="top"><code>-s <em>START</em></code> &nbsp;&nbsp;or
-            <br>
-            <code>&nbsp;&nbsp;--start=<em>START</em></code></td>
+              <br>
+              <code>&nbsp;&nbsp;--start=<em>START</em></code></td>
           <td valign="top">Offset of start of subsetting selection. <br>
-            Default: 0 in all dimensions, 
-            specifying the beginning of the dataset.
-            <p>
-            Each of <small><em>START</em>, <em>STRIDE</em>, 
-            <em>COUNT</em>,</small> and <small><em>BLOCK</em></small> 
-            must be a comma-separated list of integers 
-            with one integer for each dimension of the dataset.
-            </p>
-            </td>
+              Default: 0 in all dimensions, 
+              specifying the beginning of the dataset.
+              <p>
+              Each of <small><em>START</em>, <em>STRIDE</em>, 
+              <em>COUNT</em>,</small> and <small><em>BLOCK</em></small> 
+              must be a comma-separated list of integers 
+              with one integer for each dimension of the dataset.
+              </p>
+              </td>
         </tr>
         <tr> 
           <td valign="top"><code>-S <em>STRIDE</em></code> &nbsp;&nbsp;or
-            <br>
-            <code>&nbsp;&nbsp;--stride=<em>STRIDE</em></code></td>
+              <br>
+              <code>&nbsp;&nbsp;--stride=<em>STRIDE</em></code></td>
           <td valign="top">Hyperslab stride. <br>
-            Default: 1 in all dimensions.</td>
+              Default: 1 in all dimensions.</td>
         </tr>
         <tr> 
           <td valign="top"><code>-c <em>COUNT</em></code> &nbsp;&nbsp;or
-            <br>
-            <code>&nbsp;&nbsp;--count=<em>COUNT</em></code></td>
+              <br>
+              <code>&nbsp;&nbsp;--count=<em>COUNT</em></code></td>
           <td valign="top">Number of blocks to include in the selection. <br>
-            Default: 1 in all dimensions.</td>
+              Default: 1 in all dimensions.</td>
         </tr>
         <tr> 
           <td valign="top"><code>-k <em>BLOCK</em></code> &nbsp;&nbsp;or
-            <br>
-            <code>&nbsp;&nbsp;--block=<em>BLOCK</em></code></td>
+              <br>
+              <code>&nbsp;&nbsp;--block=<em>BLOCK</em></code></td>
           <td valign="top">Size of block in hyperslab. <br>
-            Default: 1 in all dimensions.
-            <br>&nbsp;</td>
+              Default: 1 in all dimensions.
+  
+              <p>
+              <b>Compact subsetting:</b>
+              <br>
+              Subsetting parameters can also be expressed in a convenient
+              compact form, as follows:
+                <br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                <code>--dataset="/foo/mydataset[START;STRIDE;COUNT;BLOCK]"</code>
+              <p>
+              It is not required to use all parameters, 
+              but until the last parameter value used, 
+              all of the semicolons (<code>;</code>) are required, 
+              even when a parameter value is not specified. Example: 
+              <br>
+              &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+              <code>--dataset="/foo/mydataset[START;;COUNT]"</code>
+              <br>
+              &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+              <code>--dataset="/foo/mydataset[START]"</code>
+              <p>
+              Each of <small><em>START</em>, <em>STRIDE</em>, 
+              <em>COUNT</em>,</small> and <small><em>BLOCK</em></small> 
+              must be a comma-separated list of integers 
+              with one integer for each dimension of the dataset.
+              <p>
+              When not specified, default parameter values are used:
+              zeros ( <code>0</code> ) for <small><em>START</em></small>
+              and ones ( <code>1</code> ) for <small><em>STRIDE</em>,
+              <em>COUNT</em>,</small> and <small><em>BLOCK</em></small>.
+
+          </td>
         </tr>
-        <tr> 
-          <td valign="top"><code>--no-compact-subset</code></td>
-          <td valign="top">
-            Enables recognition of the left square bracket 
-            ( <code><font size="+1">[</font></code> )
-            as a character in a dataset name.
-            <p>
-            This option must disable compact subsetting, 
-            which is described at the end of this 
-            &ldquo;Options and Parameters&rdquo; section.
-            </td>
+
+        <tr>
+          <td colspan="2" align="left">
+              <strong>Option Argument Conventions:</strong></td>
         </tr>
         <tr> 
           <td valign="top"><code>--</code></td>
           <td valign="top">Two dashes followed by whitespace. 
-            <br>
-            Indicates that the following argument is not an option. 
-            <p>
-            For example, this structure can be used to dump a file called 
-            <code>-f</code>: 
-            <pre>&nbsp;&nbsp;&nbsp;&nbsp;h5dump -- -f</pre>
-            This option is necessary only when the name of the file to be 
-            examined starts with a dash (<code>-</code>), which could confuse 
-            the tool&rsquo;s command-line parser.</td>
+              <br>
+              Indicates that the following argument is not an option. 
+              <p>
+              For example, this structure can be used to dump a file called 
+              <code>-f</code>: 
+              <pre>&nbsp;&nbsp;&nbsp;&nbsp;h5dump -- -f</pre>
+              This option is necessary only when the name of the file to be 
+              examined starts with a dash (<code>-</code>), which could confuse 
+              the tool&rsquo;s command-line parser.</td>
+        </tr>
+
+        <tr>
+          <td valign="top" colspan="2">
+              Option parameters appearing above are defined as follows:
+          </td>
+        </tr>
+        <tr>
+          <td valign="top"><em>D</em></td>
+          <td valign="top">File driver to use in opening the file
+              <br>
+              Valid values are 
+              &nbsp;<code>sec2</code>, &nbsp;<code>family</code>, 
+              &nbsp;<code>split</code>, and &nbsp;<code>multi</code>.
+              <!--, and &nbsp;<code>stream</code>.-->
+              <br>
+              Without the file driver option, the
+              file will be opened with each driver in turn,
+              and in the order specified immediately above,
+              until one driver succeeds in opening the file.</td></tr>
+        <tr>
+          <td valign="top"><em>P</em></td>
+          <td valign="top">The full path from the root group to 
+              the object</td></tr>
+        <tr>
+          <td valign="top"><em>F</em></td>
+          <td valign="top">A filename</td></tr>
+        <tr>
+          <td valign="top"><em>N</em></td>
+          <td valign="top">An integer greater than 1</td></tr>
+        <tr>
+          <td valign="top" ><em>START</em>, &nbsp;<em>STRIDE</em>, 
+              <br><code>&nbsp;&nbsp;&nbsp;&nbsp;</code>
+              <em>COUNT</em>, and <em>BLOCK</em></td>
+          <td valign="top">Comma-separated lists of integers  
+              <br>
+              Each of these option parameters must be a list of integers
+              with one integer for each dimension of the dataspace being 
+              queried.</td></tr>
+        <tr>
+          <td valign="top"><em>U</em></td>
+          <td valign="top">A URI (as defined in 
+              [<a href="http://www.ietf.org/rfc/rfc2396.txt">IETF RFC 2396</a>], 
+              updated by 
+              [<a href="http://www.ietf.org/rfc/rfc2732.txt">IETF RFC 2732</a>]) 
+              that refers to the DTD to be used to validate the XML</td></tr>
+        <tr>
+          <td valign="top"><em>B</em></td>
+          <td valign="top">The form of binary output:<br>
+              &nbsp;&nbsp;&nbsp;&nbsp;<code>MEMORY</code> &nbsp;&nbsp; 
+                  for a memory type<br>
+              &nbsp;&nbsp;&nbsp;&nbsp;<code>FILE&nbsp;&nbsp;</code> &nbsp;&nbsp; 
+                  for the file type<br>
+              &nbsp;&nbsp;&nbsp;&nbsp;<code>LE</code> or <code>BE</code> &nbsp; 
+                  for pre-existing little- or big-endian types
+            </td></tr>
+
+        <tr>
+          <td colspan="2" align="left">
+              <strong><i>Files</i> parameter:</strong></td>
         </tr>
         <tr> 
           <td valign="top"><code><em>files</em></code></td>
           <td valign="top">File or files to be examined;
-            one or more files may be listed.
-            <p>
-            The file name may include a <code>printf(3C)</code> 
-            integer format such as <code>%05d</code> to open a file family.
-            <p>
-            On Unix, Linux, and Mac OS X systems,
-            multiple files can be examined through the use of 
-            Unix-style wildcards.
-            For example, assume that we are working with the files 
-            <code>FileA.h5</code>, <code>FileB.h5</code>, 
-            <code>FileC.h5</code>, and <code>FileAB.h5</code>:
-            <ul>
+              one or more files may be listed.
+              <p>
+              The file name may include a <code>printf(3C)</code> 
+              integer format such as <code>%05d</code> to open a file family.
+              <p>
+              On Unix, Linux, and Mac OS X systems,
+              multiple files can be examined through the use of 
+              Unix-style wildcards.
+              For example, assume that we are working with the files 
+              <code>FileA.h5</code>, <code>FileB.h5</code>, 
+              <code>FileC.h5</code>, and <code>FileAB.h5</code>:
+              <ul>
                 <li><code>File[AB].h5</code> will pick up any file
                     that begins with <code>File</code>, 
                     followed by any one of the characters contained 
@@ -639,101 +818,14 @@
                     <p>
                     In this case, <code>File*.h5</code> will pick up 
                     all four files.
-            </ul>
-            <p>
-            The wildcard capability is not currently available 
-            on Windows systems.
-            </td>
+              </ul>
+              <p>
+              The wildcard capability is not currently available 
+              on Windows systems.
+              </td>
         </tr>
       </table>
     </dd>
-    <br>
-
-    <dd>
-    The option parameters listed above are defined as follows:
-    <table>
-        <tr>
-          <td valign="top"><em>D</em></td>
-          <td valign="top">File driver to use in opening the file
-            <br>
-            Valid values are 
-            &nbsp;<code>sec2</code>, &nbsp;<code>family</code>, 
-            &nbsp;<code>split</code>, and &nbsp;<code>multi</code>.
-            <!--, and &nbsp;<code>stream</code>.-->
-            <br>
-            Without the file driver option, the
-            file will be opened with each driver in turn,
-            and in the order specified immediately above,
-            until one driver succeeds in opening the file.</td></tr>
-        <tr>
-          <td valign="top"><em>P</em></td>
-          <td valign="top">The full path from the root group to 
-            the object</td></tr>
-        <tr>
-          <td valign="top"><em>F</em></td>
-          <td valign="top">A filename</td></tr>
-        <tr>
-          <td valign="top"><em>N</em></td>
-          <td valign="top">An integer greater than 1</td></tr>
-        <tr>
-          <td valign="top" colspan="2"><em>START</em>, &nbsp;<em>STRIDE</em>, 
-            &nbsp;<em>COUNT</em>, &nbsp;<em>BLOCK</em></td></tr>
-        <tr>
-          <td valign="top"><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code></td>
-          <td valign="top">Comma-separated lists of integers  
-            <br>
-            Each of these option parameters must be a list of integers
-            with one integer for each dimension of the dataspace being 
-            queried.</td></tr>
-        <tr>
-          <td valign="top"><em>U</em></td>
-          <td valign="top">A URI (as defined in 
-            [<a href="http://www.ietf.org/rfc/rfc2396.txt">IETF RFC 2396</a>], 
-            updated by 
-            [<a href="http://www.ietf.org/rfc/rfc2732.txt">IETF RFC 2732</a>]) 
-            that refers to the DTD to be used to validate the XML</td></tr>
-        <tr>
-          <td valign="top"><em>B</em></td>
-          <td valign="top">The form of binary output:<br>
-            &nbsp;&nbsp;&nbsp;&nbsp;<code>MEMORY</code> &nbsp;&nbsp; 
-                for a memory type<br>
-            &nbsp;&nbsp;&nbsp;&nbsp;<code>FILE&nbsp;&nbsp;</code> &nbsp;&nbsp; 
-                for the file type<br>
-            &nbsp;&nbsp;&nbsp;&nbsp;<code>LE</code> or <code>BE</code> &nbsp; 
-                for pre-existing little- or big-endian types
-            </td></tr>
-    </table>
-  
-        <p><b>Compact subsetting:</b>
-            <br>
-            Subsetting parameters can also be expressed in a convenient
-            compact form, as follows:
-              <br>
-              &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-              <code>--dataset="/foo/mydataset[START;STRIDE;COUNT;BLOCK]"</code>
-            <p>
-            It is not required to use all parameters, 
-            but until the last parameter value used, 
-            all of the semicolons (<code>;</code>) are required, 
-            even when a parameter value is not specified. Example: 
-              <br>
-              &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-              <code>--dataset="/foo/mydataset[START;;COUNT]"</code>
-              <br>
-              &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-              <code>--dataset="/foo/mydataset[START]"</code>
-            <p>
-            Each of <small><em>START</em>, <em>STRIDE</em>, 
-            <em>COUNT</em>,</small> and <small><em>BLOCK</em></small> 
-            must be a comma-separated list of integers 
-            with one integer for each dimension of the dataset.
-            <p>
-            When not specified, default parameter values are used:
-            zeros ( <code>0</code> ) for <small><em>START</em></small>
-            and ones ( <code>1</code> ) for <small><em>STRIDE</em>,
-            <em>COUNT</em>,</small> and <small><em>BLOCK</em></small>.
-            
-        </dd>
 
 <p>
 <dt><strong>Exit Status:</strong></dt>
