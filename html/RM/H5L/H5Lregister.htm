@@ -24,7 +24,7 @@
 <dl>
 
   <dt><div align=right><font color=999999 size=-1><i>
-      Last modified: 11 January 2010
+      Last modified: 21 August 2013
       </i></font></div>
 
   <dt><strong>Name:</strong> <a name="Link-Register">H5Lregister</a>
@@ -32,17 +32,20 @@
     <dd><em>herr_t </em><code>H5Lregister</code>(
             <em>const H5L_class_t *</em> <code>link_class</code>
         )
+
       <p></p>
   <dt><strong>Purpose:</strong>
-    <dd>Registers user-defined link class or 
-      changes behavior of existing class.
+    <dd>Registers a user-defined link class or 
+      changes behavior of an existing class.
+
       <p></p>
   <dt><strong>Description:</strong>
     <dd><code>H5Lregister</code> registers a class of user-defined links, 
       or changes the behavior of an existing class.
       <p>
-      The struct <code>H5L_class_t</code> is defined in 
-      <code>H5Lpublic.h</code> as follows:
+      <code>link_class</code> is a pointer to a buffer containing
+      a copy of the <code>H5L_class_t</code> struct.
+      This struct is defined in <code>H5Lpublic.h</code> as follows:
       <pre>
   typedef struct H5L_class_t {
       int version;                    /* Version number of this struct  */
@@ -56,18 +59,29 @@
       H5L_query_func_t query_func;    /* Callback for queries           */
   } H5L_class_t;
       </pre>
+
       <p>
-      The link class passed in will override any existing link
-      class for the specified link class identifier <code>class_id</code>. 
-      The class definition must include at least a 
-      <code>H5L_class_t</code> version 
-      (which should be <code>H5L_LINK_CLASS_T_VERS</code>), 
-      a link class identifier, and a traversal function, 
-      <code>trav_func</code>.
+    <dd>The class definition passed with <code>link_class</code> must include 
+      at least the following:
+      <ul>
+          <li>An <code>H5L_class_t</code> version 
+              (which should be <code>H5L_LINK_CLASS_T_VERS</code>) 
+          <li>A link class identifier, <code>class_id</code>
+          <li>A traversal function, <code>trav_func</code>
+      </ul>
+      Remaining struct members are optional and may be passed as 
+      <code>NULL</code>.
+
       <p>
-      Valid values of <code>class_id</code> already used in the HDF5 
-      distribution include the following
-      (defined in <code>H5Lpublic.h</code>):
+      The link class passed in <code>class_id</code> 
+      must be in the user-definable range between
+      <code>H5L_TYPE_UD_MIN</code> and <code>H5L_TYPE_UD_MAX</code>
+      (see the &ldquo;Link Class Identifiers...&rdquo; table below)
+      and will override any existing link class with that identifier.
+
+      <p>
+      As distributed, valid values of <code>class_id</code> used in HDF5 
+      include the following (defined in <code>H5Lpublic.h</code>):
         <table border=0>
           <tr><td width=5%>
             &nbsp;&nbsp;&nbsp;&nbsp;
@@ -89,53 +103,279 @@
             External link
           </td></tr>
         </table>
+      The hard and soft link class identifiers cannot be modified or 
+      reassigned, but the external link class is implemented as an example 
+      in the user-definable link class identifier range. 
+      <code>H5Lregister</code> is used to register additional link classes.
+      It could also be used to modify the behavior of the external link 
+      class, though that is <i>not</i> recommended.
       <p>
-      <code>class_id</code> must be a value between 
-      <code>H5L_TYPE_UD_MIN</code> and <code>H5L_TYPE_UD_MAX</code>
-      (which equals <code>H5L_TYPE_MAX</code>).
+      The following table summarizes existing link types and 
+      values and the reserved and user-definable link class identifier
+      value ranges. 
+      <p></p>
+
+      <table align="center" border="0">
+      <tr><th align="center">
+          Link Class Identifiers or Value Ranges,
+          <br>Descriptions, and Class Names
+
+      <table border="1">
+      <tr><td>
+      <table border="0">
+      <tr>
+          <th align="left" valign="bottom">
+              Link class identifier<br>
+              or Value range
+              </th>
+          <th><code>&nbsp;&nbsp;</code></th>
+          <th align="left" valign="bottom">
+              Description
+              </th>
+          <th><code>&nbsp;&nbsp;</code></th>
+          <th align="left" valign="bottom">
+              Link class or<br>
+              other label
+              </th>
+           </tr>
+      <tr>
+          <td align="center" colspan="5">
+              <hr size="1">
+              </td>
+          </tr>
+<!--
+      <tr>
+          <td align="left" valign="top">
+              <code>0</code>&nbsp;
+              </td>
+          <td><code>&nbsp;</code></td>
+          <td align="left" valign="top">
+              Hard link
+              </td>
+          <td><code>&nbsp;</code></td>
+          <td align="left" valign="top">
+              <code>H5L_TYPE_HARD</code>&nbsp;
+              </td>
+          </tr>
+      <tr>
+          <td align="left" valign="top">
+              <code>1</code>&nbsp;
+              </td>
+          <td><code>&nbsp;</code></td>
+          <td align="left" valign="top">
+              Soft link
+              </td>
+          <td><code>&nbsp;</code></td>
+          <td align="left" valign="top">
+              <code>H5L_TYPE_SOFT</code>&nbsp;
+              </td>
+          </tr>
+-->
+      <tr>
+          <td align="left" valign="top">
+              <code>0</code> &nbsp;to&nbsp; <code>63</code>
+              </td>
+          <td><code>&nbsp;</code></td>
+          <td align="left" valign="top">
+              Reserved range
+              </td>
+          <td><code>&nbsp;</code></td>
+          <td align="left" valign="top">
+              &nbsp;
+              </td>
+          </tr>
+      <tr>
+          <td align="left" valign="top">
+              <code>64</code> &nbsp;to&nbsp; <code>255</code>
+              </td>
+          <td><code>&nbsp;</code></td>
+          <td align="left" valign="top">
+              User-definable range
+              </td>
+          <td><code>&nbsp;</code></td>
+          <td align="left" valign="top">
+              &nbsp;
+              </td>
+          </tr>
+
+      <tr>
+          <td align="center" colspan="5">
+              <hr size="1" width=30%>
+              </td>
+          </tr>
+
+      <tr>
+          <td align="left" valign="top">
+              <code>64</code>&nbsp;
+              </td>
+          <td><code>&nbsp;</code></td>
+          <td align="left" valign="top">
+              Minimum user-defined value
+              </td>
+          <td><code>&nbsp;</code></td>
+          <td align="left" valign="top">
+              <code>H5L_TYPE_UD_MIN</code>&nbsp;
+              </td>
+          </tr>
+      <tr>
+          <td align="left" valign="top">
+              <code>64</code>&nbsp;
+              </td>
+          <td><code>&nbsp;</code></td>
+          <td align="left" valign="top">
+              External link
+              </td>
+          <td><code>&nbsp;</code></td>
+          <td align="left" valign="top">
+              <code>H5L_TYPE_EXTERNAL</code>&nbsp;
+              </td>
+          </tr>
+      <tr>
+          <td align="left" valign="top">
+              <code>255</code>&nbsp;
+              </td>
+          <td><code>&nbsp;</code></td>
+          <td align="left" valign="top">
+              Maximum user-defined value
+              </td>
+          <td><code>&nbsp;</code></td>
+          <td align="left" valign="top">
+              <code>H5L_TYPE_UD_MAX</code>&nbsp;
+              </td>
+          </tr>
+      <tr>
+          <td align="left" valign="top">
+              <code>255</code>&nbsp;
+              </td>
+          <td><code>&nbsp;</code></td>
+          <td align="left" valign="top">
+              Maximum value
+              </td>
+          <td><code>&nbsp;</code></td>
+          <td align="left" valign="top">
+              <code>H5L_TYPE_MAX</code>&nbsp;
+              </td>
+          </tr>
+
+      <tr>
+          <td align="center" colspan="5">
+              <hr size="1" width=30%>
+              </td>
+          </tr>
+
+      <tr>
+          <td align="left" valign="top">
+              <code>-1</code>&nbsp;
+              </td>
+          <td><code>&nbsp;</code></td>
+          <td align="left" valign="top">
+              Error
+              </td>
+          <td><code>&nbsp;</code></td>
+          <td align="left" valign="top">
+              <code>H5L_TYPE_ERROR</code>&nbsp;
+              </td>
+          </tr>
+      </table>
+      </td></tr>
+      </table>
+
+      </th></tr>
+      </table>
+
       <p>
-      Important details include the following:
-        <table border=0 width=90% align=center>
-          <tr><td>
-            <code>H5L_TYPE_MAX</code> is the maximum allowed value for a
-                link type identifier. 
-          </td></tr><tr><td>
-            <code>H5L_TYPE_UD_MIN</code> equals <code>H5L_TYPE_EXTERNAL</code>.
-          </td></tr><tr><td>
-            <code>H5L_TYPE_UD_MAX</code> equals <code>H5L_TYPE_MAX</code>.
-          </td></tr><tr><td>
-            <code>H5L_TYPE_HARD</code> and <code>H5L_TYPE_SOFT</code> 
-            reside in the reserved space below <code>H5L_TYPE_UD_MIN</code>.
-          </td></tr><tr><td>
-            <code>H5L_TYPE_ERROR</code> indicates that an error has occurred.
-          </td></tr>
-        </table>
+      Note that HDF5 internally registers user-defined link classes only 
+      by the numeric value of the link class identifier.
+      An application, on the other hand, will generally use a name for a 
+      user-defined class, if for no other purpose than as a variable name.
+      Assume, for example, that a complex link type is registered 
+      with the link class identifier <code>73</code> 
+      and that the code includes the following assignment:
+      <br>
+      <code>&nbsp;&nbsp;&nbsp;&nbsp;
+          H5L_TYPE_COMPLEX_A = 73</code>
+      <br>
+      The application can refer to the link class with a term,
+      <code>H5L_TYPE_COMPLEX_A</code>, that conveys meaning 
+      to a human reviewing the code, while HDF5 recognizes it 
+      by the more cryptic numeric identifier, <code>73</code>.
+
+
+<!--
+      HDF5, on the other hand, registers the user-definable link class 
+      strictly by the numeric value of the link class identifier 
+      and makes no record of the name.
+<p>
+      User-defined link classes are registered strictly by
+      the numeric value of the link class identifier 
+      (for example, the numeric value for <code>H5L_TYPE_EXTERNAL</code>
+      is <code>64</code>).
+      While it is generally useful for an application registering 
+      a user-defined class to it assign a name, such as 
+      <code>H5L_TYPE_MY_ODDBALL_LINK_CLASS</code>,
+      HDF5 itself registers the user-definable link class 
+      by the numeric value of the link class identifier 
+      and makes no record of the name.
+-->
+
+
+
       <p>
-  <dt><strong>Notes:</strong>
-    <dd>If you plan to distribute files with a new user-defined link class,
-      please contact the Help Desk at The HDF Group to help prevent collisions
-      between <code>class_id</code> values.
-      <p>
-      As distributed with the HDF5 Library, 
-      the external link class is implemented as an example of a 
-      user-defined link class and <code>H5L_LINK_EXTERNAL</code> equals 
-      <code>H5L_LINK_UD_MIN</code>.  Therefore, <code>class_id</code> 
-      in the <code>H5L_class_t</code struct
-      should not equal <code>H5L_LINK_UD_MIN</code> unless you intend to 
-      overwrite or modify the behavior of external links.
+  <dt><strong>Critical Notes:</strong>
+    <dd>Important details and considerations include the following:
+      <ul>
+        <li>If you plan to distribute files or software with 
+            a user-defined link class, please contact the Help Desk 
+            at The HDF Group to help prevent collisions between 
+            <code>class_id</code> values.
+            <a href="#Registry">See below</a>.
+        <li>As distributed with HDF5, 
+            the external link class is implemented as an example of a 
+            user-defined link class with <code>H5L_LINK_EXTERNAL</code> 
+            equal to <code>H5L_LINK_UD_MIN</code>.  
+            <code>class_id</code> in the <code>H5L_class_t</code> struct
+            must not equal <code>H5L_LINK_UD_MIN</code> unless you intend to 
+            overwrite or modify the behavior of external links.
+        <li><code>H5Lregister</code> can be used only with 
+            link class identifiers in the user-definable range 
+            (see table above).
+        <li>The hard and soft links defined by the HDF5 Library,
+            <code>H5L_TYPE_HARD</code> and <code>H5L_TYPE_SOFT</code>,
+            reside in the reserved range below <code>H5L_TYPE_UD_MIN</code>
+            and cannot be redefined or modified.
+        <li><a href="#Link-IsRegistered"><code>H5Lis_registered</code></a> 
+            can be used to determine whether a desired link class identifier 
+            is available.
+            <br>
+            <i>Note that this function will tell you only whether the
+            link class identifier has been registered with the installed 
+            copy of HDF5; it cannot tell you whether the link class 
+            has been registered with The HDF Group.</i>
+            <br>&nbsp;
+
+        <li><code>H5L_TYPE_MAX</code> is the maximum allowed value for a
+            link type identifier. 
+        <li><code>H5L_TYPE_UD_MIN</code> equals <code>H5L_TYPE_EXTERNAL</code>.
+        <li><code>H5L_TYPE_UD_MAX</code> equals <code>H5L_TYPE_MAX</code>.
+        <li><code>H5L_TYPE_ERROR</code> indicates that an error has occurred.
+      </ul>
+
       <p></p>
   <dt><strong>Parameters:</strong>
     <dd><table>
       <tr>
-        <td valign="top"><em>const&nbsp;H5L_class_t&nbsp;*</em> <code>link_class&nbsp;&nbsp;&nbsp;&nbsp;</code>
+        <td valign="top"><em>const&nbsp;H5L_class_t&nbsp;*</em><code>link_class&nbsp;&nbsp;&nbsp;&nbsp;</code>
         </td>
-        <td valign="top">IN: Struct describing user-defined link class
+        <td valign="top">IN: Pointer to a buffer containing 
+           the struct describing the user-defined link class
         </td></tr>
     </table>
+
       <p></p>
   <dt><strong>Returns:</strong>
     <dd>Returns a non-negative value if successful;
         otherwise returns a negative value.
+
       <p></p>
   <dt><strong>Fortran90 Interface:</strong> <!--h5l***_f-->
     <dd>
@@ -146,12 +386,38 @@
     </pre>
 -->
 
- <!--<dt><strong>Non-C API(s):</strong>
-    	<dd>
-        
-        <img src="Graphics/Java.gif"> 
-        <img src="Graphics/C++.gif">
-        -->
+    <a name="Registry">
+    <p></p>
+    </a>
+<dt><strong>Registration with The HDF Group:</strong>
+    <dd>There are sometimes reasons to take a broader approach to 
+      registering a user-defined link class than just invoking 
+      <code>H5Lregister</code>. For example:
+      <ul> 
+        <li>A user-defined link class is intended for use 
+            across an organization, 
+            among collaborators, or
+            across a community of users.
+        <li>An application or library overlying HDF5 invokes
+            a user-defined link class that must be shipped with the software.
+        <li>Files are distributed that make use of a user-defined link class.
+        <li>Or simply, a specific user-defined link class 
+            is thought to be widely useful.
+      </ul>
+      <p>
+      In such cases, you are encouraged to register that link class
+      with The HDF Group&rsquo;s Helpdesk
+      (<a href="http://www.hdfgroup.org/about/contact.html/">contact</a>).
+      The HDF Group maintains a registry of known user-defined
+      link classes and tracks the selected link class identifiers.
+      This registry is intended to reduce the risk of collisions 
+      between <code>class_id</code> values and to help coordinate the 
+      use of specialized link classes.
+
+    <p></p>
+<dt><strong>See Also:</strong>
+    <dd><a href="#Link-IsRegistered"><code>H5Lis_registered</code></a> 
+
     <p></p>
 <dt><strong>History:</strong>
     <dd><table width="90%">
