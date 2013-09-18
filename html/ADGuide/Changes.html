@@ -101,9 +101,6 @@ in the transition from HDF5 Release 1.8.11 to Release 1.8.12.
                     
                     These functions ... 
 
-<p>
-<font color="red"><i>Potential new functions (or new feature in following section): <code>H5Pencode</code> and <code>H5Pdecode</code></i></font>
-
                 </dd>
 
             <p>
@@ -141,14 +138,23 @@ in the transition from HDF5 Release 1.8.11 to Release 1.8.12.
                 </dd>
 
             <p>
-            <dt>The following C function has been modified:
+            <dt>The following C functions have been modified:
                 </dt>
             <dd>
                 <ul>
-                <li><a href="../RM/RM_H5Z.html#Dataset-Unregister">
+                <li><a href="../RM/RM_H5Z.html#Compression-Unregister">
                     <code>H5Zunregister</code></a>
                     now checks for open objects using a filter 
                     before allowing the filter to be unregistered.
+                <li><a href="../RM/RM_H5D.html#Dataset-Scatter">
+                    <code>H5Dscatter</code></a> and
+                    <a href="../RM/RM_H5D.html#Dataset-Gather">
+                    <code>H5Dgather</code></a> 
+                    signatures have changed slightly.
+                    <br>
+                    The <code>src_buff</code> parameter type is now
+                    <code>'<em>const&nbsp;void&nbsp;*</em>'</code>&nbsp;
+                    (previously: <code>'<em>void *</em>'</code>).
                 </ul>
                 </dd>
 
@@ -165,34 +171,100 @@ in the transition from HDF5 Release 1.8.11 to Release 1.8.12.
         </dir>
 
 
-    <h3>New Command-line Tool Option</h3>
+    <h3>New Command-line Tool Options and Option Parameters</h3>
         <dir>
         <dl>    
             <dt><a href="../RM/Tools.html#Tools-h5dump">
-                <code>tool_1</code></a> and
-                <a href="../RM/Tools.html#Tools-h5import">
-                <code>tool_2</code></a> 
-            <dd><code>tool_1</code> has a new option 
-                to ...
+                <code>h5dump</code></a>
+            <dd><code>h5dump</code> has a new option for identifying 
+                objects by a full or partial path:
                 <br>
-                <code>&nbsp;&nbsp;&nbsp;-_<i>&lt;option_param&gt;</i></code>
+                <code>&nbsp;&nbsp;&nbsp;-N<i>P</i></code>
                 <br>
-                <code>&nbsp;&nbsp;&nbsp;--______=<i>&lt;option_param&gt;</i></code>
+                <code>&nbsp;&nbsp;&nbsp;--any-path=<i>P</i></code>
+                <br>&nbsp;
 
-                <p>
-                <code>tool_2</code> can now ...
+            <dd>The <code>h5dump</code> attributes-only option, 
+                <code>-A</code> or <code>--only-attr</code>,
+                now accepts an optional parameter value
+                of <code>0</code> (zero):
                 <br>
-                See &ldquo;<a 
-                href="../RM/Tools.html#Tools-Import-UsingDump">___</a>&rdquo;.
+                <code>&nbsp;&nbsp;&nbsp;-A 0</code>
+                <br>
+                <code>&nbsp;&nbsp;&nbsp;--only-attr=0</code>
+                <br>
+                Specifying this value has the effect of reversing 
+                the role of the option to display everything
+                <i>except</i> attributes.
+                <br>&nbsp;
+
+            <dt><a href="../RM/Tools.html#Tools-h5repack">
+                <code>h5repack</code></a>
+            <dd>The <code>h5repack</code> option 
+                <code>-f</code>, <code>--filter</code> 
+                has a new parameter, <code>UD</code>, 
+                to enable the use of user-defined filters:
+                <br>
+                <code>&nbsp;&nbsp;&nbsp;-f UD=<i>&lt;filter_parameters&gt;</i></code>
+                <br>
+                <code>&nbsp;&nbsp;&nbsp;--filter=UD=<i>&lt;filter_parameters&gt;</i></code>
+                <br>&nbsp;
+
+            <dt><a href="../RM/Tools.html#Tools-h5stat">
+                <code>h5stat</code></a>
+            <dd><code>h5stat</code> has three new options for setting 
+                print thresholds:
+                <br>
+                <code>&nbsp;&nbsp;&nbsp;</code>For attributes:
+                <br>
+                <code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-a<i>N</i></code>
+                <br>
+                <code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;--attribute=<i>N</i></code>
+                <br>&nbsp;
+
+                <br>
+                <code>&nbsp;&nbsp;&nbsp;</code>For links in a group:
+                <br>
+                <code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-l<i>N</i></code>
+                <br>
+                <code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;--links=<i>N</i></code>
+                <br>&nbsp;
+
+                <br>
+                <code>&nbsp;&nbsp;&nbsp;</code>For dimension sizes:
+                <br>
+                <code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-m<i>N</i></code>
+                <br>
+                <code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;--dims=<i>N</i></code>
+
         </dl>    
         </dir>
 
 
-    <h3>Documentation of Configuration and Build Tool Introduced in 1.8.11</h3>
+    <h3>Build and Configuration</h3>
         <dir>
         <dl>    
-            <dt><code>cmakehdf5</code>
-            <dd>...
+            <dt>CMake and Autotools Configuration
+            <dd>A new configuration option can be used to change the default 
+                <a href="../Advanced/DynamicallyLoadedFilters/HDF5DynamicallyLoadedFilters.pdf">plugin</a> path:
+                <table>
+                <tr><td><code>&nbsp;&nbsp;&nbsp;</code></td>
+                    <td>Autotools&nbsp;<code>configure</code>&nbsp;option</td>
+                    <td>&nbsp;&nbsp;&nbsp;&nbsp;</td>
+                    <td><code>--with-default-plugindir=location</code></td>
+                    </tr>
+                <tr><td>&nbsp;</td>
+                    <td><code>cmake</code> option</td>
+                    <td>&nbsp;&nbsp;&nbsp;&nbsp;</td>
+                    <td><code>-DH5_DEFAULT_PLUGINDIR:PATH=location</code></td>
+                    </tr>
+                </table>
+                <p />
+
+            <dt>CMake configuration
+            <dd>CMake builds of HDF5 now create 
+                <code>*.so.{lt_version}</code> 
+                files with the same version as <code>configure</code>.
         </dl>    
         </dir>
 
@@ -236,44 +308,42 @@ in the transition from HDF5 Release 1.8.11 to Release 1.8.12.
         </dir>
 
 
-<!-- DEPRECATION OF H5Pset_fapl_multi IS ON HOLD PENDING FURTHER INVESTIGATION.
--->
-    <h3>Deprecated Function</h3>
+    <h3>Deprecated Functions</h3>
         <dir>
 
-<font color="red"><i>Potential entry, depending on development decision
-</i></font>
-<p>
-
+<!--
         <dl>    
             <dt>The following C function has been deprecated:
                 </dt>
             <dd>
-                <li><a href="../RM/RM_H5P.html#Property-SetFcplMulti">
-                    <code>H5Pset_fapl_multi</code></a> 
+                <li><a href="../RM/RM_H5P.html#Property-property">
+                    <code>H5Pproperty</code></a> 
                 </dd>
                     <p>
                     This function may be removed from the library
                     in a future release.
         </dl>    
+-->
         </dir>
 
 
-    <h3><!--New andChanged  -->Command-line Tools with Changed Behavior</h3>
-<!--
+    <h3>Command-line Tools with Changed Behavior</h3>
         <dir>
         <dl>    
-            <dt><a href="../RM/Tools.html#Tools-h5diff">
-                <code>h5diff</code></a>
-            <dd>When comparing two files or objects, 
-                <code>h5diff</code> now recognizes a unique extra attribute
-                attached to an object as a difference and 
-                returns with an exit code of <code>1</code>.
-                <p>
-                Previously, <code>h5diff</code> did not recognize the
-                extra attribute as a difference.
-                </dt>
+            <dt><a href="../RM/Tools.html#Tools-h5dump">
+                <code>h5dump</code></a>
+            <dd><code>h5dump</code> output now displays
+                <br>&nbsp;&nbsp;&nbsp;
+                <code>USER_DEFINED_FILTER</code>
+                <br>
+                where it previously displayed <code>UNKNOWN_FILTER</code>.
+                <br>&nbsp;
 
+            <dd><code>h5dump</code> now correctly exports subsetted data 
+                to a file using the 
+                <code>-o</code>, <code>--output</code> option.
+
+<!--
                 <p>
             <dt><a href="../RM/Tools.html#Tools-h5ls">
                 <code>h5ls</code></a>
@@ -288,9 +358,9 @@ in the transition from HDF5 Release 1.8.11 to Release 1.8.12.
             <dd>In <code>h5dump</code> output, 
                 <code>UNKNOWN_FILTER</code> has been changed to  
                 <code>USER_DEFINED_FILTER</code>.
+-->
         </dl>    
         </dir>
--->
 
 
     <h3>Removed Functions and Wrappers</h3>
@@ -10337,7 +10407,7 @@ V1.4.0
 </address>
 <!-- #EndLibraryItem --><!-- Created: Spring 1999 -->
 <!-- hhmts start -->
-Last modified: 2 July 2013
+Last modified: 18 September 2013
 <!-- hhmts end -->
 
 </body>
