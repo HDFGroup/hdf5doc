@@ -6916,25 +6916,32 @@ TABLE.list TD { border:none; }
     <h3><a name="FixedArray">Disk Format: Level 1I - Fixed Array</a></h3>
 
     <P>
-    <font color="red">WORK IN PROGRESS</font>
-
-    <P>
-    The Fixed Array is a kind of data structure used to index dataset chunks whose
-    dataspace has fixed dimensions or extendible fixed dimensions.
-    (an array should be stored as the index for the chunk records.
-    This would allow a single I/O access to retrieve any chunk record and would
-    be much more space and speed efficient than the current B-tree indexing method.)
+    The Fixed Array is a data structure that is used as a chunk index in datasets where
+    the dataspace has fixed maximum dimension extents (<em>i.e.</em>, no dimension can have its maximum
+    size be <code>H5S_UNLIMITED</code>).  Since the number of chunks is known <em>a priori</em>, a
+    simple array can be used to locate them, providing space and speed improvements over
+    index structures that handle more dynamic data arrangements.
     </P>
     <P>
-    The Fixed Array consists of a header and one or more data block pages.  
+    The Fixed Array consists of a header and a data block that contains the chunk information.
+    For improved efficiency, the data will be divided into multiple pages if
+    the number of elements exceeds a threshold value. 
     The header contains metadata information about the elements stored in the array
-    as well as the address of the first data block page.
-    The content of the first data block page depends on whether paging is turned on or not.
-    If paging is on, that is, the total number of elements exceeds 1K,
-    the first data block page contains a bit mask indicating the pages that are set up.
-    Otherwise,
-    the first data block page contains all the elements stored in the array.
-    An element in the array describes either a filterd or non-filtered dataset chunk and the format is described below.
+    as well as the address of the data block.
+    The content of the data block depends on whether paging is turned on or not.  When paging
+    is not being used, the data block simply contains the chunk information.
+    If paging is on, the data block will contain a bit mask indicating which pages have been initialized
+    in the file but will not the include data.  The subsequent data block pages will contain the actual
+    chunk information.
+    </P>
+    <P>
+    The space for the fixed array data (data block + pages, if any) is laid out in the file at
+    creation time as a single contiguous block of space.  If the array is
+    paged, the pages are initialized as needed, and the bitmap updated accordingly.
+    </P>
+    <P>
+    An element in the array describes either a filterd or non-filtered dataset chunk.  The formats
+    of both types of element are described below.
     </P>
     <br>
     <div align=center>
@@ -7204,7 +7211,7 @@ TABLE.list TD { border:none; }
         <tr>
           <td>Header Address</td>
 	  <td>
-	    <P>This is the address of the Fixed Array header.
+	    <P>This is the address of the Fixed Array header. This field is principally used for file integrity checking.
             </P>
 	  </td>
         </tr>
@@ -7212,8 +7219,8 @@ TABLE.list TD { border:none; }
 	<tr>
 	  <td>Page Bit Mask</td>
 	  <td>
-            <P>This field is the bit mask indicating whether a data
-	    block page is initialized or not.
+            <P>This field is the bit mask indicating whether a Data
+	    Block Page is initialized or not.
 	    This field exists only if the Data Block is paged.
           </td>
 	</tr>
@@ -7293,7 +7300,7 @@ TABLE.list TD { border:none; }
 	<tr>
 	  <td>Elements</td>
 	  <td>
-	    <P>This field contains the elements in a Data Block.
+	    <P>This field contains the elements in a Data Block Page.
 	    There are two element types:
                 <table class=list>
                     <tr>
@@ -7453,22 +7460,39 @@ TABLE.list TD { border:none; }
     <h3><a name="ExtensibleArray">Disk Format: Level 1I - Extensible Array</a></h3>
 
     <P>
-    <font color="red">WORK IN PROGRESS</font>
-
-    <P>
-    The Extensible Array is a kind of data structure used to index dataset
-    chunks whose dataspace has only one unlimited dimension, that is, changes 
-    the array size can only affect the upper limit of the dataset's dataspace.
-    The Extensible Array is a specialized variation of a skip list which is 
-    described in the paper by William Pugh "Skip Lists: A Probabilistic Alternative
-    to Balanced Trees".
-
-    This indexing data structure takes advantage of this aspect of the way 
-    datasets are extended and strunk.
-    is modified to fit the needs of the HDF5 library in indexing dataset chunks.
+    The Extensible Array is a data structure that is used as a chunk index in
+    datasets where the dataspace has a single unlimited dimension (<i>i.e.</i>,
+    <code>H5S_UNLIMITED</code>) and any number of fixed-size dimensions.
+    The idea behind the extensible array is that a particular data object can
+    be located via a lightweight indexing structure of fixed depth for a given
+    address space. This indexing structure requires only a few (2-3) file operations
+    per element lookup and gives good cache performance. Unlike the B-tree structure,
+    the extensible array is optimized for appends. Where a B-tree would always add at
+    the rightmost node under these circumstances, either creating a deep tree 
+    (version 1) or requiring expensive rebalances to correct (version 2), 
+    the extensible array has already mapped out a pre-balanced internal structure. 
+    This idealized internal structure is instantiated as needed when chunk records 
+    are inserted into the structure.
     </P>
     <P>
-    It consists of the header, an index block, a super block and data block(s).
+    A description of the logic that lead to the present implementation of the
+    extensible array can be found at <a href="http://www.hdfgroup.uiuc.edu/RFC/RFCs/HDF5/ReviseChunks/skip_lists/SkipListChunkIndex.html">
+    http://www.hdfgroup.uiuc.edu/RFC/RFCs/HDF5/ReviseChunks/skip_lists/SkipListChunkIndex.html</a>.
+    The current implementation differs from the data structure described in that
+    link in some ways, but the basic idea is the same.
+    </P>
+    <P>
+    An Extensible Array consists of a Header, an Index Block, Super Blocks, Data Blocks,
+    and (optional) Data Block Pages.
+    The general scheme
+    is that the index block is used to reference a superblock, which is, in turn, used to
+    reference the data block page where the chunk information is stored.
+    The data blocks will be paged for efficiency when their size passes a threshold value.
+    These pages are laid out contiguously on the disk after the data block, are initialized
+    as needed, and are tracked via bitmaps stored in the superblock.
+    The number of super and data blocks/pages in a chunk index varies as they are 
+    allocated as needed and the first
+    few are (conceptually) stored in parent elements as an optimization.
     <P>
     <br>
     <div align=center>
@@ -7838,25 +7862,16 @@ TABLE.list TD { border:none; }
         <tr>
           <td>Header Address</td>
 	  <td>
-	    <P>This is the address of the Extensible Array header.
+	    <P>This is the address of the Extensible Array header. This field is principally used for file integrity checking.
             </P>
 	  </td>
         </tr>
-
-	<tr>
-	  <td>Page Bit Mask</td>
-	  <td>
-            <P>This field is the bit mask indicating whether a data
-	    block page is initialized or not.
-	    This field exists only if the Data Block is paged.
-          </td>
-	</tr>
 	
 	<tr>
 	  <td>Index Block Elements</td>
 	  <td>
-	    <P>This field contains the elements in an Index Block and
-	    exists only if ??
+	    <P>This field contains elements that are encoded directly in the index block.
+        This is an optimization to avoid unnecessary super blocks.</P>
 	    There are two element types:
                 <table class=list>
                     <tr>
@@ -7884,16 +7899,15 @@ TABLE.list TD { border:none; }
         <tr>
           <td>Data Block Addresses</td>
           <td>
-            <P>This field contains addresses of data blocks in the Index 
-		Block.   This field exists???</P>
+            <P>This field contains addresses of data blocks stored in the Index 
+		Block (instead of via a super block).   This is an optimization to avoid unnecessary super blocks.</P>
           </td>
         </tr>
 
         <tr>
           <td>Super Block Addresses</td>
           <td>
-            <P>This field contains addresses of super blocks in the Index 
-		Block.   This field exists???</P>
+            <P>This field contains the addresses of the super blocks</P>
           </td>
         </tr>
 
@@ -7940,7 +7954,7 @@ TABLE.list TD { border:none; }
         </tr>
 
         <tr>
-          <td colspan=4><br>Page Bit Mask<br><em>(variable size and optional)</em><br><br></td>
+          <td colspan=4><br>Page Bit Masks<br><em>(variable size and optional)</em><br><br></td>
         </tr>
 
         <tr>
@@ -8025,7 +8039,7 @@ TABLE.list TD { border:none; }
         <tr>
           <td>Header Address</td>
 	  <td>
-	    <P>This is the address of the Extensible Array header.
+	    <P>This is the address of the Extensible Array header. This field is principally used for file integrity checking.
             </P>
 	  </td>
         </tr>
@@ -8033,25 +8047,24 @@ TABLE.list TD { border:none; }
         <tr>
           <td>Block Offset</td>
 	  <td>
-	    <P>This is the block offset....
+	    <P>This field stores the offset of the block in the array.
             </P>
 	  </td>
         </tr>
 
 	<tr>
-	  <td>Page Bit Mask</td>
+	  <td>Page Bit Masks</td>
 	  <td>
-            <P>This field is the bit mask indicating whether a data
-	    block page is initialized or not.
-	    This field exists only if there are Data Block pages.
+            <P>This field contains the bit masks indicating whether a data
+	    block page is initialized or not.  There is one bit mask per data block address.
+	    This field exists only if the data blocks are large enough to be paged.
           </td>
 	</tr>
 	
         <tr>
           <td>Data Block Addresses</td>
           <td>
-            <P>This field contains addresses of data blocks in the Index 
-		Block.   This field exists???</P>
+            <P>This field contains addresses of the data blocks referenced by this super block.</P>
           </td>
         </tr>
 
@@ -8179,7 +8192,7 @@ TABLE.list TD { border:none; }
         <tr>
           <td>Header Address</td>
 	  <td>
-	    <P>This is the address of the Extensible Array header.
+	    <P>This is the address of the Extensible Array header. This field is principally used for file integrity checking.
             </P>
 	  </td>
         </tr>
@@ -8187,16 +8200,17 @@ TABLE.list TD { border:none; }
 	<tr>
 	  <td>Block Offset</td>
 	  <td>
-            <P>This field is the 
-	    This field exists only if the Data Block is paged.
+            <P>This field is the offset of the data block in the array.
           </td>
 	</tr>
 	
 	<tr>
 	  <td>Data Block Elements</td>
 	  <td>
-	    <P>This field contains the elements in a Data Block and
-	    exists only if ??
+	    <P>This field contains the elements in a Data Block.
+        It only exists if the Data Block is unpaged.
+        </P>
+        
 	    There are two element types:
                 <table class=list>
                     <tr>
@@ -8227,6 +8241,198 @@ TABLE.list TD { border:none; }
             <P>This is the checksum for the Extensible Array Data Block.</P>
           </td>
         </tr>
+
+      </table>
+      
+          <br>
+    <div align=center>
+      <table class=format>
+        <caption>
+          Extensible Array Data Block Page
+        </caption>
+
+        <tr>
+          <th>byte</th>
+          <th>byte</th>
+          <th>byte</th>
+          <th>byte</th>
+        </tr>
+
+        <tr>
+          <td colspan=4><br>Elements<br><em>(variable size)</em><br><br></td>
+        </tr>
+
+        <tr>
+          <td colspan=4>Checksum</td>
+        </tr>
+
+      </table>
+    </div>
+
+    <br>
+    <div align=center>
+      <table class=desc>
+	<tr>
+          <th width="40%">Field Name</th>
+          <th>Description</th>
+        </tr>
+
+	<tr>
+	  <td>Elements</td>
+	  <td>
+	    <P>This field contains the elements in a Data Block Page.</P>
+        <P>
+	    There are two element types:
+                <table class=list>
+                    <tr>
+                      <th width="30%">ID</th>
+                      <th align=left>Description</th>
+                    </tr>
+
+                    <tr>
+                      <td align=center><code>0</code></td>
+                      <td>This is for non-filtered dataset chunks
+			    and is described below.
+                      </td>
+                    </tr>
+                    <tr>
+                      <td align=center><code>1</code></td>
+                      <td>This is for filtered dataset chunks and
+			is described below.
+                      </td>
+                    </tr>
+                </table>
+	    </P>
+	  </td>
+	</tr>
+
+        <tr>
+          <td>Checksum</td>
+          <td>
+            <P>This is the checksum for an Extensible Array Data Block Page.</P>
+          </td>
+        </tr>
+
+      </table>
+    </div>
+
+    <br>
+    <div align=center>
+      <table class=format>
+	<caption>
+	  Data Block Element for non-filtered dataset chunk
+	</caption>
+
+	<tr>
+	  <th width="25%">byte</th>
+	  <th width="25%">byte</th>
+	  <th width="25%">byte</th>
+	  <th width="25%">byte</th>
+	</tr>
+
+	<tr>
+	  <td colspan=4><br>Address<sup>O</sup><br><br></td>
+	</tr>
+
+      </table>
+    </div>
+
+      <table class=note>
+        <tr><td>
+            (Items marked with an 'O' in the above table are of the size
+            <br>
+	    specified in "Size of Offsets" field in the superblock.)
+        </td></tr>
+      </table>
+
+    <br>
+    <div align=center>
+      <table class=desc>
+	<tr>
+          <th width="30%">Field Name</th>
+          <th>Description</th>
+	</tr>
+
+	<tr>
+	  <td>Address</td>
+	  <td><P>This field is the address of the dataset chunk in the file.
+              </P>
+          </td>
+	</tr>
+
+      </table>
+    </div>
+    </P>
+
+    <br>
+    <div align=center>
+      <table class=format>
+	<caption>
+	  Data Block Element for filtered dataset chunk
+	</caption>
+
+	<tr>
+	  <th width="25%">byte</th>
+	  <th width="25%">byte</th>
+	  <th width="25%">byte</th>
+	  <th width="25%">byte</th>
+	</tr>
+
+	<tr>
+	  <td colspan=4><br>Address<sup>O</sup><br><br></td>
+	</tr>
+
+	<tr>
+	  <td colspan=4><br>Chunk Size<em>
+	   <br>(variable size; at most 8 bytes)</em><br><br></td>
+	</tr>
+
+	<tr>
+	  <td colspan=4>Filter Mask</td>
+	</tr>
+
+      </table>
+    </div>
+
+      <table class=note>
+        <tr><td>
+            (Items marked with an 'O' in the above table are of the size
+            <br>
+	    specified in "Size of Offsets" field in the superblock.)
+        </td></tr>
+      </table>
+
+    <br>
+    <div align=center>
+      <table class=desc>
+	<tr>
+          <th width="30%">Field Name</th>
+          <th>Description</th>
+	</tr>
+
+	<tr>
+	  <td>Address</td>
+	  <td><P>This field is the address of the dataset chunk in the file.
+              </P>
+          </td>
+	</tr>
+
+	<tr>
+	  <td>Chunk Size</td>
+	  <td><P>This field is the size of the dataset chunk in bytes.
+              </P>
+          </td>
+	</tr>
+
+	<tr>
+	  <td>Filter Mask</td>
+	  <td><P>This field is the filter mask which indicates the filter to
+	    skip for the dataset chunk.  Each filter has an index number in he
+	    pipeline and if that filter is skipped, the bit corresponding to
+	    its index is set.
+              </P>
+          </td>
+	</tr>
 
       </table>
     </div>
