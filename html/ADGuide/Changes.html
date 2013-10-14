@@ -71,9 +71,13 @@ other user-visible changes in behavior
 in the transition from HDF5 Release 1.8.11 to Release 1.8.12.
 
 
-    <h3>New and Changed Functions, Subroutines, and Macros</h3>
+    <h3>New and Changed Functions, Classes, Subroutines, Wrappers, 
+        and Macros</h3>
         <dir>
         <dl>    
+            <dt><strong>In the C Interface (main library)</strong>
+
+<!--
             <dt>The following new high-level C functions have been added:
                 </dt>
             <dd>
@@ -104,7 +108,203 @@ in the transition from HDF5 Release 1.8.11 to Release 1.8.12.
                 </dd>
 
             <p>
+-->
+            <dt>The following C functions have been modified:
+                </dt>
+                <ul>
+                <li><a href="../RM/RM_H5Z.html#Compression-Unregister">
+                    <code>H5Zunregister</code></a>
+                    now checks for open objects using a filter 
+                    before allowing the filter to be unregistered.
+                <li><a href="../RM/RM_H5D.html#Dataset-Scatter">
+                    <code>H5Dscatter</code></a> and
+                    <a href="../RM/RM_H5D.html#Dataset-Gather">
+                    <code>H5Dgather</code></a> 
+                    signatures have changed slightly.
+                    <br>
+                    The <code>src_buff</code> parameter type is now
+                    <code>'<em>const&nbsp;void&nbsp;*</em>'</code>&nbsp;
+                    (previously: <code>'<em>void *</em>'</code>).
+                </ul>
+
+            <p>
+            <dt><strong>In the C++ Interface</strong>
+
+            <dt>The following new C++ class has been added:
+            <dd><dl>
+                <dt><code>H5::H5Location</code>
+                <dd>The class <code>H5::H5Location</code> has been added 
+                    as a base class of <code>H5File</code> and 
+                    <code>H5Object</code>.  It represents the location 
+                    concept in the C library, where an identifier of an 
+                    HDF5 object or an HDF5 file being passed in as a 
+                    <code>loc_id</code> parameter.
+                </dl></dd>
+            <p>
+            <dt>The following member functions and their 
+                overloaded versions have been moved from 
+                various subclasses into the base class 
+                <code>H5Location</code>:
+            <dd><table><tr align="left" valign="top"><td>
+                    <code>createAttribute()</code>
+                    <br>
+                    <code>openAttribute()</code>
+                    <br>
+                    <code>attrExists()</code>
+                    <br>
+                    <code>renameAttr()</code>
+                    <br>
+                    <code>removeAttr()</code>
+                    <br>
+                    <code>flush()</code>
+                    <br>
+                    <code>getFileName()</code>
+                    <br>
+                    <code>getNumAttrs()</code>
+                  </td><td><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code></td><td>
+                    <code>getObjType()</code>
+                    <br>
+                    <code>iterateAttrs()</code>
+                    <br>
+                    <code>setComment()</code>
+                    <br>
+                    <code>getComment()</code>
+                    <br>
+                    <code>removeComment()</code>
+                    <br>
+                    <code>reference()</code>
+                    <br>
+                    <code>dereference()</code>
+                    <br>
+                    <code>getRegion()</code>
+                </td></tr></table>
+            <p>
+
+            <dt>The following wrappers for C functions have been added:
+            <dd><dl>
+                <dt><code>H5Location::getRefObjType</code>
+                <dd>Corresponding C function: <code>H5Rget_obj_type2</code> 
+                <dd>Retrieves the type of the object that an 
+                    object reference points to.
+
+                <dt><code>H5Location::attrExists</code>
+                <dd>Corresponding C function: <code>H5Aexist</code> 
+                <dd>Determines whether a given attribute exists.
+
+                <dt><code>H5Location::setComment</code>
+                <dd>Two overloaded versions of 
+                    <code>H5Location::setComment</code> have been added
+                    to take "." in lieue of the name of the object.
+                 </dl>
+            <p>
+            <dt>In the classes <code>DataSet</code>, 
+                <code>DataType</code>, and <code>Group</code>, 
+                the following constructors have changed as follows:
+            <dd><table border="0"><tr><td>
+                <li>These constructors
+                    <br>
+                    <code>&nbsp;&nbsp;&nbsp;&nbsp;DataSet(H5Object& obj, const void* ref, H5R_type_t ref_type = H5R_OBJECT);
+                    <br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;DataSet(H5File& h5file, const void* ref, H5R_type_t ref_type = H5R_OBJECT);
+                    <br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;DataSet(Attribute& attr, const void* ref, H5R_type_t ref_type = H5R_OBJECT);</code>
+                    <br>
+                    have changed to
+                    <br>
+	            <code>&nbsp;&nbsp;&nbsp;&nbsp;DataSet(const H5Location& loc, const void* ref, H5R_type_t ref_type = H5R_OBJECT);
+                    <br>
+	            &nbsp;&nbsp;&nbsp;&nbsp;DataSet(const Attribute& attr, const void* ref, H5R_type_t ref_type = H5R_OBJECT);</code>
+                    <p />
+
+                <li>These constructors
+                    <br>
+                    <code>&nbsp;&nbsp;&nbsp;&nbsp;DataType(H5Object& obj, const void* ref, H5R_type_t ref_type = H5R_OBJECT);
+                    <br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;DataType(H5File& h5file, const void* ref, H5R_type_t ref_type = H5R_OBJECT);
+                    <br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;DataType(Attribute& attr, const void* ref, H5R_type_t ref_type = H5R_OBJECT);</code>
+                    <br>
+                    have changed to
+                    <br>
+	            <code>&nbsp;&nbsp;&nbsp;&nbsp;DataType(const H5Location& loc, const void* ref, H5R_type_t ref_type = H5R_OBJECT);
+                    <br>
+	            &nbsp;&nbsp;&nbsp;&nbsp;DataType(const Attribute& attr, const void* ref, H5R_type_t ref_type = H5R_OBJECT);</code>
+                    <br>
+	            <code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code>
+
+                 <li>These constructors
+                    <br>
+                    <code>&nbsp;&nbsp;&nbsp;&nbsp;Group(H5Object& obj, const void* ref, H5R_type_t ref_type = H5R_OBJECT);
+                    <br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;Group(H5File& h5file, const void* ref, H5R_type_t ref_type = H5R_OBJECT);
+                    <br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;Group(Attribute& attr, const void* ref, H5R_type_t ref_type = H5R_OBJECT);</code>
+                    <br>
+                    have changed to
+                    <br>
+	            <code>&nbsp;&nbsp;&nbsp;&nbsp;Group(const H5Location& loc, const void* ref, H5R_type_t ref_type = H5R_OBJECT);
+                    <br>
+	            &nbsp;&nbsp;&nbsp;&nbsp;Group(const Attribute& attr, const void* ref, H5R_type_t ref_type = H5R_OBJECT);</code>
+                </td></tr></table>
+                <p />
+
+<!--
+
+            <dd><pre>
+        DataSet(H5Object& obj, const void* ref, H5R_type_t ref_type = H5R_OBJECT);
+        DataSet(H5File& h5file, const void* ref, H5R_type_t ref_type = H5R_OBJECT);
+        DataSet(Attribute& attr, const void* ref, H5R_type_t ref_type = H5R_OBJECT);
+    have changed to
+	DataSet(const H5Location& loc, const void* ref, H5R_type_t ref_type = H5R_OBJECT);
+	DataSet(const Attribute& attr, const void* ref, H5R_type_t ref_type = H5R_OBJECT);
+
+        DataType(H5Object& obj, const void* ref, H5R_type_t ref_type = H5R_OBJECT);
+        DataType(H5File& h5file, const void* ref, H5R_type_t ref_type = H5R_OBJECT);
+        DataType(Attribute& attr, const void* ref, H5R_type_t ref_type = H5R_OBJECT);
+    have changed to
+	DataType(const H5Location& loc, const void* ref, H5R_type_t ref_type = H5R_OBJECT);
+	DataType(const Attribute& attr, const void* ref, H5R_type_t ref_type = H5R_OBJECT);
+
+        Group(H5Object& obj, const void* ref, H5R_type_t ref_type = H5R_OBJECT);
+        Group(H5File& h5file, const void* ref, H5R_type_t ref_type = H5R_OBJECT);
+        Group(Attribute& attr, const void* ref, H5R_type_t ref_type = H5R_OBJECT);
+    have changed to
+	Group(const H5Location& loc, const void* ref, H5R_type_t ref_type = H5R_OBJECT);
+	Group(const Attribute& attr, const void* ref, H5R_type_t ref_type = H5R_OBJECT);
+                </pre>
+
+
+
+            <dt>The following new C++ classes, wrappers, and functions 
+                have been added:
+                </dt>
+            <dd>
+                <dl>
+                <dt><code>H5::H5Location</code>
+                    <dd>Class added to represent the location concept 
+                        in the C library, where it is most often 
+                        represented as a <code>loc_id</code>
+                        return type or parameter
+                <dt><code>H5Location::getRefObjType</code>
+                    <dd>Wrapper added for the C function 
+                        <code> H5Rget_obj_type2</code> 
+                        to retrieve the type of the object
+                        that an object reference points to. 
+                <dt><code>H5::H5Location::attrExists</code>
+                    <dd>Overloaded wrapper added for the C function
+                        <code>H5Aexist</code> to determine whether a 
+                        given attribute exists.
+                <dt><code>list_will_be_inserted_here</code>
+                    <dd>Overloaded functions added for convenience.
+                </dl>
+-->
+
+            <p>
+            <dt><strong>In the Fortran Interface</strong>
+
             <dt>The following new Fortran subroutines have been added:
+            <dd><i>These changes are not yet known.</i>
+<!--
                 </dt>
             <dd>Fortran90 subroutines: 
                 <table width="100%" border="0">
@@ -136,37 +336,21 @@ in the transition from HDF5 Release 1.8.11 to Release 1.8.12.
                 </td></tr>
                 </table>
                 </dd>
-
-            <p>
-            <dt>The following C functions have been modified:
-                </dt>
-                <ul>
-                <li><a href="../RM/RM_H5Z.html#Compression-Unregister">
-                    <code>H5Zunregister</code></a>
-                    now checks for open objects using a filter 
-                    before allowing the filter to be unregistered.
-                <li><a href="../RM/RM_H5D.html#Dataset-Scatter">
-                    <code>H5Dscatter</code></a> and
-                    <a href="../RM/RM_H5D.html#Dataset-Gather">
-                    <code>H5Dgather</code></a> 
-                    signatures have changed slightly.
-                    <br>
-                    The <code>src_buff</code> parameter type is now
-                    <code>'<em>const&nbsp;void&nbsp;*</em>'</code>&nbsp;
-                    (previously: <code>'<em>void *</em>'</code>).
-                </ul>
+-->
         </dl>    
         </dir>
 
+<!--
 
-    <h3>New Feature: &lt;new_feature&gt;</h3>
+    <h3>New Feature: &lt;feature_name&gt;</h3>
         <dir>
             &lt;Description&gt;
             <p>
-            See &ldquo;<a href="../Advanced/DynamicallyLoadedFilters/HDF5DynamicallyLoadedFilters.pdf">__</a>&rdquo; 
+            See &ldquo;<a href="../Advanced/_dirs_/_file_">__</a>&rdquo; 
             for further information.
         </dir>
 
+-->
 
     <h3>New Command-line Tool Options and Option Parameters</h3>
         <dir>
@@ -273,13 +457,13 @@ in the transition from HDF5 Release 1.8.11 to Release 1.8.12.
 
 
 
-    <h3>Function<!--s-->, Subroutines, <!--Wrappers, Macros,--> 
-        and Feature<!--s--> with Changed Syntax or Behavior</h3>
+<!--
+    <h3>Functions, Subroutines, Wrappers, Macros, 
+        and Features with Changed Syntax or Behavior</h3>
         <dir>
         <dl>    
             <dt>High-level C functions
             <dd>...
-<!--
                 <ul>
                 <li><a href="../HL/RM_H5DS.html#H5DSget_scale_name">
                     <code>H5DSget_scale_name</code></a>
@@ -287,7 +471,6 @@ in the transition from HDF5 Release 1.8.11 to Release 1.8.12.
                     This function has been changed to <i>not</i>
                     include the NULL terminator in the returned size of 
                     of the dimension scale name (bug fix).
--->
                 </dd>
 
             <p>
@@ -295,7 +478,6 @@ in the transition from HDF5 Release 1.8.11 to Release 1.8.12.
                 Fortran subroutines 
                 </dt>
             <dd>...
-<!--
                 <ul>
                 <li><code>h5pset_external_f</code> and
                 <li><code>h5pget_external_f</code>
@@ -304,17 +486,17 @@ in the transition from HDF5 Release 1.8.11 to Release 1.8.12.
                 <code>INTEGER(KIND=OFF_T)</code> to support 8-byte integers, 
                 matching the C type definition of <code>off_t</code>.
                 </dt>
--->
             <dd>
 
         <dl>    
         </dir>
+-->
 
 
+<!--
     <h3>Deprecated Functions</h3>
         <dir>
 
-<!--
         <dl>    
             <dt>The following C function has been deprecated:
                 </dt>
@@ -326,8 +508,8 @@ in the transition from HDF5 Release 1.8.11 to Release 1.8.12.
                     This function may be removed from the library
                     in a future release.
         </dl>    
--->
         </dir>
+-->
 
 
     <h3>Compile Scripts with Changed Behavior</h3>
@@ -384,8 +566,8 @@ in the transition from HDF5 Release 1.8.11 to Release 1.8.12.
         </dir>
 
 
-    <h3>Removed Functions and Wrappers</h3>
 <!--
+    <h3>Removed Functions and Wrappers</h3>
         <dir>
         <dl>    
             <dt>The following C functions and
@@ -10428,7 +10610,7 @@ V1.4.0
 </address>
 <!-- #EndLibraryItem --><!-- Created: Spring 1999 -->
 <!-- hhmts start -->
-Last modified: 26 September 2013
+Last modified: 11 October 2013
 <!-- hhmts end -->
 
 </body>
