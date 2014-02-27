@@ -1,0 +1,254 @@
+
+<!--
+  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+  * Copyright by The HDF Group.                                               *
+  * All rights reserved.                                                      *
+  *                                                                           *
+  * This file is part of HDF5.  The full HDF5 copyright notice, including     *
+  * terms governing use, modification, and redistribution, is contained in    *
+  * the files COPYING and Copyright.html.  COPYING can be found at the root   *
+  * of the source code distribution tree; Copyright.html can be found at the  *
+  * root level of an installed copy of the electronic HDF5 document set and   *
+  * is linked from the top-level documents page.  It can also be found at     *
+  * http://www.hdfgroup.org/HDF5/doc/Copyright.html.  If you do not have      *
+  * access to either file, you may request a copy from help@hdfgroup.org.     *
+  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+ -->
+
+
+
+<!--__ ***********************************************************  -->
+<!--__ Do not alter the next line; it is used by the PDF generator. -->
+<!--__ ***********************************************************  -->
+<!-- NEW PAGE -->
+
+
+<!--__ *** HEADER RIGHT ******************************************  -->
+<!--__ Update H5function_name; leave remainder of line unchanged    -->
+<!--__ as it is also used by the PDF generator.                     -->
+<!--__ ***********************************************************  -->
+<!-- HEADER RIGHT "H5Pset_append_flush" -->
+
+<hr />
+<dl>
+
+<dt><div align="right"><font color="999999" size="-1"><i>
+    Last modified: 18 February 2014
+    </i></font></div></dt>
+    <br />
+
+
+<dt><strong>Name:</strong> 
+    <a name="Property-SetAppendFlush">H5Pset_append_flush</a></dt>
+    <br />
+
+<dt><strong>Signature:</strong></dt>
+<dd><code><em>herr_t</em> H5Pset_append_flush (<em>hid_t</em> dapl_id, 
+<em>int</em> ndims, <em>const hsize_t</em> boundary[], 
+<em>H5D_append_cb_t</em>  func, <em>void</em> *user_data)</code></dd>
+<br />
+<dt><strong>Purpose:</strong></dt>  
+<dd>Sets two actions to perform when the size of a dataset&rsquo;s 
+dimension being appended reaches a specified boundary. </dd>
+<br />
+
+<dt><strong>Description:</strong></dt> 
+<dd>
+<code>H5Pset_append_flush</code> sets the following two actions to 
+perform for a dataset associated with the dataset access property list 
+<code>dapl_id</code>: 
+
+<ul>
+<li>Call the callback function <code>func</code> set in the property list</li>
+<li>Flush the dataset associated with the dataset access property list</li>
+</ul>
+<p>The library will invoke the above actions when the dataset&rsquo;s 
+newly extended dimension size hits a boundary specified by 
+<code>boundary</code>. <code>boundary</code> is a 1-dimensional array 
+with <code>ndims</code> elements, which should be the same as the rank 
+of the dataset&rsquo;s dataspace.  While appending to a dataset along a 
+particular dimension <code><em>i</em></code> via <code>H5DOappend</code>, 
+the library determines a boundary is reached when the resulting dimension 
+size is divisible by <code>boundary[i]</code>. A zero value indicates no 
+boundary is specified.</p>
+
+<p>The setting of this property will apply only for a chunked dataset 
+with an extendible dataspace. A dataspace is extendible when it is 
+defined with either one of the following: </p>
+<ul>
+<li>A dataspace with fixed current and maximum dimension sizes</li>
+<li>A dataspace with at least one unlimited dimension for its maximum 
+dimension size</li>
+</ul>
+<p>When creating or opening a chunked dataset, the library will check 
+whether the boundary as specified in the access property list is set 
+up properly. <code>ndims</code> is the number of elements for 
+<code>boundary</code> and should be the same as the dataset rank. If a 
+non-zero boundary value is specified for a non-extendible dimension, 
+the library will fail the dataset create or open. </p>
+
+<p>The callback function <code>func</code> must conform to the prototype 
+defined as below:</p>
+
+<code>typedef <em>herr_t</em> (H5D_append_cb_t)(<em>hid_t</em> dataset_id, 
+<em>hsize_t</em> *cur_dims, <em>void</em> *user_data) </code>
+
+<p>where </p>
+
+<p><code>dataset_id</code> is the dataset identifier, </p>
+<p><code>cur_dims</code> is the dataset&rsquo;s current dimension sizes 
+when a boundary is hit, and </p>
+<p><code>user_data</code> is the user-defined input data.</p>
+</dd>
+<br />
+
+
+<dt><strong>Parameters:</strong></dt> 
+<dd>
+<table width="100%">
+<tr valign="bottom">
+<td width="20%"><code><em>hid_t</em> dapl_id</code></td>
+<td width="80%">IN: Dataset access property list identifier.</td></tr>
+<tr valign="bottom">
+<td width="20%"><code><em>int</em> ndims</code></td>
+<td width="80%">IN: The number of elements for boundary.</td></tr>
+<tr valign="bottom">
+<td width="20%"><code><em>hsize_t</em> *boundary</code></td>
+<td width="80%">IN: The dimension sizes used to determine the 
+    boundary.</td></tr>
+<tr valign="bottom">
+<td width="20%"><code><em>H5D_append_cb_t</em>  func</code></td>
+<td width="80%">IN: The user-defined callback function.</td></tr>
+<tr valign="bottom">
+<td width="20%"><code><em>void</em> *user_data</code></td>
+<td width="80%">IN: The user-defined input data.</td></tr>
+</table>
+</dd>
+<br />
+
+<dt><strong>Returns:</strong></dt> 
+<dd>Returns a non-negative value if successful; otherwise returns a 
+negative value.</dd>
+<br />
+
+<dt><strong>Example Usage:</strong></dt> 
+<dd>
+The example below illustrates the usage of this public routine to 
+manage flush behavior while appending to a dataset. Note also the use of 
+<a href="H5DOAppend.htm"><code>H5DOappend</code></a>.
+
+<pre>
+hsize_t dims[2] = {0, 100};
+hsize_t max_dims[2] = {H5S_UNLIMITED, 100};
+hsize_t boundary_dims[2] = {5, 0};
+unsigned counter;
+void *buf;
+hid_t file_id;
+hid_t dataset_id, dapl_id, type;
+
+/* Open the file */
+file_id = H5Fopen(FILE, H5F_ACC_RDWR|H5F_ACC_SWMR_WRITE, H5P_DEFAULT);
+
+/* Create a copy of the dataset access property list */
+dapl_id = H5Pcreate(H5P_DATASET_ACCESS);
+
+/* Set up the append property values */
+/* boundary_dims[0]=5: to invoke callback and flush every 5 lines */
+/* boundary_dims[1]=0: no boundary is set for the non-extendible dimension */
+/* append_cb: callback function to invoke when hitting boundary (see below) */
+/* counter: user data to pass along to the callback function */
+H5Pset_append_flush(dapl_id, 2, boundary_dims, append_cb, &counter);
+
+/* DATASET is a 2-dimensional chunked dataset with dataspace: 
+   dims[] and max_dims[] */
+dataset_id = H5Dopen2(file_id, “dataset”, dapl_id);
+
+/* Get the dataset’s datatype */
+type = H5Dget_type(dataset_id);
+
+/* Append 50 lines along the unlimited dimension to the dataset */
+for(n = 0; n < 50; n++) {
+
+/* Append 1 line to the dataset */  
+/* Whenever hitting the specified boundary i.e., every 5 lines, 
+   the library will invoke append_cb() and then flush the dataset. */ 
+H5DOappend(dataset_id, H5P_DEFAULT, 0, 1, type, buf);
+}
+:
+:
+:
+/* counter will be equal to 10 */
+:
+:
+:
+
+/* The callback function */
+static herr_t
+append_cb(hid_t dset_id, hsize_t *cur_dims, void *_udata)
+{
+    unsigned *count = (unsigned *)_udata;
+    ++(*count++);
+    return 0;
+} /* append_cb() */
+
+</pre>
+</dd>
+<br />
+
+<dt><strong>Fortran Interface:</strong></dt>
+<dd>None</dd>
+<br />
+
+<dt><strong>See Also:</strong></dt>
+
+<ul>
+<li><a href="H5Fstart_swmr_write.htm">H5Fstart_swmr_write</a></li>
+<li><a href="H5DOAppend.htm">H5DOappend</a></li>
+<li><a href="H5Pget_append_flush.htm">H5Pget_append_flush</a></li>
+<li><a href="H5Pset_object_flush_cb.htm">H5Pset_object_flush_cb</a></li>
+<li><a href="H5Pget_object_flush_cb.htm">H5Pget_object_flush_cb</a></li>
+</ul>
+
+<br />
+<ul>
+<li><a href="H5Odisable_mdc_flushes.htm">H5Odisable_mdc_flushes</a></li>
+<li><a href="H5Oenable_mdc_flushes.htm">H5Oenable_mdc_flushes</a></li>
+<li><a href="H5Oare_mdc_flushes_disabled.htm">H5Oare_mdc_flushes_disabled</a></li>
+<li><a href="H5Fdisable_mdc_flushes.htm">H5Fdisable_mdc_flushes</a></li>
+<li><a href="H5Fenable_mdc_flushes.htm">H5Fenable_mdc_flushes</a></li>
+<li><a href="H5Fare_mdc_flushes_disabled.htm">H5Fare_mdc_flushes_disabled</a></li>
+<li><a href="H5Fget_mdc_flush_disabled_obj_ids.htm">H5Fget_mdc_flush_disabled_obj_ids</a></li>
+</ul>
+<br />
+<ul>
+<li><a href="H5Dflush.htm">H5Dflush</a></li>
+<li><a href="H5Drefresh.htm">H5Drefresh</a></li>
+<li><a href="H5Gflush.htm">H5Gflush</a></li>
+<li><a href="H5Grefresh.htm">H5Grefresh</a></li>
+<li><a href="H5Oflush.htm">H5Oflush</a></li>
+<li><a href="H5Orefresh.htm">H5Orefresh</a></li>
+<li><a href="H5Tflush.htm">H5Tflush</a></li>
+<li><a href="H5Trefresh.htm">H5Trefresh</a></li>
+</ul>
+
+
+<br />
+
+
+<dt><strong>History:</strong></dt>
+<dd><table width="90%">
+    <tr>
+    <td valign="top" align="left" width="10%">
+    <strong>Release</strong>&nbsp;&nbsp;&nbsp;&nbsp;</td>
+    <td valign="top" align="left">
+    <strong>Change</strong></td></tr>
+    <tr>
+    <td valign="top">1.10.x</td>
+    <td valign="top">
+    C function introduced with this release. </td></tr>
+    </table></dd>
+</dl>
+<br />
+<br />
+<br />
+
