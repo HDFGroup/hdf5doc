@@ -55,15 +55,13 @@
 <code>H5Fstart_swmr_write</code> will activate SWMR writing mode for 
 a file associated with <code>file_id</code>. This routine will prepare 
 and ensure the file is safe for SWMR writing as follows: 
-
+<p>
 <ul>
-<li>Check that the file is opened with write access 
+<li>Check that the file is opened with write access
     (<code>H5F_ACC_RDWR</code>). </li>
 <li>Check that the file is opened with the latest library format to 
     ensure data structures with check-summed metadata are used. </li>
-<li>Check that there are no opened objects (datasets, groups, committed 
-    datatypes) in the file. </li>
-<li>Check that the file is not already in SWMR writing mode. </li>
+<li>Check that the file is not already marked in SWMR writing mode. </li>
 <li>Enable reading retries for check-summed metadata to remedy possible 
     checksum failures from reading inconsistent metadata on a system 
     that is not atomic. </li>
@@ -71,10 +69,14 @@ and ensure the file is safe for SWMR writing as follows:
     ordering problem on a system that is not atomic. </li>
 <li>Perform a flush of the file&rsquo;s data buffers and metadata to 
     set a consistent state for starting SWMR write operations. </li>
-</ul></dd>
+</ul>
+<dd>
+<p>Library objects are groups, datasets, and committed datatypes.
+For the current implementation, groups and datasets can remain open
+when activating SWMR writing mode, but not committed datatypes.
+Attributes attached to objects cannot remain open either.
+</dd>
 <br />
-
-
 <dt><strong>Parameters:</strong></dt> 
 <dd>
 <table width="100%">

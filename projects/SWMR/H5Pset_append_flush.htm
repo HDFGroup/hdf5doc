@@ -57,21 +57,27 @@ dimension being appended reaches a specified boundary. </dd>
 <code>H5Pset_append_flush</code> sets the following two actions to 
 perform for a dataset associated with the dataset access property list 
 <code>dapl_id</code>: 
-
+<p>
 <ul>
 <li>Call the callback function <code>func</code> set in the property list</li>
 <li>Flush the dataset associated with the dataset access property list</li>
 </ul>
-<p>The library will invoke the above actions when the dataset&rsquo;s 
-newly extended dimension size hits a boundary specified by 
-<code>boundary</code>. <code>boundary</code> is a 1-dimensional array 
-with <code>ndims</code> elements, which should be the same as the rank 
+</p>
+<p>When a user is appending data to a dataset via <code>H5DOappend</code>
+and the dataset&rsquo;s newly extended dimension size hits a specified boundary,
+the library will first perform action #1 listed above.
+Upon return from the callback function, the library will then perform the 
+above action #2 and return to the user.  If no boundary is hit or set,
+the two actions above are not invoked.
+<p>The specified boundary is indicated by the parameter <code>boundary</code>. 
+It is a 1-dimensional array with <code>ndims</code> elements, 
+which should be the same as the rank 
 of the dataset&rsquo;s dataspace.  While appending to a dataset along a 
-particular dimension <code><em>i</em></code> via <code>H5DOappend</code>, 
+particular dimension index via <code>H5DOappend</code>, 
 the library determines a boundary is reached when the resulting dimension 
-size is divisible by <code>boundary[i]</code>. A zero value indicates no 
-boundary is specified.</p>
-
+size is divisible by <code>boundary[index]</code>. 
+A zero value for <code>boundary[index]</code> indicates no 
+boundary is set for that dimension index.</p>
 <p>The setting of this property will apply only for a chunked dataset 
 with an extendible dataspace. A dataspace is extendible when it is 
 defined with either one of the following: </p>
@@ -82,10 +88,15 @@ dimension size</li>
 </ul>
 <p>When creating or opening a chunked dataset, the library will check 
 whether the boundary as specified in the access property list is set 
-up properly. <code>ndims</code> is the number of elements for 
-<code>boundary</code> and should be the same as the dataset rank. If a 
-non-zero boundary value is specified for a non-extendible dimension, 
-the library will fail the dataset create or open. </p>
+up properly. The library will fail the dataset create or open if the
+following conditions are true: </p>
+<ul>
+<li>
+<code>ndims</code>, the number of elements for <code>boundary</code>,
+is not the same as the rank of the dataset&rsquo;s dataspace. 
+<li>
+A non-zero boundary value is specified for a non-extendible dimension.
+</ul>
 
 <p>The callback function <code>func</code> must conform to the prototype 
 defined as below:</p>
@@ -94,11 +105,10 @@ defined as below:</p>
 <em>hsize_t</em> *cur_dims, <em>void</em> *user_data) </code>
 
 <p>where </p>
-
-<p><code>dataset_id</code> is the dataset identifier, </p>
-<p><code>cur_dims</code> is the dataset&rsquo;s current dimension sizes 
+    <p><code>dataset_id</code> is the dataset identifier, </p>
+    <p><code>cur_dims</code> is the dataset&rsquo;s current dimension sizes 
 when a boundary is hit, and </p>
-<p><code>user_data</code> is the user-defined input data.</p>
+    <p><code>user_data</code> is the user-defined input data.</p>
 </dd>
 <br />
 
@@ -166,13 +176,13 @@ dataset_id = H5Dopen2(file_id, “dataset”, dapl_id);
 /* Get the dataset’s datatype */
 type = H5Dget_type(dataset_id);
 
-/* Append 50 lines along the unlimited dimension to the dataset */
+/* Append 50 lines along the unlimited dimension (index = 0) to the dataset */
 for(n = 0; n < 50; n++) {
 
-/* Append 1 line to the dataset */  
-/* Whenever hitting the specified boundary i.e., every 5 lines, 
-   the library will invoke append_cb() and then flush the dataset. */ 
-H5DOappend(dataset_id, H5P_DEFAULT, 0, 1, type, buf);
+    /* Append 1 line to the dataset */  
+    /* Whenever hitting the specified boundary i.e., every 5 lines, 
+       the library will invoke append_cb() and then flush the dataset. */ 
+    H5DOappend(dataset_id, H5P_DEFAULT, 0, 1, type, buf);
 }
 :
 :
