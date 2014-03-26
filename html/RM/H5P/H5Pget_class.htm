@@ -24,7 +24,7 @@
 <dl>
 
   <dt><div align=right><font color=999999 size=-1><i>
-    Last modified: 26 April 2013
+      Last modified: 26 March 2014
       </i></font></div>
 
   <dt><strong>Name:</strong> <a name="Property-GetClass">H5Pget_class</a>
@@ -34,24 +34,70 @@
 
   <p>
   <dt><strong>Purpose:</strong>
-    <dd>Returns the property list class for a property list.
+    <dd>Returns the property list class identifier for a property list.
 
   <p>
   <dt><strong>Description:</strong>
-    <dd><code>H5Pget_class</code> returns the property list class for the 
+    <dd><code>H5Pget_class</code> 
+        returns the property list class identifier for the 
         property list identified by the <code>plist</code> parameter.
         <p>
-        Use <a href="#Property-Equal"><code>H5Pequal</code></a>
-        to determine which predefined HDF5 property class 
+        Note that <code>H5Pget_class</code> returns a value of
+        <code><em>hid_t</em></code> type, an internal HDF5 identifier, 
+        rather than directly returning a property list class.
+        That identifier can then be used with either
+        <a href="#Property-Equal"><code>H5Pequal</code></a> or
+        <a href="#Property-GetClassName"><code>H5Pget_class_name</code></a>
+        to determine which predefined HDF5 property list class 
         <code>H5Pget_class</code> has returned.
-        Valid property list classes are defined in the description of
+        <p>
+        A full list of valid predefined property list classes appears 
+        in the description of 
         <a href="#Property-Create"><code>H5Pcreate</code></a>.
+        <p>
+        Determining the HDF5 property list class name with
+        <a href="#Property-Equal"><code>H5Pequal</code></a> requires 
+        a series of <code>H5Pequal</code> calls in an if-else sequence.
+        An iterative sequence of <code>H5Pequal</code> calls can 
+        compare the identifier returned by <code>H5Pget_class</code> to 
+        members of the list of valid property list class names.
+        A pseudo-code snippet might read as follows:
+        <pre>
+    plist_class_id = H5Pget_class (dsetA_plist);
+
+    if H5Pequal (plist_class_id, H5P_OBJECT_CREATE) = 1;           ?  (which one?)
+    if H5Pequal (plist_class_id, H5P_OBJECT_CREATE) = TRUE;        ?
+            [ H5P_OBJECT_CREATE is the propoerty list class    ]
+            [ returned by H5Pget_class.                        ]
+
+        else if H5Pequal (plist_class_id, H5P_DATASET_CREATE) = TRUE;
+            [ H5P_DATASET_CREATE is the propoerty list class.  ]
+
+        else if H5Pequal (plist_class_id, H5P_DATASET_XFER) = TRUE;
+            [ H5P_DATASET_XFER is the propoerty list class.    ]
+
+        .
+        .   [ Continuing the iteration until a match is found. ]
+        .  </pre>
+
+        <p>
+        <a href="#Property-GetClassName"><code>H5Pget_class_name</code></a>
+        returns the property list class name directly as a string: 
+        <pre>
+    plist_class_id = H5Pget_class (dsetA_plist);
+    plist_class_name = H5Pget_class_name (plist_class_id) 
+        </pre>
+
+        <p>
+        Note that frequent use of <code>H5Pget_class_name</code> can 
+        become a performance problem in a high-performance environment.
+        The <code>H5Pequal</code> approach is generally much faster.
 
   <p>
   <dt><strong>Parameters:</strong>
     <dd><table>
       <tr>
-	    <td valign="top"><em>hid_t</em>&nbsp;<code>plist&nbsp;&nbsp;&nbsp;&nbsp;</code></td>
+        <td valign="top"><em>hid_t</em>&nbsp;<code>plist&nbsp;&nbsp;&nbsp;&nbsp;</code></td>
         <td valign="top">IN: Identifier of property list to query.</td></tr>
     </table></dd>
 
@@ -63,7 +109,7 @@
   <p>
   <dt><strong>Fortran90 Interface:</strong> h5pget_class_f
     <dd>
-	<pre>
+    <pre>
 SUBROUTINE h5pget_class_f(prp_id, classtype, hdferr) 
   IMPLICIT NONE
   INTEGER(HID_T), INTENT(IN) :: prp_id ! Property list identifier 
@@ -73,14 +119,14 @@ SUBROUTINE h5pget_class_f(prp_id, classtype, hdferr)
                                        !    H5P_NO_CLASS  
                                        !    H5P_FILE_CREATE_F 
                                        !    H5P_FILE_ACCESS_F 
-                                       !    H5PE_DATASET_CREATE_F 
+                                       !    H5P_DATASET_CREATE_F 
                                        !    H5P_DATASET_XFER_F
-                                       !    H5P_MOUNT_F 
+                                       !    H5P_FILE_MOUNT_F 
   INTEGER, INTENT(OUT) :: hdferr       ! Error code
                                        ! 0 on success and -1 on failure
 END SUBROUTINE h5pget_class_f
-	</pre>		
-		
+    </pre>
+
   <p>
   <dt><strong>History:</strong>
     <dd><table width="90%">
