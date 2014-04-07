@@ -24,7 +24,7 @@
 <dl>
 
 <dt><div align=right><font color=999999 size=-1><i>
-    Last modified: 23 August 2012
+    Last modified: 7 April 2014
     </i></font></div>
 
 <dt><strong>Name:</strong> <a name="Datatype-SetSize">H5Tset_size</a>
@@ -36,46 +36,64 @@
 
 <p>
 <dt><strong>Purpose:</strong>
-    <dd>Sets the total size for an atomic datatype.
+    <dd>Sets the total size for a datatype.
 
 <p>
 <dt><strong>Description:</strong>
     <dd><code>H5Tset_size</code> sets the total size in bytes, 
         <code>size</code>, for a datatype.  
         <p>
-        If the datatype is atomic and size is decreased so that the significant 
-        bits of the datatype extend beyond the edge of the new size, 
-        then the <code>offset</code> property is decreased toward zero.  
+        The parameter <code>size</code> must have a positive value,
+        unless it is passed as <code>H5T_VARIABLE</code> and 
+        the datatype is a string datatype.
+        <p>
+        <i>Numeric datatypes:</i>
+        If the datatype is atomic and the size is decreased so that 
+        significant bits of the datatype extend beyond the edge of the 
+        new size, then the <code>offset</code> property of the datatype 
+        is decreased toward zero.  
         If the <code>offset</code> becomes zero and the significant
         bits of the datatype still hang over the edge of the new size, then
         the number of significant bits is decreased.
         <p>
-        The <code>size</code> set for a string should include space for the 
-        null-terminator character, otherwise it will not be stored on 
+        <i>String or character datatypes:</i>
+        The <code>size</code> set for a string datatype should include space 
+        for the null-terminator character, otherwise it will not be stored on 
         (or retrieved from) disk.
         Adjusting the <code>size</code> of a string automatically sets the 
         precision to 8*<code>size</code>.  
         <p>
+        <i>Variable-length string datatypes:</i>
         If <code>dtype_id</code> is a variable-length string, 
         <code>size</code> must normally be set to <code>H5T_VARIABLE</code>.
         See &ldquo;<a href="RM_H5T.html#CreateVLString">Creating 
-        variable-length string datatypes</a>.&rdquo; 
+        variable-length string datatypes</a>&rdquo;. 
         <p>
-        A compound datatype may increase or decrease in size as long as its 
-        member field is not trailed.  
+        <i>Compound datatypes:</i>
+        This function may be used to increase or decrease the size of a
+        compound datatype, but the function will fail if the new size 
+        is too small to accommodate all member fields.
         <p>
-        All datatypes must have a positive size.
+        <i>Ineligible datatypes:</i>
+        This function cannot be used with 
+            enumerated datatypes (<code>H5T_ENUM</code>),
+            array datatypes (<code>H5T_ARRAY</code>),
+            variable-length array datatypes (<code>H5T_VLEN</code>),
+            or reference datatypes (<code>H5T_REFERENCE</code>).
 
 <p>
 <dt><strong>Parameters:</strong>
     <dd><table>
         <tr>
             <td valign="top"><em>hid_t</em>&nbsp;<code>dtype_id&nbsp;&nbsp;&nbsp;&nbsp;</code></td>
-            <td valign="top">IN: Identifier of datatype to change size.
+            <td valign="top">IN: Identifier of datatype for which the size is 
+                being changed
                 </td></tr>
         <tr>
             <td valign="top"><em>size_t</em> <code>size</code></td>
-            <td valign="top">IN: Size in bytes to modify datatype.</td></tr>
+            <td valign="top">IN: New datatype size in bytes 
+                or <code>H5T_VARIABLE</code>
+                </td></tr>
     </table></dd>
 
 <p>
