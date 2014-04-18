@@ -61,8 +61,540 @@ This document is provided to assist application developers who must keep
 an application synchronized with the HDF5 Library or related software.
 
 
+<!-- ============= REVEAL THE FOLLOWING FOR RELEASE 1.8.14 =============
+<a name="1814">
+<h2>Release 1.8.14 of November 2014 (current release) versus Release 1.8.13</h2>
+</a>
+<dir>
+
+This section lists interface-level changes and 
+other user-visible changes in behavior 
+in the transition from HDF5 Release 1.8.13 to Release 1.8.14.
+
+
+    <h3>New and Changed Functions, Classes, Subroutines, Wrappers, 
+        and Macros</h3>
+        <dir>
+        <dl>    
+            <dt><strong>In the C Interface (main library)</strong>
+
+            <dt>The following new C functions have been added:
+                </dt>
+            <dd>To enable a single write or read call to operate 
+                on multiple datasets:
+                <ul>
+                <li><a href="../RM/RM_H5D.html#Dataset-WriteMulti">
+                    <code>H5Dwrite_multi</code></a>
+                <li><a href="../RM/RM_H5D.html#Dataset-ReadMulti">
+                    <code>H5Dread_multi</code></a>
+                <li>Related struct: <code>H5D_rw_multi_t</code>
+                </ul>
+                <br />
+                </dd>
+
+
+        </dl>
+        </dir>
+</dir>
+============= REVEAL THE ABOVE FOR RELEASE 1.8.14 ============= -->
+
+
+<a name="1813">
+<h2>Release 1.8.13 of May 2014 (current release) versus Release 1.8.12</h2>
+</a>
+<dir>
+
+This section lists interface-level changes and 
+other user-visible changes in behavior 
+in the transition from HDF5 Release 1.8.12 to Release 1.8.13.
+
+
+    <h3>New and Changed Functions, Classes, Subroutines, Wrappers, 
+        and Macros</h3>
+        <dir>
+        <dl>    
+            <dt><strong>In the C Interface (main library)</strong>
+
+<!--
+            <dt>The following new high-level C functions have been added:
+                </dt>
+            <dd>
+                <ul>
+                <li><a href="../HL/RM_HDF5Optimized.html#H5DOwrite_chunk">
+                    <code>__</code></a> 
+                </ul>
+                    This function ..
+                    <p>
+                    See &ldquo;<a 
+                    href="../Advanced/DirectChunkWrite/index.html">__
+                    </a>&rdquo; for additional information.
+                </dd>
+-->
+
+            <p>
+            <dt>The following new C functions have been added:
+                </dt>
+            <dd>
+                To free memory allocated by HDF5 function calls:
+                <ul>
+                <li><a href="../RM/RM_H5.html#Library-FreeMemory">
+                    <code>H5free_memory</code></a>
+                    <br>
+                    This function can be used to free memory that has 
+                    been allocated by HDF5 API calls such as
+                    <code>H5Tget_member_name</code> and 
+                    <code>H5Pget_class_name</code>.
+                    <p />
+                    The primary value for this call is on Windows systems, 
+                    where it is common for application code and the 
+                    HDF5 Library to be using different C run-time 
+                    libraries (CRT). Using this new call ensures that the 
+                    same CRT handles both the allocation and free. 
+                    <p />
+                    This function can also be useful in any case where 
+                    the library uses a different memory manager than the 
+                    application, such as when a debug memory manager is 
+                    in use or when the HDF5 Library is wrapped for use 
+                    in a managed language like Python or Java.
+                </ul>
+
+            <dd>
+                New configuration property for the <small>CORE</small> driver:
+                <ul>
+                <li><a href="../RM/RM_H5.html#Property-SetCoreWriteTracking">
+                    <code>H5Pset_core_write_tracking</code></a>
+                    <br>
+                    <a href="../RM/RM_H5.html#Property-GetCoreWriteTracking">
+                    <code>H5Pget_core_write_tracking</code></a>
+                    <br>
+                    With this property, the <small>CORE</small> driver,
+                    <a href="../RM/RM_H5.html#Property-SetFaplCore"><code>H5Pset_fapl_core</code></a>,
+                    can be configured to track dirty regions in the file and 
+                    write out only the changed regions on flush or close 
+                    operations. 
+                    Additionally, a <i>page aggregation size</i> 
+                    can be set that will aggregate small writes into 
+                    larger writes. For example, 
+                    setting a 1 mebibyte (1 MiB) page aggregation size 
+                    will logically partition the the in-memory file 
+                    into 1 MiB pages that will be written out 
+                    in their entirety if even a single byte is dirtied.
+                    
+                </ul>
+                </dd>
+
+            <p>
+            <dt>The following C functions have been modified:
+                </dt>
+                <ul>
+                <li><a href="../RM/RM_H5R.html#Reference-GetName">
+                    <code>H5Rget_name</code></a>
+                    <br />
+                    If the <code>name</code> parameter is passed as
+                    <code>NULL</code>, then the <code>size</code>
+                    parameter is ignored and the function returns the size 
+                    of the buffer reauired to read the name
+                    (not including the NULL terminator).
+                    <br>
+                <li><a href="../RM/RM_H5Z.html#Filter-Available">
+                    <code>H5Zfilter_available</code></a> 
+                    <br>
+                    This function has been updated to more correctly handle
+                    <a href="../Advanced/DynamicallyLoadedFilters/HDF5DynamicallyLoadedFilters.pdf">dynamically 
+                    loaded filters</a>.
+                </ul>
+
+            <p>
+            <dt><strong>In the C++ Interface</strong>
+
+            <dt>The following new features have been added:
+
+                <dd>Wrappers to the class <code>H5Object</code> to get 
+                    an object&rsquo;s name:
+<pre>
+    ssize_t getObjName(char *obj_name, size_t buf_size = 0)
+    ssize_t getObjName(H5std_string& obj_name, size_t len = 0)
+    H5std_string getObjName()
+</pre>
+                </dd>
+                <dd>Wrappers to the class <code>H5CommonFG</code> 
+                    to get a child object&rsquo;s type from a group or file:
+<pre>
+    H5O_type_t childObjType(const H5std_string& objname)
+    H5O_type_t childObjType(const char* objname)
+    H5O_type_t childObjType(hsize_t index,
+        H5_index_t index_type=H5_INDEX_NAME,
+        H5_iter_order_t order=H5_ITER_INC, const char* objname=".")
+</pre>
+                </dd>
+                <dd>Wrappers to the class <code>DSetMemXferPropList</code>
+                    for setting or getting a transform property list:
+<pre>
+    DSetMemXferPropList(const char* expression);
+    void setDataTransform(const char* expression)
+    void setDataTransform(const H5std_string& expression)
+    ssize_t getDataTransform(char* exp, size_t buf_size=0)
+    H5std_string getDataTransform()
+</pre>
+                </dd>
+                <dd>Wrapper to <code>CompType</code> for setting the 
+                    size of a compound datatype:
+<pre>
+    void setSize(size_t size)
+</pre>
+                </dd>
+                <dd>Overloaded functions to provide prototypes that 
+                    declare constant arguments <code>const</code>:  
+<pre>
+    DataSet::fillMemBuf
+    DataSet::getVlenBufSize
+    DataSpace::extentCopy
+    DataType::commit
+    FileAccPropList::setSplit
+    H5File::getVFDHandle
+</pre>
+                </dd>
+                <dd>Additional overload to the class 
+    <code>H5Location</code>
+                    to get comment as a <code>char*</code>:
+<pre>
+    ssize_t getComment(const char* name, size_t buf_size, char* comment) 
+</pre>
+                </dd>
+                <dd>Additional overloads to the 
+                    class <code>Attribute</code>
+                    to get an attribute&rsquo;s name for convenience:
+<pre>
+    ssize_t getName(char* attr_name, size_t buf_size=0)
+    ssize_t getName(H5std_string& attr_name, size_t buf_size=0)
+</pre>
+                </dd>
+
+
+            <p>
+            <dt><strong>In the Fortran Interface</strong>
+
+            <dt>The following new Fortran subroutines have been added:
+<!--
+            <dd>Fortran90 subroutines: 
+                <table width="100%" border="0">
+                <tr><td align="left" valign="top" width="50%">
+                <ul>
+                    <li><code>__</code> 
+                </ul>
+                </td><td align="left" valign="top" width="50%">
+                <ul>
+                    <li><code>__</code> 
+                </ul>
+                </td></tr>
+                <td align="left" valign="top" colspan="2">
+                </td></tr>
+                </table>
+                </dd>
+                &nbsp;
+-->
+
+            <dd>Fortran2003 subroutines: 
+                <table width="100%" border="0">
+                <tr><td align="left" valign="top" width="50%">
+                    <code>h5pset_file_image_f</code> 
+                    <br>
+                    <code>h5pget_file_image_f</code>
+                </td><td align="left" valign="top" width="50%">
+                    &nbsp;
+                </td></tr>
+                <tr><td colspan="2">
+                    <code>h5fget_file_image_f</code>
+                    <i>
+                    (Added in Release 1.8.11, but not documented at that time.)
+                    </i>
+                </table>
+                </dd>
+
+            <p />
+            <dt>The following Fortran subroutine has been changed:
+                <ul>
+                    <li><code>h5pset_chunk_cache_f</code> 
+                        <br>
+                        The values of the constants
+                        <code>H5D_CHUNK_CACHE_NSLOTS_DFLT_F</code> and 
+                        <code>H5D_CHUNK_CACHE_NBYTES_DFLT_F</code> 
+                        have been changed from
+                        default <code>KIND</code> for <code>INTEGER</code> 
+                        to <code>INTEGER</code> of <code>KIND size_t</code>.
+
+                        <!-- =====================================  -->
+                        <!-- I HAVE NO IDEA WHAT THIS MEANS. -- FMB -->
+                        <!-- =====================================  -->
+
+                </ul>
+
+        </dl>    
+        </dir>
+
+
+    <h3>Other New Features</h3>
+        <dir>
+        <dl>
+            <dt>Parallel I/O support:</dt>
+            <dd>Parallel I/O support has been enhanced to allow collective I/O 
+                on point selections.
+            <p />
+            <dt>Thread safety</dt>
+            <dd>The thread-safe HDF5 library no longer leaks thread-local 
+                storage resources on Windows with Win32 threads. 
+                Since this cleanup can only be performed when the library 
+                is built as a shared library; 
+                therefore, a thread-safe HDF5 static library with Win32 threads 
+                is no longer supported.  
+                <p />
+                This feature is of greatest importance in Windows environments.
+            
+        </dir>
+
+
+    <h3>New Command-line Tool Options and Option Parameters</h3>
+<!--
+        <dir>
+        <dl>    
+            <dt><a href="../RM/Tools.html#Tools-Dump">
+                <code>h5dump</code></a>
+            <dd><code>h5dump</code> has a new option for identifying 
+                objects by a full or partial path:
+                <br>
+                <code>&nbsp;&nbsp;&nbsp;-N<i>P</i></code>
+                <br>
+                <code>&nbsp;&nbsp;&nbsp;--any-path=<i>P</i></code>
+                <br>&nbsp;
+
+            <dd>The <code>h5dump</code> attributes-only option, 
+                <code>-A</code> or <code>--only-attr</code>,
+                now accepts an optional parameter value
+                of <code>0</code> (zero):
+                <br>
+                <code>&nbsp;&nbsp;&nbsp;-A 0</code>
+                <br>
+                <code>&nbsp;&nbsp;&nbsp;--only-attr=0</code>
+                <br>
+                Specifying this value has the effect of reversing 
+                the role of the option to display everything
+                <i>except</i> attributes.
+                <br>&nbsp;
+
+            <dt><a href="../RM/Tools.html#Tools-Repack">
+                <code>h5repack</code></a>
+            <dd>The <code>h5repack</code> option 
+                <code>-f</code>, <code>--filter</code> 
+                has a new parameter, <code>UD</code>, 
+                to enable the use of user-defined filters:
+                <br>
+                <code>&nbsp;&nbsp;&nbsp;-f UD=<i>&lt;filter_parameters&gt;</i></code>
+                <br>
+                <code>&nbsp;&nbsp;&nbsp;--filter=UD=<i>&lt;filter_parameters&gt;</i></code>
+                <br>&nbsp;
+
+            <dt><a href="../RM/Tools.html#Tools-Stat">
+                <code>h5stat</code></a>
+            <dd><code>h5stat</code> has three new options for setting 
+                print thresholds:
+                <br>
+                <code>&nbsp;&nbsp;&nbsp;</code>For attributes:
+                <br>
+                <code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-a<i>N</i></code>
+                <br>
+                <code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;--attribute=<i>N</i></code>
+                <br>&nbsp;
+
+                <br>
+                <code>&nbsp;&nbsp;&nbsp;</code>For links in a group:
+                <br>
+                <code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-l<i>N</i></code>
+                <br>
+                <code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;--links=<i>N</i></code>
+                <br>&nbsp;
+
+                <br>
+                <code>&nbsp;&nbsp;&nbsp;</code>For dimension sizes:
+                <br>
+                <code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-m<i>N</i></code>
+                <br>
+                <code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;--dims=<i>N</i></code>
+
+        </dl>    
+        </dir>
+-->
+
+
+    <h3>Command-line Tools with Changed Behavior</h3>
+        <dir>
+        <dl>    
+            <dt><a href="../RM/Tools.html#Tools-Repack">
+                <code>h5repack</code></a>
+            <dd><code>h5repack</code> has been updated to more correctly handle
+                <a href="../Advanced/DynamicallyLoadedFilters/HDF5DynamicallyLoadedFilters.pdf">dynamically 
+                loaded filters</a>.
+
+        </dl>    
+        </dir>
+
+
+
+
+    <h3>Build and Configuration</h3>
+<!--
+        <dir>
+        <dl>    
+            <dt>CMake and Autotools configuration
+            <dd>A new configuration option can be used to change the default 
+                <a href="../Advanced/DynamicallyLoadedFilters/HDF5DynamicallyLoadedFilters.pdf">plugin</a> path:
+                <table>
+                <tr><td><code>&nbsp;&nbsp;&nbsp;</code></td>
+                    <td>Autotools&nbsp;<code>configure</code>&nbsp;option</td>
+                    <td>&nbsp;&nbsp;&nbsp;&nbsp;</td>
+                    <td><code>--with-default-plugindir=location</code></td>
+                    </tr>
+                <tr><td>&nbsp;</td>
+                    <td><code>cmake</code> option</td>
+                    <td>&nbsp;&nbsp;&nbsp;&nbsp;</td>
+                    <td><code>-DH5_DEFAULT_PLUGINDIR:PATH=location</code></td>
+                    </tr>
+                </table>
+                <p />
+
+            <dt>CMake configuration
+            <dd>CMake builds of HDF5 now create 
+                <code>*.so.{lt_version}</code> 
+                files with the same version as <code>configure</code>.
+                <p />
+
+            <dt>Autotools <code>configure</code> flag 
+            <dd>The <code>configure</code> flag 
+                <code>FFLAGS</code> has been renamed to <code>FCFLAGS</code>.
+                
+        </dl>    
+        </dir>
+-->
+
+
+    <h3>Compile Scripts with Changed Behavior</h3>
+<!--
+        <dir>
+        <dl>    
+            <dt><a href="../RM/Tools.html#Tools-H5CC">
+                <code>h5cc</code> and <code>h5pcc</code></a>
+            <dt><a href="../RM/Tools.html#Tools-H5C++">
+                <code>h5c++</code></a>
+            <dt><a href="../RM/Tools.html#Tools-H5FC">
+                <code>h5fc</code> and <code>h5pfc</code></a>
+
+            <dd>These compile scripts have been modified 
+                to change the default behavior
+                to link to shared libraries in environments where
+                HDF5 has been configured with <code>--disable-static</code>. 
+        </dl>    
+        </dir>
+-->
+
+
+    <h3>Deprecated Functions</h3>
+<!--
+        <dir>
+
+        <dl>    
+            <dt>The following C function has been deprecated:
+                </dt>
+            <dd>
+                <li><a href="../RM/RM_H5P.html#Property-property">
+                    <code>H5Pproperty</code></a> 
+                </dd>
+                    <p>
+                    This function may be removed from the library
+                    in a future release.
+        </dl>    
+        </dir>
+-->
+
+
+    <h3>Removed Functions and Wrappers</h3>
+        <dir>
+        <dl>    
+            <dt>The <small>MPI-POSIX</small> driver has been removed.
+                The following C functions and
+                the corresponding Fortran subroutines and C++ wrappers
+                therefore are no longer included in the HDF5 distribution:
+                </dt>
+            <dd>
+                <ul>
+                <li><code>H5Pset_fapl_mpiposix</code>
+                <li><code>H5Pget_fapl_mpiposix</code>
+                </ul>
+                </dd>
+                Applications performing parallel I/O should use the 
+                <small>MPI-IO</small> driver,  
+                <a href="../RM/RM_H5P.html#Property-SetFaplMpio">
+                <code>H5Pset_fapl_mpio</code></a>.
+        </dl>    
+        </dir>
+
+</dir>
+
+<br />&nbsp;
+<br />&nbsp;
+<br />&nbsp;
+<br />&nbsp;
+<br />&nbsp;
+<br />&nbsp;
+<br />&nbsp;
+<br />&nbsp;
+<br />&nbsp;
+<br />&nbsp;
+<br />&nbsp;
+<br />&nbsp;
+<br />&nbsp;
+<br />&nbsp;
+<br />&nbsp;
+<br />&nbsp;
+<br />&nbsp;
+<br />&nbsp;
+<br />&nbsp;
+<br />&nbsp;
+<br />&nbsp;
+<br />&nbsp;
+<br />&nbsp;
+<br />&nbsp;
+<br />&nbsp;
+<br />&nbsp;
+<br />&nbsp;
+<br />&nbsp;
+<br />&nbsp;
+<br />&nbsp;
+<br />&nbsp;
+<br />&nbsp;
+<br />&nbsp;
+<br />&nbsp;
+<br />&nbsp;
+<br />&nbsp;
+<br />&nbsp;
+<br />&nbsp;
+<br />&nbsp;
+<br />&nbsp;
+<br />&nbsp;
+<br />&nbsp;
+<br />&nbsp;
+<br />&nbsp;
+<br />&nbsp;
+<br />&nbsp;
+<br />&nbsp;
+<br />&nbsp;
+<br />&nbsp;
+<br />&nbsp;
+<br />&nbsp;
+<br />
+
+
+
 <a name="1812">
-<h2>Release 1.8.12 of November 2013 (current release) versus Release 1.8.11</h2>
+<h2>Release 1.8.12 of November 2013 versus Release 1.8.11</h2>
 </a>
 <dir>
 
@@ -10593,7 +11125,7 @@ V1.4.0
 </address>
 <!-- #EndLibraryItem --><!-- Created: Spring 1999 -->
 <!-- hhmts start -->
-Last modified: 14 November 2013
+Last modified: 18 November 2013
 <!-- hhmts end -->
 
 </body>
