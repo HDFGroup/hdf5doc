@@ -168,7 +168,7 @@ Access properties\
 </div>
 
 
-<!-- ==== REDACTED FOR REVIEW &/OR PUBLICATION ====
+<!-- ??????? REDACTED FOR REVIEW &/OR PUBLICATION ???????
 
 <font color="red">
 <i>
@@ -187,7 +187,7 @@ This document will answer the following questions:
 </i>
 </font>
 
-===== END REDACTION ============== -->
+??????? END REDACTION ??????? ??????? -->
 
 
 
@@ -204,7 +204,7 @@ This document will answer the following questions:
         <li>Customize the storage layout of a file to suit
             a project or task.</li>
         <li>Apply compression or filters to raw data.</li>
-        <li>use either ASCII or UTF-8 character encodings.</li>
+        <li>Use either ASCII or UTF-8 character encodings.</li>
         <li>Create missing groups on the fly.</li>
         <li>Switch between serial and parallel I/O.</li>
         <li>Create consistency within a single file or 
@@ -223,8 +223,8 @@ This document will answer the following questions:
     </p>
     <p>
 
-<!-- ==== REDACTED FOR REVIEW &/OR PUBLICATION ====
-     ==== Restart on Introduction           ====
+<!-- ??????? REDACTED FOR REVIEW &/OR PUBLICATION ???????
+     ??????? Restart on Introduction           ???????
 
     HDF5 properties and property lists make it possible to shape or modify
     an HDF5 file, group, or object, or even an I/O stream, in a number of ways.
@@ -242,7 +242,7 @@ This document will answer the following questions:
     </p>
     <p>
 
-===== END REDACTION ============== -->
+??????? END REDACTION ?????????????? -->
 
     More prosaically,
     
@@ -254,14 +254,14 @@ This document will answer the following questions:
             <td align="center">
             <hr color="green" size="3"/>
             <img src="Images/PropListEcosystem.png" width="150" 
-                 alt="Graphic illustration of property list ecosystem">
+                 alt="Graphic illustration of HDF5&rsquo;s property environment">
             </td>
             </tr>
         <tr><td><hr color="green" size="1" /></td></tr>
         <tr valign="top">
             <td align="left" width="200">
             <b>Figure 1.&nbsp;
-               The HDF5 property list ecosystem</b>
+               The HDF5 property environment</b>
             <hr color="green" size="3"/></td>
             </tr>
     </table>
@@ -356,8 +356,8 @@ This document will answer the following questions:
     Property List Classes</h3>
 </a>
 
-    As illustrated in <a href="#PListEcosystem">Figure 1</a> above, 
-    the property list environment in a three-level hierarchy: 
+    As illustrated in <a href="#PListEcosystem">the figure above</a>, 
+    the HDF5 property environment is a three-level hierarchy: 
     <ul>
         <li>Property list classes</li>
         <li>Property lists</li>
@@ -588,6 +588,7 @@ This document will answer the following questions:
             </td>
         </tr>
 
+<!-- ???????                                                        ??????? -->
 <!-- DISCUSSION OF H5P_ROOT will not be included in the chapter.            -->
 <!-- Yes, it's the root of the property list structure, but there's not     -->
 <!-- much (maybe nothing?) interesting that the user can do with it.        -->
@@ -598,12 +599,13 @@ This document will answer the following questions:
 <!--                                                                        -->
 <!-- To clean up the public interface, Quincey may move H5P_ROOT out of     -->
 <!-- H5Ppublic.h.                                                           -->
+<!-- ???????                                                        ??????? -->
 <!--
 
 
     <tr align="left" valign="top">
         <td>&nbsp;</td>
-        <td>No&nbsp;property&nbsp;list&nbsp;class&nbsp;&nbsp;&nbsp;&nbsp;</td>
+        <td>No property list class</td>
         <td><code>H5P_ROOT</code>&nbsp;</td>
         <td>&nbsp;</td>
         <td>Represents the root of the property list class hierarchy.</td>
@@ -630,8 +632,19 @@ This document will answer the following questions:
 
 
     <p>
-    The following figure graphically presents the inheritance hierarchy
-    of HDF5&rsquo;s property list classes.
+    The &ldquo;HDF5 property list class inheritance hierarchy&rdquo;
+    figure, immediately following, graphically presents the 
+    inheritance hierarchy of HDF5&rsquo;s property list classes.
+    Properties are defined at the root of the HDF5 property environment
+    (&ldquo;Property List Class Root&rdquo; in the figure below).
+    Property list classes then inherit properties from that root,
+    either directly or indirectly through a parent class. 
+    In every case, a property list class inherits only the properties 
+    relevant to its role. 
+    For example, the object creation property list class (OCPL) 
+    inherits all properties that are relevant to the creation of 
+    any object while the group creation property list class (GCPL) 
+    inherits only those properties that are relevant to group creation.
     </p>
     <p>
    
@@ -648,18 +661,23 @@ This document will answer the following questions:
         <tr valign="top">
             <td align="left">
             <b>Figure 2. HDF5 property list class inheritance hierarchy</b>
-            <br />
             <font size="-1">
-            Entries above in <u>black</u> are property list classes that
-            are directly accessible through the programming interface;
-            entries in <font color="888888"><u>gray</u></font> are HDF5 
-            internal entities and are not user-accessible.
+            <br />
+            Property list classes displayed above in <u>black</u> are 
+            directly accessible through the programming interface;
+            the root of the property environment and the STRCPL and OCPL 
+            property list classes, in <font color="888888"><u>gray</u></font> 
+            above, are not user-accessible.
             <br />
             The red <i>empty set</i> symbol (<font color="red">&empty;</font>)
-            below <small>FMPL</small> indicates that the file mount property
-            list class is an empty class; that is, it has no settable properties
+            indicates that the file mount property list class 
+            (<small>FMPL</small>) is an empty class; 
+            that is, it has no settable properties 
             (see <a href="#H5P_FILE_MOUNT">footnote 1</a>). 
-            </font>
+            <br />
+            Abbreviations used in this figure are defined in the preceding
+            table, &ldquo;Property list classes in HDF5&rdquo;. 
+            </font>&nbsp;
             <hr color="green" size="3"/>
             </td>
             </tr>
@@ -668,23 +686,34 @@ This document will answer the following questions:
     </p>
     <p>
     To illustrate the inheritance diagrammed above, 
-    consider the following prose example 
-    (coding examples appear in later sections of this chapter):
+    consider the following example: 
     Before creating an HDF5 dataset, you will need to determine the 
     creation properties the dataset must have.  
-    That is, you must establish the dataset&rsquo;s DCPL.
+    That is, you must establish the dataset&rsquo;s dataset creation
+    property list (DCPL).
     This DCPL will be derived from the dataset creation property list class
     and will inherit all of the appropriate properties, each set to a
     default value.
     If necessary, you may then change any of those default values 
-    in the new DCPL with the appropriate H5P calls, such as 
-    <code>H5Pset_layout</code> and <code>H5Pset_chunk</code>.
-    You can now use the newly-created and modified DCPL to create 
+    in the new DCPL with the appropriate H5P calls; 
+    <code>H5Pset_layout</code> and <code>H5Pset_chunk</code> calls, 
+    for example, would set up dataset chunking.
+    You can then use the newly-created and modified DCPL to create 
     any dataset that has the same creation property requirements.
+    </p>
+    <p>
+    Code examples appear in later sections of this chapter
+    and in other chapters where properties and property lists are
+    discussed in the context of specific objects.
+    For example, properties and property lists relevant to datasets are 
+    discussed in the &ldquo;Programming Model&rdquo; section 
+    of the &ldquo;<a href="UG_frame10Datasets.html" target="_TOP">HDF5 
+    Datasets</a>&rdquo; chapter
+    in this <cite>HDF5 User&rsquo;s Guide</cite>.
 
-<!-- ==== REDACTED FOR REVIEW &/OR PUBLICATION ====
-     ==== AS BEING REDUNDANT IN THE CURRENT DISCUSSION. ====
-     ==== THEY MAY, HOWEVER, BE USEFUL ELSEWHERE.       ====
+<!-- ??????? REDACTED FOR REVIEW &/OR PUBLICATION          ???????
+     ??????? AS BEING REDUNDANT IN THE CURRENT DISCUSSION. ???????
+     ??????? THEY MAY, HOWEVER, BE USEFUL ELSEWHERE.       ???????
 <font color="AAAAAA">
     </p>
     <p>
@@ -713,7 +742,8 @@ This document will answer the following questions:
     In fact, applications do not generally have any knowledge
     of access properties used in the past.
 </font>
-==== ==== -->
+
+??????? ??????? -->
     </p>
 
 <a name="PropertyLists">
@@ -951,11 +981,12 @@ Things you can do with chunked but not contiguous datasets:
 
     </p>
     <p>
-<!-- ==== REDACTED FOR REVIEW & PUBLICATION ====
-     ==== Questions for QK:                                  ====
-     ====     Only 2 DAPL calls? (1 get, 1 set)              ====
-     ====     All others are labelled DXPL.                  ====
-     ====     Yet opaque to me why there are both types.     ====
+
+<!-- ??????? REDACTED FOR REVIEW & PUBLICATION                  ???????
+     ??????? Questions for QK:                                  ???????
+     ???????     Only 2 DAPL calls? (1 get, 1 set)              ???????
+     ???????     All others are labelled DXPL.                  ???????
+     ???????     Yet opaque to me why there are both types.     ???????
 
     <i>Dataset transfer properties:</i>
 
@@ -967,7 +998,7 @@ Similar discussion of DXPLs.
     </p>
     <p>
 
-===== END REDACTION ============== -->
+??????? END REDACTION ??????? ??????? -->
 
 
 
@@ -1000,8 +1031,8 @@ Similar discussion of DXPLs.
 
 
 
-<!-- ==== REDACTED FOR REVIEW &/OR PUBLICATION ====
-     ==== Restart on Introduction           ====
+<!-- ??????? REDACTED FOR REVIEW &/OR PUBLICATION ???????
+     ??????? Restart on Introduction              ???????
 
 
   <p>
@@ -1058,7 +1089,7 @@ Similar discussion of DXPLs.
   <h4>10.3.3. Using Property Lists</h4>
 
 
-===== END REDACTION ============== -->
+??????? END REDACTION ??????? ??????? -->
 
 </i>
 
@@ -1204,7 +1235,7 @@ Similar discussion of DXPLs.
     <p>
     Since <code>dcplA_id</code> specifies a chunked layout, 
     we must also set the number of dimensions and the size of the chunks.  
-    Th example below specifies that datasets created with 
+    The example below specifies that datasets created with 
     <code>dcplA_id</code> will be 3-dimensional and 
     that the chunk size will be 100 in each dimension:
     <dir>
@@ -1376,8 +1407,9 @@ Similar discussion of DXPLs.
     these <code>H5Pget_</code> calls will return the property&rsquo;s 
     default value.
     
-<!-- ==== REDACTED FOR REVIEW &/OR PUBLICATION ====
-     ==== REMOVE H5Piterate DISCUSSION; GENERIC PROP FUNCTIONS BEYOND SCOPE ==== 
+<!-- ??????? REDACTED FOR REVIEW &/OR PUBLICATION       ???????
+     ??????? REMOVE H5Piterate DISCUSSION; GENERIC PROP ???????
+     ??????? FUNCTIONS BEYOND SCOPE                     ??????? 
     </p>
     <p>
     A more comprehensive approach is to perform a 
@@ -1388,7 +1420,7 @@ Similar discussion of DXPLs.
     The application can then assess each property (or property list)
     that is of interest.  Further discussion of this function 
     is beyond the current scope of this document.
-===== END REDACTION ============== -->
+??????? END REDACTION ??????? ??????? -->
     </p>
 
 
@@ -1422,7 +1454,7 @@ Similar discussion of DXPLs.
     The application could then use the returned property list identifier
     to analyze the property settings.
 
-<!-- ==== REDACTED FOR REVIEW & PUBLICATION                    ====
+<!-- ??????? REDACTED FOR REVIEW & PUBLICATION                    ???????
 
 <font color="red">
 <i>
@@ -1435,11 +1467,11 @@ If never or exceedingly rare, this can be dropped.
 </i>
 </font>
 
-===== END REDACTION ============== -->
+??????? END REDACTION ??????? ??????? -->
 
 
-<!-- ==== REDACTED FOR REVIEW &/OR PUBLICATION ====
-     ==== This is a 1.10 feature.           ====
+<!-- ??????? REDACTED FOR REVIEW &/OR PUBLICATION ???????
+     ??????? This is a 1.10 feature.              ???????
     
 <a name="EncodeDecodePList">
 <h5 class="pagebefore">10.3.3.4. Encode and Decode Property Lists</h5>
@@ -1457,11 +1489,11 @@ anticipated to be HDF5 Release 1.10.
 </i>
 </font>
 
-===== END REDACTION ============== -->
+??????? END REDACTION ??????? ??????? -->
      
   
 
-<!-- ==== REDACTED FOR REVIEW &/OR PUBLICATION ====
+<!-- ??????? REDACTED FOR REVIEW &/OR PUBLICATION ???????
 
 <a name="GeneralPListOps">
 <h3 class="pagebefore">10.4. General Property List Operations</h3>
@@ -1502,15 +1534,15 @@ anticipated to be HDF5 Release 1.10.
     &ldquo;<a href="../Advanced/UsingUnicode/index.html">Using UTF-8 Encoding 
     in HDF5 Applications</a>&rdquo;.
 
-===== END REDACTION ============== -->
+??????? END REDACTION ??????? ??????? -->
 
 
-<!-- ==== REDACTED FOR REVIEW &/OR PUBLICATION ====
-     ==== Section isn't quite right.        ====
-     ====                                   ====
-     ==== Is there an actual OCPL?          ====
-     ==== Is is it always a DCPL or GCPL?   ====
-     ====       and possibly TCPL?          ====
+<!-- ??????? REDACTED FOR REVIEW &/OR PUBLICATION ???????
+     ??????? Section isn't quite right.           ???????
+     ???????                                      ???????
+     ??????? Is there an actual OCPL?             ???????
+     ??????? Is is it always a DCPL or GCPL?      ???????
+     ???????       and possibly TCPL?             ???????
  
 
 <a name="Object+LinkOps">
@@ -1550,7 +1582,7 @@ anticipated to be HDF5 Release 1.10.
     can be used in any call that accepts an object copy property list.
     </p>
 
-===== END REDACTION ============== -->
+??????? END REDACTION ??????? ??????? -->
 
 
 <a name="GenericPLists">
@@ -1558,34 +1590,36 @@ anticipated to be HDF5 Release 1.10.
     User-defined Properties</h3>
 </a>
 
-    HDF5&rsquo;s generic property functions provide tools for 
+    HDF5&rsquo;s generic property interface provides tools for 
     managing the entire property hierarchy and for the creation 
     and management of user-defined property lists and properties.
-    The generic property functions also enable an application or a 
+    This interface also makes it possible for an application or a 
     driver to create, modify, and manage custom properties, 
     property lists, and property list classes. 
-    A comprehensive list of generic property functions appears 
-    below in the 
-    <a href="#GenericPropFunctions">generic property list functions</a>
-    table.
+    A comprehensive list of functions for this interface appears under 
+    &ldquo;<a href="../RM/RM_H5P.html#GenericPropFuncs" target="_TOP">Generic 
+    Property Operations (Advanced)</a>&rdquo; in the 
+    &ldquo;<a href="../RM/RM_H5P.html" target="_TOP">H5P: Property List 
+    Interface</a>&rdquo; section of the 
+    <a href="../RM/RM_H5Front.html" target="_TOP"><cite>HDF5 Reference 
+    Manual</cite></a>.
+    <p>
+    </p>
+    Further discussion of HDF5&rsquo;s generic property interface
+    and user-defined properties and property lists 
+    is beyond the scope of this document.
+
+
+<!-- ??????? REDACTED FOR REVIEW &/OR PUBLICATION       ???????
+     ??????? BEGIN MORE SERIOUS Generic Properties TEXT ???????
+     ??????? But it's beyond scope for this version     ???????
+
+
     <p>
     </p>
     Property names beginning with &lsquo;<code>H5</code>&rsquo; 
     are reserved for HDF5 Library use and should not be used for
     user-defined properties.
-    <p>
-    </p>
-    Beyond these comments and the 
-    <a href="#GenericPropFunctions">function listing</a>
-    below, discussions of HDF5&rsquo;s generic property interface
-    and user-defined properties and property lists are beyond 
-    the current scope of this document.
-
-
-<!-- ==== REDACTED FOR REVIEW &/OR PUBLICATION ====
-     ===== BEGIN MORE SERIOUS Generic Properties TEXT ============
-     ===== But it's beyond scope for this version     ============
-
     </p>
     <p>
     HDF5&rsquo;s generic property functions provide a general foundation
@@ -1731,16 +1765,16 @@ a better sense of how they can be used.
 </font>
 
 <br>
-===== END "beyond scope" Generic Properties discussion ============== 
-===== END REDACTION ============== -->
+??????? END "beyond scope" Generic Properties discussion ??????? ??????? 
+??????? END REDACTION                                    ??????? ??????? -->
     </p>
 
 
 
 
 
-<!-- ==== REDACTED FOR REVIEW &/OR PUBLICATION ====
-     ====== MASK UNUSED TEMPLATES ======
+<!-- ??????? REDACTED FOR REVIEW &/OR PUBLICATION     ???????
+     ??????? MASK UNUSED TEMPLATES                    ???????
 
 <a name="CodeSnip">
 <h3 class="pagebefore">10.6. Code Snippets</h3>
@@ -1830,8 +1864,8 @@ specify a driver, so the default driver,
     </p>
 </dir>
 
-===== END UNUSED TEMPLATES MASK =====
-===== END REDACTION ============== -->
+??????? END UNUSED TEMPLATES MASK ???????
+??????? END REDACTION             ??????? -->
 
 
 <!-- NEW PAGE -->
@@ -2229,6 +2263,16 @@ specify a driver, so the default driver,
     <p>
 
 
+<!-- ??????? GENERIC PROPERTY OPERATIONS TABLE REMOVED FROM UG ??????? -->
+<!-- ??????? Property Lists CHAPTER (UG/14_PropertyLists.html) ??????? -->
+<!-- ??????? AND CORRESPONDING TEXT REDUCED IN FAVOR OF        ??????? -->
+<!-- ??????? EVENTUAL (AND AS YET UNSCUEDULED) DOCUMENT        ??????? -->
+<!-- ??????? SEPARATELY DOCUMENTING GENERIC PROPERTY OPS.      ??????? -->
+<!-- ??????? THIS WILL PROBABLY BE AN "ADVANCED TOPIC".        ??????? -->
+<!-- ???????                                   9 July 2014     ??????? -->
+
+<!-- ??????? SEE hdf5doc/trunk/sandbox/GenericProperties/.     ??????? 
+
     Generic property functions allow an application to create 
     properties, property lists, and property list classes 
     beyond those provided by HDF5.
@@ -2473,6 +2517,8 @@ specify a driver, so the default driver,
     </table>
     </p>
 
+-->
+<!-- ??????? END OF REMOVED GENERIC PROPERTY OPERATIONS TABLE. ??????? -->
 
 
 <a name="AddlPListResources">
@@ -2551,7 +2597,7 @@ specify a driver, so the default driver,
 
     The in-memory file image feature of HDF5 uses property lists 
     in a manner that differs substantially from their use elsewhere in HDF5.
-    Whose who plan to use in-memory file images must study &ldquo;<a href=
+    Those who plan to use in-memory file images must study &ldquo;<a href=
     "../Advanced/FileImageOperations/HDF5FileImageOperations.pdf">File 
     Image Operations</a>&rdquo; (PDF) in the
     <a href="../Advanced.html"><cite>Advanced Topics in HDF5</cite></a>
@@ -2648,8 +2694,8 @@ specify a driver, so the default driver,
 
 
 
-<!-- ==== REDACTED FOR REVIEW &/OR PUBLICATION ====
-     ==== NOT RELEVANT TO THE USER PUBLICATION =========
+<!-- ??????? REDACTED FOR REVIEW &/OR PUBLICATION        ???????
+     ??????? NOT RELEVANT TO THE USER PUBLICATION        ???????
 <p>
 <u>Additional writing resources:</u>
 </p>
@@ -2679,7 +2725,7 @@ May be useful if a Parallel I/O example is included.
 </font>
 </p>
 
-===== END REDACTION ============== -->
+??????? END REDACTION ??????? ??????? -->
 
 
 
