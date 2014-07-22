@@ -23,51 +23,65 @@
 <hr>
 <dl>
   <dt><div align=right><font color=999999 size=-1><i>
-      Last modified: 15 April 2009
-      </i></font></div>
+      Last modified: 22 July 2014
+      </i></font></div></dt>
 
   <dt><strong>Name:</strong> <a name="Property-SetCache">H5Pset_cache</a>
-  <dt><strong>Signature:</strong>
-    <dd><em>herr_t</em> <code>H5Pset_cache</code>(
-        <em>hid_t</em> <code>plist_id</code>,
-        <em>int</em> <code>mdc_nelmts</code>,
-        <em>size_t</em> <code>rdcc_nelmts</code>,
-        <em>size_t</em> <code>rdcc_nbytes</code>,
-        <em>double</em> <code>rdcc_w0</code>
-    )
+  </dt>
+  <br />
+  <dt><strong>Signature:</strong></dt>
+    <dd><code><em>herr_t</em> H5Pset_cache(<em>hid_t</em> plist_id,
+        <em>int</em> mdc_nelmts,
+        <em>size_t</em> rdcc_nslots,
+        <em>size_t</em> rdcc_nbytes,
+        <em>double</em> rdcc_w0)</code></dd>
+    
  
-  <p>
-  <dt><strong>Purpose:</strong>
-    <dd>Sets the raw data chunk cache parameters.  
+  <br />
+  <dt><strong>Purpose:</strong></dt>
+    <dd>Sets the raw data chunk cache parameters.</dd>
  
-  <p>
-  <dt><strong>Description:</strong>
+  <br />
+  <dt><strong>Motivation:</strong></dt>
+    <dd>
+      Setting raw data chunk cache parameters can be done with 
+      <code>H5Pset_cache</code>, <code>H5Pset_chunk_cache</code>, or 
+      a combination of both. <code>H5Pset_cache</code> is used to adjust 
+      the chunk cache parameters for all datasets via a global setting for 
+      the file, and <code>H5Pset_chunk_cache</code> is used to adjust 
+      the chunk cache parameters for individual datasets. When both are 
+      used, parameters set with <code>H5Pset_chunk_cache</code> 
+      will override any parameters set with <code>H5Pset_cache</code>. 
+      
+      <p>Optimum chunk cache parameters may vary widely depending on 
+      different data layout and access patterns. For datasets with low 
+      performance requirements for example, changing the cache settings 
+      can save memory. </dd>
+  
+  <dt><strong>Description:</strong></dt>
     <dd><code>H5Pset_cache</code> sets 
         the number of elements, the total number of bytes, and 
-        the preemption policy value in the raw data chunk cache.
+        the preemption policy value for all datasets in a file on the 
+        file&rsquo;s file access property list.
+        
         <p>
-        The <em>plist_id</em> is a file access property list.  
+        The raw data chunk cache inserts chunks into the cache by first 
+        computing a hash value using the address of a chunk and then by 
+        using that hash value as the chunk&rsquo;s index into the table 
+        of cached chunks. In other words, the size of this hash table 
+        and the number of possible hash values is determined by the 
+        <code>rdcc_nslots</code> parameter. If a different chunk in the 
+        cache has the same hash value, a collision will occur, which will 
+        reduce efficiency. If inserting the chunk into the cache would 
+        cause the cache to be too big, then the cache will be pruned 
+        according to the <code>rdcc_w0</code> parameter. </p>
+        
         <p>
-        The number of elements (objects) in the raw data chunk cache 
-        is <em>rdcc_nelmts</em>.
-        The total size of the raw data chunk cache and the preemption policy 
-        are <em>rdcc_nbytes</em> and <em>rdcc_w0</em>, respectively.  
-        <p>
-        Any (or all) of the <code>H5Pget_cache</code> pointer arguments 
-        may be null pointers.
-        <p>
-        The <em>rdcc_w0</em> value should be between 0 and 1 inclusive and
-        indicates how much chunks that have been fully read are
-        favored for preemption.  A value of zero means fully read
-        chunks are treated no differently than other chunks (the
-        preemption is strictly LRU) while a value of one means fully
-        read chunks are always preempted before other chunks. 
-        <p>
-        The <code>*mdc_nelmts</code> parameter is no longer used;
-        any value passed in that parameter is ignored.
+        The <code>mdc_nelmts</code> parameter is no longer used;
+        any value passed in that parameter will be ignored.</p></dd>
  
-  <p>
-  <dt><strong>Note:</strong>
+   
+  <dt><strong>Note:</strong></dt>
     <dd>Raw dataset chunk caching is not currently supported when using the 
         MPI I/O and MPI POSIX file drivers in read/write mode; see
         <a href="#Property-SetFaplMpio"><code>H5Pset_fapl_mpio</code></a> and
@@ -78,63 +92,103 @@
         and <code>H5Pset_cache</code> will have no effect on performance.
         <p>
         Raw dataset chunk caching is supported when these drivers are 
-        used in read-only mode.
+        used in read-only mode.</p></dd>
  
-  <p>
-  <dt><strong>Parameters:</strong>
-    <dd><table>
+  <br />
+  <dt><strong>Parameters:</strong></dt>
+    <dd><table width="95%">
         <tr>
-            <td valign="top"><em>hid_t</em> <code>plist_id</code></td>
-            <td valign="top">IN: Identifier of the file access property 
-                list.</td></tr>
+            <td valign="top" width="15%"><code><em>hid_t</em> 
+            plist_id</code></td>
+            <td valign="top" width="85%">IN: File access property list
+            identifier.</td></tr>
         <tr>
-            <td valign="top"><em>int</em> <code>mdc_nelmts</code></td>
+            <td valign="top"><code><em>int</em> mdc_nelmts</code></td>
             <td valign="top">IN: <i>No longer used; 
                 any value passed is ignored.</i></td></tr>
         <tr>
-            <td valign="top"><em>size_t</em> <code>rdcc_nelmts</code></td>
-            <td valign="top">IN: Number of elements (objects) in the raw data 
-                chunk cache.</td></tr>
+            <td valign="top"><code><em>size_t</em> rdcc_nslots</code></td>
+            <td valign="top">IN: The number of chunk slots in the raw 
+            data chunk cache for this dataset. Increasing this value 
+            reduces the number of cache collisions, but slightly 
+            increases the memory used. Due to the hashing strategy, 
+            this value should ideally be a prime number. As a rule of 
+            thumb, this value should be at least 10 times the number 
+            of chunks that can fit in <code>rdcc_nbytes</code> bytes. 
+            For maximum performance, this value should be set 
+            approximately 100 times that number of chunks. The default 
+            value is 521.</td></tr>
         <tr>
-            <td valign="top"><em>size_t</em>&nbsp;<code>rdcc_nbytes&nbsp;&nbsp;&nbsp;&nbsp;</code></td>
-            <td valign="top">IN: Total size of the raw data chunk cache, 
-                in bytes.</td></tr>
+            <td valign="top"><code><em>size_t</em> rdcc_nbytes</code></td>
+            <td valign="top">IN: Total size of the raw data chunk cache 
+                in bytes. The default size is 1 MB per dataset.</td></tr>
         <tr>
-            <td valign="top"><em>double</em> <code>rdcc_w0</code></td>
-            <td valign="top">IN: Preemption policy.</td></tr>
-        </table>
+            <td valign="top"><code><em>double</em> rdcc_w0</code></td>
+            <td valign="top">IN: The chunk preemption policy for all 
+            datasets. This must be between 0 and 1 inclusive and 
+            indicates the weighting according to which chunks which 
+            have been fully read or written are penalized when 
+            determining which chunks to flush from cache. A value of 
+            0 means fully read or written chunks are treated no 
+            differently than other chunks (the preemption is strictly 
+            LRU) while a value of 1 means fully read or written chunks 
+            are always preempted before other chunks. If your application 
+            only reads or writes data once, this can be safely set to 1. 
+            Otherwise, this should be set lower depending on how often 
+            you re-read or re-write the same data. 
+            <br /><br />
+            The default value is 0.75. If the value passed is 
+            <code>H5D_CHUNK_CACHE_W0_DEFAULT</code>, then the property 
+            will not be set on <code>dapl_id</code>, and the parameter 
+            will come from the file access property list. </td></tr>
+        </table></dd>
  
   <p>
-  <dt><strong>Returns:</strong>
+  <dt><strong>Returns:</strong></dt>
     <dd>Returns a non-negative value if successful;
-        otherwise returns a negative value.
+        otherwise returns a negative value.</dd>
  
-  <p>
-  <dt><strong>Fortran90 Interface:</strong> h5pset_cache_f
+  <br />
+  <dt><strong>Fortran90 Interface:</strong> h5pset_cache_f</dt>
     <dd>
         <pre>
-SUBROUTINE h5pset_cache_f(prp_id, mdc_nelmts,rdcc_nelmts, rdcc_nbytes, rdcc_w0, hdferr)
+SUBROUTINE h5pset_cache_f(prp_id, mdc_nelmts, rdcc_nslots, rdcc_nbytes, rdcc_w0, hdferr)
   IMPLICIT NONE
   INTEGER(HID_T), INTENT(IN) :: prp_id        ! Property list identifier
-  INTEGER, INTENT(IN) :: mdc_nelmts           ! Number of elements (objects)
-                                              ! in the meta data cache
-  INTEGER(SIZE_T), INTENT(IN) :: rdcc_nelmts  ! Number of elements (objects)
-                                              ! in the meta data cache
+  INTEGER, INTENT(IN) :: mdc_nelmts           ! No longer used; any value passed
+                                              ! is ignored.
+  INTEGER(SIZE_T), INTENT(IN) :: rdcc_nslots  ! The number of chunk slots
+                                              ! in the raw data chunk cache.
   INTEGER(SIZE_T), INTENT(IN) :: rdcc_nbytes  ! Total size of the raw data
-                                              ! chunk cache, in bytes
+                                              ! chunk cache in bytes.
   REAL, INTENT(IN) :: rdcc_w0                 ! Preemption policy
   INTEGER, INTENT(OUT) :: hdferr              ! Error code
                                               ! 0 on success and -1 on failure
 END SUBROUTINE h5pset_cache_f
         </pre> 
 
-  <dt><strong>History:</strong>
+<dt><strong>See Also:</strong></dt>
+    <dd><a href="RM_H5P.html#Property-GetCache">
+        <code>H5Pget_cache</code></a>
+        <br />
+        <a href="RM_H5P.html#Property-SetChunkCache">
+        <code>H5Pset_chunk_cache</code></a>
+        <br />
+        <a href="http://www.hdfgroup.org/HDF5/doc/Advanced/Chunking/index.html">
+        &ldquo;Chunking in HDF5&rdquo;</a>
+        </dd>
+    <br />
+
+
+
+
+  <dt><strong>History:</strong></dt>
     <ul><table width="90%">
         <tr>
           <td valign="top" align="left" width="10%">
             <strong>Release</strong>&nbsp;&nbsp;&nbsp;&nbsp;</td>
           <td valign="top" align="left">
-            <strong>Change</strong></td>
+            <strong>Change</strong></td></tr>
         <tr>
           <td valign="top">1.8.0</td>
           <td valign="top">
@@ -158,5 +212,7 @@ END SUBROUTINE h5pset_cache_f
           <td valign="top">&nbsp;</td></tr>
     </table></ul>
 </dl>
-
+<br />
+<br />
+<br />
 
