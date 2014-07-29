@@ -1,0 +1,114 @@
+\documentclass[letterpaper,hyper]{THG_RFC}
+
+% Fonts
+\usepackage{ifluatex}
+\ifluatex
+  % Font
+  \usepackage{luatextra, xunicode, unicode-math}
+  \defaultfontfeatures{Ligatures=TeX}
+  \setmainfont[
+    UprightFont={*},
+    BoldFont={* Bold},
+    ItalicFont={* Italic},
+    BoldItalicFont={* Bold Italic}
+  ]{STIX}
+  \setsansfont[
+    UprightFont={*},
+    BoldFont={* Bold},
+    ItalicFont={* Italic},
+    BoldItalicFont={* Bold Italic}
+  ]{Source Sans Pro}
+  \setmathfont[math-style=ISO, bold-style=ISO]{Latin Modern Math}
+  \setmonofont[
+    UprightFont={*},
+    BoldFont={* Bold},
+    ItalicFont={* Oblique},
+    BoldItalicFont={* Bold Oblique}
+  ]{DejaVu Sans Mono}
+\else
+  \usepackage{lmodern} % times / lmodern / mathpazo / palatino
+  \usepackage[scaled=.95]{helvet}
+  \usepackage{courier}
+\fi
+
+% Path to figures, plots
+\graphicspath{{./pics/}{./plots/}}
+
+%% TikZ
+\usepackage{tikz}
+\usetikzlibrary{patterns, shapes, shadows}
+
+% Code snippets
+\usepackage{listings}
+\def\lstsetc{\lstset{language=C,
+  numbers=left,
+  xleftmargin=20pt,
+  numberstyle=\tiny\color{gray},
+  stepnumber=1,
+  showspaces=false, 
+  showstringspaces=false,
+  breaklines=true,
+  basicstyle=\footnotesize\ttfamily,
+  stringstyle=\itshape,
+  commentstyle=\itshape\bfseries,
+  morekeywords={H5Fis_accessible, H5Fis_HDF5}
+  }
+}
+
+% Title, author, etc
+\title{Replacing {\tt H5Fis\_hdf5()} with {\tt H5Fis\_accessible()}}
+\author{Mohamad Chaarawi}
+\author{Quincey Koziol}
+\date{July 29, 2014}
+\rfcversion{2014-07-29.v1}
+\revision{July 29, 2014}{Version 1 circulated for comment within The HDF Group.}
+
+%% Start the document
+\begin{document}
+
+%% Title
+\maketitle
+
+%% Abstract
+\begin{abstract}
+The HDF5 library provides a routine ({\tt H5Fis\_hdf5()}) to determine whether a given file is in the HDF5 format or not given the file name. This API routine is not robust however, and can be considered a bug in the API, because it only uses the default file driver when attempting to open the file. Furthermore, with the introduction of the HDF5 Virtual Object Layer (VOL), all HDF5 files that have not been created through the native HDF5 VOL plugin will not be in the HDF5 file format, but they are still accessible from the HDF5 library. We propose to address the two concerns outlined above by adding a new routine, {\tt H5Fis\_accessible()}, to eventually replace {\tt H5Fis\_hdf5()} in the HDF5 library.
+\end{abstract}
+
+\section{Introduction and Motivation}
+The HDF5 library provides users with a routine to check whethere a given file is in the HDF5 file format, and the HDF5 library is capable of opening it. This routine is defined as:
+\begin{lstlisting}
+htri_t H5Fis_hdf5(const char *name);
+\end{lstlisting}
+When successful, this routines returns a positive value, for TRUE, or 0 (zero), for FALSE. On any error, including the case that the file does not exist, it returns a negative value.
+
+This routine is not robust enough to check HDF5 files created by a driver different than the HDF5 default SEC2 virtual file driver (VFD). If an HDF5 file is created with a family file driver for example, the routine will incorrectly return false when invoked with the file name, even though the file is in the HDF5 file format.
+
+A new feature that will make it into the HDF5 1.10 series is the ability to created HDF5 files that are accessible through the HDF5 API but with a different file format than the native file format. Another problem with the {\tt H5Fis\_hdf5()} function as it stands is that it would not handle such files/containers in non-native HDF5 format. The API currently does not provide an alternative for such a routine to work on files created by the non-native VOL plugin.  
+
+\section{Approach}
+We propose to add a new routine to address the concerns detailed in the earlier section. The new routine will be defined as:
+\begin{lstlisting}
+htri_t H5Fis_accessible(const char *name, hid_t fapl_id);
+\end{lstlisting}
+This routine checks whether a given file can be opened with the given file access property list ({\tt fapl\_id}). When successful, this routines returns a positive value, for TRUE, or 0 (zero), for FALSE. On any error, including the case that the file does not exist, it returns a negative value.
+
+The additional {\tt fapl\_id} argument would be used to tell the library what VFD or VOL plugin to use to try and open the file to see if it is accessible. For example, the user could call {\tt H5Pset\_fapl\_family()} on the {\tt fapl\_id} to check if a given file can be accessed with the family file driver.
+
+We decided to change the name of the function rather than fix the old function by adding the {\tt fapl\_id} argument for bacward compatibilty issues and the better representation of what the function does with the new name.
+
+\section{Implementation and Recommendation}
+A protoype implementation for {\tt H5Fis\_accessible()} is done and available for testing in the VOL branch located here:
+{\url http://svn.hdfgroup.uiuc.edu/hdf5/features/vol}.
+New tests have been added to verify that the routine works with the different VFDs that ship with the HDF5 library.
+
+We recommend to add this new routine to the trunk and the 1.8 branch and deprecate {\tt H5Fis\_hdf5()} since the former is a more robust version of the latter. 
+
+%% Close
+\section*{Revision History}
+\makerevisions
+
+%% References
+%\bibliographystyle{ieeetr}
+%\bibliography{}
+
+\end{document}
