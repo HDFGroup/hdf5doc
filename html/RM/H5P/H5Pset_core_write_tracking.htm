@@ -35,111 +35,140 @@
 <dl>
 
 <dt><div align="right"><font color="999999" size="-1"><i>
-    Last modified: 2 May 2014
+    Last modified: 12 August 2014
     </i></font></div></dt>
-    <br />
 
+<p>
 <dt><strong>Name:</strong> 
     <a name="Property-SetCoreWriteTracking">H5Pset_core_write_tracking</a></dt>
-    <br />
 
+<p>
 <dt><strong>Signature:</strong></dt>
-    <dd><code><em>herr_t</em> H5Pset_core_write_tracking(<em>hid_t</em> 
-    fapl_id, <em>hbool_t</em> is_enabled, <em>size_t</em> 
-    page_size)</code></dd>
-    <br />
+    <dd><code><em>herr_t</em> H5Pset_core_write_tracking(
+              <em>hid_t</em> fapl_id, 
+              <em>hbool_t</em> is_enabled, 
+              <em>size_t</em> page_size
+         )</code>
+         </dd>
 
+<p>
 <dt><strong>Purpose:</strong></dt>
-    <dd>Sets information about the write tracking feature used by the 
-    Core VFD.</dd>
-    <br />
+    <dd>Sets write tracking information for core driver, 
+        <code>H5FD_CORE</code>.
+        </dd>
 
+<p>
 <dt><strong>Description:</strong></dt>
-    <dd>When a file is created or opened for writing using the Core 
-    virtual file driver (VFD) with the backing store option turned on, 
-    the VFD can be configured to track changes to the file and only 
-    write out the modified bytes. To avoid a large number of small 
-    writes, the changes can be aggregated into pages of a user-specified 
-    size. The Core VFD is also known as the Memory VFD. The driver 
-    identifier is <code>H5FD_CORE</code>.
-    
-    <p>Setting the <code>page_size</code> parameter to zero will turn 
-    off tracking and cause the entire file to be written out to storage 
-    when closed.</p>
-    
-    <p>Setting the <code>page_size</code> parameter to 1 will enable 
-    tracking but with no paging.</p></dd>
-    <br />
+    <dd>
+    When a file is created or opened for writing using the 
+    core virtual file driver (VFD) with the backing store option turned on,
+    the core driver can be configured to track changes to the file 
+    and write out only the modified bytes. 
+    </p>
+    <p>
+    This write tracking feature is enabled and disabled with
+    <code>is_enabled</code>.
+    The default setting is that write tracking is disabled, or off. 
+    </p>
+    <p>
+    To avoid a large number of small writes, changes can be 
+    aggregated into pages of a user-specified size, <code>page_size</code>. 
+    </p>
+    <p>
+    Setting <code>page_size</code> to <code>1</code> enables 
+    tracking with no paging.
+    </p>
+    <p>
+    The backing store option is set via the function
+    <a href="#Property-SetFaplCore"><code>H5Pset_fapl_core</code></a>. 
+    </p>
+    </dd>
 
+<p>
 <dt><strong>Notes:</strong></dt>
-    <dd>Write tracking is turned off by default.
-    
-    <p>This function is only for use with the Core VFD and must be used 
-    after the call to <code>H5Pset_fapl_core</code>. It is an error to 
-    use this function with any other VFD.</p>
-    
-    <p>It is an error to use this function when the backing store flag 
+    <dd>
+    This function is only for use with the core VFD and must be used 
+    after the call to <code>H5Pset_fapl_core</code>. 
+    It is an error to use this function with any other VFD.
+    </p>
+    <p>
+    It is an error to use this function when the backing store flag 
     has not been set using <code>H5Pset_fapl_core</code>.
-    
-    <p>This function only applies to the backing store write operation 
+    </p>
+    <p>
+    This function only applies to the backing store write operation 
     which typically occurs when the file is flushed or closed. This 
-    function has no relationship to the increment parameter passed to 
-    <code>H5Pset_fapl_core</code>.</p>
-    
-    <p>For optimum performance, the <code>page_size</code> parameter 
-    should be a power of two.</p>
-    
-    <p>It is considered an error to set the page size to 0.</p></dd>
-    <br />
+    function has no relationship to the <code>increment</code> parameter 
+    passed to <code>H5Pset_fapl_core</code>.
+    </p>
+    <p>
+    For optimum performance, the <code>page_size</code> parameter 
+    should be a power of two.
+    </p>
+    <p>
+    <p>It is an error to set the page size to 0.
+    </p>
+    </dd>
 
+<p>
 <dt><strong>Parameters:</strong></dt>
     <dd>
     <table width="100%">
-    <tr valign="bottom">
-    <td width="17%"><code><em>hid_t</em> fapl_id</code></td>
-    <td width="83%">IN: File access property list identifier.</td></tr>
-    <tr valign="bottom">
-    <td><code><em>hbool_t</em> is_enabled</code></td>
-    <td>IN: Whether the feature is enabled.</td></tr>
-    <tr valign="bottom">
-    <td><code><em>size_t</em> page_size</code></td>
-    <td>IN: Size, in bytes, of write aggregation pages.</td></tr>
+      <tr valign="top">
+        <td width="17%"><code><em>hid_t</em> fapl_id</code></td>
+        <td width="83%">IN: File access property list identifier.</td></tr>
+      <tr valign="top">
+        <td><code><em>hbool_t</em>&nbsp;is_enabled&nbsp;&nbsp;</code></td>
+        <td>IN: Boolean value specifying whether feature is enabled.
+            </td></tr>
+      <tr valign="top">
+        <td><code><em>size_t</em> page_size</code></td>
+        <td>IN: Positive integer specifying size, in bytes, 
+            of write aggregation pages.
+            <br />
+            Value of <code>1</code> (one) enables tracking with no paging.
+            </td></tr>
     </table>
     </dd>
-    <br />
 
+<p>
 <dt><strong>Returns:</strong></dt>
     <dd>Returns a non-negative value if successful. 
-    Otherwise returns a negative value.</dd>
-    <br />
+        Otherwise returns a negative value.
+        </dd>
 
+<p>
 <dt><strong>Fortran Interface:</strong></dt>
     <dd>None</dd>
-    <br />
 
+<p>
 <dt><strong>See Also:</strong></dt>
     <dd>
     <a href="#Property-GetCoreWriteTracking"><code>
     H5Pget_core_write_tracking</code></a>
     </dd>
-    <br />
 
+<p>
 <dt><strong>History:</strong></dt>
-<dd><table width="100%">
-    <tr>
-    <td valign="top" align="left" width="10%">
-    <strong>Release</strong></td>
-    <td valign="top" align="left" width="90%">
-    <strong>Change</strong></td></tr>
-    <tr>
-    <td valign="top">1.8.13</td>
-    <td valign="top">
-    C function introduced with this release. </td></tr>
+    <dd><table width="100%">
+        <tr>
+          <td valign="top" align="left" width="10%">
+              <strong>Release</strong></td>
+          <td valign="top" align="left" width="90%">
+              <strong>Change</strong></td></tr>
+        <tr>
+          <td valign="top">1.8.13</td>
+          <td valign="top">
+              C function introduced with this release. </td></tr>
+<!--
+        <tr>
+          <td valign="top">1.8.14</td>
+          <td valign="top">
+              C function modified in this release to return error 
+              if <code>page_size</code> is set to <code>0</code> (zero). 
+              </td></tr>
+-->
     </table></dd>
 </dl>
-<br />
-<br />
-<br />
-
 
 
