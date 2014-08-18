@@ -126,7 +126,7 @@
 \newcounter{revision}
 % Adds a new reviewer
 \def\revision#1#2{\g@addto@macro\revisions{%
- {\bfseries{#1}} & {#2} \\}
+ {\itshape{#1}:} & {#2} \\}
 }
 %\newcommand*\rfcrevision[1]{\gdef\@rfcrevision{#1}\global\let\therfcrevision\@rfcrevision}%
 
@@ -253,10 +253,11 @@
 
 %% Normal headers and footers (headers are all like RH pages for oneside)
 \fancyhf{}%
-\fancyhead[R]{RFC THG \therfcversion}%
-\fancyhead[L]{\thedate}%
+\newcommand{\headerfont}{\small}
+\fancyhead[R]{\headerfont RFC THG \therfcversion}%
+\fancyhead[L]{\headerfont\thedate}%
 \fancyfoot[L]{\includegraphics[height=\logoheight]{THG_LOGO}}
-\fancyfoot[R]{\vspace*{-\logoheight}{Page~\thepage~of~\pageref{LastPage}}}
+\fancyfoot[R]{\vspace*{-\logoheight}{\headerfont Page~\thepage~of~\pageref{LastPage}}}
 
 \let\@oldheadrule\headrule
 \renewcommand{\headrule}{{\color{rulecolor}\@oldheadrule}}
@@ -266,11 +267,11 @@
 %% Headers and footers for plain (blank) pages
 \fancypagestyle{first}{%
   \fancyhf{}%
-  \fancyhead[R]{RFC THG \therfcversion}%
-  \fancyhead[L]{\thedate}%
+  \fancyhead[R]{\headerfont RFC THG \therfcversion}%
+  \fancyhead[L]{\headerfont \thedate}%
   \renewcommand{\headrulewidth}{0pt}%
   \fancyfoot[L]{\includegraphics[height=\logoheight]{THG_LOGO}}
-  \fancyfoot[R]{\vspace*{-\logoheight}{Page~\thepage~of~\pageref{LastPage}}}
+  \fancyfoot[R]{\vspace*{-\logoheight}{\headerfont Page~\thepage~of~\pageref{LastPage}}}
 }
 
 %% ========================================================================
@@ -290,7 +291,7 @@
 %% Makes a title
 \DeclareRobustCommand{\titlepage}[2][]{%
   \begingroup%
-  \ifx\@sftitles\@empty\else\sffamily\fi
+  \sffamily%
   \begin{singlespacing}
   \begin{center}%
     \vspace*{10pt}{\LARGE\bfseries{RFC: \thetitle}}\\%
