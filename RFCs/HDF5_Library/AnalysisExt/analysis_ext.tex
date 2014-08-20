@@ -13,14 +13,14 @@
     BoldItalicFont={* Bold Italic},
     SlantedFont={* Italic},
     BoldSlantedFont={* Bold Italic}
-  ]{Calibri}
+  ]{Verdana}
   \setsansfont[
     UprightFont={*},
     BoldFont={* Bold},
     ItalicFont={* Italic},
     BoldItalicFont={* Bold Italic}
-  ]{Calibri}
-  \setmathfont[math-style=ISO, bold-style=ISO]{Asana Math}
+  ]{Verdana}
+%  \setmathfont[math-style=ISO, bold-style=ISO]{Latin Modern Math}
   \setmonofont[
     UprightFont={*},
     BoldFont={* Bold},
@@ -73,7 +73,9 @@
     H5Qcreate, H5Qclose, H5Qcombine, H5Qget_type, H5Qget_match_op,
     H5Qget_components, H5Qget_combine_op, H5Qencode, H5Qdecode,
     H5Screate_simple, H5Sclose, H5Sget_select_npoints,
-    H5Xregister, H5Xunregister, H5Xcreate, H5Xremove, H5Xget_count
+    H5Xregister, H5Xunregister, H5Xcreate, H5Xremove, H5Xget_count,
+    H5Vcreate, H5Vclose, H5Vget_location, H5Vget_query, H5Vget_counts,
+    H5Vget_attrs, H5Vget_objs, H5Vget_elem_regions
     }
   }
 }
@@ -355,23 +357,22 @@ typedef struct {
     H5X_type_t type;      /* Type of data indexed by this plugin */
 
     /* Callbacks, described above */
-    void *(*create)(hid_t file_id, hid_t dataset_id, hid_t xcpl_id,
-        hid_t xapl_id, size_t *metadata_size, void **metadata);
-    herr_t (*remove)(hid_t file_id, hid_t dataset_id, size_t metadata_size,
+    void *(*create)(hid_t dataset_id, hid_t xcpl_id, hid_t xapl_id,
+        size_t *metadata_size, void **metadata);
+    herr_t (*remove)(hid_t dataset_id, size_t metadata_size, void *metadata);
+    herr_t (*copy)(hid_t src_dataset_id, hid_t dest_dataset_id, hid_t xcpl_id,
+        hid_t xapl_id, size_t src_metadata_size, void *src_metadata,
+        size_t *dest_metadata_size, void **dest_metadata);
+    void *(*open)(hid_t dataset_id, hid_t xapl_id, size_t metadata_size,
         void *metadata);
-    herr_t (*copy)(hid_t file1_id, hid_t file2_id, hid_t dataset1_id,
-        hid_t dataset2_id, hid_t xcpl_id, hid_t xapl_id,
-        size_t metadata_size, void *metadata);
-    void *(*open)(hid_t file_id, hid_t dataset_id, hid_t xapl_id,
-        size_t metadata_size, void *metadata);
     herr_t (*close)(void *idx_handle);
     herr_t (*pre_update)(void *idx_handle, hid_t dataspace_id, hid_t xxpl_id);
     herr_t (*post_update)(void *idx_handle, const void *buf, hid_t dataspace_id,
-            hid_t xxpl_id);
+        hid_t xxpl_id);
     herr_t (*query)(void *idx_handle, hid_t query_id, hid_t xxpl_id,
         hid_t *dataspace_id);
     herr_t (*refresh)(void *idx_handle, size_t *metadata_size, void **metadata);
-    herr_t (*get_size)(void *idx_handle, size_t *idx_size);
+    herr_t (*get_size)(void *idx_handle, hsize_t *idx_size);
 } H5X_class_t;
 \end{lstlisting}
 }
