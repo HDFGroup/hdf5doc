@@ -841,25 +841,6 @@ failure.
   operation created by the plugin.\\
 \end{tabular}
 
-The {\tt set\_extent} callback in the dataset class should extend the
-dataset dimensions and returns an {\tt herr\_t} indicating success or
-failure.
-
-\textbf{Signature:}
-\begin{lstlisting}
-    herr_t (*set_extent)(void *dset, const hsize_t size[], 
-        hid_t dxpl_id, void **req);
-\end{lstlisting}
-
-\textbf{Arguments:}\\
-\begin{tabular}{l p{10cm}}
-  {\tt dset} & (IN): Pointer to the dataset object.\\
-  {\tt size} & (IN): new dimensions of the dataset.\\
-  {\tt dxpl\_id} & (IN): The data transfer property list.\\
-  {\tt req} & (IN/OUT): A pointer to the asynchronous request of the
-  operation created by the plugin.\\
-\end{tabular}
-
 The {\tt get} callback in the dataset class should retrieve
 information about the dataset as specified in the {\tt get\_type}
 parameter.It returns an {\tt herr\_t} indicating success or failure.
@@ -1354,26 +1335,17 @@ implement:
 
 \begin{lstlisting}
 typedef struct H5VL_datatype_class_t {
-    void *(*commit)(void *obj, H5VL_loc_params_t loc_params, 
-        const char *name, hid_t type_id, hid_t lcpl_id, hid_t tcpl_id, 
-        hid_t tapl_id, hid_t dxpl_id, void **req);
-
-    void *(*open) (void *obj, H5VL_loc_params_t loc_params, 
-        const char * name, hid_t tapl_id, hid_t dxpl_id, void **req);
-
-    ssize_t (*get_binary)(void *obj, unsigned char *buf, size_t size, 
-        hid_t dxpl_id, void **req);
-
-    herr_t (*get) (void *obj, H5VL_datatype_get_t get_type, 
-        hid_t dxpl_id, void **req, va_list arguments);
-
+    void *(*commit)(void *obj, H5VL_loc_params_t loc_params, const char *name, hid_t type_id, hid_t lcpl_id, hid_t tcpl_id, hid_t tapl_id, hid_t dxpl_id, void **req);
+    void *(*open)(void *obj, H5VL_loc_params_t loc_params, const char * name, hid_t tapl_id, hid_t dxpl_id, void **req);
+    herr_t (*get)   (void *obj, H5VL_datatype_get_t get_type, hid_t dxpl_id, void **req, va_list arguments);
+    herr_t (*specific)(void *obj, H5VL_datatype_specific_t specific_type, hid_t dxpl_id, void **req, va_list arguments);
+    herr_t (*optional)(void *obj, hid_t dxpl_id, void **req, va_list arguments);
     herr_t (*close) (void *dt, hid_t dxpl_id, void **req);
 } H5VL_datatype_class_t;
 \end{lstlisting}
 
 The {\tt commit} callback in the named datatype class should create a datatype object in the container of the location object and
-returns a pointer to the datatype structure containing information to
-access the datatype in future calls. 
+returns a pointer to the datatype structure containing information to access the datatype in future calls. 
 
 \textbf{Signature:}
 \begin{lstlisting}
@@ -1468,9 +1440,10 @@ parameter.It returns an {\tt herr\_t} indicating success or failure.
 
 The {\tt get\_type} argument is an {\tt enum}:
 \begin{lstlisting}
-/* types for all datatype get API routines */
+/* types for datatype GET callback */
 typedef enum H5VL_datatype_get_t {
-    H5VL_DATATYPE_GET_TCPL   /*datatype creation property list */
+    H5VL_DATATYPE_GET_BINARY,               /* get serialized form of transient type */
+    H5VL_DATATYPE_GET_TCPL                  /* datatype creation property list     */
 } H5VL_datatype_get_t;
 \end{lstlisting}
 
@@ -1490,6 +1463,15 @@ depending on the {\tt get\_type} parameter. The following list shows
 the argument list, in-order, for each type:
 
 \begin{itemize}
+\item {\tt H5VL\_DATATYPE\_GET\_BINARY}, to retrieve the serialized original transient HDF5 datatype that was committed, or
+return the size that is required for it be serialized if the passed in buffer is {\tt NULL}. The HDF5 library provides two functions to
+encode and decode datatypes in their transient form, {\tt H5Tencode()} and {\tt H5Tdecode()}. When a datatype is committed, the plugin is required to keep the serialized form of the transient datatype stored somewhere in the container (which is usually the case anyway when committing a named datatype), so it can be retrieved with this call. This is needed to generate the higher level HDF5 datatype identifier that allows all the H5T ``transient'' routines to work properly on the named datatype.
+  \begin{enumerate}
+  \item {\tt ssize\_t *nalloc} (OUT): buffer to store the total size of the serialized datatype.
+  \item {\tt void *buf} (OUT): buffer to store the serialized datatype.
+  \item {\tt size\_t size} (IN): size of the passed in buffer.
+  \end{enumerate}
+  
 \item {\tt H5VL\_DATATYPE\_GET\_TCPL}, to retrieve the datatype
   creation property list:
   \begin{enumerate}
@@ -1497,6 +1479,8 @@ the argument list, in-order, for each type:
     type creation property list.
   \end{enumerate}
 \end{itemize}
+
+The {\tt specific} callback in the datatype class currently does not require any functionality to be implemented and should be left as {\tt NULL}.
 
 The {\tt optional} callback in the datatype class implements plugin specific operations on an HDF5 datatype. It returns an {\tt
   herr\_t} indicating success or failure. 
@@ -1541,34 +1525,11 @@ in this class that the plugin needs to implement:
 
 \begin{lstlisting}
 typedef struct H5VL_object_class_t {
-    void *(*open)(void *obj, H5VL_loc_params_t loc_params, 
-        H5I_type_t *opened_type, hid_t dxpl_id, void **req);
-
-    herr_t (*copy)(void *src_obj, H5VL_loc_params_t loc_params1, 
-        const char *src_name, void *dst_obj, 
-        H5VL_loc_params_t loc_params2, const char *dst_name,
-        hid_t ocpypl_id, hid_t lcpl_id, hid_t dxpl_id, void **req);
-
-    herr_t (*visit)(void *obj, H5VL_loc_params_t loc_params, 
-        H5_index_t idx_type, H5_iter_order_t order, 
-        H5O_iterate_t op, void *op_data, hid_t dxpl_id, void **req);
-
-    herr_t (*get)(void *obj, H5VL_loc_params_t loc_params, 
-        H5VL_object_get_t get_type, hid_t dxpl_id, 
-        void **req, va_list arguments);
-
-    herr_t (*misc)(void *obj, H5VL_loc_params_t loc_params, 
-        H5VL_object_misc_t misc_type, hid_t dxpl_id, 
-        void **req, va_list arguments);
-
-    MSC - NOT USED
-    herr_t (*optional)(void *obj, H5VL_loc_params_t loc_params, 
-        H5VL_object_optional_t op_type, hid_t dxpl_id, 
-        void **req, va_list arguments);
-
-    MSC - NOT USED
-    herr_t (*close) (void *obj, H5VL_loc_params_t loc_params, 
-        hid_t dxpl_id, void **req);
+    void *(*open)(void *obj, H5VL_loc_params_t loc_params, H5I_type_t *opened_type, hid_t dxpl_id, void **req);
+    herr_t (*copy)(void *src_obj, H5VL_loc_params_t loc_params1, const char *src_name, void *dst_obj, H5VL_loc_params_t loc_params2, const char *dst_name, hid_t ocpypl_id, hid_t lcpl_id, hid_t dxpl_id, void **req);
+    herr_t (*get)(void *obj, H5VL_loc_params_t loc_params, H5VL_object_get_t get_type, hid_t dxpl_id, void **req, va_list arguments);
+    herr_t (*specific)(void *obj, H5VL_loc_params_t loc_params, H5VL_object_specific_t specific_type, hid_t dxpl_id, void **req, va_list arguments);
+    herr_t (*optional)(void *obj, hid_t dxpl_id, void **req, va_list arguments);
 } H5VL_object_class_t;
 \end{lstlisting}
 
@@ -1630,38 +1591,6 @@ from the source object to the destination object. It returns an {\tt
   operation created by the plugin.\\
 \end{tabular}
 
-
-The {\tt visit} callback in the object class should recursively visit
-all objects accessible from a specified object and call the
-user defined function on each one. It returns an {\tt herr\_t}
-indicating success or failure.
-
-\textbf{Signature:}
-\begin{lstlisting}
-    herr_t (*visit)(void *obj, H5VL_loc_params_t loc_params, 
-        H5_index_t idx_type, H5_iter_order_t order, 
-        H5O_iterate_t op, void *op_data, hid_t dxpl_id, void **req);
-\end{lstlisting}
-
-\textbf{Arguments:}\\
-\begin{tabular}{l p{10cm}}
-  {\tt obj} & (IN): Pointer to an object where the iteration needs
-  to happen or where the look-up of the target object needs to
-  start.\\
-  {\tt loc\_params} & (IN): The location parameters as
-  explained in section~\ref{sec:map}. The type could be {\tt
-    H5VL\_OBJECT\_BY\_SELF} or {\tt
-    H5VL\_OBJECT\_BY\_NAME} for this callback.\\
-  {\tt idx\_type} & (IN): Type of index.\\
-  {\tt order} & (IN): Order in which to iterate over index.\\
-  {\tt op} & (IN): User-defined function to pass each object to.\\
-  {\tt op\_data} & (IN/OUT): User data to pass through to and to be
-  returned by iterator operator function. \\
-  {\tt dxpl\_id} & (IN): The data transfer property list.\\
-  {\tt req} & (IN/OUT): A pointer to the asynchronous request of the
-  operation created by the plugin.\\
-\end{tabular}
-
 The {\tt get} callback in the object class should retrieve information
 about the object as specified in the {\tt get\_type} parameter.It
 returns an {\tt herr\_t} indicating success or failure.
@@ -1675,14 +1604,11 @@ returns an {\tt herr\_t} indicating success or failure.
 
 The {\tt get\_type} argument is an {\tt enum}:
 \begin{lstlisting}
-/* types for all object get API routines */
+r object GET callback */
 typedef enum H5VL_object_get_t {
-    H5VL_OBJECT_EXISTS,      /* Object exists?       */
-    H5VL_OBJECT_GET_INFO,    /* object info          */
-    H5VL_OBJECT_GET_COMMENT, /* object comment       */
-    H5VL_REF_GET_REGION,     /* dataspace of region  */
-    H5VL_REF_GET_TYPE,       /* type of object       */
-    H5VL_REF_GET_NAME        /* object name          */
+    H5VL_REF_GET_NAME,                 /* object name                       */
+    H5VL_REF_GET_REGION,               /* dataspace of region               */
+    H5VL_REF_GET_TYPE                  /* type of object                    */
 } H5VL_object_get_t;
 \end{lstlisting}
 
@@ -1705,30 +1631,18 @@ depending on the {\tt get\_type} parameter. The following list shows
 the argument list, in-order, for each type:
 
 \begin{itemize}
-\item {\tt H5VL\_OBJECT\_EXISTS}, to check if an object with name
-  specified in {\tt loc\_params} (type {\tt H5VL\_OBJECT\_BY\_NAME})
-  exists:
+\item {\tt H5VL\_REF\_GET\_NAME}, to retrieve a name for a referenced object:
   \begin{enumerate}
-  \item {\tt htri\_t *ret} (OUT): existence result, 0 if false, 1 if true.
+  \item {\tt ssize\_t *ret} (OUT): buffer to return the length of the
+    name.
+  \item {\tt char* name} (OUT): buffer to copy the name into.
+  \item {\tt size\_t size} (IN): size of the buffer name, if 0, return
+    only the buffer size needed.
+  \item {\tt H5R\_type\_t ret\_type} (IN): type of region reference to
+    query.
+  \item {\tt void *ref} (IN): the region reference to query.
   \end{enumerate}
-
-\item {\tt H5VL\_OBJECT\_GET\_INFO}, to retrieve object info:
-  \begin{enumerate}
-  \item {\tt H5O\_info\_t *oinfo} (OUT): info structure to fill the
-    object info in.
-  \end{enumerate}
-
-\item {\tt H5VL\_OBJECT\_GET\_COMMENT}, to retrieve the comment on the
-  object specified with {\tt obj} and {\tt loc\_params} which could
-  have types {\tt H5VL\_OBJECT\_BY\_SELF} or {\tt
-    H5VL\_OBJECT\_BY\_NAME} here:
-  \begin{enumerate}
-  \item {\tt void *} (OUT): Buffer to store the comment in.
-  \item {\tt size\_t buf\_size} (IN): the size of the buffer passed in.
-  \item {\tt ssize\_t *ret} (OUT): return the actual size needed
-    to store the comment.
-  \end{enumerate}
-
+  
 \item {\tt H5VL\_REF\_GET\_REGION}, to retrieve a region reference
   contained in {\tt obj}:
   \begin{enumerate}
@@ -1747,83 +1661,65 @@ the argument list, in-order, for each type:
     query.
   \item {\tt void *ref} (IN): the region reference to query.
   \end{enumerate}
-
-\item {\tt H5VL\_REF\_GET\_NAME}, to retrieve a name for a referenced object:
-  \begin{enumerate}
-  \item {\tt ssize\_t *ret} (OUT): buffer to return the length of the
-    name.
-  \item {\tt char* name} (OUT): buffer to copy the name into.
-  \item {\tt size\_t size} (IN): size of the buffer name, if 0, return
-    only the buffer size needed.
-  \item {\tt H5R\_type\_t ret\_type} (IN): type of region reference to
-    query.
-  \item {\tt void *ref} (IN): the region reference to query.
-  \end{enumerate}
 \end{itemize}
 
-The {\tt misc} callback in the object class should execute operations
-in the container on objects as specified in the {\tt misc\_type}
-parameter.It returns an {\tt herr\_t} indicating success or failure.
+The {\tt specific} callback in the object class implements specific operations on HDF5 objects as specified in the {\tt
+  specific\_type} parameter. It returns an {\tt herr\_t} indicating success or failure.
 
 \textbf{Signature:}
 \begin{lstlisting}
-    herr_t (*misc)(void *obj, H5VL_loc_params_t loc_params, 
-        H5VL_object_misc_t misc_type, hid_t dxpl_id, 
-        void **req, va_list arguments);
+	herr_t (*specific)(void *obj, H5VL_loc_params_t loc_params, H5VL_object_specific_t specific_type, hid_t dxpl_id, void **req, va_list arguments);
 \end{lstlisting}
 
-The {\tt misc\_type} argument is an {\tt enum}:
+The {\tt specific\_type} argument is an {\tt enum}:
 \begin{lstlisting}
-/* types for all object general operations */
-typedef enum H5VL_object_misc_t {
-    H5VL_ATTR_RENAME,               /* H5Arename                 */
-    H5VL_OBJECT_CHANGE_REF_COUNT,   /* H5Oincr/decr_refcount     */
-    H5VL_OBJECT_SET_COMMENT,        /* H5Oset_comment(_by_name)  */
-    H5VL_REF_CREATE                 /* H5Rcreate                 */
-} H5VL_object_misc_t;
+/* types for object SPECIFIC callback */
+typedef enum H5VL_object_specific_t {
+    H5VL_OBJECT_CHANGE_REF_COUNT,      /* H5Oincr/decr_refcount              */
+    H5VL_OBJECT_EXISTS,                /* H5Oexists_by_name                  */
+    H5VL_OBJECT_VISIT,                 /* H5Ovisit(_by_name)                 */
+    H5VL_REF_CREATE                    /* H5Rcreate                          */
+} H5VL_object_specific_t;
 \end{lstlisting}
 
 \textbf{Arguments:}\\
 \begin{tabular}{l p{10cm}}
-  {\tt obj} & (IN): A location object for the operation.\\
-  {\tt loc\_params} & (IN): The location parameters as
-  explained in section~\ref{sec:map}.\\
-  {\tt misc\_type} & (IN): The type of the operation.\\
+  {\tt obj} & (IN): The location object  where the operation needs to happen.\\
+  {\tt loc\_params} & (IN): The location parameters as explained in section~\ref{sec:map}.\\
+  {\tt specific\_type} & (IN): The type of the operation.\\
   {\tt dxpl\_id} & (IN): The data transfer property list.\\
   {\tt req} & (IN/OUT): A pointer to the asynchronous request of the
   operation created by the plugin.\\
   {\tt arguments} & (IN/OUT): argument list containing parameters and
-  output pointers for the misc operation. \\
+  output pointers for the get operation. \\
 \end{tabular}
 
 The {\tt arguments} argument contains a variable list of arguments
-depending on the {\tt misc\_type} parameter. The following list shows
+depending on the {\tt specific\_type} parameter. The following list shows
 the argument list, in-order, for each type:
 
 \begin{itemize}
-\item {\tt H5VL\_ATTR\_RENAME}, to rename an attribute under the
-  location object where the {\tt loc\_params} could have types {\tt
-    H5VL\_OBJECT\_BY\_SELF} or {\tt H5VL\_OBJECT\_BY\_NAME}:
-  \begin{enumerate}
-  \item {\tt char *old\_name} (IN): old name of the attribute to
-    rename.
-  \item {\tt char *new\_name} (IN): the new attribute name to set for
-    the attribute.
-  \end{enumerate}
-
 \item {\tt H5VL\_OBJECT\_CHANGE\_REF\_COUNT}, to update the reference
   count for the object in {\tt obj}:
   \begin{enumerate}
   \item {\tt int ref\_count} (IN): reference count to set on the object.
   \end{enumerate}
 
-\item {\tt H5VL\_OBJECT\_SET\_COMMENT}, to set a comment on the object
-  where the {\tt loc\_params} could have types {\tt
-    H5VL\_OBJECT\_BY\_SELF} or {\tt H5VL\_OBJECT\_BY\_NAME}:
+\item {\tt H5VL\_OBJECT\_EXISTS}, to check if an object with name
+  specified in {\tt loc\_params} (type {\tt H5VL\_OBJECT\_BY\_NAME})
+  exists:
   \begin{enumerate}
-  \item {\tt char *comment} (IN): comment to set on the object.
+  \item {\tt htri\_t *ret} (OUT): existence result, 0 if false, 1 if true.
   \end{enumerate}
 
+\item {\tt H5VL\_OBJECT\_VISIT}, to iterate over all objects starting at the location provided and call a user specified callback on each one:
+  \begin{enumerate}
+  \item {\tt H5\_index\_t idx\_type} (IN): Type of index.\\
+  \item {\tt H5\_iter\_order\_t order} (IN): Order in which to iterate over index.\\
+  \item {\tt H5O\_iterate\_t op} (IN): User-defined function to pass each object to. \\
+  \item {\tt void *op\_data} (IN/OUT): User data to pass through to and to be returned by iterator operator function. \\
+  \end{enumerate}
+  
 \item {\tt H5VL\_REF\_CREATE}, to create a reference of an object
   under the location object {\tt obj}:
   \begin{enumerate}
@@ -1864,26 +1760,12 @@ plugin needs to implement:
 
 \begin{lstlisting}
 typedef struct H5VL_link_class_t {
-    herr_t (*create)(H5VL_link_create_type_t create_type, void *obj,
-        H5VL_loc_params_t loc_params, hid_t lcpl_id, 
-        hid_t lapl_id, hid_t dxpl_id, void **req);
-
-    herr_t (*move)(void *src_obj, H5VL_loc_params_t loc_params1,
-        void *dst_obj, H5VL_loc_params_t loc_params2,
-        hbool_t copy_flag, hid_t lcpl, hid_t lapl, 
-        hid_t dxpl_id, void **req);
-
-    herr_t (*iterate)(void *obj, H5VL_loc_params_t loc_params, 
-        hbool_t recursive, H5_index_t idx_type, H5_iter_order_t order, 
-        hsize_t *idx, H5L_iterate_t op, void *op_data, hid_t dxpl_id, 
-        void **req);
-
-    herr_t (*get)(void *obj, H5VL_loc_params_t loc_params, 
-        H5VL_link_get_t get_type, hid_t dxpl_id, void **req, 
-        va_list arguments);
-
-    herr_t (*remove)(void *obj, H5VL_loc_params_t loc_params, 
-        hid_t dxpl_id, void **req);
+    herr_t (*create)(H5VL_link_create_type_t create_type, void *obj, H5VL_loc_params_t loc_params, hid_t lcpl_id, hid_t lapl_id, hid_t dxpl_id, void **req);
+    herr_t (*copy)(void *src_obj, H5VL_loc_params_t loc_params1, void *dst_obj, H5VL_loc_params_t loc_params2, hid_t lcpl, hid_t lapl, hid_t dxpl_id, void **req);
+    herr_t (*move)(void *src_obj, H5VL_loc_params_t loc_params1, void *dst_obj, H5VL_loc_params_t loc_params2, hid_t lcpl, hid_t lapl, hid_t dxpl_id, void **req);
+    herr_t (*get)(void *obj, H5VL_loc_params_t loc_params, H5VL_link_get_t get_type, hid_t dxpl_id, void **req, va_list arguments);
+    herr_t (*specific)(void *obj, H5VL_loc_params_t loc_params, H5VL_link_specific_t specific_type, hid_t dxpl_id, void **req, va_list arguments);
+    herr_t (*optional)(void *obj, hid_t dxpl_id, void **req, va_list arguments);
 } H5VL_link_class_t;
 \end{lstlisting}
 
@@ -1905,7 +1787,7 @@ The {\tt create\_type} argument is an {\tt enum}:
 typedef enum H5VL_link_create_type_t {
     H5VL_LINK_CREATE_HARD,  /* Hard Link          */
     H5VL_LINK_CREATE_SOFT,  /* Soft Link          */
-    H5VL_LINK_CREATE_UD     /* External / UD Link */
+    H5VL_LINK_CREATE_UD      /* External / UD Link */
 } H5VL_link_create_type_t;
 \end{lstlisting}
 
@@ -1957,16 +1839,11 @@ type:
   \end{enumerate}
 \end{itemize}
 
-The {\tt move} callback in the link class should copy or move a link
-within the HDF5 container. It returns an {\tt herr\_t} indicating
-success or failure.
+The {\tt move} callback in the link class should move a link within the HDF5 container. It returns an {\tt herr\_t} indicating success or failure.
 
 \textbf{Signature:}
 \begin{lstlisting}
-    herr_t (*move)(void *src_obj, H5VL_loc_params_t loc_params1,
-        void *dst_obj, H5VL_loc_params_t loc_params2,
-        hbool_t copy_flag, hid_t lcpl, hid_t lapl, 
-        hid_t dxpl_id, void **req);
+    herr_t (*move)(void *src_obj, H5VL_loc_params_t loc_params1, void *dst_obj, H5VL_loc_params_t loc_params2, hid_t lcpl, hid_t lapl, hid_t dxpl_id, void **req);
 \end{lstlisting}
 
 \textbf{Arguments:}\\
@@ -1979,8 +1856,6 @@ success or failure.
   {\tt loc\_params1} & (IN): The location parameters for the destination
   object as explained in section~\ref{sec:map}. The type can be only {\tt
     H5VL\_OBJECT\_BY\_NAME} in this callback. \\
-  {\tt copy\_flag} & (IN): flag to indicate whether link is to be
-  copied (value 1) or moved (value 0).\\
   {\tt lcpl\_id} & (IN): The link creation property list.\\
   {\tt lapl\_id} & (IN): The link access property list.\\
   {\tt dxpl\_id} & (IN): The data transfer property list.\\
@@ -1988,34 +1863,25 @@ success or failure.
   operation created by the plugin.\\
 \end{tabular}
 
-The {\tt iterate} callback in the link class should iterate over links
-in a group and apply a user defined routine. It returns an {\tt
-  herr\_t} indicating success or failure.
+The {\tt copy} callback in the link class should copy a link within the HDF5 container. It returns an {\tt herr\_t} indicating success or failure.
 
 \textbf{Signature:}
 \begin{lstlisting}
-    herr_t (*iterate)(void *obj, H5VL_loc_params_t loc_params, 
-        hbool_t recursive, H5_index_t idx_type, H5_iter_order_t order, 
-        hsize_t *idx, H5L_iterate_t op, void *op_data, hid_t dxpl_id, 
-        void **req);
+    herr_t (*copy)(void *src_obj, H5VL_loc_params_t loc_params1, void *dst_obj, H5VL_loc_params_t loc_params2, hid_t lcpl, hid_t lapl, hid_t dxpl_id, void **req);
 \end{lstlisting}
 
 \textbf{Arguments:}\\
 \begin{tabular}{l p{10cm}}
-  {\tt obj} & (IN): object where to start iteration or where the
-  lookup for the target object needs to start. \\
-  {\tt loc\_params} & (IN): The location parameters for the source
+  {\tt src\_obj} & (IN): original/source object or file. \\
+  {\tt loc\_params1} & (IN): The location parameters for the source
   object as explained in section~\ref{sec:map}. The type can be only {\tt
-    H5VL\_OBJECT\_BY\_NAME} or {\tt H5VL\_OBJECT\_BY\_SELF} in this
-  callback.\\ 
-  {\tt recursive} & (IN): whether to recursively follow links into
-  subgroups of the specified group.\\
-  {\tt idx\_type} & (IN): Type of index which determines the order.\\
-  {\tt idx} & (IN/OUT): iteration position where to start and return
-  position where an interrupted iteration may restart.\\
-  {\tt op} & (IN): User-defined function for the iterator.\\
-  {\tt op\_data} & (IN/OUT): User data to pass through to and to be
-  returned by iterator operator function.\\
+    H5VL\_OBJECT\_BY\_NAME} in this callback. \\
+  {\tt dst\_obj} & (IN): destination object or file. \\
+  {\tt loc\_params1} & (IN): The location parameters for the destination
+  object as explained in section~\ref{sec:map}. The type can be only {\tt
+    H5VL\_OBJECT\_BY\_NAME} in this callback. \\
+  {\tt lcpl\_id} & (IN): The link creation property list.\\
+  {\tt lapl\_id} & (IN): The link access property list.\\
   {\tt dxpl\_id} & (IN): The data transfer property list.\\
   {\tt req} & (IN/OUT): A pointer to the asynchronous request of the
   operation created by the plugin.\\
@@ -2036,7 +1902,6 @@ The {\tt get\_type} argument is an {\tt enum}:
 \begin{lstlisting}
 /* types for all link get API routines */
 typedef enum H5VL_link_get_t {
-    H5VL_LINK_EXISTS,          /* link existence  */
     H5VL_LINK_GET_INFO,        /* link info       */
     H5VL_LINK_GET_NAME,        /* link name       */
     H5VL_LINK_GET_VAL          /* link value      */
@@ -2064,14 +1929,6 @@ depending on the {\tt get\_type} parameter. The following list shows
 the argument list, in-order, for each type:
 
 \begin{itemize}
-\item {\tt H5VL\_LINK\_EXITS}, to determine whether the link specified
-  in the {\tt loc\_params} exits ({\tt loc\_params} is of type {\tt
-    H5VL\_OBJECT\_BY\_NAME} only with this type):
-  \begin{enumerate}
-  \item {\tt htri\_t *ret} (OUT): buffer for the existence of the link
-    (0 for no, 1 for yes).
-  \end{enumerate}
-
 \item {\tt H5VL\_LINK\_GET\_INFO}, to retrieve the link info from the
   link specified in the {\tt loc\_params}:
   \begin{enumerate}
@@ -2097,29 +1954,63 @@ the argument list, in-order, for each type:
   \item {\tt void *buf} (OUT): buffer to put the value into.
   \item {\tt size\_t size} (IN): size of the passed in buffer.
   \end{enumerate}
-
 \end{itemize}
 
-The {\tt remove} callback in the link class should remove a link from
-an HDF5 container, and returns an {\tt herr\_t} indicating success or
-failure.
+The {\tt specific} callback in the link class implements specific operations on HDF5 links as specified in the {\tt
+  specific\_type} parameter. It returns an {\tt herr\_t} indicating success or failure.
 
 \textbf{Signature:}
 \begin{lstlisting}
-    herr_t (*remove)(void *obj, H5VL_loc_params_t loc_params, 
-        hid_t dxpl_id, void **req);
+	herr_t (*specific)(void *obj, H5VL_loc_params_t loc_params, H5VL_link_specific_t specific_type, hid_t dxpl_id, void **req, va_list arguments);
+\end{lstlisting}
+
+The {\tt specific\_type} argument is an {\tt enum}:
+\begin{lstlisting}
+/* types for link SPECIFIC callback */
+typedef enum H5VL_link_specific_t {
+    H5VL_LINK_DELETE,          /* H5Ldelete(_by_idx)                */
+    H5VL_LINK_EXISTS,          /* link existence                    */
+    H5VL_LINK_ITER             /* H5Literate/visit(_by_name)              */
+} H5VL_link_specific_t;
 \end{lstlisting}
 
 \textbf{Arguments:}\\
 \begin{tabular}{l p{10cm}}
-  {\tt obj} & (IN): group object or file containing the link.\\
-  {\tt loc\_params} & (IN): The location parameters for the link to be
-  deleted.The type can be only {\tt H5VL\_OBJECT\_BY\_NAME} or {\tt
-    H5VL\_OBJECT\_BY\_IDX} in this callback.\\ 
+  {\tt obj} & (IN): The location object  where the operation needs to happen.\\
+  {\tt loc\_params} & (IN): The location parameters as explained in section~\ref{sec:map}.\\
+  {\tt specific\_type} & (IN): The type of the operation.\\
   {\tt dxpl\_id} & (IN): The data transfer property list.\\
   {\tt req} & (IN/OUT): A pointer to the asynchronous request of the
   operation created by the plugin.\\
+  {\tt arguments} & (IN/OUT): argument list containing parameters and
+  output pointers for the get operation. \\
 \end{tabular}
+
+The {\tt arguments} argument contains a variable list of arguments
+depending on the {\tt specific\_type} parameter. The following list shows
+the argument list, in-order, for each type:
+
+\begin{itemize}
+\item {\tt H5VL\_LINK\_DELETE}, to remove a link specified in the location parameter from an HDF5 container.
+
+\item {\tt H5VL\_LINK\_EXITS}, to determine whether the link specified
+  in the {\tt loc\_params} exits ({\tt loc\_params} is of type {\tt
+    H5VL\_OBJECT\_BY\_NAME} only with this type):
+  \begin{enumerate}
+  \item {\tt htri\_t *ret} (OUT): buffer for the existence of the link
+    (0 for no, 1 for yes).
+  \end{enumerate}
+
+\item {\tt H5VL\_LINK\_ITER}, to iterate over all links starting at the location provided and call a user specified callback on each one:
+  \begin{enumerate}
+  \item {\tt hbool\_t recursive} (IN): whether to recursively follow links into subgroups of the specified group.\\
+  \item {\tt H5\_index\_t idx\_type} (IN): Type of index.\\
+  \item {\tt H5\_iter\_order\_t order} (IN): Order in which to iterate over index.\\
+  \item {\tt hsize\_t *idx} (IN/OUT):  iteration position where to start and return position where an interrupted iteration may restart.\\
+  \item {\tt H5L\_iterate\_t op} (IN): User-defined function to pass each link to. \\
+  \item {\tt void *op\_data} (IN/OUT): User data to pass through to and to be returned by iterator operator function. \\
+  \end{enumerate}
+\end{itemize}
 
 The {\tt optional} callback in the link class implements plugin specific operations on an HDF5 link. It returns an {\tt
   herr\_t} indicating success or failure. 
@@ -2148,9 +2039,7 @@ added in the future:
 \begin{lstlisting}
 typedef struct H5VL_async_class_t {
     herr_t (*cancel)(void **, H5ES_status_t *);
-
     herr_t (*test)  (void **, H5ES_status_t *);
-
     herr_t (*wait)  (void **, H5ES_status_t *);
 } H5VL_async_class_t;
 \end{lstlisting}
@@ -2162,8 +2051,7 @@ typedef enum H5ES_status_t {
     H5ES_STATUS_IN_PROGRESS, /* Operation has not yet completed */
     H5ES_STATUS_SUCCEED,     /* Operation has completed, successfully */
     H5ES_STATUS_FAIL,        /* Operation has completed, but failed */
-    H5ES_STATUS_CANCEL       /* Operation has not completed and has
-                                been cancelled */
+    H5ES_STATUS_CANCEL       /* Operation has not completed and has been cancelled */
 } H5ES_status_t;
 \end{lstlisting}
 
@@ -2207,6 +2095,24 @@ and returns an {\tt herr\_t} indicating success or failure.
 \begin{tabular}{l p{10cm}}
   {\tt req} & (IN): A pointer to the asynchronous request.\\
   {\tt status} & (OUT): result of the wait operation.\\
+\end{tabular}
+
+\subsection{The Optional Generic Callback}
+A generic optional callback is provided for services that are specific to a plugin. Asynchronous operations/services could have been implemented through this optional callback, however since we anticipate asynchronous operations to be common across many plugins, they have been promoted to a subclass by themselves as shown in the previous section. Other services that are not shared across different plugins might include transactional semantics for managing operations like in~/ref{fastforward}, MSC - add more use cases here.
+
+The {\tt optional} callback has the following definition. It returns an {\tt herr\_t} indicating success or failure. 
+
+\textbf{Signature:}
+\begin{lstlisting}
+    herr_t (*optional)(void *obj, hid_t dxpl_id, void **req, va_list arguments);
+\end{lstlisting}
+
+\textbf{Arguments:}\\
+\begin{tabular}{l p{10cm}}
+  {\tt obj} & (IN): The container or object where the operation needs to happen.\\
+  {\tt dxpl\_id} & (IN): The data transfer property list.\\
+  {\tt req} & (IN/OUT): A pointer to the asynchronous request of the operation created by the plugin.\\
+  {\tt arguments} & (IN/OUT): argument list containing parameters and output pointers for the get operation. \\
 \end{tabular}
 
 %%% Local Variables: 

@@ -1,0 +1,34 @@
+\section{New VOL API Routines}
+New API routines have been added to the HDF5 library to manage VOL plugins. This section details each new API call and explains their intended usage. 
+
+\begin{lstlisting}
+  hid_t H5VLobject_register(void *obj, H5I_type_t obj_type, const H5VL_class_t *cls);
+\end{lstlisting}
+to register an {\tt hid\_t} with an object {\tt obj} associated with
+the VOL plugin of class {\tt cls}. This is needed in all iterate and
+visit callbacks where the plugins internally need to wrap an {\tt
+  hid\_t} around an object to call the user defined operation {\tt op}
+on.
+
+\begin{lstlisting}
+  herr_t H5VLget_object(hid_t obj_id, void **obj, H5VL_t **vol_plugin);
+\end{lstlisting}
+to retrieve the VOL object and plugin structure from an HDF5
+identifier ({\tt hid\_t}). The plugin structure is defined as:
+\begin{lstlisting}
+struct H5VL_t {
+    const H5VL_class_t *cls;     /* constant class info */
+    const char *container_name;  /* name of the underlying storage 
+                                    container */
+    unsigned long feature_flags; /* VOL Driver feature Flags */
+    int nrefs;                   /* number of references by objects
+                                    using this struct */
+};
+\end{lstlisting}
+
+
+% H5_DLL void *H5Pget_vol_info(hid_t plist_id);
+%%% Local Variables: 
+%%% mode: latex
+%%% TeX-master: t
+%%% End: 

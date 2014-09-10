@@ -4,8 +4,8 @@ are required to ship with the entire library to be used. Typically
 those plugins need to use internal features and functions of the HDF5
 library that are not available publicly from the user application.
 
-After implementing the VOL class as described in
-section~\ref{sec:vol}, the next step would be to allow users to select
+\subsection{Implementing an Internal Plugin}
+The first step to implement an internal plugin is to implement all the callbacks defined in the VOL class as described in section~\ref{sec:vol}. After implementing the VOL class, the next step would be to allow users to select
 this plugin to be used. This is done by creating a new API routine to
 set the plugin on the file access property list. For example, if we
 create an internal plugin called ``dummy'' that needs an MPI
@@ -26,8 +26,7 @@ that will set the file access using that {\tt fapl\_id} to go through
 the ``dummy'' plugin. It will also call the copy callback of the
 ``dummy'' plugin on the info object ({\tt comm and info}).
 
-A sample implementation for the {\tt H5Pset\_fapl\_dummy()} could like
-this:
+A sample implementation for the {\tt H5Pset\_fapl\_dummy()} would look like this:
 
 \begin{lstlisting}
 /* DUMMY-specific file access properties */
@@ -68,7 +67,18 @@ done:
 At this point, the internal plugin is ready to be used. For more
 information on how to implement an internal plugin, the native plugin
 for the HDF5 library is a comprehensive plugin that implements all
-features of the library and can be used as guide.
+features of the library and can be used as a guide.
+
+\subsection{Using an Internal Plugin}
+An internal plugin is registered automatically with the HDF5 library when the library gets initialized. Users should not attempt to register an internal plugin. The internal registration operation creates a global identifier for each internal plugin. Applications can query the library for that identifier using the plugin name with {\tt H5VLget\_plugin\_id()}. This identifier is used to initialize the plugin if it requires an initialization phase. A third party library could use that ID to create a plugin that stacks or mirrors on top of an internal plugin using that identifier (refer to section~\ref{sec:stack} for more details on stacking and mirroring).
+
+Some plugins could require an initialization phase before using the plugin with some input parameters from users. For example, a remote plugin would need to setup a connection to a remote machine with a specific hostname that the user knows and the HDF5 library does not know about. This process is done by creating a VOL initialization property list and setting a public property that should be defined by the internal plugin to the hostname of the remote machine. The user then calls the initialize routine ({\tt H5VLintialize()}) with the plugin\_id and the property list to initialize the plugin. Some plugins could create a public API routine that wraps the property list creation, property settings, and plugin initialization into one routine that the user calls to simplify this process for the users. The native HDF5 plugin does not require an initialization phase.
+
+Now that the plugin is initialized, the application can create or open an HDF5 container using the internal plugin by creating a file access property list and calling the corresponding API routine that the internal plugin should define for setting the VOL plugin property and container parameters on the file access property list. That FAPL can be passed to the {\tt H5Fcreate()} or {\tt H5Fopen{}} calls to access the container through the VOL plugin. Subsequently, all other HDF5 calls on the container and objects created or opened in that container will automatically go to the selected VOL plugin. 
+
+After closing all objects and containers on that plugin, the application should terminate access to the selected plugin if it requires a termination phase by calling {\tt H5VLterminate()} with the required termination properties (similar to the initialization phase). The native HDF5 plugin does not require a termination phase.
+
+The internal plugin is unregistered automatically by the HDF5 library on library termination, and users should not attempt to unregister it themselves.
 
 %%% Local Variables: 
 %%% mode: latex
