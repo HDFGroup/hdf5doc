@@ -1,33 +1,201 @@
 \section{New VOL API Routines}
+\label{sec:api}
 New API routines have been added to the HDF5 library to manage VOL plugins. This section details each new API call and explains their intended usage. 
 
 \begin{lstlisting}
-  hid_t H5VLobject_register(void *obj, H5I_type_t obj_type, const H5VL_class_t *cls);
+hid_t H5VLregister(const H5VL_class_t *cls);
 \end{lstlisting}
-to register an {\tt hid\_t} with an object {\tt obj} associated with
-the VOL plugin of class {\tt cls}. This is needed in all iterate and
-visit callbacks where the plugins internally need to wrap an {\tt
-  hid\_t} around an object to call the user defined operation {\tt op}
-on.
+Registers a user defined VOL plugin with the HDF5 library and returns an identifier for that plugin to be used if successful, otherwise returns a negative value. This function is used when the application has direct access to the plugin it wants to use and is able to obtain a pointer for the plugin structure to pass to the HDF5 library. The plugin must be unregistered before the application exists with {\tt H5VLunregister()}.
+
+\textbf{Arguments:}\\
+\begin{tabular}{l p{10cm}}
+  {\tt cls} & (IN): A pointer to the plugin structure to register.\\
+\end{tabular}
 
 \begin{lstlisting}
-  herr_t H5VLget_object(hid_t obj_id, void **obj, H5VL_t **vol_plugin);
+hid_t H5VLregister_by_name(const char *plugin_name);
 \end{lstlisting}
-to retrieve the VOL object and plugin structure from an HDF5
-identifier ({\tt hid\_t}). The plugin structure is defined as:
+Registers a VOL plugin with the HDF5 library given the name of the plugin and returns an identifier for that plugin to be used if successful, otherwise returns a negative value. If the plugin is already registered the library will create an identifier for it and returns it to the user; otherwise the library will look for available third party plugins and dynamically load them and registers them for use, then returns an identifier for the plugin. Third party plugins must be installed on the system as a shared library or DLL. The plugin must be unregistered before the application exists with {\tt H5VLunregister()}.
+
+\textbf{Arguments:}\\
+\begin{tabular}{l p{10cm}}
+  {\tt name} & (IN): The plugin name to search for an register.\\
+\end{tabular}
+
 \begin{lstlisting}
-struct H5VL_t {
-    const H5VL_class_t *cls;     /* constant class info */
-    const char *container_name;  /* name of the underlying storage 
-                                    container */
-    unsigned long feature_flags; /* VOL Driver feature Flags */
-    int nrefs;                   /* number of references by objects
-                                    using this struct */
-};
+herr_t H5VLunregister(hid_t plugin_id);
+\end{lstlisting}
+Unregisters a plugin from the library and return a positive value on success otherwise return a negative value. 
+
+\textbf{Arguments:}\\
+\begin{tabular}{l p{10cm}}
+  {\tt plugin\_id} & (IN): A valid identifier of the plugin to unregister.\\
+\end{tabular}
+
+\begin{lstlisting}
+htri_t H5VLis_registered(const char *name);
+\end{lstlisting}
+Checks if a VOL plugin is registered with the library given the plugin name and returns TRUE/FALSE on success, otherwise it returns a negative value.
+
+\textbf{Arguments:}\\
+\begin{tabular}{l p{10cm}}
+  {\tt name} & (IN): The plugin name to check for.\\
+\end{tabular}
+
+\begin{lstlisting}
+ssize_t H5VLget_plugin_name(hid_t obj_id, char *name/*out*/, size_t size);
+\end{lstlisting}
+Retrieves the name of a VOL plugin given and object identifier that was created/opened with it. On success, the name length is returned.
+
+\textbf{Arguments:}\\
+\begin{tabular}{l p{10cm}}
+  {\tt obj\_id} & (IN): The object identifier to check.\\
+  {\tt name} & (OUT): Buffer pointer to put the plugin name. If NULL, the library just returns the size required to store the plugin name.\\
+  {\tt size} & (IN): the size of the passed in buffer.\\
+\end{tabular}
+
+\begin{lstlisting}
+hid_t H5VLget_plugin_id(const char *name);
+\end{lstlisting}
+Given a plugin name that is registered with the library, this function returns an identifier for the plugin. If the plugin is not registered with the library, a negative value is returned. The identifier must be released with a call to {\tt H5VLclose()}.
+
+\textbf{Arguments:}\\
+\begin{tabular}{l p{10cm}}
+  {\tt name} & (IN): The plugin name to check for.\\
+\end{tabular}
+
+\begin{lstlisting}
+herr_t H5VLclose(hid_t plugin_id);
+\end{lstlisting}
+Shuts down access to the plugin that the identifier points to and release resources associated with it.
+
+\textbf{Arguments:}\\
+\begin{tabular}{l p{10cm}}
+ {\tt plugin\_id} & (IN): A valid identifier of the plugin to close.\\
+\end{tabular}
+
+
+\begin{lstlisting}
+  hid_t H5VLobject_register(void *obj, H5I_type_t obj_type, hid_t plugin_id);
+\end{lstlisting}
+Creates an HDF5 identifier for an object given its type and an identifier of the plugin that was used in creating it. This function is typically used by external plugins wanting to wrap an {\tt hid\_t} around a plugin specific object to return to a user callback for functions like {\tt H5Literate, H5Lvisit, H5Ovisit, H5Aiterate} etc... A Negative value is returned on failure.
+
+\textbf{Arguments:}\\
+\begin{tabular}{l p{10cm}}
+ {\tt obj} & (IN): pointer to the object to register.\\
+ {\tt obj\_type} & (IN): The type of the object ({\tt H5I\_FILE, H5I\_DATASET, H5I\_GROUP, H5I\_ATTRIBUTE, H5I\_DATATYPE}).\\
+ {\tt plugin\_id} & (IN): identifier of the vol plugin the object is associated with.\\
+\end{tabular}
+
+
+\begin{lstlisting}
+  herr_t H5VLget_object(hid_t obj_id, void **obj); 
+\end{lstlisting}
+Retrieves a pointer to the VOL object from an HDF5 file or object identifier.
+
+\textbf{Arguments:}\\
+\begin{tabular}{l p{10cm}}
+ {\tt obj\_id} & (IN): identifier of the object to dereference.\\
+ {\tt obj} & (OUT): buffer to store the pointer of the VOL object associated with the object identifier.\\
+\end{tabular}
+
+\begin{lstlisting}
+herr_t H5VLinitialize(hid_t plugin_id, hid_t vipl_id);
+\end{lstlisting}
+Initializes access to the VOL plugin represented by {\tt plugin\_id} with initialization parameters set as properties in the the property list {\tt vipl\_id}. Some plugins may not require initialization. For more information about plugin initialization and what properties are required to be set in the property list refer to the actual plugin documentation.
+
+\textbf{Arguments:}\\
+\begin{tabular}{l p{10cm}}
+ {\tt plugin\_id} & (IN): identifier of VOL plugin to initialize.\\
+ {\tt vipl\_id} & (IN): VOL initialize property list containing properties required for plugin initialization.\\
+\end{tabular}
+
+\begin{lstlisting}
+herr_t H5VLterminate(hid_t plugin_id, hid_t vtpl_id);
 \end{lstlisting}
 
+Terminates access to the VOL plugin represented by {\tt plugin\_id} with termination parameters set as properties in the the property list {\tt vtpl\_id}. Some plugins may not require termination. For more information about plugin termination and what properties are required to be set in the property list refer to the actual plugin documentation.
 
-% H5_DLL void *H5Pget_vol_info(hid_t plist_id);
+\textbf{Arguments:}\\
+\begin{tabular}{l p{10cm}}
+ {\tt plugin\_id} & (IN): identifier of VOL plugin to terminate.\\
+ {\tt vtpl\_id} & (IN): VOL terminate property list containing properties required for plugin termination.\\
+\end{tabular}
+
+
+A set of API calls that map directly to the VOL callbacks themselves have been added to aid in the development of stacked or mirrored plugins. For more information on usage refer to Section~\ref{sec:stack}. The routines are listed bellow.
+\begin{lstlisting}
+/* ATTRIBUTE OBJECT ROUTINES */
+void *H5VLattr_create(void *obj, H5VL_loc_params_t loc_params, hid_t plugin_id, const char *attr_name, hid_t acpl_id, hid_t aapl_id, hid_t dxpl_id, void **req);
+void *H5VLattr_open(void *obj, H5VL_loc_params_t loc_params, hid_t plugin_id, const char *name, hid_t aapl_id, hid_t dxpl_id, void **req);
+herr_t H5VLattr_read(void *attr, hid_t plugin_id, hid_t dtype_id, void *buf, hid_t dxpl_id, void **req);
+herr_t H5VLattr_write(void *attr, hid_t plugin_id, hid_t dtype_id, const void *buf, hid_t dxpl_id, void **req);
+herr_t H5VLattr_get(void *obj, hid_t plugin_id, H5VL_attr_get_t get_type, hid_t dxpl_id, void **req, va_list arguments);
+herr_t H5VLattr_specific(void *obj, H5VL_loc_params_t loc_params, hid_t plugin_id, H5VL_attr_specific_t specific_type, hid_t dxpl_id, void **req, va_list arguments);
+herr_t H5VLattr_optional(void *obj, hid_t plugin_id, hid_t dxpl_id, void **req, va_list arguments);
+herr_t H5VLattr_close(void *attr, hid_t plugin_id, hid_t dxpl_id, void **req);
+
+
+/* DATASET OBJECT ROUTINES */
+void *H5VLdataset_create(void *obj, H5VL_loc_params_t loc_params, hid_t plugin_id, const char *name, hid_t dcpl_id, hid_t dapl_id, hid_t dxpl_id, void **req);
+void *H5VLdataset_open(void *obj, H5VL_loc_params_t loc_params, hid_t plugin_id, const char *name, hid_t dapl_id, hid_t dxpl_id, void **req);
+herr_t H5VLdataset_read(void *dset, hid_t plugin_id, hid_t mem_type_id, hid_t mem_space_id, hid_t file_space_id, hid_t plist_id, void *buf, void **req);
+herr_t H5VLdataset_write(void *dset, hid_t plugin_id, hid_t mem_type_id, hid_t mem_space_id, hid_t file_space_id, hid_t plist_id, const void *buf, void **req);
+herr_t H5VLdataset_get(void *dset, hid_t plugin_id, H5VL_dataset_get_t get_type, hid_t dxpl_id, void **req, va_list arguments);
+herr_t H5VLdataset_specific(void *obj, hid_t plugin_id, H5VL_dataset_specific_t specific_type, hid_t dxpl_id, void **req, va_list arguments);
+herr_t H5VLdataset_optional(void *obj, hid_t plugin_id, hid_t dxpl_id, void **req, va_list arguments);
+herr_t H5VLdataset_close(void *dset, hid_t plugin_id, hid_t dxpl_id, void **req);
+
+
+/* DATATYPE OBJECT ROUTINES */
+void *H5VLdatatype_commit(void *obj, H5VL_loc_params_t loc_params, hid_t plugin_id, const char *name, hid_t type_id, hid_t lcpl_id, hid_t tcpl_id, hid_t tapl_id, hid_t dxpl_id, void **req);
+void *H5VLdatatype_open(void *obj, H5VL_loc_params_t loc_params, hid_t plugin_id, const char *name, hid_t tapl_id, hid_t dxpl_id, void **req);
+herr_t H5VLdatatype_get(void *dt, hid_t plugin_id, H5VL_datatype_get_t get_type, hid_t dxpl_id, void **req, va_list arguments);
+herr_t H5VLdatatype_specific(void *obj, hid_t plugin_id, H5VL_datatype_specific_t specific_type, hid_t dxpl_id, void **req, va_list arguments);
+herr_t H5VLdatatype_optional(void *obj, hid_t plugin_id, hid_t dxpl_id, void **req, va_list arguments);
+herr_t H5VLdatatype_close(void *dt, hid_t plugin_id, hid_t dxpl_id, void **req);
+
+
+/* FILE OBJECT ROUTINES */
+void *H5VLfile_create(const char *name, unsigned flags, hid_t fcpl_id, hid_t fapl_id, hid_t dxpl_id, void **req);
+void *H5VLfile_open(const char *name, unsigned flags, hid_t fapl_id, hid_t dxpl_id, void **req);
+herr_t H5VLfile_get(void *file, hid_t plugin_id, H5VL_file_get_t get_type, hid_t dxpl_id, void **req, va_list arguments);
+herr_t H5VLfile_specific(void *obj, hid_t plugin_id, H5VL_file_specific_t specific_type, hid_t dxpl_id, void **req, va_list arguments);
+herr_t H5VLfile_optional(void *obj, hid_t plugin_id, hid_t dxpl_id, void **req, va_list arguments);
+herr_t H5VLfile_close(void *file, hid_t plugin_id, hid_t dxpl_id, void **req);
+
+
+/* GROUP OBJECT ROUTINES */
+void *H5VLgroup_create(void *obj, H5VL_loc_params_t loc_params, hid_t plugin_id, const char *name, hid_t gcpl_id, hid_t gapl_id, hid_t dxpl_id, void **req);
+void *H5VLgroup_open(void *obj, H5VL_loc_params_t loc_params, hid_t plugin_id, const char *name, hid_t gapl_id, hid_t dxpl_id, void **req);
+herr_t H5VLgroup_get(void *obj, hid_t plugin_id, H5VL_group_get_t get_type, hid_t dxpl_id, void **req, va_list arguments);
+herr_t H5VLgroup_specific(void *obj, hid_t plugin_id, H5VL_group_specific_t specific_type, hid_t dxpl_id, void **req, va_list arguments);
+herr_t H5VLgroup_optional(void *obj, hid_t plugin_id, hid_t dxpl_id, void **req, va_list arguments);
+herr_t H5VLgroup_close(void *grp, hid_t plugin_id, hid_t dxpl_id, void **req);
+
+
+/* LINK OBJECT ROUTINES */
+herr_t H5VLlink_create(H5VL_link_create_type_t create_type, void *obj, H5VL_loc_params_t loc_params, hid_t plugin_id, hid_t lcpl_id, hid_t lapl_id, hid_t dxpl_id, void **req);
+herr_t H5VLlink_copy(void *src_obj, H5VL_loc_params_t loc_params1, void *dst_obj, H5VL_loc_params_t loc_params2, hid_t plugin_id, hid_t lcpl_id, hid_t lapl_id, hid_t dxpl_id, void **req);
+herr_t H5VLlink_move(void *src_obj, H5VL_loc_params_t loc_params1, void *dst_obj, H5VL_loc_params_t loc_params2, hid_t plugin_id, hid_t lcpl_id, hid_t lapl_id, hid_t dxpl_id, void **req);
+herr_t H5VLlink_get(void *obj, H5VL_loc_params_t loc_params, hid_t plugin_id, H5VL_link_get_t get_type, hid_t dxpl_id, void **req, va_list arguments);
+herr_t H5VLlink_specific(void *obj, H5VL_loc_params_t loc_params, hid_t plugin_id, H5VL_link_specific_t specific_type, hid_t dxpl_id, void **req, va_list arguments);
+herr_t H5VLlink_optional(void *obj, hid_t plugin_id, hid_t dxpl_id, void **req, va_list arguments);
+
+
+/* OBJECT ROUTINES */
+void *H5VLobject_open(void *obj, H5VL_loc_params_t loc_params, hid_t plugin_id, H5I_type_t *opened_type, hid_t dxpl_id, void **req);
+herr_t H5VLobject_copy(void *src_obj, H5VL_loc_params_t loc_params1, hid_t plugin_id1, const char *src_name,                      void *dst_obj, H5VL_loc_params_t loc_params2, hid_t plugin_id2, const char *dst_name, hid_t ocpypl_id, hid_t lcpl_id, hid_t dxpl_id, void **req);
+herr_t H5VLobject_get(void *obj, H5VL_loc_params_t loc_params, hid_t plugin_id, H5VL_object_get_t get_type, hid_t dxpl_id, void **req, va_list arguments);
+herr_t H5VLobject_specific(void *obj, H5VL_loc_params_t loc_params, hid_t plugin_id, H5VL_object_specific_t specific_type, hid_t dxpl_id, void **req, va_list arguments);
+herr_t H5VLobject_optional(void *obj, hid_t plugin_id, hid_t dxpl_id, void **req, va_list arguments);
+
+/* ASYNCHRONOUS ROUTINES */
+herr_t H5VLrequest_cancel(void **req, hid_t plugin_id, H5ES_status_t *status);
+herr_t H5VLrequest_test(void **req, hid_t plugin_id, H5ES_status_t *status);
+herr_t H5VLrequest_wait(void **req, hid_t plugin_id, H5ES_status_t *status);
+\end{lstlisting}
+
 %%% Local Variables: 
 %%% mode: latex
 %%% TeX-master: t
