@@ -53,11 +53,13 @@ A new set of API calls that map directly to the VOL callbacks have
 been added to the HDF5 library to make stacking and mirroring easy for
 plugin developers. Those APIs are listed at then end of Section~\ref{sec:api}. They are similar to the public VFD (H5FD) routines that call the VFD callbacks directly.
 
-Using those new APIs, A mirror VOL plugin could, for example, implement the create callback in the file class by creating two HDF5 containers each with a different underlying plugin with 2 calls to:
+A mirror VOL plugin could, for example, implement the create callback in the file class by creating two HDF5 containers each with a different underlying plugin with 2 calls to:
 \begin{lstlisting}
 void *H5VLfile_create(const char *name, unsigned flags, hid_t fcpl_id, hid_t fapl_id, hid_t dxpl_id, void **req);
 \end{lstlisting}
-where each call uses a different file access property list, each with the VOL plugin property set to the underlying plugins. Then the mirror plugin creates a structure containing the pointers for the containers returned from both underlying plugins and returns a pointer to that structure as the output of the file create callback. Subsequent access to the container would again call the the public VOL routines twice for each plugin with its corresponding objects and combine the output as needed. 
+where each call uses a different file access property list, each with the VOL plugin property set to the underlying plugin. Then the mirror plugin creates a structure containing the pointers for the containers returned from both underlying plugins and returns a pointer to that structure as the output of the file create callback. Subsequent access to the container created would receive as input the structure with the two files and would again call the the public VOL routines twice for each plugin with its corresponding file object and combine the output as needed. 
+
+MSC - refer to an appendix for an example?
 
 %%% Local Variables: 
 %%% mode: latex
