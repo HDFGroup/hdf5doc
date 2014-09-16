@@ -47,6 +47,7 @@
 \revision{January 9, 2012}{First Draft circulated internally.}
 \revision{March 9, 2012}{Update and circulate internally and externally.}
 \revision{August 28, 2014}{Update with new framework changes.}
+\revision{September 16, 2014}{Update with new features.}
 
 %% Start the document
 \begin{document}
@@ -109,7 +110,7 @@ typedef struct H5VL_class_t {
 \end{lstlisting}
 }
 
-The VOL public structure separates Data Model operations from Service operations. Data Model operations are those that operate on files, groups, dataset, etc… Those operations are furthermore grouped in their respective ``class'' structure. For example the file class consists of function pointers for plugins to implement operations on the file itself (H5F API operations). Service operations are those that provide services for users that are not related to the data model specifically. Asynchronous operations, for example, are a service that most plugins can implement, so we add a class for it in the VOL structure. If a service becomes generic enough and common between many plugins, a class for it should be added in the VOL structure. However, many plugins can/will provide services that are not shared by other plugins. A good way to support these services is through an optional callback in the VOL structure which can be a hook from the API to the plugin that provides those services, passing any necessary arguments needed without the HDF5 library having to worry about supporting that service. A similar API operation to allow users to use that service will be added. This API call would be similar to an ``ioctl'' call where any kind of operation can be supported and passed down to the plugin that has enough knowledge from the user to interpret the type of the operation. 
+The VOL public structure separates Data Model operations from Service operations. Data Model operations are those that operate on files, groups, dataset, etc... Those operations are furthermore grouped in their respective ``class'' structure. For example the file class consists of function pointers for plugins to implement operations on the file itself (H5F API operations). Service operations are those that provide services for users that are not related to the data model specifically. Asynchronous operations, for example, are a service that most plugins can implement, so we add a class for it in the VOL structure. If a service becomes generic enough and common between many plugins, a class for it should be added in the VOL structure. However, many plugins can/will provide services that are not shared by other plugins. A good way to support these services is through an optional callback in the VOL structure which can be a hook from the API to the plugin that provides those services, passing any necessary arguments needed without the HDF5 library having to worry about supporting that service. A similar API operation to allow users to use that service will be added. This API call would be similar to an ``ioctl'' call where any kind of operation can be supported and passed down to the plugin that has enough knowledge from the user to interpret the type of the operation. 
 The VOL User Guide will discuss the VOL structure in much more detail and provide examples on how to support/implement the classes/callbacks.
 
 \subsection{Calling in the VOL layer}
@@ -125,7 +126,7 @@ H5Dcreate(hid_t loc_id, const char *name, hid_t type_id, hid_t space_id, hid_t l
 	check_property_lists (lcpl_id, dcpl_id, dapl_id);
 
 	/* call the corresponding callback for H5Dcreate */
-	result = H5VL_dataset_create (…); /* will route the operation to the plugin at the intermediate VOL layer */
+	result = H5VL_dataset_create (...); /* will route the operation to the plugin at the intermediate VOL layer */
 	/* return result to user (yes the dataset is created, or no here is the error */
 	return result;
 }
@@ -152,7 +153,7 @@ In addition to plugins for the VOL class that will be added in the HDF5 library,
 hid_t H5VLregister(H5VOL_class_t *cls)
 \end{lstlisting}
 }
-The {\tt cls} parameter is a structure containing function pointers to the routines that implement all the callback routines the VOL class specifies. 
+The {\tt cls} parameter is a structure containing function pointers to the routines that implement all the callback routines the VOL class specifies. For more information on creating and using VOL plugins, please refer to the VOL user guide.
 
 \subsection{Plugin Examples}
 \subsubsection{Different File Format Plugins}
@@ -215,7 +216,7 @@ Another useful design option is to allow a mirroring plugin, where the HDF5 API 
 Another possible VOL plugin could be a statistics plugin that just gathers information on HDF5 API calls and records statistics associated with the number of calls to a specific API functions and corresponding parameters. This plugin would be very useful for profiling purposes. The statistics plugin would be stacked on top of another VOL plugin that actually performs the required access to the file.
 \clearpage
 \section{Implementation}
-The VOL class structure consists of data structure(s) that contain configuration variables that are set by each plugin and a collection of function pointers that maps all HDF5 API operations that access data on disk to the plugin’s corresponding implementations. Internally, each plugin is free to implement the underlying storage of objects in any way desired. The main goal is that the user still gets the same HDF5 API and data access model no matter which plugin is used. This section highlights some implementation details and the preliminary API for the VOL.  
+The VOL class structure consists of data structure(s) that contain configuration variables that are set by each plugin and a collection of function pointers that maps all HDF5 API operations that access data on disk to the plugin's corresponding implementations. Internally, each plugin is free to implement the underlying storage of objects in any way desired. The main goal is that the user still gets the same HDF5 API and data access model no matter which plugin is used. This section highlights some implementation and feature details.  
 
 \subsection{VOL Callbacks}
 A VOL plugin is initialized based on the user selection with a file access property list API call or the default that the library chooses. The plugin is an instance of the VOL class and contains an implementation for the function callbacks specified by the VOL class. 
@@ -224,9 +225,14 @@ The VOL class includes all the higher level logical callbacks that potentially t
 
 The HDF5 library currently does not support nonblocking I/O operations. However, since it is a very desirable feature, future versions of the library most probably will add nonblocking routines. In order to be able to support those API routines and not to double the number of VOL callback routines, we made all VOL callbacks nonblocking compatible, by adding an HDF5 request parameter to all VOL callbacks. If the high level operation issued by the user is nonblocking, then the request would just be forwarded to the VOL plugin and the plugin itself would be responsible to support the nonblocking behavior. If the high level operation is a blocking operation, then a non-active request is forwarded to the plugin which detects that the request is inactive and implements the operation in a blocking behavior. 
 
-One could argue that the interface can be simplified by having, for example, a common open routine for all objects (like the {\tt H5Oopen}) routine. We found however that having  a common interface would be detrimental to performance in certain plugin implementations, since it would require querying the VOL plugin twice, once for looking up the object location and once for opening the object. Having an optional callback for every object and a generic one would solve this issue. The VOL layer would check if the specific object callback is implemented in the VOL plugin, and if it is not, it would fall back to the generic object callback routine. This way we don’t sacrifice performance for generality.
+One could argue that the interface can be simplified by having, for example, a common open routine for all objects (like the {\tt H5Oopen}) routine. We found however that having  a common interface would be detrimental to performance in certain plugin implementations, since it would require querying the VOL plugin twice, once for looking up the object location and once for opening the object. Having an optional callback for every object and a generic one would solve this issue. The VOL layer would check if the specific object callback is implemented in the VOL plugin, and if it is not, it would fall back to the generic object callback routine. This way we do not sacrifice performance for generality.
 
 Another design issue comes to mind when looking at the large set of functions, and that is whether to lump all the functions together into one data structure as the VOL class, or to have a more object oriented approach, where we can either have a general class that contains all common functions, and then children of that class that contain functions specific to certain HDF5 objects, or for each object have a set of callbacks that are specific to that object. The current design chosen seems to be a good middle ground between generality and readability/maintainability.
+
+\subsection{Internal vs. External Plugins}
+Developers can implement their VOL plugin as a plugin internal to the HDF5 library or an external plugin. Internal plugins are ones that rely heavily on internal and private HDF5 functionality like the native and metadata server plugins. They are required to ship with the HDF5 library to be used by applications. External plugins on the other hand are ones that are implemented outside of the HDF5 library and applications link with to use. Those plugins do not require using private HDF5 functionality. They can however use public HDF5 features.
+
+External plugins can be provided by the applications themselves or as a third party library, i.e. not provided by the HDF5 library nor the application. Third party plugins should be installed on the system to be used as a shared library or a DLL. HDF5 will attempt to load the plugin if the application requests its use. This is similar to Filter plugins~\cite{filters}. Refer to the VOL user guide for more detailed information on how to develop and use VOL plugins.
 
 \subsection{{\tt H5Ocopy and H5Ocompare}}
 The HDF5 API has two routines that will require extra attention to be compatible with the VOL layer, and those are the object copy and compare routines:
@@ -239,7 +245,7 @@ htri_t H5Ocompare(hid_t loc1_id, const char *name1, hid_t lapl1,  hid_t loc2_id,
 
 If the two objects are in containers of the same type, i.e. created using the same VOL plugin, then the VOL layer would be able to detect that and forward those calls to the corresponding implementation using a designated VOL callback. This would allow different sorts of optimizations that a VOL plugin could choose to implement in order to copy or compare two objects. On the other hand, if the objects belong to two different containers, the VOL plugin would not be able to interpret an object created by a different plugin, and so a different approach needs to be considered.
 
-Comparing two objects that belong to different types of HDF5 containers require processing independent of the VOL plugins. One way to accomplish this is to add utility routines to the VOL class to retrieve certain characteristics about an object for comparison. For example, datasets would need utility routines to retrieve the dataset name, dimensions, type, space, and elements. Once those values are retrieved for each object from each VOL plugin, the comparison operation could return the required result. The copy operation would require the same level of processing on the source object. Then using the fetched attributes, the same object is created using a create callback of the destination object’s VOL plugin.
+Comparing two objects that belong to different types of HDF5 containers require processing independent of the VOL plugins. One way to accomplish this is to add utility routines to the VOL class to retrieve certain characteristics about an object for comparison. For example, datasets would need utility routines to retrieve the dataset name, dimensions, type, space, and elements. Once those values are retrieved for each object from each VOL plugin, the comparison operation could return the required result. The copy operation would require the same level of processing on the source object. Then using the fetched attributes, the same object is created using a create callback of the destination object's VOL plugin.
 
 \section{Recommendation}
 
