@@ -68,6 +68,21 @@ To address those concerns, we have been working on a new abstraction layer insid
 
 A solid prototype for the VOL has already been implemented and used in several research projects, internally and externally. It was a key component to the FastForward~\cite{ffwd} project. However, all the work that has been done so far on the VOL was research oriented. Production is the next step to integrate this layer into the mainstream HDF5 library. The VOL implementation is in a solid prototype state that is tested daily, but a good amount of work is needed to make the VOL production ready in terms of code reviews, documentation, and support. We expect the production version of the VOL work to be a big step forward for the HDF5 library that will create new partnerships with storage vendors or users that are looking to implement new VOL plugins or users who would use existing plugins.
 
+\section{Requirements}
+The following presents a set of requirements for the VOL framework:
+\begin{enumerate}
+\item All HDF5 API routines that could potentially modify the HDF5 file/container should map to a VOL callback. Since the VOL plugins are implementing possible a new file format, all modifications to the container should be handed to the plugins themselves to do.
+\item All HDF5 API routines that do not modify the container, but just provide memory space utilities to the application (like property lists, dataspaces, etc...) should work uniformly across all plugins. 
+\item Implementing a VOL plugin should not require any change to the HDF5 library unless the plugin is an internal plugin that modifies the current native file format. 
+\item Current applications, third party libraries, or tools that use the HDF5 library with the native file format should not require any change to work properly with the VOL addition.
+\item Performance of applications without the VOL changes should not change. The VOL framework will introduce additional function calls to every HDF5 API call that maps to through the VOL interface, but that should be detrimental to performance.
+\item Applications, third party libraries, and tools that only use the HDF5 public routines and objects should work as expected with any correct and fully implemented plugin. Performance may and probably will vary across the different plugins.
+\item The VOL framework should allow plugins to be stackable on top of each other, and should allow implementation of plugins that use 2 or more different plugins. It is the plugin developer's  responsibility though to correctly implement such plugins.
+\item Plugin developers should not be required to implement the full VOL functionality for a specific plugin if the intended use of that plugin is a subset of the HDF5 data model and features. For example, if a user just intends to access HDF5 datasets, it should be sufficient to develop a plugin that implement container and dataset operations in that container. Other advanced functionality of the HDF5 data model should not be required if they will not be used.
+\item The HDF5 library and VOL framework should allow for new functionality or services specific to certain plugins to be added to the library and handed down to the plugin through the HDF5 library from the application.
+\item Applications should be allowed to select a default plugin to use at runtime (with and environment variable possibly) or library configure time so that applications using HDF5 need not be modified to use different plugins than the native plugin.
+\item VOL plugins that can be installed on a system as a shared library should be detected and loaded by the HDF5 library if the application requests their use.
+\end{enumerate}
 
 \section{Design/Architecture}
 To implement a VOL interface capable of accepting any plugin a developer wishes to add, a modular design has to be put in place, similar to how the VFL interface in HDF5 is designed to accept different VFDs. The VOL is a higher level abstraction than the VFL abstraction. The following figure shows where the VOL is layered and how the data is accessed in the file:
