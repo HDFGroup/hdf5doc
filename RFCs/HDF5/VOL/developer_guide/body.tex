@@ -1,0 +1,136 @@
+
+%%% Local Variables: 
+%%% mode: latex
+%%% TeX-master: t
+%%% End: 
+
+\section{Introduction}
+The Virtual Object Layer (VOL) is an abstraction layer in the HDF5
+library that intercepts all API calls that could potentially access
+objects in an HDF5 container and forwards those calls to plugin
+''object drivers''. The plugins could store the objects in variety of
+ways. A plugin could, for example, have objects be distributed
+remotely over different platforms, provide a raw mapping of the model
+to the file system, or even store the data in other file formats (like
+native netCDF or HDF4 format). The user still gets the same data model
+where access is done to a single HDF5 “container”; however the plugin
+object driver translates from what the user sees to how the data is
+actually stored. Having this abstraction layer maintains the object
+model of HDF5 and would allow HDF5 developers or users to write their
+own plugins for accessing HDF5 data.
+
+This guide is for HDF5 library developers responsible for maintaining the HDF5 C library. It details the changes made to the library to implement the VOL, and the necessary requirements for adding new features to the library to work with the Virtual object layer. Readers of this document are expected to be quite familiar with the VOL high level architecture presented in ~\cite{vol:rfc} and the VOL user's guide\cite{vol:ug}.
+
+\section{New VOL Code}
+The VOL captures all API routines that could potentially access the HDF5 file and routes them through the VOL intermediate layer which in-turn calls the plugin callback that implements the API function.
+
+The VOL code additions have been added to the library similar to any new interface introduced. The library's acronym to all VOL related variables and functions is {\tt H5VL}. The public VOL definitions including the VOL class and callbacks are in {\tt H5VLpublic.h}. Private routines are in {H5VLprivate.h}. The actual implementation for public and private routines are in {\tt H5VL.c} and {\tt H5VLint.c} respectively.
+
+\section{The VOL Property in the File Access Property List}
+A new property is added for file access property lists (FAPL) that indicates what VOL plugin should be used when accessing a file with the given FAPL. The property {\tt H5F\_ACS\_VOL\_ID\_NAME} maps to the plugin identifier to use. If the plugin selected requires information to be passed down from the application, another property is used, {\tt H5F\_ACS\_VOL\_INFO\_NAME}, which translates to a {\tt void} pointer to the information needed by specific the VOL plugin. The property setting are analogous to the Virtual File Driver properties for selecting and using file drivers with the native HDF5 library. For more information on selecting VOL plugins refer to the VOL user guide.
+
+The default settings for the FAPL properties for the plugin identifier is the global identifier for the native plugin. Since the native plugin does not require any extra information from the application, the info property is set to {\tt NULL} by default. The global identifier for the native plugin is initialized when the HDF5 library is initialized by registering a global identifier with the native plugin structure. 
+
+Whenever a plugin is set to be used with a FAPL or when copying a FAPL, the library calls:
+\begin{lstlisting}
+herr_t H5VL_fapl_open(H5P_genplist_t *plist, hid_t vol_id, const void *vol_info);
+\end{lstlisting}
+which increments the reference count on the plugin, calls the plugin specific {\tt info\_copy} callback if the {\tt vol\_info} parameter is not {\tt NULL}, and sets the VOL properties for the VOL identifier and info that are described above.
+
+When a FAPL is closed, the library calls:
+\begin{lstlisting}
+herr_t H5VL_fapl_close(hid_t vol_id, void *vol_info)
+\end{lstlisting}
+which calls the {\tt info\_free} callback of the VOL plugin with the info if {\tt vol\_info} is not {\tt NULL}, and decrements the reference count on the VOL identifier. 
+
+\section{Changes in API Routines Implementation}
+The VOL is implemented as an abstraction layer in the HDF5 C library. All API calls have been modified to call into the intermediate VOL layer instead of executing the operation directly with the HDF5 native implementation. For example, the function {\tt H5Fcreate()} was implemented as:
+
+\begin{lstlisting}
+    /* Check arguments */
+    ...
+    /*                                                                                                                                                                                                                                       
+     * Create a new file or truncate an existing file.                                                                                                                                                                                       
+     */
+    if(NULL == (new_file = H5F_open(filename, flags, fcpl_id, fapl_id, H5AC_dxpl_id)))
+        HGOTO_ERROR(H5E_FILE, H5E_CANTOPENFILE, FAIL, "unable to create file")
+\end{lstlisting}
+
+where {\tt H5F\_open()} is an internal HDF5 function that creates/opens a native HDF5 file. With the VOL changes introduced, the implementation will change to:
+
+\begin{lstlisting}
+    /* Check arguments */
+    ...
+    /* create a new file or truncate an existing file through the VOL */
+    if(NULL == (file = H5VL_file_create(vol_cls, filename, flags, fcpl_id, fapl_id, H5AC_dxpl_id, H5_REQUEST_NULL)))
+        HGOTO_ERROR(H5E_FILE, H5E_CANTOPENFILE, FAIL, "unable to create file")
+\end{lstlisting}
+
+where {\tt H5VL\_file\_create()} is a private function defined in the intermediate VOL layer that calls the the create callback in the file class of the VOL plugin selected in the file access property list.
+
+This change is introduced for all such API routines that could potentially access the file. Multiple API routines could map to the same VOL callback. For example {\tt H5Acreate()}, {\tt H5Acreate\_by\_name()}, and {\tt H5Acreate\_by\_idx()} all map to the attribute create intermediate routine which calls the attribute create callback in the VOL class. For an exact mapping of API routines to VOL intermediate functions and callbacks, please refer to the VOL user guide or the VOL header file in {\tt src/H5VLpublic.h}. All the intermediate routines are implemented in {\tt H5VLint.c}.
+
+\section{Object Identifiers}
+All functions that create or open objects in an HDF5 file return an identifier of type {\tt hid\_t} for that object. This identifier could used by the application to access other objects or operate on the object itself. Internally the HDF5 library maintains a mapping of that identifier to the private data structure of the object that it represents. For example, {\tt H5Fcreate()} returns an identifier that internally maps to the private {\tt H5F\_t} structure of that file; {\tt H5Dcreate()} returns an identifier that maps to the {\tt H5D\_t} private structure of the dataset, etc... 
+
+With the introduction of the VOL, the current mapping between the identifiers and the private structures is not possible anymore for two main reasons. The first being that the private structures that the identifiers point to now are specific to the native HDF5 implementation. Other plugins will have different structures that they implement. Thus at the API and VOL intermediate layer, those objects are accessible only through a {\tt void} pointer with an unknown structure type to cast it to. The second reason is that the internal structures ({\tt H5F\_t, H5D\_t, H5G\_t,  etc ...}) do not contain a pointer to the plugin class used to create the object. This is problematic because subsequent access on those object through the identifiers would not allow us to determine the VOL class to forward the call to.
+
+To get around the two issues explained above, we introduce a private object structure for all File, Attribute, Dataset, Group, and Named Datatype objects. Those set of objects are the ones currently stored in the HDF5 file. Other object types (dataspace, property lists, etc...) are memory space objects that are not stored or accessed through an HDF5 file. All the API routines that create/open objects will create this ``wrapper'' object around the object pointer returned from the intermediate VOL function.  The new object is defined in {H5VLprivate.h} as:
+
+\begin{lstlisting}
+/* The internal vol object structure returned to the API */
+typedef struct H5VL_object_t {
+    void               *vol_obj;        /* pointer to object created by plugin */
+    H5VL_t             *vol_info;       /* pointer to VOL info struct */
+} H5VL_object_t;
+\end{lstlisting}
+
+where {\tt vol\_obj} is a pointer to the plugin created object. In the native plugin this would be a pointer to the private structures of that object ({\tt H5F\_t, H5D\_t, H5G\_t,  etc ...}). The {\tt vol\_info} contains the information about the plugin that created the object and is defined as:
+
+\begin{lstlisting}
+/* Internal struct to track VOL information with objects */
+typedef struct H5VL_t {
+    const H5VL_class_t *vol_cls;        /* constant plugin class info */
+    int                 nrefs;          /* number of references by objects using this struct */
+    hid_t               vol_id;         /* identifier for the VOL class */
+} H5VL_t;
+\end{lstlisting}
+
+{\tt vol\_cls} is a pointer to the plugin class. {\tt nrefs} indicates how many object currently point to the {\tt H5VL\_t} structure. {\tt vol\_id} is the global identifier for the VOL plugin used. Usually this structure is created in {\tt H5Fcreate()} or {\tt H5Fopen()} with {\tt nrefs = 1}, then {\tt nrefs} is incremented by 1 on any subsequent object creation that stored a copy of that pointer and decremented when the object is closed. When {\tt nrefs} becomes zero, the structure is freed. 
+
+As a convenience, a new private routines is provided to create the wrapper object for the underlying plugin specific object pointer, manage the VOL info structure, and register an identifier to be returned to the user:
+
+\begin{lstlisting}
+H5VL_register_id(H5I_type_t type, void *object, H5VL_t *vol_plugin, hbool_t app_ref);
+\end{lstlisting}
+
+This routine is implemented in {\tt H5VLint.c}.Instead of calling {\tt H5I\_register()} to create an identifier, developers should now use the above routine to get back an {\tt hid\_t} for objects stored in HDF5 files.
+
+\section{Using {\tt H5I\_object(), H5I\_object\_verify(), and H5I\_iterate()}}
+The change in the mapping of identifiers to the corresponding object pointer and introducing the new wrapper {\tt H5VL\_object\_t} structure, means that any usage in the library of {\tt H5I\_object(), H5I\_object\_verify(), and H5I\_iterate()} expecting to get back a pointer to the native structure of the object is broken, since those routines return a pointer to the object without unwrapping it from the {\tt H5VL\_object\_t} structure. To fix the above problem, we introduced two private convenience functions:
+\begin{lstlisting}
+void *H5VL_object(hid_t id);
+void *H5VL_object_verify(hid_t id, H5I_type_t obj_type);
+\end{lstlisting}
+
+which do the same thing as their {\tt H5I} counterpart but return a pointer to the actual VOL specific object ({\tt vol\_obj}) instead of the unwrapped object pointer that the identifier points to. The objects identifiers must be either files, datasets, attributes, named datatypes, or groups; otherwise the function will return {\tt NULL} for erroneous usage. We replaced all usage of {\tt H5I\_object() and H5I\_object\_verify()} in the library as appropriate for the above listed object types. Developers should use the {\tt H5VL} functions above in the native library and tests when expecting to get back the plugin specific objects.
+
+As for {\tt H5I\_iterate()}, we update the implementation of this function internally to unwrap the object being iterated over if it is a file, dataset, group, attribute, or named datatype, and return the plugin specific object to the iterate callback. We saw this as a better approach than requiring a change in all the iteration callbacks to check for the object type and unwrap it accordingly. With the current solution, no code changes are required in the internal usage of {\tt H5I\_iterate()}.
+
+\section{Native Plugin Implementation}
+The native HDF5 plugin implements the VOL callbacks with the native HDF5 file format. This is basically all what the library currently does when implementing HDF5 features. The native VOL plugin is implemented in {\tt H5VLnative.c}. The callbacks of the VOL class are implemented here similarly to how the API routines were mapped directly to the internal HDF5 implementation before the VOL was introduced. However, since there isn't a one to one mapping from every API routine to a VOL callback, there is an additional level of processing parameters passed in from the VOL intermediate layer. The protocol for parameter processing is explained in detail in the VOL user guide.
+
+There are places in the library where we need to register an identifier to pass directly to the application (for example, creating a group identifier and calling the user defined link iteration callback). To do that, we need to create the high level object wrapper and attach the native plugin information before registering that ID. This can be done by calling this private and native specific routine:
+\begin{lstlisting}
+hid_t H5VL_native_register(H5I_type_t type, void *obj, hbool_t app_ref);
+\end{lstlisting}
+which does all the steps required for creating an identifier for the native object. That identifier has to be freed with:
+\begin{lstlisting}
+herr_t H5VL_native_unregister(hid_t obj_id);
+\end{lstlisting}
+
+\section{The Named Datatype Pickle}
+
+\section{Dynamically Loaded VOL Plugins}
+
+\section{Adding New Features to the Library}
