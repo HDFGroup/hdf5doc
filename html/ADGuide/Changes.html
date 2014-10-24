@@ -71,6 +71,12 @@ a maintenance developer needs to be aware of:
     <li>Certain types of changes in configuration or build processes 
 </ul></p>
 
+<p>Bugfixes and performance enhancements in the C library 
+are automatically picked up by the C++ and Fortran libraries.  
+The Java library will pick up the same bugfixes and enhancements
+at its next subsequent release as it is always built with
+the latest released version of the C library.
+
 <p>The release notes also list changes made to the library, but these 
 notes tend to be more at a more detail oriented level. The release 
 notes may include new features, bugs fixed, supported configuration 
@@ -124,16 +130,22 @@ and discussions of various compatibility issues.</p>
 <br />
 
 
+<!-- TABLE TO REGULATE PRINTED PAGE WIDTH -->
+<!--
+<table><tr><td>
+<font color="white">
+aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+</font>
+</td></tr></table>
+-->
+<!-- END REGULATING TABLE -->
 
-<a name="1814">
-<h2>Release 1.8.14 of November 2014 (current release) versus Release 1.8.13</h2>
+
+<!-- MATERIAL DELAYED FROM 18.14 TO 1.8.15
+<a name="1815">
+<h2>Release 1.8.15 of May 2015 (current release) versus Release 1.8.14</h2>
 </a>
 <dir>
-
-This section lists interface-level changes and 
-other user-visible changes in behavior 
-in the transition from HDF5 Release 1.8.13 to Release 1.8.14.
-
 
     <h3>New and Changed Functions, Classes, Subroutines, Wrappers, 
         and Macros</h3>
@@ -154,6 +166,38 @@ in the transition from HDF5 Release 1.8.13 to Release 1.8.14.
                 <li>Related struct: <code>H5D_rw_multi_t</code>
                 </ul>
                 </dd>
+        </dl>    
+        </dir>
+
+</dir>
+ -->
+        
+
+<a name="1814">
+<h2>Release 1.8.14 of November 2014 (current release) versus Release 1.8.13</h2>
+</a>
+<dir>
+
+This section lists interface-level changes and 
+other user-visible changes in behavior 
+in the transition from HDF5 Release 1.8.13 to Release 1.8.14.
+
+
+    <h3>New and Changed Functions, Classes, Subroutines, Wrappers, 
+        and Macros</h3>
+        <dir>
+        <dl>    
+            <dt><strong>In the main library C Interface</strong>
+                </dt>
+
+            <dt>No new C functions have been added.
+                </dt>
+<!--
+            <dt>The following new C functions have been added:
+                </dt>
+            <dd>Names and descriptions.
+                </dd>
+-->
 
             <p>
             <dt>The behavior of the following C function has been changed:
@@ -187,10 +231,37 @@ in the transition from HDF5 Release 1.8.13 to Release 1.8.14.
                 </ul>
                 </dd>
 
+<!--
+<br>&nbsp;
+-->
+
             <p>
-            <dt><strong>In the C++ Interface</strong>
+            <dt><strong>In the high-level library C Interface</strong>
                 </dt>
 
+            <dt>High-level HDF5 interfaces now ensure that strings are 
+                null-terminated and will not overflow a buffer.
+                </dt>
+                <dd>In several high-level functions, the type from the file 
+                    was previously re-used as the memory type and
+                    no check is made to ensure that a string was actually 
+                    null-terminated.
+                    <p>
+                    All high-level functions now 
+                    check for <code>NULL</code> pointers; 
+                    verify that a received a string is null-terminated; and 
+                    verify that the string will not overflow the buffer.
+                    The minimum length of the buffers is now used in 
+                    <code>strncmp</code> to avoid overflow.
+                    </dd>
+
+            <p>
+            <dt><strong>In the main library C++ Interface</strong>
+                </dt>
+
+            <dt>No new C++ methods have been added.
+                </dt>
+<!--
             <dt>The following new features have been added 
                 to the C++ interface:
                 </dt>
@@ -200,33 +271,70 @@ in the transition from HDF5 Release 1.8.13 to Release 1.8.14.
                     <li>None
                     </ul>
                     </dd>
+-->
 
-                <p>
+            <p>
             <dt>The following changes have been made in the C++ interface:
+<!--
                 <dd>Changed methods
                       <ul>
                       <li><code>none</code> None
                       </ul>
                       </dd>
                 <p>
+-->
                 <dd>Changed defaults
                       <ul>
-                      <li>None
+                      <li>Default values of unassigned object identifiers:
+                          <br />
+                          Data member identifiers (<code>hid</code>)
+                          that represent HDF5 objects are now initialized
+                          to <code>H5I_INVALID_ID</code>.
+                      <li>Default values of default property lists:
+                          <br />
+                          Property list identifiers are now initialized to
+                          <code>H5P_DEFAULT</code>.
+                      <li>In HDF5 Release 1.8.13 and earlier, 
+                          both of the above were initialized to 
+                          <code>0</code> (zero).
                       </ul>
                       </dd>
                 <p>
-                <dd>Other changes
+                <dd>Changed file access flags
                       <ul>
-                      <li>None
+                      <li>The flag <code>H5F_ACC_CREAT</code>
+                          has been removed from the C++ interface.
+                          <br />
+                          Supported flags for a file creation call are
+                          <code>H5F_ACC_TRUNC</code>,
+                          <code>H5F_ACC_EXCL</code>, 
+                          <code>H5F_ACC_DEBUG</code>, and 
+                          <code>H5P_DEFAULT</code>. 
+                          <br />
+                          Supported flags for a file open call are
+                          <code>H5F_ACC_RDWR</code> and 
+                          <code>H5F_ACC_RDONLY</code>.
                       </ul>
                       </dd>
+<!--
+                <p>
+                <dd>Other changes
+                      <ul>
+                      <li><code>none</code> None
+                      </ul>
+                      </dd>
+-->
+                <p>
 
             <p>
-            <dt><strong>In the Fortran Interface</strong>
+            <dt><strong>In the main library Fortran Interface</strong>
 
+            <dt>No new Fortran subroutines have been added.
+                </dt>
+
+<!--
             <dt>The following new Fortran subroutines have been added:
             <dd>Fortran90 subroutines: 
-<!--
                 <table width="100%" border="0">
                 <tr><td align="left" valign="top" width="50%">
                 <ul>
@@ -242,10 +350,8 @@ in the transition from HDF5 Release 1.8.13 to Release 1.8.14.
                 </table>
                 </dd>
                 &nbsp;
--->
 
             <dd>Fortran2003 subroutines: 
-<!--
                 <table width="100%" border="0">
                 <tr><td align="left" valign="top" width="50%">
                     <code>h5pset_file_image_f</code> 
@@ -263,16 +369,72 @@ in the transition from HDF5 Release 1.8.13 to Release 1.8.14.
 -->
                 </dd>
 
-            <p>
-            <dt><strong>Additional sections added as appropriate</strong>
-                </dt>
 
+            <p>
+            <dt>Changed Fortran <code>INTEGER</code> parameter types:
+                </dt>
+                <dd>Types of the following Fortran parameter constants
+                    have been changed from <code>INTEGER</code> to
+                    <code>INTEGER(HID_T)</code>:
+                    <pre>
+    H5FD_CORE            H5FD_MULTI
+    H5FD_FAMILY          H5FD_SEC2
+    H5FD_LOG             H5FD_STDIO
+    H5FD_MPIO       </pre>
+                    Other internal <code>int</code> types have been changed to 
+                    <code>hid_t</code>, but this change is expected to be 
+                    transparent to the user.
+                </dt>
 
 
         </dl>
         </dir>
+
+
+    <h3>Compatibility Changes</h3>
+        <dir>
+        <dl>    
+            <dt><strong>Changed library version numbers</strong>
+                </dt>
+            <dt>
+                &lt; <i>The following text is a placeholder for the 
+                description of the change when it becomes avaialble.</i> &gt;
+                </dt>
+                <dd>Library version numbers have changed for 
+                    HDF5 Release 1.8.14.  The values are now:
+                    <pre>
+    LT_VERS_INTERFACE = 9
+    LT_VERS_REVISION = 0
+    LT_VERS_AGE = 0        </pre>
+                    These numbers are not usually of concern but can become
+                    critical if an HDF5 application is expected to be linkable 
+                    with multiple HDF5 Library releases.
+                </dd>
+        </dl>    
+        </dir>
+
+<!--
+    <h3>[ Additional sections will be added as appropriate. ]</h3>
+        <dir>
+        <dl>    
+        </dl>
+        </dir>
+-->
+
+
 </dir>
 <br />
+
+<!--
+<br>&nbsp;
+<br>&nbsp;
+<br>&nbsp;
+<br>&nbsp;
+<br>&nbsp;
+<br>&nbsp;
+<br>&nbsp;
+<br>&nbsp;
+-->
 
 
 <a name="18x">
@@ -364,7 +526,7 @@ Release to Release for HDF5 Releases 1.4.0 through 1.6.10</a>&rdquo;.
 <!-- Created: Spring 1999 -->
 <!-- hhmts start -->
 <hr />
-Last modified: 29 September 2014
+Last modified: 24 October 2014
 <!-- hhmts end -->
 <br />
 <br />
