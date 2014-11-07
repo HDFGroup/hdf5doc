@@ -24,7 +24,7 @@
 <dl>
 
   <dt><div align=right><font color=999999 size=-1><i>
-      Last modified: 22 July 2014
+      Last modified: 4 November 2014
       </i></font></div>
 
   <dt><strong>Name:</strong> <a name="Property-SetChunkCache">H5Pset_chunk_cache</a>
@@ -130,20 +130,68 @@
             </td></tr>
     </table>
 
-  <p>
-  <dt><strong>Returns:</strong>
+  <br />
+  <dt><strong>Returns:</strong></dt>
     <dd>Returns a non-negative value if successful;
-        otherwise returns a negative value.
+        otherwise returns a negative value.</dd>
 
-  <p>
-  <dt><strong>Example Usage:</strong>
+  <br />
+  <dt><strong>Example Usage:</strong></dt>
 
     <dd>The following code sets the chunk cache to use a hash table with 12421
         elements and a maximum size of 16 MB, while using the preemption policy
-        specified for the entire file:
+        specified for the entire file:<br />
 <dir><pre>
 <code>H5Pset_chunk_cache(dapl_id, 12421, 16*1024*1024, H5D_CHUNK_CACHE_W0_DEFAULT);</code>
-</pre></dir>
+</pre></dir></dd>
+
+
+
+
+<dt><strong>Usage Notes:</strong>
+    <dd>The chunk cache size is a property for accessing a dataset and 
+    is not stored with a dataset or a file. To guarantee 
+    the same chunk cache settings each time <code>H5Dopen</code> is 
+    called, call <code>H5Dopen</code> with a dataset 
+    access property list (<code>H5Dopen(<em>hid_t</em> loc_id, 
+    <em>const char</em> *name, <em>hid_t</em> dapl_id))</code> where 
+    the chunk cache size is set by calling <code>H5Pset_chunk_cache</code> 
+    for that property list. The property list can be used for multiple 
+    accesses in the same application. <br /><br />
+    
+    For files where the same chunk cache size will be appropriate for 
+    all or most datasets, <code>H5Pset_cache</code> can be called with 
+    a file access property list to set the chunk cache size for accessing 
+    all datasets in the file. <br /><br />
+    
+    Both methods can be used in combination, in which case the chunk cache 
+    size set by <code>H5Pset_cache</code> will apply except for specific 
+    datasets where <code>H5Dopen</code> is called with dataset property 
+    list with the chunk cache size set by <code>H5Pset_chunk_cache</code>.
+    <br /><br />
+    In the absence of any cache settings, <code>H5Dopen</code> will by 
+    default create a 1 MB chunk cache for the opened dataset. If this 
+    size happens to be appropriate, no call will be needed to either 
+    function to set the chunk cache size.<br /><br />
+    
+    It is also possible that a change in access pattern for later access 
+    to a dataset will change the appropriate chunk cache size. For more 
+    detailed information on chunks, chunk caching, and performance 
+    pitfalls, see 
+    <a href="http://www.hdfgroup.org/HDF5/doc/Advanced/Chunking/index.html">
+    &ldquo;Chunking in HDF5&rdquo;</a>.
+    
+    
+    
+    
+    </dd>
+
+
+
+<br />
+
+
+
     <dt><strong>Fortran90 Interface:</strong> h5pset_chunk_cache_f
     <dd>
     <pre>
