@@ -159,7 +159,6 @@
 
 % For colors
 \RequirePackage{xcolor}
-%\definecolor{headercolor}{rgb}{0.6941,0.6745,0.4863}
 \definecolor{rulecolor}{RGB}{73,126,191}
 
 % LastPage
