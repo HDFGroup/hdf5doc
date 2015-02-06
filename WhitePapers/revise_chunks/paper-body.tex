@@ -1,0 +1,410 @@
+% Say that there are 2 ulimited dimensions for XY extended
+
+\section{Introduction}
+
+The HDF5 library~\cite{Folk2011}\cite{Folk1999} provides users with a high degree of flexibility for data
+management---users may define and organize data into different groups and
+datasets and build an hierarchical tree of data. Datasets may be contiguously 
+mapped from the application memory to a file, or stored in more complex 
+patterns to ease further access and analysis of the data. One option that
+is commonly used is to create and define a dataset as \textit{extendable},
+in order to easily append new values to it.
+An HDF5 dataset is extendable when the maximum dimension sizes of its 
+dataspace are greater than the current dimension sizes, the maximum dimension 
+size being specified as \textit{fixed} size or \textit{unlimited} size.
+
+When defining an extendable dataset, the HDF5 library requires the dataset
+to be partitioned into fixed-size multi-dimensional chunks---this operation, 
+illustrated in figure~\ref{fig:hdf5_dataset}, is called \textit{chunking}.
+Chunking makes it possible to extend datasets efficiently without having to
+reorganize contiguous storage excessively. To retrieve elements in the
+datasets that are stored in chunked form, the chunk containing those
+elements must be located and accessed. Several structures can be used
+to achieve that and the locations of chunks for a dataset have originally 
+been stored in a B-tree data structure, which maps the index of the chunk to 
+the file offset where the chunk's elements are stored. However, depending
+on the use case and in particular for extendable datasets, the B-tree
+structure used presents some drawbacks, which are addressed in this paper.
+
+This paper is organized as follows. 
+Section~\ref{sec:architecture} presents the 
+current indexing method used within the library for chunking as well as 
+modifications that were made to improve performance when a dataset is 
+being extended. Section~\ref{sec:evaluation} presents performance evaluation 
+results.
+In Section~\ref{sec:related_work} we
+first discuss related work before presenting conclusions and 
+future research directions in Section~\ref{sec:conclusion}.
+
+\begin{figure}
+\begin{subfigure}[b]{.49\linewidth}
+\centering
+\input{pics/contiguous}
+\caption{Contiguous.}
+\label{fig:contiguous}
+\end{subfigure}%
+\hfill
+\begin{subfigure}[b]{.49\linewidth}
+\centering
+\input{pics/chunked}
+\vspace{-15pt}
+\caption{Chunked.}
+\label{fig:chunked}
+\end{subfigure}
+\caption{HDF5 dataset storage.}
+\label{fig:hdf5_dataset}
+%\vspace{-14pt}
+\end{figure}
+
+\section{Architecture}
+\label{sec:architecture}
+
+\begin{figure*}
+\centering
+\input{pics/btree1}
+\caption{Simplified version of original B-tree structure used for indexing 
+chunks. In the case of extendable datasets, whenever a new chunk is added to 
+the B-tree, its right-most node, if full, is split and a new half empty node 
+is created.}
+\label{fig:btree1}
+\end{figure*}
+
+Chunking is a technique used in the HDF5 library in various cases:
+to optimize I/O to disk~\cite{Howison2010}, to compress data~\cite{Folk2011},
+to extend datasets.
+To retrieve elements in the datasets that are stored in chunked form, the 
+chunk containing those elements must be located and accessed. 
+The HDF5 library's default data structure for indexing chunks is based on
+a B-tree data structure, which maps the index
+of the chunk to the file offset where the chunk's elements are stored.
+
+\subsection{B-Trees}
+
+B-trees are generally a good solution that is used for indexing data blocks
+and one of the main components of file systems~\cite{Comer1979}~\cite{Folk1992}. 
+Insertion of a new entry and lookup is realized in $O(\log_b{n})$, where $n$ is the
+number of nodes and $b$ the order of the tree.
+In the case of HDF5 datasets and in the original B-tree structure, referred to
+as \textit{B-Tree version 1} (BT1), the record for locating the chunk stores the
+following information:
+\begin{itemize}
+\item The coordinates of the chunk in the dataset's dataspace. This is used
+as the key for locating chunks in the B-tree.
+\item The size of the chunk, in bytes.
+\item The address of the chunk in the file.
+\item Additional metadata.
+\end{itemize}
+
+%One of the first issues is the redundancy of chunk size,
+%inserted in every record, as the chunks are fixed size.
+As shown in figure~\ref{fig:btree1}, each leaf points to the address of a
+chunk. When a dataset is extended, a new entry is added, which may
+imply a node split if the node where the record needs to be inserted is full. 
+It is worth noting that most chunked datasets are either fixed dimension or
+extend in only one dimension. Very few users take advantage of the ability to 
+extend multiple dimensions of a dataset.
+Because HDF5 datasets only allow their dimensions to be increased or 
+decreased at their upper bound, a B-tree used to index chunks for a 1-D 
+dataset will only ever insert or remove records from its right-most node.
+One of the problems is that inserting/removing only from the right-most
+node lets most records half empty, as illustrated in 
+figure~\ref{fig:btree1}.
+
+To fix that issue, one of the main improvements made with a new version of
+the B-tree structure used, referred to as \textit{B-tree version 2} (BT2), is to
+re-balance the entries so that nodes that were half-empty in version 1 are
+now full. Additionally, to improve traversal of the tree and easily find the
+chunks, the B-tree is counted so that alongside every link to a subtree, the
+number of subtree elements is stored.
+
+Some additional modifications are made to the BT2 to improve performance:
+\begin{enumerate}
+\item
+When appending to a dataset, the library will insert a new record to the
+B-tree. To determine that the record to be inserted is not in the tree,
+the library traverses the corresponding tree nodes and compares the records 
+in each node before the insertion.
+To accelerate the search, the maximum and minimum records in the tree are 
+determined and stored in the B-tree header. The library can then quickly 
+determine that the new record to be inserted is not in the tree if it is 
+greater than the maximum record or less than the minimum record.
+\item
+The default B-tree node size is $512$, which leads to a greater tree depth
+than version 1 for the append test scenario. This contributes to a lower
+performance because the traversal time is increased. The node size for the
+tree is therefore modified to $2048$, which will flatten the tree with a tree 
+depth that is the same as the BT1.
+\end{enumerate}
+
+\subsection{Extensible Arrays}
+
+While the version 2 of the B-tree previously mentioned provides a better
+balancing of the records in the tree, using it in the 1-D case (or for
+datasets with only one unlimited dimension) still only ever inserts or removes
+records from the right-most node.
+This negates most of the advantage of using a complicated data structure like a
+B-tree to index the chunks.
+Additionally, for applications, which wish to rapidly append records to the 
+dataset, having to traverse and/or update multiple B-tree nodes for each 
+record insertion imposes an additional performance penalty. This is 
+especially a drawback when splitting one or more B-tree nodes is required to 
+accommodate new record for a chunk.
+
+\begin{figure*}
+\centering
+\input{pics/ea}
+\caption{Simplified version of extensible array structure used for indexing chunks.}
+\label{fig:ea}
+\end{figure*}
+
+For this particular case, indexing chunks requires a more appropriate data
+structure, referred to as \textit{extensible array} (EA), and shown in
+figure~\ref{fig:ea}. This structure can be seen as a dynamic array structure.
+Brodnik et al's paper~\cite{Brodnik1999} addresses this exact problem,
+showing how to implement a dynamic array with $O(1)$ append, shrink and lookup
+operations, along with optimal metadata overhead for indexing the array elements.
+For indexing chunks in HDF5 datasets, the array elements in the data blocks are
+pointers to the chunks on disk.
+As mentioned in the paper, the resizable array \textit{super blocks} are not actually 
+constructs in the data structure, they are just shown to conceptually group the data 
+blocks that the index block points to. The super blocks help show the pattern of 
+changes to the data blocks: first the size of the data block doubles, then the 
+number of data blocks of that size doubles, then the size doubles again, then the 
+number of data blocks of that size doubles, etc.
+
+A couple of things should be noted about the data structure in
+figure~\ref{fig:ea}:
+\begin{enumerate}
+\item The super blocks for the first two data blocks are omitted and the pointers
+in the index block point directly to the data blocks.
+\item Constant time (i.e., $O(1)$) lookup, append and shrink are still in effect.
+The number of I/O accesses to find any chunk address is always $2$ or $3$:
+index block $\rightarrow$ super block $\rightarrow$ data block. In
+actual operation, the index block will certainly be \textit{hot} enough to stay
+in the HDF5 metadata cache, along with many/most of the super blocks,
+making the average number of I/O accesses to retrieve a chunk address between
+$1$ and $2$, in all likelihood.
+\item Super blocks/data blocks which are not yet needed are not allocated and
+have a \textit{nil} pointer in the index block/super block (respectively) that refers to them.
+\item The height of the index block is constant and its height can be computed
+at creation so that resizing it is unnecessary. This can be done by computing
+the maximum number of chunks possible for the file's address range
+(typically 64-bits) and deriving the maximum number of data/index blocks needed
+to index that many blocks. For example, if there are $16$ chunks in the initial
+data block, a chunk size of $2048$ (with a single unlimited dimension), and a
+4-byte (integer) data element size, maximum height of the index block needed to
+store $1.84\times 10^{19}$ bytes of elements (which is the maximum offset possible in a
+64-bit file) is $47$.
+\end{enumerate}
+
+\subsection{Additional Optimization}
+When the dataset is extended and its rank is greater than one, the library scans
+and updates each entry in the chunk cache, due to the modified dataspace.
+Each entry is hashed based on a chunk index, which varies according to the
+dataset dimension sizes. When the dimension sizes are modified, the library
+re-calculates each entry's chunk index and updates the cache accordingly.
+The re-calculation is expensive and the update time increases as the number of
+entries is increased in the cache.
+
+Two modifications are made to the chunk layer to improve performance:
+\begin{enumerate}
+\item Save the component in the chunk index calculation after
+initial computation so that it can be later used when updating the chunk cache.
+\item Use a different formula to hash chunk entries into the cache that do not depend
+on the chunk index. The new formula is based on the $\log_2$ function
+for the faster changing dimension sizes, thus reduces the number of chunk cache
+updates due to consecutive dataset extension operations.
+\end{enumerate}
+
+\subsection{Summary}
+
+With these data structures in place, when the chunked dataset has only one
+unlimited maximum dimension, the extensible array indexing method is used,
+allowing chunk access in $O(1)$ time. When it has more than one unlimited
+maximum dimension sizes, the B-tree version 2 indexing method is used, allowing
+chunk access in $O\log_b{n}$, with $b$ the order of the tree and $n$ the
+number of nodes.
+
+\section{Evaluation}
+\label{sec:evaluation}
+
+To evaluate the performance of these new methods, we first consider the extension
+of datasets so that 1-byte chunks are appended, up to $2,500,000$ bytes.
+Note that the default storage for chunked datasets is still the default
+B-tree indexing (BT1). In order to retain as much forward compatibility as
+possible, all the improvements made are only used when the
+\texttt{H5F\_LIBVER\_LATEST} value is used as the \textit{high bound} to the
+call to \texttt{H5Pset\_libver\_bounds}. 
+
+\subsection{Test Scenarios}
+
+We consider multiple scenarios, which are defined in settings 1, 2 and 3.
+
+\paragraph{Setting 1}
+creates a 1-dimensional chunked dataset with the following dataspace:
+
+{\lstsetc
+\begin{lstlisting}
+curr[0] = 0;
+max[0] = H5S_UNLIMITED;
+sid = H5Screate_simple(1, curr, max);
+\end{lstlisting}
+}
+
+This compares the BT1 and EA indexing methods, when appending to the dataset
+created with the old and new library format respectively.
+
+\paragraph{Setting 2} creates a 2-dimensional chunked dataset with the following
+dataspace, which has one unlimited dimension:
+
+{\lstsetc
+\begin{lstlisting}
+curr[0] = 0;
+curr[1] = 1;
+max[0] = H5S_UNLIMITED;
+max[1] = 1;
+sid = H5Screate_simple(2, curr, max);
+\end{lstlisting}
+}
+
+This compares the BT1 and EA indexing methods when appending to the dataset
+created with the old and the new library format respectively.
+Append operations are done along the X or Y directions.
+
+\paragraph{Setting 3} creates 2-dimensional chunked datasets with the following
+dataspace, which has two unlimited dimensions:
+
+{\lstsetc
+\begin{lstlisting}
+curr[0] = 0;
+curr[1] = 1;
+max[0] = H5S_UNLIMITED;
+max[1] = H5S_UNLIMITED;
+sid = H5Screate_simple(2, curr, max);
+\end{lstlisting}
+}
+
+This compares the BT1 and BT2 indexing methods when appending to the
+datasets created with the old and new library format respectively.
+Append operations are done along the X and/or Y directions.
+
+\subsection{Preliminary Results}
+
+First, measures are realized on the library before optimization.
+The quantify tool is used to collect the time in seconds spent in the library
+code from the test runs. The result listed in table~\ref{tab:result1} indicates
+that the EA indexing method performs better than BT1, while the BT2 indexing
+method performs worse than BT1. Note also that the library takes a fair amount
+of time for all three indexing methods.
+
+\begin{table}
+\centering
+\caption{Result for all three test settings before optimization.}
+\label{tab:result1}
+\begin{tabular}{lrr} \toprule
+Indexing Method &
+Time (\si{\second}) \\
+\midrule
+\textit{Along the X-direction} \\
+EA & $149.82$\tikzmark{t1x1} \\
+BT1 & $156.15$\tikzmark{t1x2} \\
+BT2 & $166.56$\tikzmark{t1x3} \\
+\midrule
+\textit{Along the Y-direction} \\
+EA & $150.08$\tikzmark{t1y1} \\
+BT1 & $163.82$\tikzmark{t1y2} \\
+BT2 & $167.91$\tikzmark{t1y3} \\
+\midrule
+\textit{Along the XY-direction} \\
+EA & $-$ \\
+BT1 & $104.08$\tikzmark{t1xy1} \\
+BT2 & $114.39$\tikzmark{t1xy2} \\
+\bottomrule
+\end{tabular}
+\tablearrowright{t1x2}{t1x1}{$\simeq -4\%$}{}
+\tablearrowleft{t1x2}{t1x3}{$\simeq +7\%$}{}
+\tablearrowright{t1y2}{t1y1}{$\simeq -8\%$}{}
+\tablearrowleft{t1y2}{t1y3}{$\simeq +2\%$}{}
+\tablearrowleft{t1xy1}{t1xy2}{$\simeq +10\%$}{}
+\end{table}
+
+\subsection{Results}
+Measures are realized after optimization.
+The new results shown in table~\ref{tab:result2} indicate that after optimization
+BT2 performs better than BT1. General chunk index fixes have made a significant
+improvement for all three indexing methods---almost $80\%$.
+
+\begin{table}
+\centering
+\caption{Result for all three test settings after optimization.}
+\label{tab:result2}
+\begin{tabular}{lr} \toprule
+Indexing Method &
+Time (\si{\second}) \\
+\midrule
+\textit{Along the X-direction} \\
+EA & $27.54$\tikzmark{x1}\\
+BT1 & $34.01$\tikzmark{x2} \\
+BT2 & $31.59$\tikzmark{x3} \\
+\midrule
+\textit{Along the Y-direction} \\
+EA & $29.24$\tikzmark{y1} \\
+BT1 & $42.97$\tikzmark{y2} \\
+BT2 & $33.72$\tikzmark{y3} \\
+\midrule
+\textit{Along the XY-direction} \\
+EA & $-$ \\
+BT1 & $35.46$\tikzmark{xy1} \\
+BT2 & $32.92$\tikzmark{xy2} \\
+\bottomrule
+\end{tabular}
+\tablearrowright{x2}{x1}{$\simeq -19\%$}{}
+\tablearrowleft{x2}{x3}{$\simeq -7\%$}{fill=paperblue!30}
+\tablearrowright{y2}{y1}{$\simeq -32\%$}{}
+\tablearrowleft{y2}{y3}{$\simeq -22\%$}{fill=paperblue!30}
+\tablearrowleft{xy1}{xy2}{$\simeq -7\%$}{fill=paperblue!30}
+\end{table}
+
+As one can see in figure~\ref{fig:chunk_perf}, for significant numbers of chunks,
+the BT2 and EA indexing methods perform better than BT1. EA shows good scalability
+and a much better performance than BT1/BT2 as the number of chunks increases.
+BT2 generally shows better performance than BT1 (it is also worth noting than
+even if this is not shown in this result, the amount of space taken by BT2
+is reduced). Overall these results confirm the optimization made within the
+library and were what we expected given the complexity of the methods used.
+
+\begin{figure*}
+\centering
+\input{plots/chunk_perf}
+\caption{Performance of BT2 and EA chunk indexing methods compared to BT1.
+The extensible array method shows good scaling performance, while the B-Tree
+version 2 shows improved results compared to BT1.}
+\label{fig:chunk_perf}
+\end{figure*}
+
+\section{Related Work}
+\label{sec:related_work}
+
+Nimako et al.~\cite{Nimako2012} consider another data structure for indexing
+chunks, the $O_{2}$-Tree, which performs query operations (searches) in
+$O(\log_{2}{n})$ time, where $n$ is the number of internal nodes. They
+mention that the conventional arrays and HDF5 incur the cost
+of reorganizing  already allocated array elements.
+Based on these results and the new optimization made, it would be
+interesting to make a new comparison. The $O_{2}$-Tree may perform
+better than a B-Tree data structure but the re-sizable array data structure
+will still perform better in the 1-unlimited dimension case, as its complexity
+is in $O(1)$.
+
+[Other related work?]
+%Sub array I/O from ADIOS etc / chunking from other libraries
+%Tell what was done for chunking in the past etc
+
+\section{Conclusion and Future Work}
+\label{sec:conclusion}
+
+[Conclusion / need to talk about it]
+
+\section*{Acknowledgments}
+The work presented in this paper was supported by ???
+

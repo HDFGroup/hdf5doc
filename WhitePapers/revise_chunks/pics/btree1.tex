@@ -1,0 +1,63 @@
+\begin{tikzpicture}
+\tikzstyle{trans} = [gray,->,thick,>=stealth',shorten <=1pt,shorten >=1pt]
+\tikzstyle{node_style} = [rectangle split,rectangle split horizontal,
+  rectangle split parts=4,rectangle split empty part width=10.5pt,
+  text width=15pt,inner sep=0,thick,draw=black,
+  minimum height=15pt,text centered,anchor=center,font=\small]
+\tikzstyle{edge_style} = [gray,thick,draw]
+\tikzstyle{level 1}=[sibling distance=80pt]
+\begin{scope} [local bounding box=scope1,%edge from parent fork down,
+  every node/.style=node_style, edge from parent/.style=edge_style]
+\node {8 \nodepart{two} 16 \nodepart{three} 24 \nodepart{four} 32}
+  child {node (l1_0) {0 \nodepart{two} 4}}
+  child {node (l1_1) {8 \nodepart{two} 12}}
+   child {node (l1_2) {16 \nodepart{two} 20}}
+   child {node (l1_3) {24 \nodepart{two} 28}}
+   child {node[fill=paperblue!30] (l1_4) {32 \nodepart{two} 36 \nodepart{three} 40 \nodepart{four} 44}};
+\end{scope}
+
+\foreach \i in {0,...,4} {
+\node[below=15pt of l1_\i.one south] (c\i) {};
+\draw[trans] (l1_\i.one south) -- (c\i);
+\node[below=15pt of l1_\i.two south] (c\i_2) {};
+\draw[trans] (l1_\i.two south) -- (c\i_2);
+}
+% Last two arrows
+\node[below=15pt of l1_4.three south] (c4_3) {};
+\draw[trans] (l1_4.three south) -- (c4_3);
+\node[below=15pt of l1_4.four south] (c4_4) {};
+\draw[trans] (l1_4.four south) -- (c4_4);
+
+\begin{scope}[shift={($(scope1.south)+(0,-40pt)$)},%edge from parent fork down,
+  every node/.style=node_style, edge from parent/.style=edge_style]
+\tikzstyle{level 1}=[sibling distance=240pt]
+\tikzstyle{level 2}=[sibling distance=80pt]
+\node {24}
+  child {node {8 \nodepart{two} 16}
+    child {node (l2_0) {0 \nodepart{two} 4}}
+    child {node (l2_1) {8 \nodepart{two} 12}}
+    child {node (l2_2) {16 \nodepart{two} 20}}
+  }
+  child {node[fill=paperblue!30] (l2_split) {32 \nodepart{two} 40}
+    child {node (l2_3) {24 \nodepart{two} 28}}
+    child {node[fill=paperblue!30] (l2_4) {32 \nodepart{two} 36}}
+    child {node[fill=paperblue!30] (l2_5) {40 \nodepart{two} 44 \nodepart{three} 48}}
+  };
+\end{scope}
+
+\foreach \i in {0,...,5} {
+\node[below=15pt of l2_\i.one south] (c\i) {};
+\draw[trans] (l2_\i.one south) -- (c\i);
+\node[below=15pt of l2_\i.two south] (c\i_2) {};
+\draw[trans] (l2_\i.two south) -- (c\i_2);
+}
+% Last arrow
+\node[below=15pt of l2_5.three south] (c5_3) {};
+\draw[trans] (l2_5.three south) -- (c5_3);
+
+\draw[overlay,remember picture,ultra thick,line cap=round,->,
+  draw=paperblue!50,shorten <=20pt,shorten >=20pt] (l1_4) to [bend left=30]
+  node[right=5pt, font=\small\bfseries] {Node Split} 
+  (l2_split);
+\end{tikzpicture}
+
