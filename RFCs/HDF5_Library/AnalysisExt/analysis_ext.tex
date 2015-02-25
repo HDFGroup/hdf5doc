@@ -84,11 +84,12 @@
 \title{Data Analysis Extensions}
 \author{Jerome Soumagne}
 \author{Quincey Koziol}
-\date{November 14, 2014}
-\rfcversion{2014-07-17.v3}
+\date{February 25, 2015}
+\rfcversion{2014-07-17.v4}
 \revision{July 17, 2014}{Version 1 circulated for comment within The HDF Group.}
 \revision{August 20, 2014}{Version 2 circulated for comment within The HDF Group.}
 \revision{November 14, 2014}{Version 3 circulated for comment within The HDF Group.}
+\revision{February 25, 2015}{Version 4 edits and typo fixing.}
 
 %% Start the document
 \begin{document}
@@ -110,33 +111,32 @@ to efficiently query, select and index data.
 When working on large datasets, finding and selecting the interesting pieces of
 the data can be a cumbersome process. Currently, the HDF5 library enables the 
 application developer to select, read and write data but does not provide any 
-mechanism
-to select and retrieve pieces without prior knowledge of the content of the data,
-or without the developer to provide the exact data
-coordinates that he is willing to access. To satisfy that need, one must be able
+mechanism to select and retrieve pieces without prior knowledge of their
+content, or without the developer to provide the exact data coordinates that
+he is willing to access. To satisfy that need, one must be able
 to issue queries by specifying a data selection criteria. These queries,
-applied to the data, can then generate a selection, which contains the coordinates
-that satisfy the query. This may thus imply accessing the data and selecting it,
-depending on the query condition satisfaction. Furthermore, this process can be 
-accelerated so that the data no longer needs to be directly accessed, by using 
-indexing  techniques, which consist of generating an index and using that index
+when applied to the data, can then generate a selection, which contains the coordinates
+that satisfy the query---this may imply accessing the data and selecting it,
+depending on the query condition satisfaction. To accelerate and facilitate this
+process (i.e., so that the data no longer needs to be directly accessed), one can
+use indexing techniques, which consist of generating an index and using that index
 to answer the query selection criteria and find the matching elements.
 
 We define in this RFC the components that can enable application developers to
 create complex and high-performance queries on both metadata and data elements
 within an HDF5 container and retrieve the results of applying those query
 operations. Support for these operations on HDF5 containers can be defined via:
-\begin{itemize}
-\item New \textit{query} object\footnote{Query and view objects are
+\begin{enumerate}
+\item New \textit{query} objects\footnote{Query and view objects are
 \textit{in-memory} objects, which therefore do not modify the content of the
 container.\label{fn:object}} and API routines, enabling the construction of
 query requests for execution on HDF5 containers;
-\item New \textit{view} object\footref{fn:object} and API routines, which apply a query to an HDF5
+\item New \textit{view} objects\footref{fn:object} and API routines, which apply a query to an HDF5
 container and return a set of references into the container that fulfills
 the query criteria;
-\item New \textit{index} object and API routines, which allows the creation of
+\item New \textit{index} objects and API routines, which allows the creation of
 indices on the contents of HDF5 containers, to improve query performance.
-\end{itemize}
+\end{enumerate}
 
 \section{Query Objects}
 Query objects are the foundation of the data analysis operations in HDF5 and
@@ -164,9 +164,9 @@ creates new queries, by specifying an aspect of an HDF5 container, such as
 data elements, link names, attribute names, etc., a match operator, such as
 $=$, $\neq$, $\leq$, $\geq$, and a value for the match operator.
 Created query objects can be serialized and deserialized using \texttt{H5Qencode}
-and \texttt{H5Qdecode} routines\footnote{Useful if the query needs to be sent
-through the network}, and their content can be retrieved using the corresponding
-accessor routines.
+and \texttt{H5Qdecode} routines\footnote{Serialization/deserialization of queries
+were introduced so that queries can be sent through the network.}, and their
+content can be retrieved using the corresponding accessor routines.
 \texttt{H5Qcombine} combines two query objects into a
 new query object, using boolean operators such as $AND(\land)$ and $OR(\lor)$.
 Queries created with \texttt{H5Qcombine} can be used as input to further
@@ -234,9 +234,10 @@ $Combination \land Combination$ & $None$ \\
 
 \section{View Objects}
 Applying a query to an HDF5 container creates an HDF5 view object. HDF5 view
-objects are runtime, in-memory objects (i.e., not stored in a container) that
+objects are run-time, in-memory objects (i.e., not stored in a container) that
 consist of read-only references into the contents of the HDF5 container that
 the query was applied to. The current API is presented below:
+\todo{View API must be revised.}
 
 {\lstsetc
 \begin{lstlisting}
@@ -258,7 +259,7 @@ HDF5 container, group hierarchy, or individual object and produces the view
 object as a result. The attributes, objects, and/or data elements referenced
 within a view can be retrieved by further API calls. Note that currently,
 attribute references are not available, this feature will be added in order to
-support views that contain attribute references\footnote{See RFC XXXX for attribute references.}.
+support views that contain attribute references\footnote{See RFC 201X-XX-XX.vX.}.
 
 \begin{figure}
 \input{pics/hdf5_view1}
@@ -310,7 +311,6 @@ allowing a query on pressure values to be used to extract temperature values,
 for example.
 
 \section{Index Objects}
-The final and core component of the data analysis extensions to HDF5 is the index object.
 Index objects are designed to accelerate creation of view objects from
 frequently occurring query operations.
 For example, if the $(link\_name = Pressure)\land(data\_element = 17)$ query
@@ -325,7 +325,7 @@ Although creating indices for metadata components of queries, such as link or
 attribute names, is possible, we focus on index creation for dataset elements,
 as they represent the largest volume of data in typical HPC application usage of
 HDF5. Queries with metadata components execute properly,
-\todo{TBD metadata indexing} but are not able to be accelerated
+\todo{Metadata indexing must be added.} but are not able to be accelerated
 with an index currently.
 
 The indexing API can work in conjunction with the view API. When an \texttt{H5Vcreate}
@@ -335,8 +335,8 @@ a dataspace selection to the library for later use.
 
 There are different techniques for creating data element indices, and the most
 efficient method will vary depending on the type of the data that is to be
-indexed, its layout, etc. We therefore define a new interface for the HDF5
-library that uses a plugin mechanism.
+indexed, its layout, etc. A new interface for the HDF5 library that uses a
+plugin mechanism is therefore defined.
 
 \subsection{Indexing Interface and Plugins}
 
@@ -398,7 +398,7 @@ plugin ID to the \texttt{H5Xcreate} call.
 Alternatively an index may be created at the same time as a dataset gets created
 by passing a property to the dataset creation property list.
 Index information (such as plugin ID and index metadata) is stored at index
-creation time\footnote{This therefore introduces a file format change},
+creation time\footnote{Adding index information introduces a file format change.},
 and when the user later calls \texttt{H5Dopen}, the plugin open
 callback will retrieve this stored information and make use of the corresponding
 index plugin for all subsequent operations. Similarly, calling \texttt{H5Dclose}
@@ -425,7 +425,7 @@ invoked to create a selection of elements in the dataset that match the query
 parameters. Applications can also use the new \texttt{H5Dquery} routine defined below
 to directly
 execute a query on a particular dataset (accelerated by any index defined on the dataset),
-retrieving the selection that matches the query.
+and retrieve the selection that matches the query.
 
 {\lstsetc
 \begin{lstlisting}
@@ -435,8 +435,8 @@ herr_t H5Dquery(hid_t dset_id, hid_t space_id, hid_t query_id, hid_t xapl_id,
 }
 
 Because the amount of space taken by the index cannot be directly retrieved by
-the user since the datasets storing the indices are known only by the plugin
-itself, the \texttt{get\_size} callback can query the amount of space that
+the user (since the datasets storing the indices are known only by the plugin
+itself), the \texttt{get\_size} callback can query the amount of space that
 the index takes in the file and users may query that information using the
 corresponding \texttt{H5Xget\_size} routine.
 
@@ -471,7 +471,7 @@ to their index information can be made.
 
 \subsubsection*{Questions}
 Some questions are still open regarding the handling of indices:
-\begin{itemize}
+\begin{enumerate}
 %\item How could an index be built and queried in parallel for a dataset that already exists?
 \item How to handle index updates when the specified index plugin is not available?
 (In traditional databases, stored procedures are saved with the data and
@@ -480,7 +480,7 @@ We could mark the index as out of date and rebuild the index when the plugin is
 available again.
 \item How to handle index queries when the specified index plugin is not
 available? We could fallback to another plugin and do a brute force query on the data.
-\end{itemize}
+\end{enumerate}
 
 \subsection{Support for HDF5 Compound Types}
 
@@ -488,7 +488,7 @@ In a simple scenario, the HDF5 datatype used for creating the dataset can be def
 as a native and simple type. Therefore, building an index on this dataset implies
 building that index from the entire dataset. However, in more complex scenarios, the
 dataset may have been created by using a compound datatype, hence defining
-multiple fields composed of native and simple datatypes inside that same dataset.
+multiple fields composed of native and simple datatypes within that same dataset.
 Consequently, creating an index from that dataset requires the user to select a
 particular field to be indexed, which may lead to having multiple indices per dataset
 depending on the number of fields that it contains. This can be done by passing
@@ -497,29 +497,29 @@ the index creation property list, of the \texttt{H5Xcreate} call, which passes
 it down to the plugin \texttt{create} callback. As multiple fields can be defined,
 the field \texttt{datatype\_id} must be stored along with the existing metadata, within the
 \texttt{idx\_info} message (see~\FigureRef{fig:hdf5_index}) so that the index
-for the right field can be retrieved at the time of the query.
+associated to the field can be retrieved at the time of the query.
 When doing a query, the compound type is passed to the \texttt{H5Qcreate} call.
 The corresponding index is then used and the query is passed to the \texttt{query}
 callback of the plugin.
 
 Consequently, when removing an index, one may choose to remove the index that
 corresponds to a particular field. This can be achieved by calling \texttt{H5Xget\_info},
-compare the datatype returned inside the info structure, and pass the index number
+compare the datatype returned within the info structure, and pass the index number
 that needs to be removed.
 
 \subsection{Support for HDF5 Chunking}
 
 To support indexing of HDF5 chunks, we make each chunk a local \textit{sub-dataset}
 of the original dataset. In that sense, handling every chunk can be seen as handling
-a dataset from the indexing plugin point of view. if the dataset is chunked,
-at the time of the index creation, we create a B-tree\footnote{Could also
-be a map object.} (physically
+a dataset from the indexing plugin point of view. If the dataset is chunked,
+at the time of the index creation, we create a B-tree\footnote{The B-tree could also
+be replaced by a map object.} (physically
 stored on disk) that maps the coordinates of the chunks to the index plugin metadata.
 When the \texttt{create} callback is called (by representing the chunk as
-a local dataset, i.e. making the dataset layout point to the address of the chunk),
+a local dataset, i.e., making the dataset layout point to the address of the chunk),
 metadata information is returned and stored.
 In the case of contiguous datasets, the index metadata as well as the index plugin ID is
-stored within the dataset header within the index info message (see~\FigureRef{fig:hdf5_index}).
+stored within the dataset header of the index info message (see~\FigureRef{fig:hdf5_index}).
 In the case of chunked datasets, multiple metadata that correspond to each index created
 from each chunck may be accessed. Therefore, only the address of the B-tree that contains the 
 metadata pieces for each chunk is stored in that header message and the index
@@ -536,41 +536,40 @@ callback using the associated metadata.
 Similarly, when a query is issued and needs to be answered, the chunks that
 correspond to the selection passed to the \texttt{H5Dquery} call are selected
 and their index is used to answer that query. The selection returned is then
-added to a global selection, which is then returned to the user.
+added to a global selection, which is then in turn returned to the user.
 
 Finally, when \texttt{H5Xremove} is called, the \texttt{delete} plugin callback is
-invoked for each chunk using the index metadata information stored in the B-tree.
+invoked for each chunk, by using the index metadata information stored in the B-tree.
 
 \subsection{Support for Parallel Indexing}
 
 An important design choice to support parallel indexing is to give as much
 freedom as possible to the indexing plugin developer so that in the case when
-the indexing library supports parallel indexing it is still possible to take
-advantage of it. However, three options remain to support parallel indexing
-within the indexing plugin interface:
+the indexing library supports parallel indexing, it is still possible to take
+advantage of it. Three options are available to support parallel indexing
+from the previous interface:
 \begin{enumerate}
-\item is to let the index creation be collective. This however implies synchronization
+\item Let the index creation be collective. This however implies having synchronization
 points, which is the main constraint.
-\item is to let the index creation be independent. However, creating datasets to
+\item Let the index creation be independent. However, creating datasets to
 store the index data must be done collectively\footnote{An option could be to use
 the metadata server VOL plugin but this option is not easily doable yet.}.
-\item is to let make the index creation in two phases. One that consists of
-building the index in parallel independently and gathering the information (index size, etc)
-at the end. And the other that consists of making the dataset creation by a master
+\item Make the index creation in two phases. One that consists of
+building the index in parallel, independently, and gathering the information (index size, etc)
+at the end. The other that consists of letting the dataset creation be done by a master
 process, which can then let the other processes write the index data independently.
 There could however be a memory constraint in this case if the index data has to
-be kept in memory between these two phases (note that building the index twice is not
+be kept in memory between these two phases (though building the index twice is not
 a good solution either).
 \end{enumerate}
 
 Changes in the plugin interface include passing the parallel context to the
 callback (MPI communicator), which can be done by using the index access property
 list.
-
-Furthermore, in the case of chunked datasets, one may want to operate on several chunks
-at the same time in parallel. This can be done by passing to the callbacks a list of IDs that
-corresponds to each chunk. However this also makes the plugin interface more
-heavy.
+In the case of chunked datasets, one may also want to operate on several chunks
+at the same time, in parallel. This can be done by passing a list of IDs that
+corresponds to each chunk to the callbacks. However, this also makes the plugin
+interface more heavy.
 
 \section{HDF5 and tools}
 
@@ -595,11 +594,11 @@ in the future.
 \section{Usage Example}
 
 In the following example, we show how one can make use of the query and
-indexing interface to get a dataspace selection within a dataset,
-for simplicity we first create a dataset within the file, then open it to
-create and attach a new index, to finally query data from it.
-Note that some of the calls may be moved to the higher level API, in order to
-directly read data that corresponds to the result of the index query.
+indexing interface to retrieve a dataspace selection within a dataset.
+For simplicity's sake, we first create a dataset within the file, then open it to
+create and attach a new index, in order to finally query data from it.
+Note that for convenience, calls to directly read data that corresponds to the
+result of the index query may be moved to the high-level API in the future.
 
 {\lstsetc
 \begin{lstlisting}
@@ -686,6 +685,7 @@ main(int argc, char *argv[])
 }
 
 \section{Conclusion}
+Document in progress.
 
 \section*{Revision History}
 \makerevisions
