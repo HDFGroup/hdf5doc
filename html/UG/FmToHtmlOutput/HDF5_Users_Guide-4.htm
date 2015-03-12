@@ -1,0 +1,4169 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN"><HTML>
+<HEAD>
+<META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=UTF-8">
+<META HTTP-EQUIV="Content-Style-Type" CONTENT="text/css">
+<META NAME="GENERATOR" CONTENT="Adobe FrameMaker 12.0/HTML Export Filter">
+<LINK REL="STYLESHEET" HREF="HDF5_Users_Guide.css" CHARSET="UTF-8" TYPE="text/css">
+<TITLE> 3. The HDF5 File</TITLE></HEAD>
+<BODY>
+<H1 CLASS="FM-Heading-Level1">
+<A NAME="50475009_pgfId-1181536"></A>3. <A NAME="50475009_TheFileChapter"></A>The HDF5 File</H1>
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1181537"></A>&nbsp;</P>
+<DIV>
+<H2 CLASS="FM-Heading-Level2">
+<A NAME="50475009_pgfId-1181700"></A>3.1. <A NAME="50475009_Intro"></A>Introduction to HDF5 Files</H2>
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1181702"></A>The purpose of this chapter is to describe how to work with HDF5 data files. </P>
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1181705"></A>If HDF5 data is to be written to or read from a file, the file must first be explicitly created or opened with the appropriate file driver and access privileges. Once all work with the file is complete, the file must be explicitly closed. </P>
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1181710"></A>This chapter discusses the following:</P>
+<UL>
+<LI CLASS="FM-ListBullets-Level1">
+<A NAME="50475009_pgfId-1181714"></A>•	File access modes</LI>
+<LI CLASS="FM-ListBullets-Level1">
+<A NAME="50475009_pgfId-1181715"></A>•	Creating, opening, and closing files</LI>
+<LI CLASS="FM-ListBullets-Level1">
+<A NAME="50475009_pgfId-1181716"></A>•	The use of file creation property lists</LI>
+<LI CLASS="FM-ListBullets-Level1">
+<A NAME="50475009_pgfId-1181717"></A>•	The use of file access property lists</LI>
+<LI CLASS="FM-ListBullets-Level1">
+<A NAME="50475009_pgfId-1181718"></A>•	The use of low-level file drivers</LI>
+</UL>
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1181721"></A>This chapter assumes an understanding of the material presented in the data model chapter. <A HREF="HDF5_Users_Guide-2.htm#50475020_DataModelChapter" CLASS="XRef">For more information, see The HDF5 Data Model and File Structure. </A></P>
+<DIV>
+<H3 CLASS="FM-Heading-Level3">
+<A NAME="50475009_pgfId-1181725"></A>3.1.1. <A NAME="50475009_FileAccessModes"></A>File Access Modes</H3>
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1181728"></A>There are two issues regarding file access:</P>
+<UL>
+<LI CLASS="FM-ListBullets-Level1">
+<A NAME="50475009_pgfId-1181730"></A>•	What should happen when a new file is created but a file of the same name already exists? Should the create action fail, or should the existing file be overwritten?</LI>
+<LI CLASS="FM-ListBullets-Level1">
+<A NAME="50475009_pgfId-1181733"></A>•	Is a file to be opened with read-only or read-write access?</LI>
+</UL>
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1181736"></A>Four access modes address these concerns. Two of these modes can be used with <CODE CLASS="Code">
+H5Fcreate</CODE>
+, and two modes can be used with <CODE CLASS="Code">
+H5Fopen</CODE>
+.</P>
+<UL>
+<LI CLASS="FM-ListBullets-Level1">
+<A NAME="50475009_pgfId-1181740"></A>•	<CODE CLASS="Code">
+H5Fcreate</CODE>
+ accepts <CODE CLASS="Code">
+H5F_ACC_EXCL</CODE>
+ or <CODE CLASS="Code">
+H5F_ACC_TRUNC</CODE>
+ </LI>
+<LI CLASS="FM-ListBullets-Level1">
+<A NAME="50475009_pgfId-1181742"></A>•	<CODE CLASS="Code">
+H5Fopen</CODE>
+ accepts <CODE CLASS="Code">
+H5F_ACC_RDONLY</CODE>
+ or <CODE CLASS="Code">
+H5F_ACC_RDWR</CODE>
+</LI>
+</UL>
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1181745"></A>The access modes are described in the table below.</P>
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1208038"></A>&nbsp;</P>
+<TABLE BORDER="1">
+<CAPTION>
+<H6 CLASS="FM-CaptionTable1">
+<A NAME="50475009_pgfId-1208077"></A>Table 3-1. Access flags and modes</H6>
+</CAPTION>
+<TR>
+<TH ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-Heading-Cell">
+<A NAME="50475009_pgfId-1208081"></A>Access Flag</P>
+</TH>
+<TH ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-Heading-Cell">
+<A NAME="50475009_pgfId-1208083"></A>Resulting Access Mode</P>
+</TH>
+</TR>
+<TR>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1208085"></A><CODE CLASS="Code">
+H5F_ACC_EXCL</CODE>
+</P>
+</TD>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1208087"></A>If the file already exists, <CODE CLASS="Code">
+H5Fcreate</CODE>
+ fails. If the file does not exist, it is created and opened with read-write access. <EM CLASS="EI-EmphasisItalic">
+(Default)</EM>
+</P>
+</TD>
+</TR>
+<TR>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1208089"></A><CODE CLASS="Code">
+H5F_ACC_TRUNC</CODE>
+</P>
+</TD>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1208091"></A>If the file already exists, the file is opened with read-write access, and new data will overwrite any existing data. If the file does not exist, it is created and opened with read-write access.</P>
+</TD>
+</TR>
+<TR>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1208093"></A><CODE CLASS="Code">
+H5F_ACC_RDONLY</CODE>
+</P>
+</TD>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1208095"></A>An existing file is opened with read-only access. If the file does not exist, <CODE CLASS="Code">
+H5Fopen</CODE>
+ fails. <EM CLASS="EI-EmphasisItalic">
+(Default)</EM>
+</P>
+</TD>
+</TR>
+<TR>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1208101"></A><CODE CLASS="Code">
+H5F_ACC_RDWR</CODE>
+</P>
+</TD>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1208103"></A>An existing file is opened with read-write access. If the file does not exist, <CODE CLASS="Code">
+H5Fopen</CODE>
+ fails.</P>
+</TD>
+</TR>
+</TABLE>
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1181797"></A>By default, <CODE CLASS="Code">
+H5Fopen</CODE>
+ opens a file for read-only access; passing <CODE CLASS="Code">
+H5F_ACC_RDWR</CODE>
+ allows read-write access to the file. </P>
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1181800"></A>By default, <CODE CLASS="Code">
+H5Fcreate</CODE>
+ fails if the file already exists; only passing <CODE CLASS="Code">
+H5F_ACC_TRUNC</CODE>
+ allows the truncating of an existing file.</P>
+</DIV>
+<DIV>
+<H3 CLASS="FM-Heading-Level3">
+<A NAME="50475009_pgfId-1181805"></A>3.1.2. File Creation and File Access Properties</H3>
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1181807"></A>File creation and file access property lists control the more complex aspects of creating and accessing files. </P>
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1181810"></A><STRONG CLASS="EH-EmphasisHeavy">
+File creation property lists</STRONG>
+ control the characteristics of a file such as the size of the user-block, a user-definable data block; the size of data address parameters; properties of the B-trees that are used to manage the data in the file; and certain HDF5 library versioning information. </P>
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1181817"></A><A HREF="HDF5_Users_Guide-4.htm#50475009_FileCreationProperties" CLASS="XRef">For more information, see File Creation Properties. </A>This section has a more detailed discussion of file creation properties. If you have no special requirements for these file characteristics, you can simply specify <CODE CLASS="Code">
+H5P_DEFAULT</CODE>
+ for the default file creation property list when a file creation property list is called for.</P>
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1181827"></A><STRONG CLASS="EH-EmphasisHeavy">
+File access property lists</STRONG>
+ control properties and means of accessing a file such as data alignment characteristics, metadata block and cache sizes, data sieve buffer size, garbage collection settings, and parallel I/O. Data alignment, metadata block and cache sizes, and data sieve buffer size are factors in improving I/O performance.</P>
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1181834"></A><A HREF="HDF5_Users_Guide-4.htm#50475009_FileAccessProperties" CLASS="XRef">For more information, see File Access Properties. </A>This section has a more detailed discussion of file access properties If you have no special requirements for these file access characteristics, you can simply specify <CODE CLASS="Code">
+H5P_DEFAULT</CODE>
+ for the default file access property list when a file access property list is called for.</P>
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1200962"></A>&nbsp;</P>
+<TABLE BORDER="1">
+<CAPTION>
+<H6 CLASS="FM-CaptionFigure1">
+<A NAME="50475009_pgfId-1200960"></A>Figure 3-1. UML model for an HDF5 file and its property lists<DIV>
+<IMG SRC="HDF5_Users_Guide-1.gif" ALT="">
+</DIV>
+</H6>
+</CAPTION>
+<TR>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1200983"></A>&nbsp;</P>
+<DIV>
+<IMG SRC="Images/UML_FileAndProps.gif" ALT="">
+</DIV>
+</TD>
+</TR>
+</TABLE>
+</DIV>
+<DIV>
+<H3 CLASS="FM-Heading-Level3">
+<A NAME="50475009_pgfId-1181861"></A>3.1.3. Low-level File Drivers</H3>
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1181863"></A>The concept of an HDF5 file is actually rather abstract: the address space for what is normally thought of as an HDF5 file might correspond to any of the following at the storage level:</P>
+<UL>
+<LI CLASS="FM-ListBullets-Level1">
+<A NAME="50475009_pgfId-1181867"></A>•	Single file on a standard file system</LI>
+<LI CLASS="FM-ListBullets-Level1">
+<A NAME="50475009_pgfId-1181868"></A>•	Multiple files on a standard file system</LI>
+<LI CLASS="FM-ListBullets-Level1">
+<A NAME="50475009_pgfId-1181869"></A>•	Multiple files on a parallel file system</LI>
+<LI CLASS="FM-ListBullets-Level1">
+<A NAME="50475009_pgfId-1181870"></A>•	Block of memory within an application’s memory space</LI>
+<LI CLASS="FM-ListBullets-Level1">
+<A NAME="50475009_pgfId-1181871"></A>•	More abstract situations such as virtual files</LI>
+</UL>
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1181873"></A>This HDF5 address space is generally referred to as an <EM CLASS="EI-EmphasisItalic">
+HDF5 file</EM>
+ regardless of its organization at the storage level. </P>
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1181876"></A>HDF5 accesses a file (the address space) through various types of <EM CLASS="EI-EmphasisItalic">
+low-level file drivers</EM>
+. The default HDF5 file storage layout is as an unbuffered permanent file which is a single, contiguous file on local disk. Alternative layouts are designed to suit the needs of a variety of systems, environments, and applications.</P>
+</DIV>
+</DIV>
+<DIV>
+<H2 CLASS="FM-Heading-Level2">
+<A NAME="50475009_pgfId-1181896"></A>3.2. <A NAME="50475009_PModel"></A>Programming Model</H2>
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1181898"></A>Programming models for creating, opening, and closing HDF5 files are described in the sub-sections below.</P>
+<DIV>
+<H3 CLASS="FM-Heading-Level3">
+<A NAME="50475009_pgfId-1181901"></A>3.2.1. Creating a New File</H3>
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1181903"></A>The programming model for creating a new HDF5 file can be summarized as follows:</P>
+<UL>
+<LI CLASS="FM-ListBullets-Level1">
+<A NAME="50475009_pgfId-1181907"></A>•	Define the file creation property list</LI>
+<LI CLASS="FM-ListBullets-Level1">
+<A NAME="50475009_pgfId-1181908"></A>•	Define the file access property list</LI>
+<LI CLASS="FM-ListBullets-Level1">
+<A NAME="50475009_pgfId-1181909"></A>•	Create the file</LI>
+</UL>
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1181912"></A>First, consider the simple case where we use the default values for the property lists. See the example below.</P>
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1181932"></A>&nbsp;</P>
+<TABLE BORDER="1">
+<CAPTION>
+<H6 CLASS="FM-CaptionCodeExample1">
+<A NAME="50475009_pgfId-1201615"></A>Code Example 3-1. Creating an HDF5 file using property list defaults<DIV>
+<IMG SRC="HDF5_Users_Guide-1.gif" ALT="">
+</DIV>
+</H6>
+<H6 CLASS="FM-CaptionNote">
+<A NAME="50475009_pgfId-1201656"></A>This example specifies that <CODE CLASS="Code">
+H5Fcreate</CODE>
+ should fail if <CODE CLASS="Code">
+SampleFile.h5</CODE>
+ already exists.</H6>
+</CAPTION>
+<TR>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1201653"></A>&nbsp;</P>
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1201638"></A>file_id = H5Fcreate (&quot;SampleFile.h5&quot;, H5F_ACC_EXCL,</P>
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1201613"></A>H5P_DEFAULT, H5P_DEFAULT)</P>
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1201650"></A>&nbsp;</P>
+</TD>
+</TR>
+</TABLE>
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1181937"></A>A more complex case is shown in the example below. In this example, we define file creation and access property lists (though we do not assign any properties), specify that <CODE CLASS="Code">
+H5Fcreate</CODE>
+ should fail if <CODE CLASS="Code">
+SampleFile.h5</CODE>
+ already exists, and create a new file named <CODE CLASS="Code">
+SampleFile.h5</CODE>
+. The example does not specify a driver, so the default driver, <CODE CLASS="Code">
+H5FD_SEC2</CODE>
+, will be used.</P>
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1181965"></A>&nbsp;</P>
+<TABLE BORDER="1">
+<CAPTION>
+<H6 CLASS="FM-CaptionCodeExample">
+<A NAME="50475009_pgfId-1201689"></A>Code Example 3-2. Creating an HDF5 file using property lists<DIV>
+<IMG SRC="HDF5_Users_Guide-1.gif" ALT="">
+</DIV>
+</H6>
+</CAPTION>
+<TR>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1201719"></A>&nbsp;</P>
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1201701"></A>fcplist_id = H5Pcreate (H5P_FILE_CREATE)</P>
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1201702"></A>&lt;...<EM CLASS="CodeItalic">
+set desired file creation properties</EM>
+...&gt;</P>
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1201703"></A>faplist_id = H5Pcreate (H5P_FILE_ACCESS)</P>
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1201704"></A>&lt;...<EM CLASS="CodeItalic">
+set desired file access properties</EM>
+...&gt;</P>
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1201687"></A>file_id = H5Fcreate (&quot;SampleFile.h5&quot;, H5F_ACC_EXCL, fcplist_id,</P>
+<P CLASS="FM-BodyCodeIndent">
+<A NAME="50475009_pgfId-1203630"></A>faplist_id)</P>
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1201716"></A>&nbsp;</P>
+</TD>
+</TR>
+</TABLE>
+<DIV>
+<H4 CLASS="FM-Heading-SubSection">
+<A NAME="50475009_pgfId-1181967"></A>Notes: </H4>
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1181968"></A>A root group is automatically created in a file when the file is first created.</P>
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1181970"></A>File property lists, once defined, can be reused when another file is created within the same application.</P>
+</DIV>
+</DIV>
+<DIV>
+<H3 CLASS="FM-Heading-Level3">
+<A NAME="50475009_pgfId-1181974"></A>3.2.2. Opening an Existing File</H3>
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1181976"></A>The programming model for opening an existing HDF5 file can be summarized as follows:</P>
+<UL>
+<LI CLASS="FM-ListBullets-Level1">
+<A NAME="50475009_pgfId-1181980"></A>•	Define or modify the file access property list including a low-level file driver (optional)</LI>
+<LI CLASS="FM-ListBullets-Level1">
+<A NAME="50475009_pgfId-1181982"></A>•	Open the file</LI>
+</UL>
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1181986"></A>The code in the example below shows how to open an existing file with read-only access.</P>
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1182006"></A>&nbsp;</P>
+<TABLE BORDER="1">
+<CAPTION>
+<H6 CLASS="FM-CaptionCodeExample">
+<A NAME="50475009_pgfId-1201763"></A>Code Example 3-3. Opening an HDF5 file<DIV>
+<IMG SRC="HDF5_Users_Guide-1.gif" ALT="">
+</DIV>
+</H6>
+</CAPTION>
+<TR>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1201789"></A>&nbsp;</P>
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1201793"></A>faplist_id = H5Pcreate (H5P_FILE_ACCESS)</P>
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1201794"></A>status = H5Pset_fapl_stdio (faplist_id)</P>
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1201795"></A>file_id = H5Fopen (&quot;SampleFile.h5&quot;, H5F_ACC_RDONLY, faplist_id)</P>
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1201761"></A>&nbsp;</P>
+</TD>
+</TR>
+</TABLE>
+</DIV>
+<DIV>
+<H3 CLASS="FM-Heading-Level3">
+<A NAME="50475009_pgfId-1182008"></A>3.2.3. Closing a File</H3>
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1182010"></A>The programming model for closing an HDF5 file is very simple:</P>
+<UL>
+<LI CLASS="FM-ListBullets-Level1">
+<A NAME="50475009_pgfId-1182013"></A>•	Close file</LI>
+</UL>
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1182016"></A>We close <CODE CLASS="Code">
+SampleFile.h5</CODE>
+ with the code in the example below.</P>
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1182034"></A>&nbsp;</P>
+<TABLE BORDER="1">
+<CAPTION>
+<H6 CLASS="FM-CaptionCodeExample">
+<A NAME="50475009_pgfId-1201842"></A>Code Example 3-4. Closing an HDF5 file<DIV>
+<IMG SRC="HDF5_Users_Guide-1.gif" ALT="">
+</DIV>
+</H6>
+</CAPTION>
+<TR>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1201868"></A>&nbsp;</P>
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1201872"></A>status = H5Fclose (file_id)</P>
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1201840"></A>&nbsp;</P>
+</TD>
+</TR>
+</TABLE>
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1182036"></A>Note that <CODE CLASS="Code">
+H5Fclose</CODE>
+ flushes all unwritten data to storage and that <CODE CLASS="Code">
+file_id</CODE>
+ is the identifier returned for <CODE CLASS="Code">
+SampleFile.h5</CODE>
+ by <CODE CLASS="Code">
+H5Fopen</CODE>
+.</P>
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1182040"></A>More comprehensive discussions regarding all of these steps are provided below.</P>
+</DIV>
+</DIV>
+<DIV>
+<H2 CLASS="FM-Heading-Level2">
+<A NAME="50475009_pgfId-1182057"></A>3.3. <A NAME="50475009_H5Dump"></A>Using h5dump to View a File</H2>
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1182060"></A><CODE CLASS="Code">
+h5dump</CODE>
+ is a command-line utility that is included in the HDF5 distribution. This program provides a straight-forward means of inspecting the contents of an HDF5 file. You can use <CODE CLASS="Code">
+h5dump</CODE>
+ to verify that a program is generating the intended HDF5 file. <CODE CLASS="Code">
+h5dump</CODE>
+ displays ASCII output formatted according to the HDF5 DDL grammar.</P>
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1182067"></A>The following <CODE CLASS="Code">
+h5dump</CODE>
+ command will display the contents of <CODE CLASS="Code">
+SampleFile.h5</CODE>
+:</P>
+<P CLASS="FM-BodyCodeIndent">
+<A NAME="50475009_pgfId-1182071"></A>h5dump SampleFile.h5 </P>
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1182074"></A>If no datasets or groups have been created in and no data has been written to the file, the output will look something like the following:</P>
+<P CLASS="FM-BodyCodeIndent">
+<A NAME="50475009_pgfId-1182079"></A>HDF5 &quot;SampleFile.h5&quot; {</P>
+<P CLASS="FM-BodyCodeIndent">
+<A NAME="50475009_pgfId-1182080"></A>GROUP &quot;/&quot; {</P>
+<P CLASS="FM-BodyCodeIndent">
+<A NAME="50475009_pgfId-1182081"></A>}</P>
+<P CLASS="FM-BodyCodeIndent">
+<A NAME="50475009_pgfId-1182082"></A>}</P>
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1182085"></A>Note that the root group, indicated above by <CODE CLASS="Code">
+/</CODE>
+, was automatically created when the file was created.</P>
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1182088"></A><CODE CLASS="Code">
+h5dump</CODE>
+ is described on the <EM CLASS="LT-LinkText">
+<A HREF="http://www.hdfgroup.org/HDF5/doc/RM/Tools.html" CLASS="URL">Tools</A></EM>
+ page of the <EM CLASS="LT-LinkText">
+<A HREF="http://www.hdfgroup.org/HDF5/doc/RM/RM_H5Front.html" CLASS="URL">HDF5 Reference Manual</A></EM>
+. The HDF5 DDL grammar is described in the document <EM CLASS="LT-LinkText">
+<A HREF="http://www.hdfgroup.org/HDF5/doc/ddl.html" CLASS="URL">DDL in BNF for HDF5</A></EM>
+.</P>
+</DIV>
+<DIV>
+<H2 CLASS="FM-Heading-Level2">
+<A NAME="50475009_pgfId-1182110"></A>3.4. File <A NAME="50475009_FuncSumms"></A>Function Summaries</H2>
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1182112"></A>General library functions and macros (H5), file functions (H5F), file related property list functions (H5P), and file driver functions (H5P) are listed below.</P>
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1182120"></A>&nbsp;</P>
+<TABLE BORDER="1">
+<CAPTION>
+<H6 CLASS="FM-CaptionFunctionListing1">
+<A NAME="50475009_pgfId-1207035"></A>Function Listing 3-1. General library functions and macros (H5)</H6>
+</CAPTION>
+<TR>
+<TH ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-Heading-Cell">
+<A NAME="50475009_pgfId-1207039"></A>C Function</P>
+<P CLASS="FM-Heading-Cell">
+<A NAME="50475009_pgfId-1207102"></A>Fortran Function</P>
+</TH>
+<TH ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-Heading-Cell">
+<A NAME="50475009_pgfId-1207041"></A>Purpose</P>
+</TH>
+</TR>
+<TR>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1207043"></A><CODE CLASS="Code">
+H5check_version</CODE>
+</P>
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1207104"></A><CODE CLASS="Code">
+h5check_version_f</CODE>
+</P>
+</TD>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1207045"></A>Verifies that HDF5 library versions are consistent.</P>
+</TD>
+</TR>
+<TR>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1207047"></A><CODE CLASS="Code">
+H5close</CODE>
+</P>
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1207106"></A><CODE CLASS="Code">
+h5close_f</CODE>
+</P>
+</TD>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1207049"></A>Flushes all data to disk, closes all open identifiers, and cleans up memory.</P>
+</TD>
+</TR>
+<TR>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1207051"></A><CODE CLASS="Code">
+H5dont_atexit</CODE>
+</P>
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1207108"></A><CODE CLASS="Code">
+h5dont_atexit_f</CODE>
+</P>
+</TD>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1207053"></A>Instructs the library not to install the <CODE CLASS="Code">
+atexit</CODE>
+ cleanup routine.</P>
+</TD>
+</TR>
+<TR>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1207055"></A><CODE CLASS="Code">
+H5garbage_collect</CODE>
+</P>
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1207110"></A><CODE CLASS="Code">
+h5garbage_collect_f</CODE>
+</P>
+</TD>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1207057"></A>Garbage collects on all free-lists of all types. </P>
+</TD>
+</TR>
+<TR>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1207059"></A><CODE CLASS="Code">
+H5get_libversion</CODE>
+</P>
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1207112"></A><CODE CLASS="Code">
+h5get_libversion_f</CODE>
+</P>
+</TD>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1207061"></A>Returns the HDF library release number.</P>
+</TD>
+</TR>
+<TR>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1207063"></A><CODE CLASS="Code">
+H5open</CODE>
+</P>
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1207114"></A><CODE CLASS="Code">
+h5open_f</CODE>
+</P>
+</TD>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1207065"></A>Initializes the HDF5 library.</P>
+</TD>
+</TR>
+<TR>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1207067"></A><CODE CLASS="Code">
+H5set_free_list_limits</CODE>
+</P>
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1207116"></A><CODE CLASS="Code">
+h5set_free_list_limits_f</CODE>
+</P>
+</TD>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1207069"></A>Sets free-list size limits.</P>
+</TD>
+</TR>
+<TR>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1207071"></A><CODE CLASS="Code">
+H5_VERSION_GE</CODE>
+</P>
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1207118"></A>(none)</P>
+</TD>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1207073"></A>Determines whether the version of the library being used is greater than or equal to the specified version.</P>
+</TD>
+</TR>
+<TR>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1207075"></A><CODE CLASS="Code">
+H5_VERSION_LE</CODE>
+</P>
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1207120"></A>(none)</P>
+</TD>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1207077"></A>Determines whether the version of the library being used is less than or equal to the specified version.</P>
+</TD>
+</TR>
+</TABLE>
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1182224"></A>&nbsp;</P>
+<TABLE BORDER="1">
+<CAPTION>
+<H6 CLASS="FM-CaptionFunctionListing">
+<A NAME="50475009_pgfId-1207217"></A>Function Listing 3-2. File functions (H5F)</H6>
+</CAPTION>
+<TR>
+<TH ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-Heading-Cell">
+<A NAME="50475009_pgfId-1207221"></A>C Function</P>
+<P CLASS="FM-Heading-Cell">
+<A NAME="50475009_pgfId-1207363"></A>Fortran Function</P>
+</TH>
+<TH ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-Heading-Cell">
+<A NAME="50475009_pgfId-1207223"></A>Purpose</P>
+</TH>
+</TR>
+<TR>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1207225"></A><CODE CLASS="Code">
+H5Fclear_elink_file_cache</CODE>
+</P>
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1207365"></A>(none)</P>
+</TD>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1207227"></A>Clears the external link open file cache for a file. </P>
+</TD>
+</TR>
+<TR>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1207229"></A><CODE CLASS="Code">
+H5Fclose</CODE>
+</P>
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1207367"></A><CODE CLASS="Code">
+h5fclose_f</CODE>
+</P>
+</TD>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1207231"></A>Closes HDF5 file.</P>
+</TD>
+</TR>
+<TR>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1207233"></A><CODE CLASS="Code">
+H5Fcreate</CODE>
+</P>
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1207369"></A><CODE CLASS="Code">
+h5fcreate_f</CODE>
+</P>
+</TD>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1207235"></A>Creates new HDF5 file.</P>
+</TD>
+</TR>
+<TR>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1207237"></A><CODE CLASS="Code">
+H5Fflush</CODE>
+</P>
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1207371"></A><CODE CLASS="Code">
+h5fflush_f</CODE>
+</P>
+</TD>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1207239"></A>Flushes data to HDF5 file on storage medium.</P>
+</TD>
+</TR>
+<TR>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1207241"></A><CODE CLASS="Code">
+H5Fget_access_plist</CODE>
+</P>
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1207373"></A><CODE CLASS="Code">
+h5fget_access_plist_f</CODE>
+</P>
+</TD>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1207243"></A>Returns a file access property list identifier.</P>
+</TD>
+</TR>
+<TR>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1207245"></A><CODE CLASS="Code">
+H5Fget_create_plist</CODE>
+</P>
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1207375"></A><CODE CLASS="Code">
+h5fget_create_plist_f</CODE>
+</P>
+</TD>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1207247"></A>Returns a file creation property list identifier.</P>
+</TD>
+</TR>
+<TR>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1207249"></A><CODE CLASS="Code">
+H5Fget_file_image</CODE>
+</P>
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1207377"></A><CODE CLASS="Code">
+h5fget_file_image_f</CODE>
+</P>
+</TD>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1207251"></A>Retrieves a copy of the image of an existing, open file. </P>
+</TD>
+</TR>
+<TR>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1207253"></A><CODE CLASS="Code">
+H5Fget_filesize</CODE>
+</P>
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1207379"></A><CODE CLASS="Code">
+h5fget_filesize_f</CODE>
+</P>
+</TD>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1207255"></A>Returns the size of an HDF5 file.</P>
+</TD>
+</TR>
+<TR>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1207257"></A><CODE CLASS="Code">
+H5Fget_freespace</CODE>
+</P>
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1207381"></A><CODE CLASS="Code">
+h5fget_freespace_f</CODE>
+</P>
+</TD>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1207259"></A>Returns the amount of free space in a file.</P>
+</TD>
+</TR>
+<TR>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1207261"></A><CODE CLASS="Code">
+H5Fget_info</CODE>
+</P>
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1207383"></A>(none)</P>
+</TD>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1207263"></A>Returns global information for a file.</P>
+</TD>
+</TR>
+<TR>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1207265"></A><CODE CLASS="Code">
+H5Fget_intent</CODE>
+</P>
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1207385"></A>(none)</P>
+</TD>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1207267"></A>Determines the read/write or read-only status of a file.</P>
+</TD>
+</TR>
+<TR>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1207269"></A><CODE CLASS="Code">
+H5Fget_mdc_config</CODE>
+</P>
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1207387"></A>(none)</P>
+</TD>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1207271"></A>Obtain current metadata cache configuration for target file.</P>
+</TD>
+</TR>
+<TR>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1207273"></A><CODE CLASS="Code">
+H5Fget_mdc_hit_rate</CODE>
+</P>
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1207389"></A>(none)</P>
+</TD>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1207275"></A>Obtain target file’s metadata cache hit rate.</P>
+</TD>
+</TR>
+<TR>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1207277"></A><CODE CLASS="Code">
+H5Fget_mdc_size</CODE>
+</P>
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1207391"></A>(none)</P>
+</TD>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1207279"></A>Obtain current metadata cache size data for specified file.</P>
+</TD>
+</TR>
+<TR>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1207281"></A><CODE CLASS="Code">
+H5Fget_mpi_atomicity</CODE>
+</P>
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1207393"></A><CODE CLASS="Code">
+h5fget_mpi_atomicity_f</CODE>
+</P>
+</TD>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1207283"></A>Retrieves the atomicity mode in use. </P>
+</TD>
+</TR>
+<TR>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1207285"></A><CODE CLASS="Code">
+H5Fget_name</CODE>
+</P>
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1207395"></A><CODE CLASS="Code">
+h5fget_name_f</CODE>
+</P>
+</TD>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1207287"></A>Retrieves the name of the file to which the object belongs.</P>
+</TD>
+</TR>
+<TR>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1207289"></A><CODE CLASS="Code">
+H5Fget_obj_count</CODE>
+</P>
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1207397"></A><CODE CLASS="Code">
+h5fget_obj_count_f</CODE>
+</P>
+</TD>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1207291"></A>Returns the number of open object identifiers for an open file.</P>
+</TD>
+</TR>
+<TR>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1207293"></A><CODE CLASS="Code">
+H5Fget_obj_ids</CODE>
+</P>
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1207399"></A><CODE CLASS="Code">
+h5fget_obj_ids_f</CODE>
+</P>
+</TD>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1207295"></A>Returns a list of open object identifiers.</P>
+</TD>
+</TR>
+<TR>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1207297"></A><CODE CLASS="Code">
+H5Fget_vfd_handle</CODE>
+</P>
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1207401"></A>(none)</P>
+</TD>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1207299"></A>Returns pointer to the file handle from the virtual file driver.</P>
+</TD>
+</TR>
+<TR>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1207301"></A><CODE CLASS="Code">
+H5Fis_hdf5</CODE>
+</P>
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1207403"></A><CODE CLASS="Code">
+h5fis_hdf5_f</CODE>
+</P>
+</TD>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1207303"></A>Determines whether a file is in the HDF5 format.</P>
+</TD>
+</TR>
+<TR>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1207305"></A><CODE CLASS="Code">
+H5Fmount</CODE>
+</P>
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1207405"></A><CODE CLASS="Code">
+h5fmount_f</CODE>
+</P>
+</TD>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1207307"></A>Mounts a file.</P>
+</TD>
+</TR>
+<TR>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1207309"></A><CODE CLASS="Code">
+H5Fopen</CODE>
+</P>
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1207407"></A><CODE CLASS="Code">
+h5fopen_f</CODE>
+</P>
+</TD>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1207311"></A>Opens existing HDF5 file.</P>
+</TD>
+</TR>
+<TR>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1207313"></A><CODE CLASS="Code">
+H5Freopen</CODE>
+</P>
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1207409"></A><CODE CLASS="Code">
+h5freopen_f</CODE>
+</P>
+</TD>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1207315"></A>Returns a new identifier for a previously-opened HDF5 file.</P>
+</TD>
+</TR>
+<TR>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1207317"></A><CODE CLASS="Code">
+H5Freset_mdc_hit_rate_stats</CODE>
+</P>
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1207411"></A>(none) </P>
+</TD>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1207319"></A>Reset hit rate statistics counters for the target file.</P>
+</TD>
+</TR>
+<TR>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1207321"></A><CODE CLASS="Code">
+H5Fset_mdc_config</CODE>
+</P>
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1207413"></A>(none)</P>
+</TD>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1207323"></A>Use to configure metadata cache of target file. </P>
+</TD>
+</TR>
+<TR>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1207325"></A><CODE CLASS="Code">
+H5Fset_mpi_atomicity</CODE>
+</P>
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1207415"></A><CODE CLASS="Code">
+h5fset_mpi_atomicity_f</CODE>
+</P>
+</TD>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1207327"></A>Use to set the MPI atomicity mode. </P>
+</TD>
+</TR>
+<TR>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1207329"></A><CODE CLASS="Code">
+H5Funmount</CODE>
+</P>
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1207417"></A><CODE CLASS="Code">
+h5funmount_f</CODE>
+</P>
+</TD>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1207331"></A>Unmounts a file.</P>
+</TD>
+</TR>
+</TABLE>
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1207475"></A>&nbsp;</P>
+<TABLE BORDER="1">
+<CAPTION>
+<H6 CLASS="FM-CaptionFunctionListing">
+<A NAME="50475009_pgfId-1207478"></A>Function Listing 3-3. File creation property list functions (H5P)</H6>
+</CAPTION>
+<TR>
+<TH ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-Heading-Cell">
+<A NAME="50475009_pgfId-1207482"></A>C Function</P>
+<P CLASS="FM-Heading-Cell">
+<A NAME="50475009_pgfId-1207564"></A>Fortran Function</P>
+</TH>
+<TH ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-Heading-Cell">
+<A NAME="50475009_pgfId-1207484"></A>Purpose</P>
+</TH>
+</TR>
+<TR>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1207486"></A><CODE CLASS="Code">
+H5Pset/get_userblock</CODE>
+</P>
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1207566"></A><CODE CLASS="Code">
+h5pset/get_userblock_f</CODE>
+</P>
+</TD>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1207488"></A>Sets/retrieves size of user-block.</P>
+</TD>
+</TR>
+<TR>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1207490"></A><CODE CLASS="Code">
+H5Pset/get_sizes</CODE>
+</P>
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1207568"></A><CODE CLASS="Code">
+h5pset/get_sizes_f</CODE>
+</P>
+</TD>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1207492"></A>Sets/retrieves byte size of offsets and lengths used to address objects in HDF5 file.</P>
+</TD>
+</TR>
+<TR>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1207494"></A><CODE CLASS="Code">
+H5Pset/get_sym_k</CODE>
+</P>
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1207570"></A><CODE CLASS="Code">
+h5pset/get_sym_k_f</CODE>
+</P>
+</TD>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1207496"></A>Sets/retrieves size of parameters used to control symbol table nodes.</P>
+</TD>
+</TR>
+<TR>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1207498"></A><CODE CLASS="Code">
+H5Pset/get_istore_k</CODE>
+</P>
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1207572"></A><CODE CLASS="Code">
+h5pset/get_istore_k_f</CODE>
+</P>
+</TD>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1207500"></A>Sets/retrieves size of parameter used to control B-trees for indexing chunked datasets.</P>
+</TD>
+</TR>
+<TR>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1207502"></A><CODE CLASS="Code">
+H5Pget_file_image</CODE>
+</P>
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1207574"></A><CODE CLASS="Code">
+h5pget_file_image_f</CODE>
+</P>
+</TD>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1207504"></A>Retrieves a copy of the file image designated as the initial content and structure of a file. </P>
+</TD>
+</TR>
+<TR>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1207506"></A><CODE CLASS="Code">
+H5Pset_file_image</CODE>
+</P>
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1207576"></A><CODE CLASS="Code">
+h5pset_file_image_f</CODE>
+</P>
+</TD>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1207508"></A>Sets an initial file image in a memory buffer.</P>
+</TD>
+</TR>
+<TR>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1207510"></A><CODE CLASS="Code">
+H5Pset_shared_mesg_nindexes</CODE>
+</P>
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1207578"></A><CODE CLASS="Code">
+h5pset_shared_mesg_nindexes_f</CODE>
+</P>
+</TD>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1207512"></A>Sets number of shared object header message indexes.</P>
+</TD>
+</TR>
+<TR>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1207514"></A><CODE CLASS="Code">
+H5Pget_shared_mesg_nindexes</CODE>
+</P>
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1207580"></A>(none)</P>
+</TD>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1207516"></A>Retrieves number of shared object header message indexes in file creation property list.</P>
+</TD>
+</TR>
+<TR>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1207518"></A><CODE CLASS="Code">
+H5Pset_shared_mesg_index</CODE>
+</P>
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1207582"></A><CODE CLASS="Code">
+h5pset_shared_mesg_index_f</CODE>
+</P>
+</TD>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1207520"></A>Configures the specified shared object header message index.</P>
+</TD>
+</TR>
+<TR>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1207522"></A><CODE CLASS="Code">
+H5Pget_shared_mesg_index</CODE>
+</P>
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1207584"></A>(none)</P>
+</TD>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1207524"></A>Retrieves the configuration settings for a shared message index.</P>
+</TD>
+</TR>
+<TR>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1207526"></A><CODE CLASS="Code">
+H5Pset_shared_mesg_phase_change</CODE>
+</P>
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1207586"></A>(none)</P>
+</TD>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1207528"></A>Sets shared object header message storage phase change thresholds. </P>
+</TD>
+</TR>
+<TR>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1207530"></A><CODE CLASS="Code">
+H5Pget_shared_mesg_phase_change</CODE>
+</P>
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1207588"></A>(none)</P>
+</TD>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1207532"></A>Retrieves shared object header message phase change information. </P>
+</TD>
+</TR>
+<TR>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1207534"></A><CODE CLASS="Code">
+H5Pget_version</CODE>
+</P>
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1207590"></A><CODE CLASS="Code">
+h5pget_version_f</CODE>
+</P>
+</TD>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1207536"></A>Retrieves version information for various objects for file creation property list.</P>
+</TD>
+</TR>
+</TABLE>
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1207609"></A>&nbsp;</P>
+<TABLE BORDER="1">
+<CAPTION>
+<H6 CLASS="FM-CaptionFunctionListing">
+<A NAME="50475009_pgfId-1207612"></A>Function Listing 3-4. File access property list functions (H5P)</H6>
+</CAPTION>
+<TR>
+<TH ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-Heading-Cell">
+<A NAME="50475009_pgfId-1207616"></A>C Function</P>
+<P CLASS="FM-Heading-Cell">
+<A NAME="50475009_pgfId-1207706"></A>Fortran Function</P>
+</TH>
+<TH ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-Heading-Cell">
+<A NAME="50475009_pgfId-1207618"></A>Purpose</P>
+</TH>
+</TR>
+<TR>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1207620"></A><CODE CLASS="Code">
+H5Pset/get_alignment</CODE>
+</P>
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1207708"></A><CODE CLASS="Code">
+h5pset/get_alignment_f</CODE>
+</P>
+</TD>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1207622"></A>Sets/retrieves alignment properties.</P>
+</TD>
+</TR>
+<TR>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1207624"></A><CODE CLASS="Code">
+H5Pset/get_cache</CODE>
+</P>
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1207710"></A><CODE CLASS="Code">
+h5pset/get_cache_f</CODE>
+</P>
+</TD>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1207626"></A>Sets/retrieves metadata cache and raw data chunk cache parameters.</P>
+</TD>
+</TR>
+<TR>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1207628"></A><CODE CLASS="Code">
+H5Pset/get_elink_file_cache_size</CODE>
+</P>
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1207712"></A>(none)</P>
+</TD>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1207630"></A>Sets/retrieves the size of the external link open file cache from the specified file access property list.</P>
+</TD>
+</TR>
+<TR>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1207632"></A><CODE CLASS="Code">
+H5Pset/get_fclose_degree</CODE>
+</P>
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1207714"></A><CODE CLASS="Code">
+h5pset/get_fclose_degree_f</CODE>
+</P>
+</TD>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1207634"></A>Sets/retrieves file close degree property.</P>
+</TD>
+</TR>
+<TR>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1207636"></A><CODE CLASS="Code">
+H5Pset/get_gc_references</CODE>
+</P>
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1207716"></A><CODE CLASS="Code">
+h5pset/get_gc_references_f</CODE>
+</P>
+</TD>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1207638"></A>Sets/retrieves garbage collecting references flag.</P>
+</TD>
+</TR>
+<TR>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1207640"></A><CODE CLASS="Code">
+H5Pset_family_offset</CODE>
+</P>
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1207718"></A><CODE CLASS="Code">
+h5pset_family_offset_f</CODE>
+</P>
+</TD>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1207642"></A>Sets offset property for low-level access to a file in a family of files.</P>
+</TD>
+</TR>
+<TR>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1207644"></A><CODE CLASS="Code">
+H5Pget_family_offset</CODE>
+</P>
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1207720"></A>(none)</P>
+</TD>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1207646"></A>Retrieves a data offset from the file access property list.</P>
+</TD>
+</TR>
+<TR>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1207648"></A><CODE CLASS="Code">
+H5Pset/get_meta_block_size</CODE>
+</P>
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1207722"></A><CODE CLASS="Code">
+h5pset/get_meta_block_size_f</CODE>
+</P>
+</TD>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1207650"></A>Sets the minimum metadata block size or retrieves the current metadata block size setting.</P>
+</TD>
+</TR>
+<TR>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1207652"></A><CODE CLASS="Code">
+H5Pset_mdc_config</CODE>
+</P>
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1207724"></A>(none)</P>
+</TD>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1207654"></A>Set the initial metadata cache configuration in the indicated File Access Property List to the supplied value.</P>
+</TD>
+</TR>
+<TR>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1207656"></A><CODE CLASS="Code">
+H5Pget_mdc_config</CODE>
+</P>
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1207726"></A>(none)</P>
+</TD>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1207658"></A>Get the current initial metadata cache configuration from the indicated File Access Property List.</P>
+</TD>
+</TR>
+<TR>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1207660"></A><CODE CLASS="Code">
+H5Pset/get_sieve_buf_size</CODE>
+</P>
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1207728"></A><CODE CLASS="Code">
+h5pset/get_sieve_buf_size_f</CODE>
+</P>
+</TD>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1207662"></A>Sets/retrieves maximum size of data sieve buffer.</P>
+</TD>
+</TR>
+<TR>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1207664"></A><CODE CLASS="Code">
+H5Pset_libver_bounds</CODE>
+</P>
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1207730"></A><CODE CLASS="Code">
+h5pset_libver_bounds_f</CODE>
+</P>
+</TD>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1207666"></A>Sets bounds on library versions, and indirectly format versions, to be used when creating objects.</P>
+</TD>
+</TR>
+<TR>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1207668"></A><CODE CLASS="Code">
+H5Pget_libver_bounds</CODE>
+</P>
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1207732"></A>(none) </P>
+</TD>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1207670"></A>Retrieves library version bounds settings that indirectly control the format versions used when creating objects.</P>
+</TD>
+</TR>
+<TR>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1207672"></A><CODE CLASS="Code">
+H5Pset_small_data_block_size</CODE>
+</P>
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1207734"></A><CODE CLASS="Code">
+h5pset_small_data_block_size_f</CODE>
+</P>
+</TD>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1207674"></A>Sets the size of a contiguous block reserved for small data.</P>
+</TD>
+</TR>
+<TR>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1207676"></A><CODE CLASS="Code">
+H5Pget_small_data_block_size</CODE>
+</P>
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1207736"></A><CODE CLASS="Code">
+h5pget_small_data_block_size_f</CODE>
+</P>
+</TD>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1207678"></A>Retrieves the current small data block size setting.</P>
+</TD>
+</TR>
+</TABLE>
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1207778"></A>&nbsp;</P>
+<TABLE BORDER="1">
+<CAPTION>
+<H6 CLASS="FM-CaptionFunctionListing">
+<A NAME="50475009_pgfId-1207785"></A>Function Listing 3-5. File driver functions (H5P)</H6>
+</CAPTION>
+<TR>
+<TH ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-Heading-Cell">
+<A NAME="50475009_pgfId-1207789"></A>C Function</P>
+<P CLASS="FM-Heading-Cell">
+<A NAME="50475009_pgfId-1207891"></A>Fortran Function</P>
+</TH>
+<TH ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-Heading-Cell">
+<A NAME="50475009_pgfId-1207791"></A> Purpose</P>
+</TH>
+</TR>
+<TR>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1207793"></A><CODE CLASS="Code">
+H5Pset_driver</CODE>
+</P>
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1207893"></A>(none)</P>
+</TD>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1207795"></A>Sets a file driver.</P>
+</TD>
+</TR>
+<TR>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1207797"></A><CODE CLASS="Code">
+H5Pget_driver</CODE>
+</P>
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1207895"></A><CODE CLASS="Code">
+h5pget_driver_f</CODE>
+</P>
+</TD>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1207799"></A>Returns the identifier for the driver used to create a file.</P>
+</TD>
+</TR>
+<TR>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1207801"></A><CODE CLASS="Code">
+H5Pget_driver_info</CODE>
+</P>
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1207897"></A>(none)</P>
+</TD>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1207803"></A>Returns a pointer to file driver information.</P>
+</TD>
+</TR>
+<TR>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1207805"></A><CODE CLASS="Code">
+H5Pset/get_fapl_core</CODE>
+</P>
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1207899"></A><CODE CLASS="Code">
+h5pset/get_fapl_core_f</CODE>
+</P>
+</TD>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1207807"></A>Sets driver for buffered memory files (i.e., in RAM) or retrieves information regarding driver.</P>
+</TD>
+</TR>
+<TR>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1207809"></A><CODE CLASS="Code">
+H5Pset_fapl_direct</CODE>
+</P>
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1207901"></A><CODE CLASS="Code">
+h5pset_fapl_direct_f</CODE>
+</P>
+</TD>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1207811"></A>Sets up use of the direct I/O driver.</P>
+</TD>
+</TR>
+<TR>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1207813"></A><CODE CLASS="Code">
+H5Pget_fapl_direct</CODE>
+</P>
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1207903"></A><CODE CLASS="Code">
+h5pget_fapl_direct_f</CODE>
+</P>
+</TD>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1207815"></A>Retrieves direct I/O driver settings.</P>
+</TD>
+</TR>
+<TR>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1207817"></A><CODE CLASS="Code">
+H5Pset/get_fapl_family</CODE>
+</P>
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1207905"></A><CODE CLASS="Code">
+h5pset/get_fapl_family_f</CODE>
+</P>
+</TD>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1207819"></A>Sets driver for file families, designed for systems that do not support files larger than 2 gigabytes, or retrieves information regarding driver.</P>
+</TD>
+</TR>
+<TR>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1207821"></A><CODE CLASS="Code">
+H5Pset_fapl_log</CODE>
+</P>
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1207907"></A>(none)</P>
+</TD>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1207823"></A>Sets logging driver.</P>
+</TD>
+</TR>
+<TR>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1207825"></A><CODE CLASS="Code">
+H5Pset/get_fapl_mpio</CODE>
+</P>
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1207909"></A><CODE CLASS="Code">
+h5pset/get_fapl_mpio_f</CODE>
+</P>
+</TD>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1207827"></A>Sets driver for files on parallel file systems (MPI I/O) or retrieves information regarding the driver.</P>
+</TD>
+</TR>
+<TR>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1207829"></A><CODE CLASS="Code">
+H5Pset_fapl_mpiposix</CODE>
+</P>
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1207911"></A><CODE CLASS="Code">
+h5pset_fapl_mpiposix_f</CODE>
+</P>
+</TD>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1207831"></A>No longer available.</P>
+</TD>
+</TR>
+<TR>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1207833"></A><CODE CLASS="Code">
+H5Pget_fapl_mpiposix</CODE>
+</P>
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1207913"></A><CODE CLASS="Code">
+h5pget_fapl_mpiposix_f</CODE>
+</P>
+</TD>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1207835"></A>No longer available.</P>
+</TD>
+</TR>
+<TR>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1207837"></A><CODE CLASS="Code">
+H5Pset/get_fapl_multi</CODE>
+</P>
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1207915"></A><CODE CLASS="Code">
+h5pset/get_fapl_multi_f</CODE>
+</P>
+</TD>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1207839"></A>Sets driver for multiple files, separating categories of metadata and raw data, or retrieves information regarding driver.</P>
+</TD>
+</TR>
+<TR>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1207841"></A><CODE CLASS="Code">
+H5Pset_fapl_sec2</CODE>
+</P>
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1207917"></A><CODE CLASS="Code">
+h5pset_fapl_sec2_f</CODE>
+</P>
+</TD>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1207843"></A>Sets driver for unbuffered permanent files or retrieves information regarding driver.</P>
+</TD>
+</TR>
+<TR>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1207845"></A><CODE CLASS="Code">
+H5Pset_fapl_split</CODE>
+</P>
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1207919"></A><CODE CLASS="Code">
+h5pset_fapl_split_f</CODE>
+</P>
+</TD>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1207847"></A>Sets driver for split files, a limited case of multiple files with one metadata file and one raw data file.</P>
+</TD>
+</TR>
+<TR>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1207849"></A><CODE CLASS="Code">
+H5Pset_fapl_stdio</CODE>
+</P>
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1207921"></A><CODE CLASS="Code">
+H5Pset_fapl_stdio_f</CODE>
+</P>
+</TD>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1207851"></A>Sets driver for buffered permanent files.</P>
+</TD>
+</TR>
+<TR>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1207853"></A><CODE CLASS="Code">
+H5Pset_fapl_windows</CODE>
+</P>
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1207923"></A>(none)</P>
+</TD>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1207855"></A>Sets the Windows I/O driver.</P>
+</TD>
+</TR>
+<TR>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1207857"></A><CODE CLASS="Code">
+H5Pset_multi_type</CODE>
+</P>
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1207925"></A>(none)</P>
+</TD>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1207859"></A>Specifies type of data to be accessed via the MULTI driver enabling more direct access.</P>
+</TD>
+</TR>
+<TR>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1207861"></A><CODE CLASS="Code">
+H5Pget_multi_type</CODE>
+</P>
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1207927"></A>(none)</P>
+</TD>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1207863"></A>Retrieves type of data property for MULTI driver.</P>
+</TD>
+</TR>
+</TABLE>
+</DIV>
+<DIV>
+<H2 CLASS="FM-Heading-Level2">
+<A NAME="50475009_pgfId-1183026"></A>3.5. <A NAME="50475009_CrOpen"></A>Creating or Opening an HDF5 File</H2>
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1183034"></A>This section describes in more detail how to create and how to open files. </P>
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1183037"></A>New HDF5 files are created and opened with <CODE CLASS="Code">
+H5Fcreate</CODE>
+; existing files are opened with <CODE CLASS="Code">
+H5Fopen</CODE>
+. Both functions return an object identifier which must eventually be released by calling <CODE CLASS="Code">
+H5Fclose</CODE>
+.</P>
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1183043"></A><STRONG CLASS="EH-EmphasisHeavy">
+To create a new file</STRONG>
+, call <CODE CLASS="Code">
+H5Fcreate</CODE>
+:</P>
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1183048"></A>hid_t H5Fcreate (const char *<EM CLASS="CodeItalic">
+name</EM>
+, unsigned <EM CLASS="CodeItalic">
+flags</EM>
+, hid_t <EM CLASS="CodeItalic">
+fcpl_id</EM>
+, </P>
+<P CLASS="FM-BodyCodeIndent">
+<A NAME="50475009_pgfId-1200534"></A>hid_t <EM CLASS="CodeItalic">
+fapl_id</EM>
+)</P>
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1183056"></A><CODE CLASS="Code">
+H5Fcreate</CODE>
+ creates a new file named <EM CLASS="CodeItalic">
+name</EM>
+ in the current directory. The file is opened with read and write access; if the <CODE CLASS="Code">
+H5F_ACC_TRUNC</CODE>
+ flag is set, any pre-existing file of the same name in the same directory is truncated. If <CODE CLASS="Code">
+H5F_ACC_TRUNC</CODE>
+ is not set or <CODE CLASS="Code">
+H5F_ACC_EXCL</CODE>
+ is set and if a file of the same name exists, <CODE CLASS="Code">
+H5Fcreate</CODE>
+ will fail. </P>
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1183065"></A>The new file is created with the properties specified in the property lists <EM CLASS="CodeItalic">
+fcpl_id</EM>
+ and <EM CLASS="CodeItalic">
+fapl_id</EM>
+. <CODE CLASS="Code">
+fcpl</CODE>
+ is short for file creation property list. <CODE CLASS="Code">
+fapl</CODE>
+ is short for file access property list. Specifying <CODE CLASS="Code">
+H5P_DEFAULT</CODE>
+ for either the creation or access property list calls for the library’s default creation or access properties.</P>
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1183076"></A>If <CODE CLASS="Code">
+H5Fcreate</CODE>
+ successfully creates the file, it returns a file identifier for the new file. This identifier will be used by the application any time an object identifier, an OID, for the file is required. Once the application has finished working with a file, the identifier should be released and the file closed with <CODE CLASS="Code">
+H5Fclose</CODE>
+. </P>
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1183085"></A><STRONG CLASS="EH-EmphasisHeavy">
+To open an existing file</STRONG>
+, call <CODE CLASS="Code">
+H5Fopen</CODE>
+:</P>
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1183090"></A>hid_t H5Fopen (const char *<EM CLASS="CodeItalic">
+name</EM>
+, unsigned <EM CLASS="CodeItalic">
+flags</EM>
+, hid_t <EM CLASS="CodeItalic">
+fapl_id</EM>
+) </P>
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1183094"></A><CODE CLASS="Code">
+H5Fopen</CODE>
+ opens an existing file with read-write access if <CODE CLASS="Code">
+H5F_ACC_RDWR</CODE>
+ is set and read-only access if <CODE CLASS="Code">
+H5F_ACC_RDONLY</CODE>
+ is set. </P>
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1183098"></A><EM CLASS="CodeItalic">
+fapl_id</EM>
+ is the file access property list identifier. Alternatively, <CODE CLASS="Code">
+H5P_DEFAULT</CODE>
+ indicates that the application relies on the default I/O access parameters. Creating and changing access property lists is documented further below. </P>
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1183103"></A>A file can be opened more than once via multiple <CODE CLASS="Code">
+H5Fopen</CODE>
+ calls. Each such call returns a unique file identifier and the file can be accessed through any of these file identifiers as long as they remain valid. Each of these file identifiers must be released by calling <CODE CLASS="Code">
+H5Fclose</CODE>
+ when it is no longer needed. </P>
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1315606"></A><A HREF="HDF5_Users_Guide-4.htm#50475009_FileAccessModes" CLASS="XRef">For more information, see File Access Modes. </A></P>
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1183071"></A><A HREF="HDF5_Users_Guide-4.htm#50475009_PLists" CLASS="XRef">For more information, see File Property Lists. </A> </P>
+</DIV>
+<DIV>
+<H2 CLASS="FM-Heading-Level2">
+<A NAME="50475009_pgfId-1183124"></A>3.6. <A NAME="50475009_Close"></A>Closing an HDF5 File</H2>
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1183127"></A><CODE CLASS="Code">
+H5Fclose</CODE>
+ both closes a file and releases the file identifier returned by <CODE CLASS="Code">
+H5Fopen</CODE>
+ or <CODE CLASS="Code">
+H5Fcreate</CODE>
+. <CODE CLASS="Code">
+H5Fclose</CODE>
+ must be called when an application is done working with a file; while the HDF5 Library makes every effort to maintain file integrity, failure to call <CODE CLASS="Code">
+H5Fclose</CODE>
+ may result in the file being abandoned in an incomplete or corrupted state. </P>
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1183136"></A><STRONG CLASS="EH-EmphasisHeavy">
+To close a file</STRONG>
+, call <CODE CLASS="Code">
+H5Fclose</CODE>
+:</P>
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1183141"></A>herr_t H5Fclose (hid_t <EM CLASS="CodeItalic">
+file_id</EM>
+)</P>
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1183144"></A>This function releases resources associated with an open file. After closing a file, the file identifier, <EM CLASS="CodeItalic">
+file_id</EM>
+, cannot be used again as it will be undefined.</P>
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1183149"></A><CODE CLASS="Code">
+H5Fclose</CODE>
+ fulfills three purposes: to ensure that the file is left in an uncorrupted state, to ensure that all data has been written to the file, and to release resources. Use <EM CLASS="LT-LinkText">
+<A HREF="http://www.hdfgroup.org/HDF5/doc/RM/RM_H5F.html#File-Flush" CLASS="URL">H5Fflush</A></EM>
+ if you wish to ensure that all data has been written to the file but it is premature to close it.</P>
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1183157"></A><EM CLASS="EI-EmphasisItalic">
+Note regarding serial mode behavior:</EM>
+ When <CODE CLASS="Code">
+H5Fclose</CODE>
+ is called in serial mode, it closes the file and terminates new access to it, but it does not terminate access to objects that remain individually open within the file. That is, if <CODE CLASS="Code">
+H5Fclose</CODE>
+ is called for a file but one or more objects within the file remain open, those objects will remain accessible until they are individually closed. To illustrate, assume that a file, <CODE CLASS="Code">
+fileA</CODE>
+, contains a dataset, <CODE CLASS="Code">
+data_setA</CODE>
+, and that both are open when <CODE CLASS="Code">
+H5Fclose</CODE>
+ is called for <CODE CLASS="Code">
+fileA</CODE>
+. <CODE CLASS="Code">
+data_setA</CODE>
+ will remain open and accessible, including writable, until it is explicitly closed. The file will be automatically and finally closed once all objects within it have been closed.</P>
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1183173"></A><EM CLASS="EI-EmphasisItalic">
+Note regarding parallel mode behavior: </EM>
+Once <CODE CLASS="Code">
+H5Fclose</CODE>
+ has been called in parallel mode, access is no longer available to any object within the file.</P>
+</DIV>
+<DIV>
+<H2 CLASS="FM-Heading-Level2">
+<A NAME="50475009_pgfId-1183192"></A>3.7. <A NAME="50475009_PLists"></A>File Property Lists</H2>
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1183195"></A>Additional information regarding file structure and access are passed to <CODE CLASS="Code">
+H5Fcreate</CODE>
+ and <CODE CLASS="Code">
+H5Fopen</CODE>
+ through property list objects. Property lists provide a portable and extensible method of modifying file properties via simple API functions. There are two kinds of file-related property lists: </P>
+<UL>
+<LI CLASS="FM-ListBullets-Level1">
+<A NAME="50475009_pgfId-1183202"></A>•	File creation property lists</LI>
+<LI CLASS="FM-ListBullets-Level1">
+<A NAME="50475009_pgfId-1183203"></A>•	File access property lists</LI>
+</UL>
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1183206"></A>In the following sub-sections, we discuss only one file creation property, user-block size, in detail as a model for the user. Other file creation and file access properties are mentioned and defined briefly, but the model is not expanded for each; complete syntax, parameter, and usage information for every property list function is provided in the &quot;<EM CLASS="LT-LinkText">
+<A HREF="http://www.hdfgroup.org/HDF5/doc/RM/RM_H5P.html" CLASS="URL">H5P: Property List Interface</A></EM>
+&quot; section of the <EM CLASS="LT-LinkText">
+<A HREF="http://www.hdfgroup.org/HDF5/doc/RM/RM_H5Front.html" CLASS="URL">HDF5 Reference Manual</A></EM>
+. <A HREF="HDF5_Users_Guide-11.htm#50475012_PropertyListsChapter" CLASS="XRef">For more information, see Properties and Property Lists in HDF5. </A></P>
+<DIV>
+<H3 CLASS="FM-Heading-Level3">
+<A NAME="50475009_pgfId-1183227"></A>3.7.1. Creating a Property List</H3>
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1183230"></A>If you do not wish to rely on the default file creation and access properties, you must first create a property list with <CODE CLASS="Code">
+H5Pcreate</CODE>
+.</P>
+<P CLASS="FM-BodyCodeIndent">
+<A NAME="50475009_pgfId-1183235"></A>hid_t H5Pcreate (hid_t <EM CLASS="CodeItalic">
+cls_id</EM>
+)</P>
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1183238"></A><EM CLASS="CodeItalic">
+type</EM>
+ is the type of property list being created. In this case, the appropriate values are <CODE CLASS="Code">
+H5P_FILE_CREATE</CODE>
+ for a file creation property list and <CODE CLASS="Code">
+H5P_FILE_ACCESS</CODE>
+ for a file access property list.</P>
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1183244"></A>Thus, the following calls create a file creation property list and a file access property list with identifiers <EM CLASS="CodeItalic">
+fcpl_id</EM>
+ and <EM CLASS="CodeItalic">
+fapl_id</EM>
+, respectively:</P>
+<P CLASS="FM-BodyCodeIndent">
+<A NAME="50475009_pgfId-1183248"></A>fcpl_id = H5Pcreate (H5P_FILE_CREATE) </P>
+<P CLASS="FM-BodyCodeIndent">
+<A NAME="50475009_pgfId-1183249"></A>fapl_id = H5Pcreate (H5P_FILE_ACCESS) </P>
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1183252"></A>Once the property lists have been created, the properties themselves can be modified via the functions described in the following sub-sections.</P>
+</DIV>
+<DIV>
+<H3 CLASS="FM-Heading-Level3">
+<A NAME="50475009_pgfId-1183260"></A>3.7.2. <A NAME="50475009_FileCreationProperties"></A>File Creation Properties</H3>
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1183263"></A>File creation property lists control the file metadata, which is maintained in the superblock of the file. These properties are used only when a file is first created.</P>
+<DIV>
+<H4 CLASS="FM-Heading-SubSection">
+<A NAME="50475009_pgfId-1183267"></A>User-block Size</H4>
+<P CLASS="FM-BodyCodeIndent">
+<A NAME="50475009_pgfId-1183270"></A>herr_t H5Pset_userblock (hid_t <EM CLASS="CodeItalic">
+plist</EM>
+, hsize_t <EM CLASS="CodeItalic">
+size</EM>
+)</P>
+<P CLASS="FM-BodyCodeIndent">
+<A NAME="50475009_pgfId-1183274"></A>herr_t H5Pget_userblock (hid_t <EM CLASS="CodeItalic">
+plist</EM>
+, hsize_t *<EM CLASS="CodeItalic">
+size</EM>
+)</P>
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1183277"></A>The <EM CLASS="EI-EmphasisItalic">
+user-block</EM>
+ is a fixed-length block of data located at the beginning of the file and is ignored by the HDF5 Library. This block is specifically set aside for any data or information that developers determine to be useful to their applications but that will not be used by the HDF5 Library. The <EM CLASS="CodeItalic">
+size</EM>
+ of the user-block is defined in bytes and may be set to any power of two with a minimum size of 512 bytes. In other words, user-blocks might be 512, 1024, or 2048 bytes in size. </P>
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1183287"></A>This property is set with <CODE CLASS="Code">
+H5Pset_userblock</CODE>
+ and queried via <CODE CLASS="Code">
+H5Pget_userblock</CODE>
+. For example, if an application needed a 4K user-block, then the following function call could be used:</P>
+<P CLASS="FM-BodyCodeIndent">
+<A NAME="50475009_pgfId-1183293"></A>status = H5Pset_userblock(fcpl_id, 4096)</P>
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1183295"></A>The property list could later be queried with </P>
+<P CLASS="FM-BodyCodeIndent">
+<A NAME="50475009_pgfId-1183298"></A>status = H5Pget_userblock(fcpl_id, size)</P>
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1183300"></A>and the value <CODE CLASS="Code">
+4096</CODE>
+ would be returned in the parameter <EM CLASS="CodeItalic">
+size</EM>
+.</P>
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1183303"></A>Other properties, described below, are set and queried in exactly the same manner. Syntax and usage are detailed in the &quot;<EM CLASS="LT-LinkText">
+<A HREF="http://www.hdfgroup.org/HDF5/doc/RM/RM_H5P.html" CLASS="URL">H5P: Property List Interface</A></EM>
+&quot; section of the <EM CLASS="LT-LinkText">
+<A HREF="http://www.hdfgroup.org/HDF5/doc/RM/RM_H5Front.html" CLASS="URL">HDF5 Reference Manual</A></EM>
+.</P>
+</DIV>
+<DIV>
+<H4 CLASS="FM-Heading-SubSection">
+<A NAME="50475009_pgfId-1183314"></A>Offset and Length Sizes</H4>
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1183316"></A>This property specifies the number of bytes used to store the offset and length of objects in the HDF5 file. Values of 2, 4, and 8 bytes are currently supported to accommodate 16-bit, 32-bit, and 64-bit file address spaces. </P>
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1183321"></A>These properties are set and queried via <CODE CLASS="Code">
+H5Pset_sizes</CODE>
+ and <CODE CLASS="Code">
+H5Pget_sizes</CODE>
+. </P>
+</DIV>
+<DIV>
+<H4 CLASS="FM-Heading-SubSection">
+<A NAME="50475009_pgfId-1183325"></A>Symbol Table Parameters</H4>
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1183328"></A>The size of symbol table B-trees can be controlled by setting the 1/2-rank and 1/2-node size parameters of the B-tree. </P>
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1183331"></A>These properties are set and queried via <CODE CLASS="Code">
+H5Pset_sym_k</CODE>
+ and <CODE CLASS="Code">
+H5Pget_sym_k</CODE>
+. </P>
+</DIV>
+<DIV>
+<H4 CLASS="FM-Heading-SubSection">
+<A NAME="50475009_pgfId-1183334"></A>Indexed Storage Parameters</H4>
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1183337"></A>The size of indexed storage B-trees can be controlled by setting the 1/2-rank and 1/2-node size parameters of the B-tree. </P>
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1183340"></A>These properties are set and queried via <CODE CLASS="Code">
+H5Pset_istore_k</CODE>
+ and <CODE CLASS="Code">
+H5Pget_istore_k</CODE>
+. </P>
+</DIV>
+<DIV>
+<H4 CLASS="FM-Heading-SubSection">
+<A NAME="50475009_pgfId-1183343"></A>Version Information</H4>
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1183345"></A>Various objects in an HDF5 file may over time appear in different versions. The HDF5 Library keeps track of the version of each object in the file. </P>
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1183349"></A>Version information is retrieved via <CODE CLASS="Code">
+H5Pget_version</CODE>
+.</P>
+</DIV>
+</DIV>
+<DIV>
+<H3 CLASS="FM-Heading-Level3">
+<A NAME="50475009_pgfId-1183356"></A>3.7.3. <A NAME="50475009_FileAccessProperties"></A>File Access Properties</H3>
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1183359"></A>This section discusses file access properties that are not related to the low-level file drivers. File drivers are discussed separately later in this chapter. <A HREF="HDF5_Users_Guide-4.htm#50475009_Drivers" CLASS="XRef">For more information, see Alternate File Storage Layouts and Low-level File Drivers. </A></P>
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1183365"></A>File access property lists control various aspects of file I/O and structure. </P>
+<DIV>
+<H4 CLASS="FM-Heading-SubSection">
+<A NAME="50475009_pgfId-1183370"></A>Data Alignment</H4>
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1183372"></A>Sometimes file access is faster if certain data elements are aligned in a specific manner. This can be controlled by setting alignment properties via the <CODE CLASS="Code">
+H5Pset_alignment</CODE>
+ function. There are two values involved:</P>
+<UL>
+<LI CLASS="FM-ListBullets-Level1">
+<A NAME="50475009_pgfId-1183377"></A>•	A threshhold value</LI>
+<LI CLASS="FM-ListBullets-Level1">
+<A NAME="50475009_pgfId-1183378"></A>•	An alignment interval</LI>
+</UL>
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1183380"></A>Any allocation request at least as large as the threshold will be aligned on an address that is a multiple of the alignment interval. </P>
+</DIV>
+<DIV>
+<H4 CLASS="FM-Heading-SubSection">
+<A NAME="50475009_pgfId-1183383"></A>Metadata Block Allocation Size</H4>
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1183385"></A>Metadata typically exists as very small chunks of data; storing metadata elements in a file without blocking them can result in hundreds or thousands of very small data elements in the file. This can result in a highly fragmented file and seriously impede I/O. By blocking metadata elements, these small elements can be grouped in larger sets, thus alleviating both problems. </P>
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1183392"></A><CODE CLASS="Code">
+H5Pset_meta_block_size</CODE>
+ sets the minimum size in bytes of metadata block allocations. <CODE CLASS="Code">
+H5Pget_meta_block_size</CODE>
+ retrieves the current minimum metadata block allocation size.</P>
+</DIV>
+<DIV>
+<H4 CLASS="FM-Heading-SubSection">
+<A NAME="50475009_pgfId-1183398"></A>Metadata Cache</H4>
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1183400"></A>Metadata and raw data I/O speed are often governed by the size and frequency of disk reads and writes. In many cases, the speed can be substantially improved by the use of an appropriate cache.</P>
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1183404"></A><CODE CLASS="Code">
+H5Pset_cache</CODE>
+ sets the minimum cache size for both metadata and raw data and a preemption value for raw data chunks. <CODE CLASS="Code">
+H5Pget_cache</CODE>
+ retrieves the current values. </P>
+</DIV>
+<DIV>
+<H4 CLASS="FM-Heading-SubSection">
+<A NAME="50475009_pgfId-1183410"></A>Data Sieve Buffer Size</H4>
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1183412"></A>Data sieve buffering is used by certain file drivers to speed data I/O and is most commonly when working with dataset hyperslabs. For example, using a buffer large enough to hold several pieces of a dataset as it is read in for hyperslab selections will boost performance noticeably.</P>
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1183418"></A><CODE CLASS="Code">
+H5Pset_sieve_buf_size</CODE>
+ sets the maximum size in bytes of the data sieve buffer. <CODE CLASS="Code">
+H5Pget_sieve_buf_size</CODE>
+ retrieves the current maximum size of the data sieve buffer. </P>
+</DIV>
+<DIV>
+<H4 CLASS="FM-Heading-SubSection">
+<A NAME="50475009_pgfId-1183425"></A>Garbage Collection References</H4>
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1183427"></A>Dataset region references and other reference types use space in an HDF5 file’s global heap. If garbage collection is on (<CODE CLASS="Code">
+1</CODE>
+) and the user passes in an uninitialized value in a reference structure, the heap might become corrupted. When garbage collection is off (<CODE CLASS="Code">
+0</CODE>
+), however, and the user re-uses a reference, the previous heap block will be orphaned and not returned to the free heap space. When garbage collection is on, the user must initialize the reference structures to <CODE CLASS="Code">
+0</CODE>
+ or risk heap corruption.</P>
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1183438"></A><CODE CLASS="Code">
+H5Pset_gc_references</CODE>
+ sets the garbage collecting references flag. </P>
+</DIV>
+</DIV>
+</DIV>
+<DIV>
+<H2 CLASS="FM-Heading-Level2">
+<A NAME="50475009_pgfId-1183459"></A>3.8. <A NAME="50475009_Drivers"></A>Alternate File Storage Layouts and Low-level File Drivers</H2>
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1183462"></A>The concept of an HDF5 file is actually rather abstract: the address space for what is normally thought of as an HDF5 file might correspond to any of the following:</P>
+<UL>
+<LI CLASS="FM-ListBullets-Level1">
+<A NAME="50475009_pgfId-1183466"></A>•	Single file on standard file system</LI>
+<LI CLASS="FM-ListBullets-Level1">
+<A NAME="50475009_pgfId-1183467"></A>•	 Multiple files on standard file system</LI>
+<LI CLASS="FM-ListBullets-Level1">
+<A NAME="50475009_pgfId-1183468"></A>•	 Multiple files on parallel file system</LI>
+<LI CLASS="FM-ListBullets-Level1">
+<A NAME="50475009_pgfId-1183469"></A>•	 Block of memory within application’s memory space</LI>
+<LI CLASS="FM-ListBullets-Level1">
+<A NAME="50475009_pgfId-1183470"></A>•	 More abstract situations such as virtual files </LI>
+</UL>
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1183475"></A>This HDF5 address space is generally referred to as an <EM CLASS="EI-EmphasisItalic">
+HDF5 file</EM>
+ regardless of its organization at the storage level. </P>
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1183478"></A>HDF5 employs an extremely flexible mechanism called the <EM CLASS="EI-EmphasisItalic">
+virtual file layer</EM>
+, or VFL, for file I/O. A full understanding of the VFL is only necessary if you plan to write your own drivers (see &quot;<EM CLASS="LT-LinkText">
+<A HREF="http://www.hdfgroup.org/HDF5/doc/TechNotes/VFL.html" CLASS="URL">Virtual File Layer</A></EM>
+&quot; and &quot;<EM CLASS="LT-LinkText">
+<A HREF="http://www.hdfgroup.org/HDF5/doc/TechNotes/VFLfunc.html" CLASS="URL">List of VFL Functions</A></EM>
+&quot; in the <EM CLASS="EI-EmphasisItalic">
+HDF5 Technical Notes</EM>
+). For our purposes here, it is sufficient to know that the low-level drivers used for file I/O reside in the VFL, as illustrated in the following figure. Note that <CODE CLASS="Code">
+H5FD_STREAM</CODE>
+ is not available with 1.8.x and later versions of the library.</P>
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1201155"></A>&nbsp;</P>
+<TABLE BORDER="1">
+<CAPTION>
+<H6 CLASS="FM-CaptionFigure">
+<A NAME="50475009_pgfId-1201153"></A>Figure 3-2. I/O path from application to VFL and low-level drivers to storage<DIV>
+<IMG SRC="HDF5_Users_Guide-1.gif" ALT="">
+</DIV>
+</H6>
+</CAPTION>
+<TR>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1201151"></A>&nbsp;</P>
+<DIV>
+<IMG SRC="HDF5_Users_Guide-3.gif" ALT="">
+</DIV>
+</TD>
+</TR>
+</TABLE>
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1183507"></A>As mentioned above, HDF5 applications access HDF5 files through various <EM CLASS="EI-EmphasisItalic">
+low-level file drivers</EM>
+. The default driver for that layout is the POSIX driver (also known as the SEC2 driver), <CODE CLASS="Code">
+H5FD_SEC2</CODE>
+. Alternative layouts and drivers are designed to suit the needs of a variety of systems, environments, and applications. The drivers are listed in the table below. </P>
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1208460"></A>&nbsp;</P>
+<TABLE BORDER="1">
+<CAPTION>
+<H6 CLASS="FM-CaptionTable">
+<A NAME="50475009_pgfId-1209705"></A>Table 3-2. Supported file drivers</H6>
+</CAPTION>
+<TR>
+<TH ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-Heading-Cell">
+<A NAME="50475009_pgfId-1209713"></A>Driver Name</P>
+</TH>
+<TH ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-Heading-Cell">
+<A NAME="50475009_pgfId-1209715"></A>Driver </P>
+<P CLASS="FM-Heading-Cell">
+<A NAME="50475009_pgfId-1209930"></A>Identifier</P>
+</TH>
+<TH ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-Heading-Cell">
+<A NAME="50475009_pgfId-1209717"></A>Description</P>
+</TH>
+<TH ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-Heading-Cell">
+<A NAME="50475009_pgfId-1209719"></A>Related API</P>
+</TH>
+</TR>
+<TR>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1209721"></A>POSIX </P>
+</TD>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1209723"></A>H5FD_SEC2</P>
+</TD>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1209725"></A>This driver uses POSIX file-system functions like read and write to perform I/O to a single, permanent file on local disk with no system buffering. This driver is POSIX-compliant and is <STRONG CLASS="EH-EmphasisHeavy">
+the default file driver for all systems</STRONG>
+. </P>
+</TD>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1209727"></A>H5Pset_fapl_sec2</P>
+</TD>
+</TR>
+<TR>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1209729"></A>Direct</P>
+</TD>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1209731"></A>H5FD_DIRECT</P>
+</TD>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1209733"></A>This is the <CODE CLASS="Code">
+H5FD_SEC2</CODE>
+ driver except data is written to or read from the file synchronously without being cached by the system. </P>
+</TD>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1209735"></A>H5Pset_fapl_direct</P>
+</TD>
+</TR>
+<TR>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1209737"></A>Log</P>
+</TD>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1209739"></A>H5FD_LOG</P>
+</TD>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1209741"></A>This is the <CODE CLASS="Code">
+H5FD_SEC2</CODE>
+ driver with logging capabilities.</P>
+</TD>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1209743"></A>H5Pset_fapl_log</P>
+</TD>
+</TR>
+<TR>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1209745"></A>Windows</P>
+</TD>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1209747"></A>H5FD_WINDOWS</P>
+</TD>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1209749"></A>This driver was modified in HDF5-1.8.8 to be a wrapper of the POSIX driver, <CODE CLASS="Code">
+H5FD_SEC2</CODE>
+. This change should not affect user applications.</P>
+</TD>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1209751"></A>H5Pset_fapl_windows</P>
+</TD>
+</TR>
+<TR>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1209753"></A>STDIO</P>
+</TD>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1209755"></A>H5FD_STDIO</P>
+</TD>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1209757"></A>This driver uses functions from the standard C <CODE CLASS="Code">
+stdio.h</CODE>
+ to perform I/O to a single, permanent file on local disk with additional system buffering. </P>
+</TD>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1209759"></A>H5Pset_fapl_stdio</P>
+</TD>
+</TR>
+<TR>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1209761"></A>Memory</P>
+</TD>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1209763"></A>H5FD_CORE</P>
+</TD>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1209765"></A>With this driver, an application can work with a file in memory for faster reads and writes. File contents are kept in memory until the file is closed. At closing, the memory version of the file can be written back to disk or abandoned. </P>
+</TD>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1209767"></A>H5Pset_fapl_core</P>
+</TD>
+</TR>
+<TR>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1209769"></A>Family</P>
+</TD>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1209771"></A>H5FD_FAMILY</P>
+</TD>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1209773"></A>With this driver, the HDF5 file’s address space is partitioned into pieces and sent to separate storage files using an underlying driver of the user’s choice. This driver is for systems that do not support files larger than 2 gigabytes.</P>
+</TD>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1209775"></A>H5Pset_fapl_family</P>
+</TD>
+</TR>
+<TR>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1209777"></A>Multi</P>
+</TD>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1209779"></A>H5FD_MULTI</P>
+</TD>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1209781"></A>With this driver, data can be stored in multiple files according to the type of the data. I/O might work better if data is stored in separate files based on the type of data. The Split driver is a special case of this driver.</P>
+</TD>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1209783"></A>H5Pset_fapl_multi</P>
+</TD>
+</TR>
+<TR>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1209785"></A>Split</P>
+</TD>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1209787"></A>H5FD_SPLIT</P>
+</TD>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1209789"></A>This file driver splits a file into two parts. One part stores metadata, and the other part stores raw data. This splitting a file into two parts is a limited case of the Multi driver. </P>
+</TD>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1209791"></A>H5Pset_fapl_split</P>
+</TD>
+</TR>
+<TR>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1209793"></A>Parallel</P>
+</TD>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1209795"></A>H5FD_MPIO</P>
+</TD>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1209797"></A>This is the standard HDF5 file driver for parallel file systems. This driver uses the MPI standard for both communication and file I/O. </P>
+</TD>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1209799"></A>H5Pset_fapl_mpio</P>
+</TD>
+</TR>
+<TR>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1209801"></A>Parallel POSIX</P>
+</TD>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1209803"></A>H5FD_MPIPOSIX</P>
+</TD>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1209805"></A>This driver is no longer available.</P>
+</TD>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1209807"></A>&nbsp;</P>
+</TD>
+</TR>
+<TR>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1209809"></A>Stream</P>
+</TD>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1209811"></A>H5FD_STREAM</P>
+</TD>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1209813"></A>This driver is no longer available.</P>
+</TD>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1209815"></A>&nbsp;</P>
+</TD>
+</TR>
+</TABLE>
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1183534"></A>For more information, see the <EM CLASS="LT-LinkText">
+<A HREF="http://www.hdfgroup.org/HDF5/doc/RM/RM_H5Front.html" CLASS="URL">HDF5 Reference Manual</A></EM>
+ entries for the function calls shown in the column on the right in the table above. </P>
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1183539"></A>Note that the low-level file drivers manage alternative <EM CLASS="EI-EmphasisItalic">
+file</EM>
+ storage layouts. <EM CLASS="EI-EmphasisItalic">
+Dataset</EM>
+ storage layouts (chunking, compression, and external dataset storage) are managed independently of file storage layouts. </P>
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1183544"></A>If an application requires a special-purpose low-level driver, the VFL provides a public API for creating one. For more information on how to create a driver, see “<EM CLASS="LT-LinkText">
+<A HREF="http://www.hdfgroup.org/HDF5/doc/TechNotes/VFL.html" CLASS="URL">Virtual File Layer”</A></EM>
+ and “<EM CLASS="LT-LinkText">
+<A HREF="http://www.hdfgroup.org/HDF5/doc/TechNotes/VFLfunc.html" CLASS="URL">List of VFL Functions”</A></EM>
+ in the <EM CLASS="EI-EmphasisItalic">
+HDF5 Technical Notes</EM>
+.</P>
+<DIV>
+<H3 CLASS="FM-Heading-Level3">
+<A NAME="50475009_pgfId-1183554"></A>3.8.1. Identifying the Previously-used File Driver</H3>
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1183556"></A>When creating a new HDF5 file, no history exists, so the file driver must be specified if it is to be other than the default.</P>
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1183559"></A>When opening existing files, however, the application may need to determine which low-level driver was used to create the file. The function <CODE CLASS="Code">
+H5Pget_driver</CODE>
+ is used for this purpose. See the example below.</P>
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1183580"></A>&nbsp;</P>
+<TABLE BORDER="1">
+<CAPTION>
+<H6 CLASS="FM-CaptionCodeExample">
+<A NAME="50475009_pgfId-1201901"></A>Code Example 3-5. Identifying a driver<DIV>
+<IMG SRC="HDF5_Users_Guide-1.gif" ALT="">
+</DIV>
+</H6>
+</CAPTION>
+<TR>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1201927"></A>&nbsp;</P>
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1201931"></A>hid_t H5Pget_driver (hid_t <EM CLASS="CodeItalic">
+fapl_id</EM>
+)</P>
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1201899"></A>&nbsp;</P>
+</TD>
+</TR>
+</TABLE>
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1183582"></A><CODE CLASS="Code">
+H5Pget_driver</CODE>
+ returns a constant identifying the low-level driver for the access property list <EM CLASS="CodeItalic">
+fapl_id</EM>
+. For example, if the file was created with the POSIX (aka SEC2) driver, <CODE CLASS="Code">
+H5Pget_driver</CODE>
+ returns <CODE CLASS="Code">
+H5FD_SEC2</CODE>
+.</P>
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1183587"></A>If the application opens an HDF5 file without both determining the driver used to create the file and setting up the use of that driver, the HDF5 Library will examine the superblock and the driver definition block to identify the driver. See the <EM CLASS="LT-LinkText">
+<A HREF="http://www.hdfgroup.org/HDF5/doc/H5.format.html" CLASS="URL">HDF5 File Format Specification</A></EM>
+ for detailed descriptions of the superblock and the driver definition block.</P>
+</DIV>
+<DIV>
+<H3 CLASS="FM-Heading-Level3">
+<A NAME="50475009_pgfId-1183597"></A>3.8.2. The POSIX (aka SEC2) Driver</H3>
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1183599"></A>The POSIX driver, <CODE CLASS="Code">
+H5FD_SEC2</CODE>
+, uses functions from section 2 of the POSIX manual to access unbuffered files stored on a local file system. This driver is also known as the SEC2 driver. The HDF5 Library buffers metadata regardless of the low-level driver, but using this driver prevents data from being buffered again by the lowest layers of the library.</P>
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1183606"></A>The function <CODE CLASS="Code">
+H5Pset_fapl_sec2</CODE>
+ sets the file access properties to use the POSIX driver. See the example below.</P>
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1183623"></A>&nbsp;</P>
+<TABLE BORDER="1">
+<CAPTION>
+<H6 CLASS="FM-CaptionCodeExample">
+<A NAME="50475009_pgfId-1201957"></A>Code Example 3-6. Using the POSIX, aka SEC2, driver<DIV>
+<IMG SRC="HDF5_Users_Guide-1.gif" ALT="">
+</DIV>
+</H6>
+</CAPTION>
+<TR>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1201983"></A>&nbsp;</P>
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1201987"></A>herr_t H5Pset_fapl_sec2 (hid_t <EM CLASS="CodeItalic">
+fapl_id</EM>
+)</P>
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1201955"></A>&nbsp;</P>
+</TD>
+</TR>
+</TABLE>
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1183625"></A>Any previously-defined driver properties are erased from the property list.</P>
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1183628"></A>Additional parameters may be added to this function in the future. Since there are no additional variable settings associated with the POSIX driver, there is no <CODE CLASS="Code">
+H5Pget_fapl_sec2</CODE>
+ function.</P>
+</DIV>
+<DIV>
+<H3 CLASS="FM-Heading-Level3">
+<A NAME="50475009_pgfId-1183634"></A>3.8.3. The Direct Driver</H3>
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1183636"></A>The Direct driver, <CODE CLASS="Code">
+H5FD_DIRECT</CODE>
+, functions like the POSIX driver except that data is written to or read from the file synchronously without being cached by the system.</P>
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1183640"></A>The functions <CODE CLASS="Code">
+H5Pset_fapl_direct</CODE>
+ and <CODE CLASS="Code">
+H5Pget_fapl_direct</CODE>
+ are used to manage file access properties. See the example below.</P>
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1183662"></A>&nbsp;</P>
+<TABLE BORDER="1">
+<CAPTION>
+<H6 CLASS="FM-CaptionCodeExample">
+<A NAME="50475009_pgfId-1202010"></A>Code Example 3-7. Using the Direct driver<DIV>
+<IMG SRC="HDF5_Users_Guide-1.gif" ALT="">
+</DIV>
+</H6>
+</CAPTION>
+<TR>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1202036"></A>&nbsp;</P>
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1202040"></A>herr_t H5Pset_fapl_direct( hid_t <EM CLASS="CodeItalic">
+fapl_id</EM>
+, size_t <EM CLASS="CodeItalic">
+alignment</EM>
+, </P>
+<P CLASS="FM-BodyCodeIndent">
+<A NAME="50475009_pgfId-1202041"></A>size_t <EM CLASS="CodeItalic">
+block_size</EM>
+, size_t <EM CLASS="CodeItalic">
+cbuf_size</EM>
+ )</P>
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1202042"></A>&nbsp;</P>
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1202043"></A>herr_t H5Pget_fapl_direct( hid_t <EM CLASS="CodeItalic">
+fapl_id</EM>
+, size_t <EM CLASS="CodeItalic">
+*alignment</EM>
+, </P>
+<P CLASS="FM-BodyCodeIndent">
+<A NAME="50475009_pgfId-1202044"></A>size_t <EM CLASS="CodeItalic">
+*block_size</EM>
+, size_t <EM CLASS="CodeItalic">
+*cbuf_size</EM>
+ )</P>
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1202008"></A>&nbsp;</P>
+</TD>
+</TR>
+</TABLE>
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1183664"></A><CODE CLASS="Code">
+H5Pset_fapl_direct</CODE>
+ sets the file access properties to use the Direct driver; any previously defined driver properties are erased from the property list. <CODE CLASS="Code">
+H5Pget_fapl_direct</CODE>
+ retrieves the file access properties used with the Direct driver. <CODE CLASS="Code">
+fapl_id</CODE>
+ is the file access property list identifier. <CODE CLASS="Code">
+alignment</CODE>
+ is the memory alignment boundary. <CODE CLASS="Code">
+block_size</CODE>
+ is the file system block size. <CODE CLASS="Code">
+cbuf_size</CODE>
+ is the copy buffer size.</P>
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1183673"></A>Additional parameters may be added to this function in the future. </P>
+</DIV>
+<DIV>
+<H3 CLASS="FM-Heading-Level3">
+<A NAME="50475009_pgfId-1183677"></A>3.8.4. The Log Driver</H3>
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1183679"></A>The Log driver, <CODE CLASS="Code">
+H5FD_LOG</CODE>
+, is designed for situations where it is necessary to log file access activity.</P>
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1183682"></A>The function <CODE CLASS="Code">
+H5Pset_fapl_log</CODE>
+ is used to manage logging properties. See the example below.</P>
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1183701"></A>&nbsp;</P>
+<TABLE BORDER="1">
+<CAPTION>
+<H6 CLASS="FM-CaptionCodeExample">
+<A NAME="50475009_pgfId-1202143"></A>Code Example 3-8. Logging file access<DIV>
+<IMG SRC="HDF5_Users_Guide-1.gif" ALT="">
+</DIV>
+</H6>
+</CAPTION>
+<TR>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1202169"></A>&nbsp;</P>
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1202173"></A>herr_t H5Pset_fapl_log (hid_t <EM CLASS="CodeItalic">
+fapl_id</EM>
+, const char <EM CLASS="CodeItalic">
+*logfile</EM>
+,</P>
+<P CLASS="FM-BodyCodeIndent">
+<A NAME="50475009_pgfId-1202174"></A>unsigned int <EM CLASS="CodeItalic">
+flags</EM>
+, size_t <EM CLASS="CodeItalic">
+buf_size</EM>
+)</P>
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1202141"></A>&nbsp;</P>
+</TD>
+</TR>
+</TABLE>
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1183703"></A><CODE CLASS="Code">
+H5Pset_fapl_log</CODE>
+ sets the file access property list to use the Log driver. File access characteristics are identical to access via the POSIX driver. Any previously defined driver properties are erased from the property list. </P>
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1183708"></A>Log records are written to the file <EM CLASS="CodeItalic">
+logfile</EM>
+.</P>
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1183710"></A>The logging levels set with the <EM CLASS="CodeItalic">
+verbosity</EM>
+ parameter are shown in the table below. </P>
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1208163"></A>&nbsp;</P>
+<TABLE BORDER="1">
+<CAPTION>
+<H6 CLASS="FM-CaptionTable">
+<A NAME="50475009_pgfId-1208186"></A>Table 3-3. Logging levels</H6>
+</CAPTION>
+<TR>
+<TH ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-Heading-Cell">
+<A NAME="50475009_pgfId-1208190"></A>Level</P>
+</TH>
+<TH ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-Heading-Cell">
+<A NAME="50475009_pgfId-1208192"></A>Comments</P>
+</TH>
+</TR>
+<TR>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1208194"></A>0</P>
+</TD>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1208196"></A>Performs no logging.</P>
+</TD>
+</TR>
+<TR>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1208198"></A>1</P>
+</TD>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1208200"></A>Records where writes and reads occur in the file.</P>
+</TD>
+</TR>
+<TR>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1208202"></A>2</P>
+</TD>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1208204"></A>Records where writes and reads occur in the file and what kind of data is written at each location. This includes raw data or any of several types of metadata (object headers, superblock, B-tree data, local headers, or global headers).</P>
+</TD>
+</TR>
+</TABLE>
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1183745"></A>There is no <CODE CLASS="Code">
+H5Pget_fapl_log</CODE>
+ function.</P>
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1183747"></A>Additional parameters may be added to this function in the future. </P>
+</DIV>
+<DIV>
+<H3 CLASS="FM-Heading-Level3">
+<A NAME="50475009_pgfId-1183751"></A>3.8.5. The Windows Driver</H3>
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1183753"></A>The Windows driver, <CODE CLASS="Code">
+H5FD_WINDOWS</CODE>
+, was modified in HDF5-1.8.8 to be a wrapper of the POSIX driver, <CODE CLASS="Code">
+H5FD_SEC2</CODE>
+. In other words, if the Windows drivers is used, any file I/O will instead use the functionality of the POSIX driver. This change should be transparent to all user applications. The Windows driver used to be the default driver for Windows systems. The POSIX driver is now the default. </P>
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1183761"></A>The function <CODE CLASS="Code">
+H5Pset_fapl_windows</CODE>
+ sets the file access properties to use the Windows driver. See the example below.</P>
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1183778"></A>&nbsp;</P>
+<TABLE BORDER="1">
+<CAPTION>
+<H6 CLASS="FM-CaptionCodeExample">
+<A NAME="50475009_pgfId-1202222"></A>Code Example 3-9. Using the Windows driver<DIV>
+<IMG SRC="HDF5_Users_Guide-1.gif" ALT="">
+</DIV>
+</H6>
+</CAPTION>
+<TR>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1202256"></A>&nbsp;</P>
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1202245"></A>herr_t H5Pset_fapl_windows (hid_t <EM CLASS="CodeItalic">
+fapl_id</EM>
+)</P>
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1202220"></A>&nbsp;</P>
+</TD>
+</TR>
+</TABLE>
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1183780"></A>Any previously-defined driver properties are erased from the property list.</P>
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1183783"></A>Additional parameters may be added to this function in the future. Since there are no additional variable settings associated with the POSIX driver, there is no <CODE CLASS="Code">
+H5Pget_fapl_windows</CODE>
+ function.</P>
+</DIV>
+<DIV>
+<H3 CLASS="FM-Heading-Level3">
+<A NAME="50475009_pgfId-1183789"></A>3.8.6. The STDIO Driver</H3>
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1183791"></A>The STDIO driver, <CODE CLASS="Code">
+H5FD_STDIO</CODE>
+, accesses permanent files in a local file system like the POSIX driver does. The STDIO driver also has an additional layer of buffering beneath the HDF5 Library. </P>
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1183795"></A>The function <CODE CLASS="Code">
+H5Pset_fapl_stdio</CODE>
+ sets the file access properties to use the STDIO driver. See the example below.</P>
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1183814"></A>&nbsp;</P>
+<TABLE BORDER="1">
+<CAPTION>
+<H6 CLASS="FM-CaptionCodeExample">
+<A NAME="50475009_pgfId-1202278"></A>Code Example 3-10. Using the STDIO driver<DIV>
+<IMG SRC="HDF5_Users_Guide-1.gif" ALT="">
+</DIV>
+</H6>
+</CAPTION>
+<TR>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1202304"></A>&nbsp;</P>
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1202308"></A>herr_t H5Pset_fapl_stdio (hid_t <EM CLASS="CodeItalic">
+fapl_id</EM>
+)</P>
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1202276"></A>&nbsp;</P>
+</TD>
+</TR>
+</TABLE>
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1183816"></A>Any previously defined driver properties are erased from the property list.</P>
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1183819"></A>Additional parameters may be added to this function in the future. Since there are no additional variable settings associated with the STDIO driver, there is no <CODE CLASS="Code">
+H5Pget_fapl_stdio</CODE>
+ function. </P>
+</DIV>
+<DIV>
+<H3 CLASS="FM-Heading-Level3">
+<A NAME="50475009_pgfId-1183824"></A>3.8.7. The Memory (aka Core) Driver</H3>
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1183827"></A>There are several situations in which it is reasonable, sometimes even required, to maintain a file entirely in system memory. You might want to do so if, for example, either of the following conditions apply:</P>
+<UL>
+<LI CLASS="FM-ListBullets-Level1">
+<A NAME="50475009_pgfId-1183832"></A>•	Performance requirements are so stringent that disk latency is a limiting factor</LI>
+<LI CLASS="FM-ListBullets-Level1">
+<A NAME="50475009_pgfId-1183834"></A>•	You are working with small, temporary files that will not be retained and, thus, need not be written to storage media</LI>
+</UL>
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1183838"></A>The Memory driver, <CODE CLASS="Code">
+H5FD_CORE</CODE>
+, provides a mechanism for creating and managing such in-memory files. The functions <CODE CLASS="Code">
+H5Pset_fapl_core</CODE>
+ and <CODE CLASS="Code">
+H5Pget_fapl_core</CODE>
+ manage file access properties. See the example below.</P>
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1183861"></A>&nbsp;</P>
+<TABLE BORDER="1">
+<CAPTION>
+<H6 CLASS="FM-CaptionCodeExample">
+<A NAME="50475009_pgfId-1202329"></A>Code Example 3-11. Managing file access for in-memory files<DIV>
+<IMG SRC="HDF5_Users_Guide-1.gif" ALT="">
+</DIV>
+</H6>
+</CAPTION>
+<TR>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1202355"></A>&nbsp;</P>
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1202359"></A>herr_t H5Pset_fapl_core (hid_t <EM CLASS="CodeItalic">
+access_properties</EM>
+, </P>
+<P CLASS="FM-BodyCodeIndent">
+<A NAME="50475009_pgfId-1202360"></A>size_t <EM CLASS="CodeItalic">
+block_size</EM>
+, hbool_t <EM CLASS="CodeItalic">
+backing_store</EM>
+)</P>
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1202361"></A>herr_t H5Pget_fapl_core (hid_t <EM CLASS="CodeItalic">
+access_properties</EM>
+, </P>
+<P CLASS="FM-BodyCodeIndent">
+<A NAME="50475009_pgfId-1202362"></A>size_t <EM CLASS="CodeItalic">
+*block_size</EM>
+), hbool_t <EM CLASS="CodeItalic">
+*backing_store</EM>
+)</P>
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1202327"></A>&nbsp;</P>
+</TD>
+</TR>
+</TABLE>
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1183863"></A><CODE CLASS="Code">
+H5Pset_fapl_core</CODE>
+ sets the file access property list to use the Memory driver; any previously defined driver properties are erased from the property list. </P>
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1183867"></A>Memory for the file will always be allocated in units of the specified <EM CLASS="CodeItalic">
+block_size</EM>
+. </P>
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1183871"></A>The <EM CLASS="CodeItalic">
+backing_store</EM>
+ Boolean flag is set when the in-memory file is created. <EM CLASS="CodeItalic">
+backing_store</EM>
+ indicates whether to write the file contents to disk when the file is closed. If <EM CLASS="CodeItalic">
+backing_store</EM>
+ is set to 1 (TRUE), the file contents are flushed to a file with the same name as the in-memory file when the file is closed or access to the file is terminated in memory. If <EM CLASS="CodeItalic">
+backing_store</EM>
+ is set to 0 (FALSE), the file is not saved.</P>
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1183880"></A>The application is allowed to open an existing file with the <EM CLASS="CodeItalic">
+H5FD_CORE</EM>
+ driver. While using <EM CLASS="CodeItalic">
+H5Fopen</EM>
+ to open an existing file, if <EM CLASS="CodeItalic">
+backing_store</EM>
+ is set to <EM CLASS="CodeItalic">
+1</EM>
+ and the <EM CLASS="CodeItalic">
+flag</EM>
+ for <EM CLASS="CodeItalic">
+H5Fopen</EM>
+ is set to <EM CLASS="CodeItalic">
+H5F_ACC_RDWR</EM>
+, changes to the file contents will be saved to the file when the file is closed. If <EM CLASS="CodeItalic">
+backing_store</EM>
+ is set to <EM CLASS="CodeItalic">
+0</EM>
+ and the <EM CLASS="CodeItalic">
+flag</EM>
+ for <EM CLASS="CodeItalic">
+H5Fopen</EM>
+ is set to <EM CLASS="CodeItalic">
+H5F_ACC_RDWR</EM>
+, changes to the file contents will be lost when the file is closed. If the <EM CLASS="CodeItalic">
+flag</EM>
+ for <EM CLASS="CodeItalic">
+H5Fopen</EM>
+ is set to <EM CLASS="CodeItalic">
+H5F_ACC_RDONLY</EM>
+, no change to the file will be allowed either in memory or on file.</P>
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1183895"></A>If the file access property list is set to use the Memory driver, <CODE CLASS="Code">
+H5Pget_fapl_core</CODE>
+ will return <EM CLASS="CodeItalic">
+block_size</EM>
+ and <EM CLASS="CodeItalic">
+backing_store</EM>
+ with the relevant file access property settings.</P>
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1183900"></A>Note the following important points regarding in-memory files:</P>
+<UL>
+<LI CLASS="FM-ListBullets-Level1">
+<A NAME="50475009_pgfId-1183902"></A>•	Local temporary files are created and accessed directly from memory without ever being written to disk</LI>
+<LI CLASS="FM-ListBullets-Level1">
+<A NAME="50475009_pgfId-1183904"></A>•	Total file size must not exceed the available virtual memory</LI>
+<LI CLASS="FM-ListBullets-Level1">
+<A NAME="50475009_pgfId-1183905"></A>•	Only one HDF5 file identifier can be opened for the file, the identifier returned by <CODE CLASS="Code">
+H5Fcreate</CODE>
+ or <CODE CLASS="Code">
+H5Fopen</CODE>
+</LI>
+<LI CLASS="FM-ListBullets-Level1">
+<A NAME="50475009_pgfId-1183908"></A>•	The changes to the file will be discarded when access is terminated unless <EM CLASS="CodeItalic">
+backing_store</EM>
+ is set to <CODE CLASS="Code">
+1</CODE>
+</LI>
+</UL>
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1183913"></A>Additional parameters may be added to these functions in the future. </P>
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1183915"></A>See the &quot;<EM CLASS="LT-LinkText">
+<A HREF="http://www.hdfgroup.org/HDF5/doc/Advanced/FileImageOperations/HDF5FileImageOperations.pdf" CLASS="URL">HDF5 File Image Operations</A></EM>
+&quot; section for information on more advanced usage of the Memory file driver, and see the &quot;<EM CLASS="LT-LinkText">
+<A HREF="http://www.hdfgroup.org/HDF5/doc/Advanced/ModifiedRegionWrites/ModifiedRegionWrites.pdf" CLASS="URL">Modified Region Writes</A></EM>
+&quot; section for information on how to set write operations so that only modified regions are written to storage.</P>
+</DIV>
+<DIV>
+<H3 CLASS="FM-Heading-Level3">
+<A NAME="50475009_pgfId-1183927"></A>3.8.8. The Family Driver</H3>
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1183929"></A>HDF5 files can become quite large, and this can create problems on systems that do not support files larger than 2 gigabytes. The HDF5 <EM CLASS="EIH-EmphasisItalicHeavy">
+file family</EM>
+ mechanism is designed to solve the problems this creates by splitting the HDF5 file address space across several smaller files. This structure does not affect how metadata and raw data are stored: they are mixed in the address space just as they would be in a single, contiguous file.</P>
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1183938"></A>HDF5 applications access a family of files via the Family driver, <CODE CLASS="Code">
+H5FD_FAMILY</CODE>
+. The functions <CODE CLASS="Code">
+H5Pset_fapl_family</CODE>
+ and <CODE CLASS="Code">
+H5Pget_fapl_family</CODE>
+ are used to manage file family properties. See the example below.</P>
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1183962"></A>&nbsp;</P>
+<TABLE BORDER="1">
+<CAPTION>
+<H6 CLASS="FM-CaptionCodeExample">
+<A NAME="50475009_pgfId-1202414"></A>Code Example 3-12. Managing file family properties<DIV>
+<IMG SRC="HDF5_Users_Guide-1.gif" ALT="">
+</DIV>
+</H6>
+</CAPTION>
+<TR>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1202440"></A>&nbsp;</P>
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1202444"></A>herr_t H5Pset_fapl_family (hid_t <EM CLASS="CodeItalic">
+fapl_id</EM>
+, hsize_t <EM CLASS="CodeItalic">
+memb_size</EM>
+, </P>
+<P CLASS="FM-BodyCodeIndent">
+<A NAME="50475009_pgfId-1202445"></A>hid_t <EM CLASS="CodeItalic">
+member_properties</EM>
+)</P>
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1202446"></A>&nbsp;</P>
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1202447"></A>herr_t H5Pget_fapl_family (hid_t <EM CLASS="CodeItalic">
+fapl_id</EM>
+, hsize_t <EM CLASS="CodeItalic">
+*memb_size</EM>
+, </P>
+<P CLASS="FM-BodyCodeIndent">
+<A NAME="50475009_pgfId-1202448"></A>hid_t <EM CLASS="CodeItalic">
+*member_properties</EM>
+)</P>
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1202412"></A>&nbsp;</P>
+</TD>
+</TR>
+</TABLE>
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1183964"></A>Each member of the family is the same <EM CLASS="EI-EmphasisItalic">
+logical</EM>
+ size though the size and disk storage reported by file system listing tools may be substantially smaller. Examples of file system listing tools are <CODE CLASS="Code">
+’ls -l’</CODE>
+ on a Unix system or the detailed folder listing on an Apple Macintosh or Microsoft Windows system. The name passed to <CODE CLASS="Code">
+H5Fcreate</CODE>
+ or <CODE CLASS="Code">
+H5Fopen</CODE>
+ should include a <CODE CLASS="Code">
+printf(3c)</CODE>
+-style integer format specifier which will be replaced with the family member number. The first family member is numbered zero (<CODE CLASS="Code">
+0</CODE>
+). </P>
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1183975"></A><CODE CLASS="Code">
+H5Pset_fapl_family</CODE>
+ sets the access properties to use the Family driver; any previously defined driver properties are erased from the property list. <EM CLASS="CodeItalic">
+member_properties</EM>
+ will serve as the file access property list for each member of the file family. <EM CLASS="CodeItalic">
+memb_size</EM>
+ specifies the logical size, in bytes, of each family member. <EM CLASS="CodeItalic">
+memb_size</EM>
+ is used only when creating a new file or truncating an existing file; otherwise the member size is determined by the size of the first member of the family being opened. Note: If the size of the <CODE CLASS="Code">
+off_t</CODE>
+ type is four bytes, the maximum family member size is usually 2^31-1 because the byte at offset 2,147,483,647 is generally inaccessible. </P>
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1183987"></A><CODE CLASS="Code">
+H5Pget_fapl_family</CODE>
+ is used to retrieve file family properties. If the file access property list is set to use the Family driver, <EM CLASS="CodeItalic">
+member_properties</EM>
+ will be returned with a pointer to a copy of the appropriate member access property list. If <EM CLASS="CodeItalic">
+memb_size</EM>
+ is non-null, it will contain the logical size, in bytes, of family members. </P>
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1183994"></A>Additional parameters may be added to these functions in the future. </P>
+<DIV>
+<H4 CLASS="FM-Heading-Level4">
+<A NAME="50475009_pgfId-1183997"></A>3.8.8.1. Unix Tools and an HDF5 Utility</H4>
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1183999"></A>It occasionally becomes necessary to <STRONG CLASS="EH-EmphasisHeavy">
+repartition</STRONG>
+ a file family. A command-line utility for this purpose, <CODE CLASS="Code">
+h5repart</CODE>
+, is distributed with the HDF5 Library.</P>
+<P CLASS="FM-BodyCodeIndent">
+<A NAME="50475009_pgfId-1184004"></A>h5repart [-v] [-b <EM CLASS="CodeItalic">
+block_size</EM>
+[<EM CLASS="CodeItalic">
+suffix</EM>
+]] [-m <EM CLASS="CodeItalic">
+member_size</EM>
+[<EM CLASS="CodeItalic">
+suffix</EM>
+]] <EM CLASS="CodeItalic">
+source destination</EM>
+</P>
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1184010"></A><CODE CLASS="Code">
+h5repart</CODE>
+ repartitions an HDF5 file by copying the source file or file family to the destination file or file family, preserving holes in the underlying UNIX files. Families are used for the source and/or destination if the name includes a <CODE CLASS="Code">
+printf</CODE>
+-style integer format such as <CODE CLASS="Code">
+%d</CODE>
+. The <CODE CLASS="Code">
+-v</CODE>
+ switch prints input and output file names on the standard error stream for progress monitoring, <CODE CLASS="Code">
+-b</CODE>
+ sets the I/O block size (the default is 1KB), and <CODE CLASS="Code">
+-m</CODE>
+ sets the output member size if the destination is a family name (the default is 1GB). <EM CLASS="CodeItalic">
+block_size</EM>
+ and <EM CLASS="CodeItalic">
+member_size</EM>
+ may be suffixed with the letters <CODE CLASS="Code">
+g</CODE>
+, <CODE CLASS="Code">
+m</CODE>
+, or <CODE CLASS="Code">
+k</CODE>
+ for GB, MB, or KB respectively. </P>
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1184024"></A>The <CODE CLASS="Code">
+h5repart</CODE>
+ utility is described on the <EM CLASS="LT-LinkText">
+<A HREF="http://www.hdfgroup.org/HDF5/doc/RM/Tools.html" CLASS="URL">Tools</A></EM>
+ page of the <EM CLASS="LT-LinkText">
+<A HREF="http://www.hdfgroup.org/HDF5/doc/RM/RM_H5Front.html" CLASS="URL">HDF5 Reference Manual</A></EM>
+.</P>
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1184029"></A>An existing HDF5 file can be split into a family of files by running the file through <CODE CLASS="Code">
+split(1)</CODE>
+ on a UNIX system and numbering the output files. However, the HDF5 Library is lazy about extending the size of family members, so a valid file cannot generally be created by concatenation of the family members. </P>
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1184035"></A>Splitting the file and rejoining the segments by concatenation (<CODE CLASS="Code">
+split(1)</CODE>
+ and <CODE CLASS="Code">
+cat(1)</CODE>
+ on UNIX systems) does not generate files with holes; holes are preserved only through the use of <CODE CLASS="Code">
+h5repart</CODE>
+. </P>
+</DIV>
+</DIV>
+<DIV>
+<H3 CLASS="FM-Heading-Level3">
+<A NAME="50475009_pgfId-1184045"></A>3.8.9. The Multi Driver</H3>
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1184047"></A>In some circumstances, it is useful to separate metadata from raw data and some types of metadata from other types of metadata. Situations that would benefit from use of the Multi driver include the following:</P>
+<UL>
+<LI CLASS="FM-ListBullets-Level1">
+<A NAME="50475009_pgfId-1184052"></A>•	In networked situations where the small metadata files can be kept on local disks but larger raw data files must be stored on remote media</LI>
+<LI CLASS="FM-ListBullets-Level1">
+<A NAME="50475009_pgfId-1184055"></A>•	In cases where the raw data is extremely large</LI>
+<LI CLASS="FM-ListBullets-Level1">
+<A NAME="50475009_pgfId-1184056"></A>•	 In situations requiring frequent access to metadata held in RAM while the raw data can be efficiently held on disk</LI>
+</UL>
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1184059"></A>In either case, access to the metadata is substantially easier with the smaller, and possibly more localized, metadata files. This often results in improved application performance.</P>
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1184063"></A>The Multi driver, <CODE CLASS="Code">
+H5FD_MULTI</CODE>
+, provides a mechanism for segregating raw data and different types of metadata into multiple files. The functions <CODE CLASS="Code">
+H5Pset_fapl_multi</CODE>
+ and <CODE CLASS="Code">
+H5Pget_fapl_multi</CODE>
+ are used to manage access properties for these multiple files. See the example below.</P>
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1184089"></A>&nbsp;</P>
+<TABLE BORDER="1">
+<CAPTION>
+<H6 CLASS="FM-CaptionCodeExample">
+<A NAME="50475009_pgfId-1202500"></A>Code Example 3-13. Managing access properties for multiple files<DIV>
+<IMG SRC="HDF5_Users_Guide-1.gif" ALT="">
+</DIV>
+</H6>
+</CAPTION>
+<TR>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1202522"></A>&nbsp;</P>
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1202526"></A>herr_t H5Pset_fapl_multi (hid_t <EM CLASS="CodeItalic">
+fapl_id</EM>
+, const H5FD_mem_t <EM CLASS="CodeItalic">
+*memb_map</EM>
+,</P>
+<P CLASS="FM-BodyCodeIndent">
+<A NAME="50475009_pgfId-1202527"></A>const hid_t <EM CLASS="CodeItalic">
+*memb_fapl</EM>
+, const char * const <EM CLASS="CodeItalic">
+*memb_name</EM>
+,</P>
+<P CLASS="FM-BodyCodeIndent">
+<A NAME="50475009_pgfId-1202528"></A>const haddr_t <EM CLASS="CodeItalic">
+*memb_addr</EM>
+, hbool_t <EM CLASS="CodeItalic">
+relax</EM>
+)</P>
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1202529"></A>herr_t H5Pget_fapl_multi (hid_t <EM CLASS="CodeItalic">
+fapl_id</EM>
+, const H5FD_mem_t <EM CLASS="CodeItalic">
+*memb_map</EM>
+,</P>
+<P CLASS="FM-BodyCodeIndent">
+<A NAME="50475009_pgfId-1202530"></A>const hid_t <EM CLASS="CodeItalic">
+*memb_fapl</EM>
+, const char <EM CLASS="CodeItalic">
+**memb_name</EM>
+,</P>
+<P CLASS="FM-BodyCodeIndent">
+<A NAME="50475009_pgfId-1202531"></A>const haddr_t <EM CLASS="CodeItalic">
+*memb_addr</EM>
+, hbool_t <EM CLASS="CodeItalic">
+*relax</EM>
+)</P>
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1202498"></A>&nbsp;</P>
+</TD>
+</TR>
+</TABLE>
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1184091"></A><CODE CLASS="Code">
+H5Pset_fapl_multi</CODE>
+ sets the file access properties to use the Multi driver; any previously defined driver properties are erased from the property list. With the Multi driver invoked, the application will provide a base name to <CODE CLASS="Code">
+H5Fopen</CODE>
+ or <CODE CLASS="Code">
+H5Fcreate</CODE>
+. The files will be named by that base name as modified by the rule indicated in <EM CLASS="CodeItalic">
+memb_name</EM>
+. File access will be governed by the file access property list <EM CLASS="CodeItalic">
+memb_properties</EM>
+. </P>
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1184100"></A>See <EM CLASS="LT-LinkText">
+<A HREF="http://www.hdfgroup.org/HDF5/doc/RM/RM_H5P.html#Property-SetFaplMulti" CLASS="URL">H5Pset_fapl_multi</A></EM>
+ and <EM CLASS="LT-LinkText">
+<A HREF="http://www.hdfgroup.org/HDF5/doc/RM/RM_H5P.html#Property-GetFaplMulti" CLASS="URL">H5Pget_fapl_multi</A></EM>
+ in the <EM CLASS="LT-LinkText">
+<A HREF="http://www.hdfgroup.org/HDF5/doc/RM/RM_H5Front.html" CLASS="URL">HDF5 Reference Manual</A></EM>
+ for descriptions of these functions and their usage.</P>
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1184108"></A>Additional parameters may be added to these functions in the future. </P>
+</DIV>
+<DIV>
+<H3 CLASS="FM-Heading-Level3">
+<A NAME="50475009_pgfId-1184111"></A>3.8.10. The Split Driver</H3>
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1184113"></A>The Split driver, <CODE CLASS="Code">
+H5FD_SPLIT</CODE>
+, is a limited case of the Multi driver where only two files are created. One file holds metadata, and the other file holds raw data. </P>
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1184117"></A>The function <CODE CLASS="Code">
+H5Pset_fapl_split</CODE>
+ is used to manage Split file access properties. See the example below.</P>
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1184137"></A>&nbsp;</P>
+<TABLE BORDER="1">
+<CAPTION>
+<H6 CLASS="FM-CaptionCodeExample">
+<A NAME="50475009_pgfId-1202679"></A>Code Example 3-14. Managing access properties for split files<DIV>
+<IMG SRC="HDF5_Users_Guide-1.gif" ALT="">
+</DIV>
+</H6>
+</CAPTION>
+<TR>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1202701"></A>&nbsp;</P>
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1202705"></A>herr_t H5Pset_fapl_split (hid_t <EM CLASS="CodeItalic">
+access_properties</EM>
+, </P>
+<P CLASS="FM-BodyCodeIndent">
+<A NAME="50475009_pgfId-1202706"></A>const char <EM CLASS="CodeItalic">
+*meta_extension</EM>
+, hid_t <EM CLASS="CodeItalic">
+meta_properties</EM>
+, </P>
+<P CLASS="FM-BodyCodeIndent">
+<A NAME="50475009_pgfId-1202707"></A>const char <EM CLASS="CodeItalic">
+*raw_extension</EM>
+, hid_t <EM CLASS="CodeItalic">
+raw_properties</EM>
+</P>
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1202677"></A>&nbsp;</P>
+</TD>
+</TR>
+</TABLE>
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1184139"></A><CODE CLASS="Code">
+H5Pset_fapl_split</CODE>
+ sets the file access properties to use the Split driver; any previously defined driver properties are erased from the property list. </P>
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1184144"></A>With the Split driver invoked, the application will provide a base file name such as <EM CLASS="CodeItalic">
+file_name</EM>
+ to <CODE CLASS="Code">
+H5Fcreate</CODE>
+ or <CODE CLASS="Code">
+H5Fopen</CODE>
+. The metadata and raw data files in storage will then be named <EM CLASS="CodeItalic">
+file_name.meta_extension</EM>
+ and <EM CLASS="CodeItalic">
+file_name.raw_extension</EM>
+, respectively. For example, if <EM CLASS="CodeItalic">
+meta_extension</EM>
+ is defined as <CODE CLASS="Code">
+.meta</CODE>
+ and <EM CLASS="CodeItalic">
+raw_extension</EM>
+ is defined as <CODE CLASS="Code">
+.raw</CODE>
+, the final filenames will be <EM CLASS="CodeItalic">
+file_name</EM>
+<CODE CLASS="Code">
+.meta</CODE>
+ and <EM CLASS="CodeItalic">
+file_name</EM>
+<CODE CLASS="Code">
+.raw</CODE>
+.</P>
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1184156"></A>Each file can have its own file access property list. This allows the creative use of other low-level file drivers. For instance, the metadata file can be held in RAM and accessed via the Memory driver while the raw data file is stored on disk and accessed via the POSIX driver. Metadata file access will be governed by the file access property list in <EM CLASS="CodeItalic">
+meta_properties</EM>
+. Raw data file access will be governed by the file access property list in <EM CLASS="CodeItalic">
+raw_properties</EM>
+. </P>
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1184165"></A>Additional parameters may be added to these functions in the future. Since there are no additional variable settings associated with the Split driver, there is no <CODE CLASS="Code">
+H5Pget_fapl_split</CODE>
+ function.</P>
+</DIV>
+<DIV>
+<H3 CLASS="FM-Heading-Level3">
+<A NAME="50475009_pgfId-1184171"></A>3.8.11. The Parallel Driver</H3>
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1184173"></A>Parallel environments require a parallel low-level driver. HDF5’s default driver for parallel systems is called the Parallel driver, <CODE CLASS="Code">
+H5FD_MPIO</CODE>
+. This driver uses the MPI standard for both communication and file I/O.</P>
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1184178"></A>The functions <CODE CLASS="Code">
+H5Pset_fapl_mpio</CODE>
+ and <CODE CLASS="Code">
+H5Pget_fapl_mpio</CODE>
+ are used to manage file access properties for the <CODE CLASS="Code">
+H5FD_MPIO</CODE>
+ driver. See the example below.</P>
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1184200"></A>&nbsp;</P>
+<TABLE BORDER="1">
+<CAPTION>
+<H6 CLASS="FM-CaptionCodeExample">
+<A NAME="50475009_pgfId-1202755"></A>Code Example 3-15. Managing parallel file access properties<DIV>
+<IMG SRC="HDF5_Users_Guide-1.gif" ALT="">
+</DIV>
+</H6>
+</CAPTION>
+<TR>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1202830"></A>&nbsp;</P>
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1202782"></A>herr_t H5Pset_fapl_mpio (hid_t <EM CLASS="CodeItalic">
+fapl_id</EM>
+, MPI_Comm <EM CLASS="CodeItalic">
+comm</EM>
+, </P>
+<P CLASS="FM-BodyCodeIndent">
+<A NAME="50475009_pgfId-1202783"></A>MPI_info <EM CLASS="CodeItalic">
+info</EM>
+)</P>
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1202784"></A>herr_t H5Pget_fapl_mpio (hid_t <EM CLASS="CodeItalic">
+fapl_id</EM>
+, MPI_Comm <EM CLASS="CodeItalic">
+*comm</EM>
+, </P>
+<P CLASS="FM-BodyCodeIndent">
+<A NAME="50475009_pgfId-1202785"></A>MPI_info <EM CLASS="CodeItalic">
+*info</EM>
+)</P>
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1202753"></A>&nbsp;</P>
+</TD>
+</TR>
+</TABLE>
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1184202"></A>The file access properties managed by <CODE CLASS="Code">
+H5Pset_fapl_mpio</CODE>
+ and retrieved by <CODE CLASS="Code">
+H5Pget_fapl_mpio</CODE>
+ are the MPI communicator, <EM CLASS="CodeItalic">
+comm</EM>
+, and the MPI info object, <EM CLASS="CodeItalic">
+info</EM>
+. <CODE CLASS="Code">
+comm</CODE>
+ and <CODE CLASS="Code">
+info</CODE>
+ are used for file open. <CODE CLASS="Code">
+info</CODE>
+ is an information object much like an HDF5 property list. Both are defined in <CODE CLASS="Code">
+MPI_FILE_OPEN</CODE>
+ of MPI-2. </P>
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1184210"></A>The communicator and the info object are saved in the file access property list <EM CLASS="CodeItalic">
+fapl_id</EM>
+. <EM CLASS="CodeItalic">
+fapl_id</EM>
+ can then be passed to <CODE CLASS="Code">
+MPI_FILE_OPEN</CODE>
+ to create and/or open the file. </P>
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1184215"></A><CODE CLASS="Code">
+H5Pset_fapl_mpio</CODE>
+ and <CODE CLASS="Code">
+H5Pget_fapl_mpio</CODE>
+ are available only in the parallel HDF5 Library and are not collective functions. The Parallel driver is available only in the parallel HDF5 Library.</P>
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1184220"></A>Additional parameters may be added to these functions in the future. </P>
+</DIV>
+</DIV>
+<DIV>
+<H2 CLASS="FM-Heading-Level2">
+<A NAME="50475009_pgfId-1184378"></A>3.9. <A NAME="50475009_Examples"></A>Code Examples for Opening and Closing Files</H2>
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1184385"></A>&nbsp;</P>
+<DIV>
+<H3 CLASS="FM-Heading-Level3">
+<A NAME="50475009_pgfId-1184386"></A>3.9.1. Example Using the H5F_ACC_TRUNC Flag</H3>
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1184388"></A>The following example uses the <CODE CLASS="Code">
+H5F_ACC_TRUNC</CODE>
+ flag when it creates a new file. The default file creation and file access properties are also used. Using <CODE CLASS="Code">
+H5F_ACC_TRUNC</CODE>
+ means the function will look for an existing file with the name specified by the function. In this case, that name is <CODE CLASS="Code">
+FILE</CODE>
+. If the function does not find an existing file, it will create one. If it does find an existing file, it will empty the file in preparation for a new set of data. The identifier for the &quot;new&quot; file will be passed back to the application program. <A HREF="HDF5_Users_Guide-4.htm#50475009_FileAccessModes" CLASS="XRef">For more information, see File Access Modes. </A></P>
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1184423"></A>&nbsp;</P>
+<TABLE BORDER="1">
+<CAPTION>
+<H6 CLASS="FM-CaptionCodeExample">
+<A NAME="50475009_pgfId-1202839"></A>Code Example 3-16. Creating a file with default creation and access properties<DIV>
+<IMG SRC="HDF5_Users_Guide-1.gif" ALT="">
+</DIV>
+</H6>
+</CAPTION>
+<TR>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1202861"></A>&nbsp;</P>
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1202865"></A>hid_t file; /* identifier */</P>
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1202866"></A>&nbsp;</P>
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1202867"></A>/* Create a new file using H5F_ACC_TRUNC access, default file </P>
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1202868"></A> * creation properties, and default file access properties. */</P>
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1202869"></A>file = H5Fcreate(FILE, H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT);</P>
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1202870"></A>&nbsp;</P>
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1202871"></A>/* Close the file. */</P>
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1202872"></A>status = H5Fclose(file);</P>
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1202837"></A>&nbsp;</P>
+</TD>
+</TR>
+</TABLE>
+</DIV>
+<DIV>
+<H3 CLASS="FM-Heading-Level3">
+<A NAME="50475009_pgfId-1184425"></A>3.9.2. Example with the File Creation Property List</H3>
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1184427"></A>The example below shows how to create a file with 64-bit object offsets and lengths.</P>
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1184455"></A>&nbsp;</P>
+<TABLE BORDER="1">
+<CAPTION>
+<H6 CLASS="FM-CaptionCodeExample">
+<A NAME="50475009_pgfId-1202891"></A>Code Example 3-17. Creating a file with 64-bit offsets<DIV>
+<IMG SRC="HDF5_Users_Guide-1.gif" ALT="">
+</DIV>
+</H6>
+</CAPTION>
+<TR>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1202913"></A>&nbsp;</P>
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1202917"></A>hid_t create_plist;</P>
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1202918"></A>hid_t file_id;</P>
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1202919"></A>create_plist = H5Pcreate(H5P_FILE_CREATE);</P>
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1202920"></A>H5Pset_sizes(create_plist, 8, 8);</P>
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1202921"></A>file_id = H5Fcreate(“test.h5”, H5F_ACC_TRUNC, </P>
+<P CLASS="FM-BodyCodeIndent">
+<A NAME="50475009_pgfId-1202922"></A>create_plist, H5P_DEFAULT);</P>
+<P CLASS="FM-BodyCodeIndent">
+<A NAME="50475009_pgfId-1202923"></A>.</P>
+<P CLASS="FM-BodyCodeIndent">
+<A NAME="50475009_pgfId-1202924"></A>.</P>
+<P CLASS="FM-BodyCodeIndent">
+<A NAME="50475009_pgfId-1202925"></A>.</P>
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1202926"></A>H5Fclose(file_id);</P>
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1202889"></A>&nbsp;</P>
+</TD>
+</TR>
+</TABLE>
+</DIV>
+<DIV>
+<H3 CLASS="FM-Heading-Level3">
+<A NAME="50475009_pgfId-1184458"></A>3.9.3. Example with File Access Property List</H3>
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1184460"></A>This example shows how to open an existing file for independent datasets access by MPI parallel I/O:</P>
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1184488"></A>&nbsp;</P>
+<TABLE BORDER="1">
+<CAPTION>
+<H6 CLASS="FM-CaptionCodeExample">
+<A NAME="50475009_pgfId-1202971"></A>Code Example 3-18. Opening an existing file for parallel I/O<DIV>
+<IMG SRC="HDF5_Users_Guide-1.gif" ALT="">
+</DIV>
+</H6>
+</CAPTION>
+<TR>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1202997"></A>&nbsp;</P>
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1203001"></A>hid_t access_plist;</P>
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1203002"></A>hid_t file_id;</P>
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1203003"></A>access_plist = H5Pcreate(H5P_FILE_ACCESS);</P>
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1203004"></A>H5Pset_fapl_mpi(access_plist, MPI_COMM_WORLD, MPI_INFO_NULL);</P>
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1203005"></A>&nbsp;</P>
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1203006"></A>/* H5Fopen must be called collectively */</P>
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1203007"></A>file_id = H5Fopen(“test.h5”, H5F_ACC_RDWR, access_plist); </P>
+<P CLASS="FM-BodyCodeIndent">
+<A NAME="50475009_pgfId-1203008"></A>.</P>
+<P CLASS="FM-BodyCodeIndent">
+<A NAME="50475009_pgfId-1203009"></A>.</P>
+<P CLASS="FM-BodyCodeIndent">
+<A NAME="50475009_pgfId-1203010"></A>.</P>
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1203011"></A>/* H5Fclose must be called collectively */</P>
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1203012"></A>H5Fclose(file_id);</P>
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1202969"></A>&nbsp;</P>
+</TD>
+</TR>
+</TABLE>
+</DIV>
+</DIV>
+<DIV>
+<H2 CLASS="FM-Heading-Level2">
+<A NAME="50475009_pgfId-1184493"></A>3.10. <A NAME="50475009_MountingFiles"></A>Working with Multiple HDF5 Files</H2>
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1184495"></A>Multiple HDF5 files can be associated so that the files can be worked with as though all the information is in a single HDF5 file. A temporary association can be set up by means of the <CODE CLASS="Code">
+H5Fmount</CODE>
+ function. A permanent association can be set up by means of the external link function <CODE CLASS="Code">
+H5Lcreate_external</CODE>
+. </P>
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1184501"></A>The purpose of this section is to describe what happens when the <CODE CLASS="Code">
+H5Fmount</CODE>
+ function is used to mount one file on another. </P>
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1184504"></A>When a file is mounted on another, the mounted file is mounted at a group, and the root group of the mounted file takes the place of that group until the mounted file is unmounted or until the files are closed. </P>
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1184508"></A>The figure below shows two files before one is mounted on the other. File1 has two groups and three datasets. The group that is the target of the A link has links, Z and Y, to two of the datasets. The group that is the target of the B link has a link, W, to the other dataset. File2 has three groups and three datasets. The groups in File2 are the targets of the AA, BB, and CC links. The datasets in File2 are the targets of the ZZ, YY, and WW links. </P>
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1201382"></A>&nbsp;</P>
+<TABLE BORDER="1">
+<CAPTION>
+<H6 CLASS="FM-CaptionFigure">
+<A NAME="50475009_pgfId-1201380"></A>Figure 3-3. Two separate files<DIV>
+<IMG SRC="HDF5_Users_Guide-1.gif" ALT="">
+</DIV>
+</H6>
+</CAPTION>
+<TR>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1201378"></A>&nbsp;</P>
+<DIV>
+<IMG SRC="HDF5_Users_Guide-4.gif" ALT="">
+</DIV>
+</TD>
+</TR>
+</TABLE>
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1184532"></A>The figure below shows the two files after File2 has been mounted File1 at the group that is the target of the B link.</P>
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1201406"></A>&nbsp;</P>
+<TABLE BORDER="1">
+<CAPTION>
+<H6 CLASS="FM-CaptionFigure">
+<A NAME="50475009_pgfId-1201404"></A>Figure 3-4. File2 mounted on File1<DIV>
+<IMG SRC="HDF5_Users_Guide-1.gif" ALT="">
+</DIV>
+</H6>
+<H6 CLASS="FM-CaptionNote">
+<A NAME="50475009_pgfId-1201543"></A>Note that the dataset that is the target of the W link is not shown in the figure above. That dataset is masked by the mounted file. </H6>
+</CAPTION>
+<TR>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1201402"></A>&nbsp;</P>
+<DIV>
+<IMG SRC="HDF5_Users_Guide-5.gif" ALT="">
+</DIV>
+</TD>
+</TR>
+</TABLE>
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1184555"></A>If a file is mounted on a group that has members, those members are hidden until the mounted file is unmounted. There are two ways around this if you need to work with a group member. One is to mount the file on an empty group. Another is to open the group member before you mount the file. Opening the group member will return an identifier that you can use to locate the group member. </P>
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1184562"></A>The example below shows how <CODE CLASS="Code">
+H5Fmount</CODE>
+ might be used to mount File2 onto File1. </P>
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1184583"></A>&nbsp;</P>
+<TABLE BORDER="1">
+<CAPTION>
+<H6 CLASS="FM-CaptionCodeExample">
+<A NAME="50475009_pgfId-1203042"></A>Code Example 3-19. Using H5Fmount<DIV>
+<IMG SRC="HDF5_Users_Guide-1.gif" ALT="">
+</DIV>
+</H6>
+<H6 CLASS="FM-CaptionNote">
+<A NAME="50475009_pgfId-1203116"></A>loc_id is the file identifier for File1, /B is the link path to the group where File2 is mounted, child_id is the file identifier for File2, and plist_id is a property list identifier.</H6>
+</CAPTION>
+<TR>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1203083"></A>&nbsp;</P>
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1203087"></A>status = H5Fmount(loc_id, &quot;/B&quot;, child_id, plist_id) </P>
+<P CLASS="FM-BodyCode">
+<A NAME="50475009_pgfId-1203098"></A>&nbsp;</P>
+</TD>
+</TR>
+</TABLE>
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1184587"></A><A HREF="HDF5_Users_Guide-5.htm#50475018_GroupsChapter" CLASS="XRef">For more information, see HDF5 Groups. </A>, and the <EM CLASS="LT-LinkText">
+<A HREF="http://www.hdfgroup.org/HDF5/doc/RM/RM_H5F.html#File-Mount" CLASS="URL">H5Fmount</A></EM>
+, <EM CLASS="LT-LinkText">
+<A HREF="http://www.hdfgroup.org/HDF5/doc/RM/RM_H5F.html#File-Unmount" CLASS="URL">H5Funmount</A></EM>
+, and <EM CLASS="LT-LinkText">
+<A HREF="http://www.hdfgroup.org/HDF5/doc/RM/RM_H5L.html#Link-CreateExternal" CLASS="URL">H5Lcreate_external</A></EM>
+ functions in the <EM CLASS="LT-LinkText">
+<A HREF="http://www.hdfgroup.org/HDF5/doc/RM/RM_H5Front.html" CLASS="URL">HDF5 Reference Manual</A></EM>
+.</P>
+<P CLASS="FM-Body">
+<A NAME="50475009_pgfId-1181485"></A>&nbsp;</P>
+<P CLASS="FM-Body">
+<A NAME="50475018_pgfId-1192636"></A>&lt;!doctype HTML public &quot;-//W3C//DTD HTML 4.0 Frameset//EN&quot;&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475018_pgfId-1192637"></A>&lt;html&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475018_pgfId-1192638"></A>&lt;head&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475018_pgfId-1192639"></A>&lt;title&gt;Chapter 4: HDF5 Groups&lt;/title&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475018_pgfId-1192640"></A>&nbsp;</P>
+<P CLASS="FM-Body">
+<A NAME="50475018_pgfId-1192641"></A>&lt;!--(Meta)==========================================================--&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475018_pgfId-1192642"></A>&nbsp;</P>
+<P CLASS="FM-Body">
+<A NAME="50475018_pgfId-1192643"></A>&lt;!--(Links)=========================================================--&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475018_pgfId-1192644"></A>&nbsp;</P>
+<P CLASS="FM-Body">
+<A NAME="50475018_pgfId-1192645"></A>&lt;!--( Begin styles definition )=====================================--&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475018_pgfId-1192646"></A>&lt;link href=&quot;ed_styles/NewUGelect.css&quot; rel=&quot;stylesheet&quot; type=&quot;text/css&quot;&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475018_pgfId-1192647"></A>&lt;!--( End styles definition )=======================================--&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475018_pgfId-1192648"></A>&nbsp;</P>
+<P CLASS="FM-Body">
+<A NAME="50475018_pgfId-1192649"></A>&lt;/head&gt; </P>
+<P CLASS="FM-Body">
+<A NAME="50475018_pgfId-1192650"></A>&nbsp;</P>
+<P CLASS="FM-Body">
+<A NAME="50475018_pgfId-1192651"></A>&lt;body&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475018_pgfId-1192652"></A>&nbsp;</P>
+<P CLASS="FM-Body">
+<A NAME="50475018_pgfId-1192653"></A>&lt;!-- #BeginLibraryItem &quot;/ed_libs/styles_UG.lbi&quot; --&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475018_pgfId-1192654"></A>&lt;!--</P>
+<P CLASS="FM-Body">
+<A NAME="50475018_pgfId-1192655"></A>  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *</P>
+<P CLASS="FM-Body">
+<A NAME="50475018_pgfId-1192656"></A>  * Copyright by The HDF Group.                                               *</P>
+<P CLASS="FM-Body">
+<A NAME="50475018_pgfId-1192657"></A>  * Copyright by the Board of Trustees of the University of Illinois.         *</P>
+<P CLASS="FM-Body">
+<A NAME="50475018_pgfId-1192658"></A>  * All rights reserved.                                                      *</P>
+<P CLASS="FM-Body">
+<A NAME="50475018_pgfId-1192659"></A>  *                                                                           *</P>
+<P CLASS="FM-Body">
+<A NAME="50475018_pgfId-1192660"></A>  * This file is part of HDF5.  The full HDF5 copyright notice, including     *</P>
+<P CLASS="FM-Body">
+<A NAME="50475018_pgfId-1192661"></A>  * terms governing use, modification, and redistribution, is contained in    *</P>
+<P CLASS="FM-Body">
+<A NAME="50475018_pgfId-1192662"></A>  * the files COPYING and Copyright.html.  COPYING can be found at the root   *</P>
+<P CLASS="FM-Body">
+<A NAME="50475018_pgfId-1192663"></A>  * of the source code distribution tree; Copyright.html can be found at the  *</P>
+<P CLASS="FM-Body">
+<A NAME="50475018_pgfId-1192664"></A>  * root level of an installed copy of the electronic HDF5 document set and   *</P>
+<P CLASS="FM-Body">
+<A NAME="50475018_pgfId-1192665"></A>  * is linked from the top-level documents page.  It can also be found at     *</P>
+<P CLASS="FM-Body">
+<A NAME="50475018_pgfId-1192666"></A>  * http://hdfgroup.org/HDF5/doc/Copyright.html.  If you do not have          *</P>
+<P CLASS="FM-Body">
+<A NAME="50475018_pgfId-1192667"></A>  * access to either file, you may request a copy from help@hdfgroup.org.     *</P>
+<P CLASS="FM-Body">
+<A NAME="50475018_pgfId-1192668"></A>  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *</P>
+<P CLASS="FM-Body">
+<A NAME="50475018_pgfId-1192669"></A> --&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475018_pgfId-1192670"></A>&lt;!-- #EndLibraryItem --&gt;&lt;!-- HEADER LEFT &quot;HDF5 User's Guide&quot; --&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475018_pgfId-1192671"></A>&lt;!-- HEADER RIGHT &quot;HDF5 Groups&quot; --&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475018_pgfId-1192672"></A>&nbsp;</P>
+<P CLASS="FM-Body">
+<A NAME="50475018_pgfId-1192673"></A>&lt;!--( TOC )=========================================================--&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475018_pgfId-1192674"></A>&lt;SCRIPT language=&quot;JavaScript&quot;&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475018_pgfId-1192675"></A>&lt;!--</P>
+<P CLASS="FM-Body">
+<A NAME="50475018_pgfId-1192676"></A>document.writeln ('\</P>
+<P CLASS="FM-Body">
+<A NAME="50475018_pgfId-1192677"></A>&lt;table x-use-null-cells\</P>
+<P CLASS="FM-Body">
+<A NAME="50475018_pgfId-1192678"></A>                align=right\</P>
+<P CLASS="FM-Body">
+<A NAME="50475018_pgfId-1192679"></A>		width=240\</P>
+<P CLASS="FM-Body">
+<A NAME="50475018_pgfId-1192680"></A>		cellspacing=&quot;0&quot;\</P>
+<P CLASS="FM-Body">
+<A NAME="50475018_pgfId-1192681"></A>		class=&quot;tocTable&quot;&gt;\</P>
+<P CLASS="FM-Body">
+<A NAME="50475018_pgfId-1192682"></A>  &lt;tr valign=&quot;top&quot;&gt; \</P>
+<P CLASS="FM-Body">
+<A NAME="50475018_pgfId-1192683"></A>    &lt;td class=&quot;tocTableHeaderCell&quot; colspan=&quot;2&quot;&gt; \</P>
+<P CLASS="FM-Body">
+<A NAME="50475018_pgfId-1192684"></A>        &lt;span class=&quot;TableHead&quot;&gt;Chapter Contents&lt;/span&gt;&lt;/td&gt;\</P>
+<P CLASS="FM-Body">
+<A NAME="50475018_pgfId-1192685"></A>  &lt;/tr&gt;\</P>
+<P CLASS="FM-Body">
+<A NAME="50475018_pgfId-1192686"></A>--&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475018_pgfId-1192687"></A>&lt;!-- Table Version 3 --&gt;\</P>
+<P CLASS="FM-Body">
+<A NAME="50475018_pgfId-1192688"></A>&lt;!--</P>
+<P CLASS="FM-Body">
+<A NAME="50475018_pgfId-1192689"></A>  &lt;tr valign=&quot;top&quot;&gt; \</P>
+<P CLASS="FM-Body">
+<A NAME="50475018_pgfId-1192690"></A>    &lt;td class=&quot;tocTableContentCell2&quot;&gt; \</P>
+<P CLASS="FM-Body">
+<A NAME="50475018_pgfId-1192691"></A>      &lt;a href=&quot;#Intro&quot;&gt;1.&lt;/a&gt;&lt;/td&gt;\</P>
+<P CLASS="FM-Body">
+<A NAME="50475018_pgfId-1192692"></A>    &lt;td class=&quot;tocTableContentCell3&quot;&gt;\</P>
+<P CLASS="FM-Body">
+<A NAME="50475018_pgfId-1192693"></A>	  &lt;a href=&quot;#Intro&quot;&gt;Introduction&lt;/a&gt;&lt;/td&gt; \</P>
+<P CLASS="FM-Body">
+<A NAME="50475018_pgfId-1192694"></A>  &lt;/tr&gt;\</P>
+<P CLASS="FM-Body">
+<A NAME="50475018_pgfId-1192695"></A>  &lt;tr valign=&quot;top&quot;&gt; \</P>
+<P CLASS="FM-Body">
+<A NAME="50475018_pgfId-1192696"></A>    &lt;td class=&quot;tocTableContentCell2&quot;&gt; \</P>
+<P CLASS="FM-Body">
+<A NAME="50475018_pgfId-1192697"></A>      &lt;a href=&quot;#DGroupObj&quot;&gt;2.&lt;/a&gt;&lt;/td&gt;\</P>
+<P CLASS="FM-Body">
+<A NAME="50475018_pgfId-1192698"></A>    &lt;td class=&quot;tocTableContentCell3&quot;&gt;\</P>
+<P CLASS="FM-Body">
+<A NAME="50475018_pgfId-1192699"></A>	  &lt;a href=&quot;#DGroupObj&quot;&gt;Description of the Group Object&lt;/a&gt;&lt;/td&gt;\</P>
+<P CLASS="FM-Body">
+<A NAME="50475018_pgfId-1192700"></A>  &lt;/tr&gt;\</P>
+<P CLASS="FM-Body">
+<A NAME="50475018_pgfId-1192701"></A>  &lt;tr valign=&quot;top&quot;&gt; \</P>
+<P CLASS="FM-Body">
+<A NAME="50475018_pgfId-1192702"></A>    &lt;td class=&quot;tocTableContentCell2&quot;&gt; \</P>
+<P CLASS="FM-Body">
+<A NAME="50475018_pgfId-1192703"></A>      &lt;a href=&quot;#H5Dump&quot;&gt;3.&lt;/a&gt;&lt;/td&gt;\</P>
+<P CLASS="FM-Body">
+<A NAME="50475018_pgfId-1192704"></A>    &lt;td class=&quot;tocTableContentCell3&quot;&gt;\</P>
+<P CLASS="FM-Body">
+<A NAME="50475018_pgfId-1192705"></A>	  &lt;a href=&quot;#H5Dump&quot;&gt;Using &lt;code&gt;h5dump&lt;/code&gt;&lt;/a&gt;&lt;/td&gt; \</P>
+<P CLASS="FM-Body">
+<A NAME="50475018_pgfId-1192706"></A>  &lt;/tr&gt;\</P>
+<P CLASS="FM-Body">
+<A NAME="50475018_pgfId-1192707"></A>  &lt;tr valign=&quot;top&quot;&gt; \</P>
+<P CLASS="FM-Body">
+<A NAME="50475018_pgfId-1192708"></A>    &lt;td class=&quot;tocTableContentCell2&quot;&gt; \</P>
+<P CLASS="FM-Body">
+<A NAME="50475018_pgfId-1192709"></A>      &lt;a href=&quot;#GroupFuncSums&quot;&gt;4.&lt;/a&gt;&lt;/td&gt;\</P>
+<P CLASS="FM-Body">
+<A NAME="50475018_pgfId-1192710"></A>    &lt;td class=&quot;tocTableContentCell3&quot;&gt;\</P>
+<P CLASS="FM-Body">
+<A NAME="50475018_pgfId-1192711"></A>	  &lt;a href=&quot;#GroupFuncSums&quot;&gt;Group (H5G) Function Summaries&lt;/a&gt;&lt;/td&gt;\</P>
+<P CLASS="FM-Body">
+<A NAME="50475018_pgfId-1192712"></A>  &lt;/tr&gt;\</P>
+<P CLASS="FM-Body">
+<A NAME="50475018_pgfId-1192713"></A>  &lt;tr valign=&quot;top&quot;&gt; \</P>
+<P CLASS="FM-Body">
+<A NAME="50475018_pgfId-1192714"></A>    &lt;td class=&quot;tocTableContentCell2&quot;&gt; \</P>
+<P CLASS="FM-Body">
+<A NAME="50475018_pgfId-1192715"></A>      &lt;a href=&quot;#ProgModel&quot;&gt;5.&lt;/a&gt;&lt;/td&gt;\</P>
+<P CLASS="FM-Body">
+<A NAME="50475018_pgfId-1192716"></A>    &lt;td class=&quot;tocTableContentCell3&quot;&gt;\</P>
+<P CLASS="FM-Body">
+<A NAME="50475018_pgfId-1192717"></A>	  &lt;a href=&quot;#ProgModel&quot;&gt;Programming Model&lt;/a&gt;&lt;/td&gt; \</P>
+<P CLASS="FM-Body">
+<A NAME="50475018_pgfId-1192718"></A>  &lt;/tr&gt;\</P>
+<P CLASS="FM-Body">
+<A NAME="50475018_pgfId-1192719"></A>  &lt;tr valign=&quot;top&quot;&gt; \</P>
+<P CLASS="FM-Body">
+<A NAME="50475018_pgfId-1192720"></A>    &lt;td class=&quot;tocTableContentCell2&quot;&gt; \</P>
+<P CLASS="FM-Body">
+<A NAME="50475018_pgfId-1192721"></A>      &lt;a href=&quot;#DiscoverInfo&quot;&gt;6.&lt;/a&gt;&lt;/td&gt;\</P>
+<P CLASS="FM-Body">
+<A NAME="50475018_pgfId-1192722"></A>    &lt;td class=&quot;tocTableContentCell3&quot;&gt;\</P>
+<P CLASS="FM-Body">
+<A NAME="50475018_pgfId-1192723"></A>	  &lt;a href=&quot;#DiscoverInfo&quot;&gt;Discovering Information About Objects&lt;/a&gt;&lt;/td&gt;\</P>
+<P CLASS="FM-Body">
+<A NAME="50475018_pgfId-1192724"></A>  &lt;/tr&gt;\</P>
+<P CLASS="FM-Body">
+<A NAME="50475018_pgfId-1192725"></A>  &lt;tr valign=&quot;top&quot;&gt; \</P>
+<P CLASS="FM-Body">
+<A NAME="50475018_pgfId-1192726"></A>    &lt;td class=&quot;tocTableContentCell2&quot;&gt; \</P>
+<P CLASS="FM-Body">
+<A NAME="50475018_pgfId-1192727"></A>      &lt;a href=&quot;#DiscoverGrObjs&quot;&gt;7.&lt;/a&gt;&lt;/td&gt;\</P>
+<P CLASS="FM-Body">
+<A NAME="50475018_pgfId-1192728"></A>    &lt;td class=&quot;tocTableContentCell3&quot;&gt;\</P>
+<P CLASS="FM-Body">
+<A NAME="50475018_pgfId-1192729"></A>	  &lt;a href=&quot;#DiscoverGrObjs&quot;&gt;Discovering Objects in a Group&lt;/a&gt;&lt;/td&gt;\</P>
+<P CLASS="FM-Body">
+<A NAME="50475018_pgfId-1192730"></A>  &lt;/tr&gt;\</P>
+<P CLASS="FM-Body">
+<A NAME="50475018_pgfId-1192731"></A>  &lt;tr valign=&quot;top&quot;&gt; \</P>
+<P CLASS="FM-Body">
+<A NAME="50475018_pgfId-1192732"></A>    &lt;td class=&quot;tocTableContentCell2&quot;&gt; \</P>
+<P CLASS="FM-Body">
+<A NAME="50475018_pgfId-1192733"></A>      &lt;a href=&quot;#DiscoverAll&quot;&gt;8.&lt;/a&gt;&lt;/td&gt;\</P>
+<P CLASS="FM-Body">
+<A NAME="50475018_pgfId-1192734"></A>    &lt;td class=&quot;tocTableContentCell3&quot;&gt;\</P>
+<P CLASS="FM-Body">
+<A NAME="50475018_pgfId-1192735"></A>	  &lt;a href=&quot;#DiscoverAll&quot;&gt;Discovering All the Objects in the File&lt;/a&gt;&lt;/td&gt;\</P>
+<P CLASS="FM-Body">
+<A NAME="50475018_pgfId-1192736"></A>  &lt;/tr&gt;\</P>
+<P CLASS="FM-Body">
+<A NAME="50475018_pgfId-1192737"></A>\</P>
+<P CLASS="FM-Body">
+<A NAME="50475018_pgfId-1192738"></A>  &lt;tr valign=&quot;top&quot;&gt; \</P>
+<P CLASS="FM-Body">
+<A NAME="50475018_pgfId-1192739"></A>    &lt;td class=&quot;tocTableContentCell&quot;&gt; \</P>
+<P CLASS="FM-Body">
+<A NAME="50475018_pgfId-1192740"></A>--&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475018_pgfId-1192741"></A>&lt;!-- editingComment -- &quot;tocTableContentCell&quot; and &quot;tocTableContentCell4&quot; \</P>
+<P CLASS="FM-Body">
+<A NAME="50475018_pgfId-1192742"></A>--&gt;\</P>
+<P CLASS="FM-Body">
+<A NAME="50475018_pgfId-1192743"></A>&lt;!-- are the table-closing cell class.\</P>
+<P CLASS="FM-Body">
+<A NAME="50475018_pgfId-1192744"></A>    &lt;td class=&quot;tocTableContentCell2&quot;&gt; \</P>
+<P CLASS="FM-Body">
+<A NAME="50475018_pgfId-1192745"></A>--&gt;\</P>
+<P CLASS="FM-Body">
+<A NAME="50475018_pgfId-1192746"></A>&lt;!--</P>
+<P CLASS="FM-Body">
+<A NAME="50475018_pgfId-1192747"></A>      &lt;a href=&quot;#Examples&quot;&gt;9.&lt;/a&gt;&lt;/td&gt;\</P>
+<P CLASS="FM-Body">
+<A NAME="50475018_pgfId-1192748"></A>    &lt;td class=&quot;tocTableContentCell4&quot;&gt;\</P>
+<P CLASS="FM-Body">
+<A NAME="50475018_pgfId-1192749"></A>	  &lt;a href=&quot;#Examples&quot;&gt;Examples of File Structures&lt;/a&gt;\</P>
+<P CLASS="FM-Body">
+<A NAME="50475018_pgfId-1192750"></A>--&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475018_pgfId-1192751"></A>&lt;!-- editingComment -- This section not currently complete or validated.\</P>
+<P CLASS="FM-Body">
+<A NAME="50475018_pgfId-1192752"></A>  &lt;/tr&gt;&lt;tr valign=&quot;top&quot;&gt; \</P>
+<P CLASS="FM-Body">
+<A NAME="50475018_pgfId-1192753"></A>    &lt;td class=&quot;tocTableContentCell&quot;&gt; \</P>
+<P CLASS="FM-Body">
+<A NAME="50475018_pgfId-1192754"></A>    &lt;a href=&quot;#Appendix&quot;&gt;10&lt;/a&gt;&lt;/td&gt;\</P>
+<P CLASS="FM-Body">
+<A NAME="50475018_pgfId-1192755"></A>    &lt;td class=&quot;tocTableContentCell4&quot;&gt;&lt;a href=&quot;#Appendix&quot;&gt;Appendix&lt;/a&gt;&lt;/td&gt;\</P>
+<P CLASS="FM-Body">
+<A NAME="50475018_pgfId-1192756"></A>--&gt;\</P>
+<P CLASS="FM-Body">
+<A NAME="50475018_pgfId-1192757"></A>&lt;!--</P>
+<P CLASS="FM-Body">
+<A NAME="50475018_pgfId-1192758"></A>  &lt;/td&gt;&lt;/tr&gt;\</P>
+<P CLASS="FM-Body">
+<A NAME="50475018_pgfId-1192759"></A>&lt;/table&gt;\</P>
+<P CLASS="FM-Body">
+<A NAME="50475018_pgfId-1192760"></A>')</P>
+<P CLASS="FM-Body">
+<A NAME="50475018_pgfId-1192761"></A>--&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475018_pgfId-1192762"></A>&lt;/SCRIPT&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475018_pgfId-1192763"></A>&lt;!--(End TOC)=======================================================--&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475018_pgfId-1192764"></A>&nbsp;</P>
+<P CLASS="FM-Body">
+<A NAME="50475018_pgfId-1192765"></A>&lt;!--(TOC VERS 1 and 2)==============================================--&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475018_pgfId-1192766"></A>&lt;!-- Table Version 1</P>
+<P CLASS="FM-Body">
+<A NAME="50475018_pgfId-1192767"></A>  &lt;tr valign=&quot;top&quot;&gt; </P>
+<P CLASS="FM-Body">
+<A NAME="50475018_pgfId-1192768"></A>    &lt;td class=&quot;tocTableContentCell&quot; colspan=&quot;2&quot;&gt; </P>
+<P CLASS="FM-Body">
+<A NAME="50475018_pgfId-1192769"></A>    &lt;a href=&quot;#Intro&quot;&gt;1: Introduction&lt;/a&gt; </P>
+<P CLASS="FM-Body">
+<A NAME="50475018_pgfId-1192770"></A>    &lt;br /&gt; </P>
+<P CLASS="FM-Body">
+<A NAME="50475018_pgfId-1192771"></A>    &lt;a href=&quot;#DGroupObj&quot;&gt;2: Description of the Group&lt;/a&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475018_pgfId-1192772"></A>    &lt;br /&gt; </P>
+<P CLASS="FM-Body">
+<A NAME="50475018_pgfId-1192773"></A>    &lt;a href=&quot;#h5dump&quot;&gt;3: Using &lt;code&gt;h5dump&lt;/code&gt;&lt;/a&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475018_pgfId-1192774"></A>    &lt;br /&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475018_pgfId-1192775"></A>    &amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&lt;a href=&quot;#DGroupObj&quot;&gt;Object&lt;/a&gt; </P>
+<P CLASS="FM-Body">
+<A NAME="50475018_pgfId-1192776"></A>    &lt;br /&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475018_pgfId-1192777"></A>    &lt;a href=&quot;#GroupFuncSums&quot;&gt;4: Group Function&lt;/a&gt; </P>
+<P CLASS="FM-Body">
+<A NAME="50475018_pgfId-1192778"></A>    &lt;br /&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475018_pgfId-1192779"></A>    &amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&lt;a href=&quot;#GroupFuncSums&quot;&gt;Summaries&lt;/a&gt; </P>
+<P CLASS="FM-Body">
+<A NAME="50475018_pgfId-1192780"></A>    &lt;br /&gt; </P>
+<P CLASS="FM-Body">
+<A NAME="50475018_pgfId-1192781"></A>    &lt;a href=&quot;#ProgModel&quot;&gt;5: The Programming Model&lt;/a&gt; </P>
+<P CLASS="FM-Body">
+<A NAME="50475018_pgfId-1192782"></A>    &lt;br /&gt; </P>
+<P CLASS="FM-Body">
+<A NAME="50475018_pgfId-1192783"></A>    &lt;a href=&quot;#DiscoverInfo&quot;&gt;6: Discovering Information&lt;/a&gt; </P>
+<P CLASS="FM-Body">
+<A NAME="50475018_pgfId-1192784"></A>    &lt;br /&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475018_pgfId-1192785"></A>    &amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&lt;a href=&quot;#DiscoverInfo&quot;&gt;About Objects&lt;/a&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475018_pgfId-1192786"></A>    &lt;br /&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475018_pgfId-1192787"></A>    &lt;a href=&quot;#DiscoverAll&quot;&gt;7: Discovering All the&lt;/a&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475018_pgfId-1192788"></A>    &lt;br /&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475018_pgfId-1192789"></A>    &amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&lt;a href=&quot;#DiscoverAll&quot;&gt;Objects in the File&lt;/a&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475018_pgfId-1192790"></A>    &lt;br /&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475018_pgfId-1192791"></A>    &lt;a href=&quot;#Examples&quot;&gt;8: Examples of File&lt;/a&gt; </P>
+<P CLASS="FM-Body">
+<A NAME="50475018_pgfId-1192792"></A>    &lt;br /&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475018_pgfId-1192793"></A>    &amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&lt;a href=&quot;#Examples&quot;&gt;Structures&lt;/a&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475018_pgfId-1192794"></A>    &lt;br /&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475018_pgfId-1192795"></A>    &lt;a href=&quot;#Appendix&quot;&gt;9: Appendix&lt;/a&gt; </P>
+<P CLASS="FM-Body">
+<A NAME="50475018_pgfId-1192796"></A>    &lt;/td&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475018_pgfId-1192797"></A>  &lt;/tr&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475018_pgfId-1192798"></A>--&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475018_pgfId-1192799"></A>&nbsp;</P>
+<P CLASS="FM-Body">
+<A NAME="50475018_pgfId-1192800"></A>&lt;!-- Table Version 2</P>
+<P CLASS="FM-Body">
+<A NAME="50475018_pgfId-1192801"></A>  &lt;tr valign=&quot;top&quot;&gt; </P>
+<P CLASS="FM-Body">
+<A NAME="50475018_pgfId-1192802"></A>    &lt;td class=&quot;tocTableContentCell2&quot;&gt; </P>
+<P CLASS="FM-Body">
+<A NAME="50475018_pgfId-1192803"></A>    &lt;a href=&quot;#Intro&quot;&gt;1&lt;/a&gt;&lt;/td&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475018_pgfId-1192804"></A>    &lt;td class=&quot;tocTableContentCell3&quot;&gt;&lt;a href=&quot;#Intro&quot;&gt;Introduction&lt;/a&gt; </P>
+<P CLASS="FM-Body">
+<A NAME="50475018_pgfId-1192805"></A>  &lt;/tr&gt;&lt;tr valign=&quot;top&quot;&gt; </P>
+<P CLASS="FM-Body">
+<A NAME="50475018_pgfId-1192806"></A>    &lt;td class=&quot;tocTableContentCell2&quot;&gt; </P>
+<P CLASS="FM-Body">
+<A NAME="50475018_pgfId-1192807"></A>    &lt;a href=&quot;#DGroupObj&quot;&gt;2&lt;/a&gt;&lt;/td&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475018_pgfId-1192808"></A>    &lt;td class=&quot;tocTableContentCell3&quot;&gt;&lt;a href=&quot;#DGroupObj&quot;&gt;Description of the Group Object&lt;/a&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475018_pgfId-1192809"></A>  &lt;/tr&gt;&lt;tr valign=&quot;top&quot;&gt; </P>
+<P CLASS="FM-Body">
+<A NAME="50475018_pgfId-1192810"></A>    &lt;td class=&quot;tocTableContentCell2&quot;&gt; </P>
+<P CLASS="FM-Body">
+<A NAME="50475018_pgfId-1192811"></A>    &lt;a href=&quot;#h5dump&quot;&gt;3&lt;/a&gt;&lt;/td&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475018_pgfId-1192812"></A>    &lt;td class=&quot;tocTableContentCell3&quot;&gt;&lt;a href=&quot;#h5dump&quot;&gt;Using &lt;code&gt;h5dump&lt;/code&gt;&lt;/a&gt; </P>
+<P CLASS="FM-Body">
+<A NAME="50475018_pgfId-1192813"></A>  &lt;/tr&gt;&lt;tr valign=&quot;top&quot;&gt; </P>
+<P CLASS="FM-Body">
+<A NAME="50475018_pgfId-1192814"></A>    &lt;td class=&quot;tocTableContentCell2&quot;&gt; </P>
+<P CLASS="FM-Body">
+<A NAME="50475018_pgfId-1192815"></A>    &lt;a href=&quot;#GroupFuncSums&quot;&gt;4&lt;/a&gt;&lt;/td&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475018_pgfId-1192816"></A>    &lt;td class=&quot;tocTableContentCell3&quot;&gt;&lt;a href=&quot;#GroupFuncSums&quot;&gt;Group Function Summaries&lt;/a&gt; </P>
+<P CLASS="FM-Body">
+<A NAME="50475018_pgfId-1192817"></A>  &lt;/tr&gt;&lt;tr valign=&quot;top&quot;&gt; </P>
+<P CLASS="FM-Body">
+<A NAME="50475018_pgfId-1192818"></A>    &lt;td class=&quot;tocTableContentCell2&quot;&gt; </P>
+<P CLASS="FM-Body">
+<A NAME="50475018_pgfId-1192819"></A>    &lt;a href=&quot;#ProgModel&quot;&gt;5&lt;/a&gt;&lt;/td&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475018_pgfId-1192820"></A>    &lt;td class=&quot;tocTableContentCell3&quot;&gt;&lt;a href=&quot;#ProgModel&quot;&gt;Programming Model&lt;/a&gt; </P>
+<P CLASS="FM-Body">
+<A NAME="50475018_pgfId-1192821"></A>  &lt;/tr&gt;&lt;tr valign=&quot;top&quot;&gt; </P>
+<P CLASS="FM-Body">
+<A NAME="50475018_pgfId-1192822"></A>    &lt;td class=&quot;tocTableContentCell2&quot;&gt; </P>
+<P CLASS="FM-Body">
+<A NAME="50475018_pgfId-1192823"></A>    &lt;a href=&quot;#DiscoverInfo&quot;&gt;6&lt;/a&gt;&lt;/td&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475018_pgfId-1192824"></A>    &lt;td class=&quot;tocTableContentCell3&quot;&gt;&lt;a href=&quot;#DiscoverInfo&quot;&gt;Discovering Information About Objects&lt;/a&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475018_pgfId-1192825"></A>  &lt;/tr&gt;&lt;tr valign=&quot;top&quot;&gt; </P>
+<P CLASS="FM-Body">
+<A NAME="50475018_pgfId-1192826"></A>    &lt;td class=&quot;tocTableContentCell2&quot;&gt; </P>
+<P CLASS="FM-Body">
+<A NAME="50475018_pgfId-1192827"></A>    &lt;a href=&quot;#DiscoverAll&quot;&gt;7&lt;/a&gt;&lt;/td&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475018_pgfId-1192828"></A>    &lt;td class=&quot;tocTableContentCell3&quot;&gt;&lt;a href=&quot;#DiscoverGrObjs&quot;&gt;Discovering Objects in a Group&lt;/a&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475018_pgfId-1192829"></A>  &lt;/tr&gt;&lt;tr valign=&quot;top&quot;&gt; </P>
+<P CLASS="FM-Body">
+<A NAME="50475018_pgfId-1192830"></A>    &lt;td class=&quot;tocTableContentCell2&quot;&gt; </P>
+<P CLASS="FM-Body">
+<A NAME="50475018_pgfId-1192831"></A>    &lt;a href=&quot;#DiscoverAll&quot;&gt;8&lt;/a&gt;&lt;/td&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475018_pgfId-1192832"></A>    &lt;td class=&quot;tocTableContentCell3&quot;&gt;&lt;a href=&quot;#DiscoverAll&quot;&gt;Discovering All the Objects in the File&lt;/a&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475018_pgfId-1192833"></A>  &lt;/tr&gt;&lt;tr valign=&quot;top&quot;&gt; </P>
+<P CLASS="FM-Body">
+<A NAME="50475018_pgfId-1192834"></A>    &lt;td class=&quot;tocTableContentCell2&quot;&gt; </P>
+<P CLASS="FM-Body">
+<A NAME="50475018_pgfId-1192835"></A>    &lt;a href=&quot;#Examples&quot;&gt;9&lt;/a&gt;&lt;/td&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475018_pgfId-1192836"></A>    &lt;td class=&quot;tocTableContentCell3&quot;&gt;&lt;a href=&quot;#Examples&quot;&gt;Examples of File Structures&lt;/a&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475018_pgfId-1192837"></A>  &lt;/tr&gt;&lt;tr valign=&quot;top&quot;&gt; </P>
+<P CLASS="FM-Body">
+<A NAME="50475018_pgfId-1192838"></A>    &lt;td class=&quot;tocTableContentCell&quot;&gt; </P>
+<P CLASS="FM-Body">
+<A NAME="50475018_pgfId-1192839"></A>    &lt;a href=&quot;#Appendix&quot;&gt;10&lt;/a&gt;&lt;/td&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475018_pgfId-1192840"></A>    &lt;td class=&quot;tocTableContentCell4&quot;&gt;&lt;a href=&quot;#Appendix&quot;&gt;Appendix&lt;/a&gt;&lt;/td&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475018_pgfId-1192841"></A>  &lt;/tr&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475018_pgfId-1192842"></A>--&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475018_pgfId-1192843"></A>&nbsp;</P>
+<P CLASS="FM-Body">
+<A NAME="50475018_pgfId-1192844"></A>&lt;!--(END TOC VERS 1 and 2)==========================================--&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475018_pgfId-1192845"></A>&nbsp;</P>
+<P CLASS="FM-Body">
+<A NAME="50475018_pgfId-1192846"></A>&lt;div align=&quot;center&quot;&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475018_pgfId-1192847"></A>&lt;a name=&quot;TOP&quot;&gt;</P>
+</DIV>
+<p><a href="HDF5_Users_Guide.htm">Main Page</a> | <a href="HDF5_Users_Guide-3.htm">Previous Page</a> | <a href="HDF5_Users_Guide-5.htm">Next Page</a></p></BODY>
+</HTML>

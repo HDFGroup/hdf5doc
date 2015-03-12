@@ -1,0 +1,2382 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN"><HTML>
+<HEAD>
+<META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=UTF-8">
+<META HTTP-EQUIV="Content-Style-Type" CONTENT="text/css">
+<META NAME="GENERATOR" CONTENT="Adobe FrameMaker 12.0/HTML Export Filter">
+<LINK REL="STYLESHEET" HREF="HDF5_Users_Guide.css" CHARSET="UTF-8" TYPE="text/css">
+<TITLE> 9. HDF5 Error Handling</TITLE></HEAD>
+<BODY>
+<H1 CLASS="FM-Heading-Level1">
+<A NAME="50475013_pgfId-1192736"></A>9. <A NAME="50475013_ErrorHandlingChapter"></A>HDF5 Error Handling</H1>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192737"></A>&nbsp;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192738"></A>&lt;/div&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192739"></A>&nbsp;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192740"></A>&lt;a name=&quot;Intro&quot;&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192741"></A>&lt;h3&gt;9.1. Introduction&lt;/h3&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192742"></A>&lt;/a&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192743"></A>&nbsp;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192744"></A>&lt;p&gt;The HDF5 Library provides an error reporting mechanism for both </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192745"></A>  the library itself and for user application programs.  It can trace </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192746"></A>  errors through function stack and error information like file name, </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192747"></A>  function name, line number, and error description.  &lt;/p&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192748"></A>&nbsp;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192749"></A>&lt;p&gt;Section 2 of this chapter discusses the HDF5 error handling programming </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192750"></A>  model.  &lt;/p&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192751"></A>&nbsp;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192752"></A>&lt;p&gt;Section 3 presents summaries of HDF5&amp;rsquo;s error handling functions.&lt;/p&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192753"></A>&nbsp;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192754"></A>&lt;p&gt;Section 4 discusses the basic error concepts such as error </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192755"></A>  stack, error record, and error message and describes the related API </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192756"></A>  functions.  </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192757"></A>  These concepts and functions are sufficient for application programs to </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192758"></A>  trace errors inside the HDF5 Library.&lt;/p&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192759"></A>&nbsp;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192760"></A>&lt;p&gt;Section 5 talks about the advanced concepts of error class and error </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192761"></A>  stack handle and talks about the related functions.  With these concepts </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192762"></A>  and functions, </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192763"></A>  an application library or program using the HDF5 Library can have its own </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192764"></A>  error report blended with HDF5&amp;rsquo;s error report.&lt;/p&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192765"></A>&nbsp;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192766"></A>&lt;p&gt;Starting with Release 1.8, we have a new set of Error Handling API functions.</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192767"></A>  For the purpose of backward compatibility with version 1.6 and before, we </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192768"></A>  still keep the old API functions, &lt;code&gt;H5Epush&lt;/code&gt;, &lt;code&gt;H5Eprint&lt;/code&gt;,</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192769"></A>  &lt;code&gt;H5Ewalk&lt;/code&gt;, &lt;code&gt;H5Eclear&lt;/code&gt;, &lt;code&gt;H5Eget_auto&lt;/code&gt;, </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192770"></A>  &lt;code&gt;H5Eset_auto&lt;/code&gt;.  These functions do not have the error stack as </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192771"></A>  parameter.  The library allows them to operate on the default error stack.  </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192772"></A>  Users do not have to change their code to catch up with the new Error API </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192773"></A>  but are encouraged to do so.&lt;/p&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192774"></A>&nbsp;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192775"></A>&lt;p&gt;The old API is similar to functionality discussed in Section 4.  The </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192776"></A>  functionality discussed in Section 5, the ability of allowing applications to </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192777"></A>  add their own error records, is the library new design for the Error API.&lt;/p&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192778"></A>&nbsp;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192779"></A>&nbsp;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192780"></A>&lt;a name=&quot;ProgModel&quot;&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192781"></A>&lt;h3 class=&quot;pagebefore&quot;&gt;9.2. Programming Model&lt;/h3&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192782"></A>&lt;/a&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192783"></A>&lt;p&gt;&lt;i&gt;This section is under construction.&lt;/i&gt;&lt;/p&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192784"></A>&nbsp;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192785"></A>&lt;!-- NEW PAGE --&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192786"></A>&lt;a name=&quot;ErrorHandling&quot;&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192787"></A>&lt;h3 class=&quot;pagebefore&quot;&gt;9.3. Error Handling (H5E) Function Summaries&lt;/h3&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192788"></A>&lt;/a&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192789"></A>&lt;p&gt;Functions that can be used to handle errors (H5E functions) are listed </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192790"></A>below. &lt;/p&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192791"></A>&lt;br /&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192792"></A>&nbsp;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192793"></A>&nbsp;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192794"></A>&lt;table width=&quot;600&quot; cellspacing=&quot;0&quot; align=&quot;center&quot; cellpadding=&quot;0&quot;&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192795"></A>    &lt;tr valign=&quot;bottom&quot;&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192796"></A>        &lt;td colspan=&quot;3&quot; align=&quot;left&quot; valign=&quot;bottom&quot;&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192797"></A>        &lt;b&gt;Function Listing 1. Error handling functions (H5E)</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192798"></A>        &lt;/b&gt;&lt;/td&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192799"></A>        &lt;/tr&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192800"></A>    &lt;tr&gt;&lt;td colspan=&quot;3&quot;&gt;&lt;hr color=&quot;green&quot; size=&quot;3&quot; /&gt;&lt;/td&gt;&lt;/tr&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192801"></A>    &lt;tr valign=&quot;top&quot;&gt; </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192802"></A>        &lt;td&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192803"></A>        &lt;b&gt;C Function&lt;br /&gt;Fortran Function&lt;/b&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192804"></A>        &lt;/td&gt;&lt;td&gt;&amp;nbsp;&lt;/td&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192805"></A>        &lt;td&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192806"></A>        &lt;b&gt;Purpose&lt;/b&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192807"></A>        &lt;/td&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192808"></A>        &lt;/tr&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192809"></A>    &lt;tr&gt;&lt;td colspan=&quot;3&quot;&gt;&lt;hr color=&quot;green&quot; size=&quot;1&quot; /&gt;&lt;/td&gt;&lt;/tr&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192810"></A>    &lt;tr valign=&quot;top&quot;&gt; </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192811"></A>        &lt;td&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192812"></A>        &lt;code&gt;H5Eauto_is_v2&lt;br /&gt;(none)&lt;/code&gt; </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192813"></A>        &lt;/td&gt;&lt;td&gt;&amp;nbsp;&lt;/td&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192814"></A>        &lt;td&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192815"></A>        Determines the type of error stack.</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192816"></A>        &lt;/td&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192817"></A>        &lt;/tr&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192818"></A>    &lt;tr&gt;&lt;td colspan=&quot;3&quot;&gt;&lt;hr color=&quot;green&quot; size=&quot;1&quot; /&gt;&lt;/td&gt;&lt;/tr&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192819"></A>    &lt;tr valign=&quot;top&quot;&gt; </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192820"></A>        &lt;td&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192821"></A>        &lt;code&gt;H5Eclear&lt;br /&gt;h5eclear_f&lt;/code&gt; </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192822"></A>        &lt;/td&gt;&lt;td&gt;&amp;nbsp;&lt;/td&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192823"></A>        &lt;td&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192824"></A>        Clears the error stack for the current thread.</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192825"></A>        The C function is a macro: see &lt;a href=&quot;../RM/APICompatMacros.html&quot;&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192826"></A>        &amp;ldquo;API Compatibility Macros in HDF5.&amp;rdquo;&lt;/a&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192827"></A>        &lt;/td&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192828"></A>        &lt;/tr&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192829"></A>    &lt;tr&gt;&lt;td colspan=&quot;3&quot;&gt;&lt;hr color=&quot;green&quot; size=&quot;1&quot; /&gt;&lt;/td&gt;&lt;/tr&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192830"></A>    &lt;tr valign=&quot;top&quot;&gt; </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192831"></A>        &lt;td&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192832"></A>        &lt;code&gt;H5Eclear_stack&lt;br /&gt;(none)&lt;/code&gt; </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192833"></A>        &lt;/td&gt;&lt;td&gt;&amp;nbsp;&lt;/td&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192834"></A>        &lt;td&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192835"></A>        Clears the error stack for the current thread.</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192836"></A>        &lt;/td&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192837"></A>        &lt;/tr&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192838"></A>    &lt;tr&gt;&lt;td colspan=&quot;3&quot;&gt;&lt;hr color=&quot;green&quot; size=&quot;1&quot; /&gt;&lt;/td&gt;&lt;/tr&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192839"></A>    &lt;tr valign=&quot;top&quot;&gt; </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192840"></A>        &lt;td&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192841"></A>        &lt;code&gt;H5Eclose_msg&lt;br /&gt;(none)&lt;/code&gt; </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192842"></A>        &lt;/td&gt;&lt;td&gt;&amp;nbsp;&lt;/td&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192843"></A>        &lt;td&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192844"></A>        Closes an error message identifier.</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192845"></A>        &lt;/td&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192846"></A>        &lt;/tr&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192847"></A>    &lt;tr&gt;&lt;td colspan=&quot;3&quot;&gt;&lt;hr color=&quot;green&quot; size=&quot;1&quot; /&gt;&lt;/td&gt;&lt;/tr&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192848"></A>    &lt;tr valign=&quot;top&quot;&gt; </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192849"></A>        &lt;td&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192850"></A>        &lt;code&gt;H5Eclose_stack&lt;br /&gt;(none)&lt;/code&gt; </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192851"></A>        &lt;/td&gt;&lt;td&gt;&amp;nbsp;&lt;/td&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192852"></A>        &lt;td&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192853"></A>        Closes object handle for error stack.</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192854"></A>        &lt;/td&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192855"></A>        &lt;/tr&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192856"></A>    &lt;tr&gt;&lt;td colspan=&quot;3&quot;&gt;&lt;hr color=&quot;green&quot; size=&quot;1&quot; /&gt;&lt;/td&gt;&lt;/tr&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192857"></A>    &lt;tr valign=&quot;top&quot;&gt; </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192858"></A>        &lt;td&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192859"></A>        &lt;code&gt;H5Ecreate_msg&lt;br /&gt;(none)&lt;/code&gt; </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192860"></A>        &lt;/td&gt;&lt;td&gt;&amp;nbsp;&lt;/td&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192861"></A>        &lt;td&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192862"></A>        Add major error message to an error class.</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192863"></A>        &lt;/td&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192864"></A>        &lt;/tr&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192865"></A>    &lt;tr&gt;&lt;td colspan=&quot;3&quot;&gt;&lt;hr color=&quot;green&quot; size=&quot;1&quot; /&gt;&lt;/td&gt;&lt;/tr&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192866"></A>    &lt;tr valign=&quot;top&quot;&gt; </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192867"></A>        &lt;td&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192868"></A>        &lt;code&gt;H5Eget_auto&lt;br /&gt;h5eget_auto_f&lt;/code&gt; </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192869"></A>        &lt;/td&gt;&lt;td&gt;&amp;nbsp;&lt;/td&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192870"></A>        &lt;td&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192871"></A>        Returns the current settings for the automatic error stack </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192872"></A>        traversal function and its data.</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192873"></A>        The C function is a macro: see &lt;a href=&quot;../RM/APICompatMacros.html&quot;&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192874"></A>        &amp;ldquo;API Compatibility Macros in HDF5.&amp;rdquo;&lt;/a&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192875"></A>        &lt;/td&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192876"></A>        &lt;/tr&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192877"></A>    &lt;tr&gt;&lt;td colspan=&quot;3&quot;&gt;&lt;hr color=&quot;green&quot; size=&quot;1&quot; /&gt;&lt;/td&gt;&lt;/tr&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192878"></A>    &lt;tr valign=&quot;top&quot;&gt; </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192879"></A>        &lt;td&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192880"></A>        &lt;code&gt;H5Eget_class_name&lt;br /&gt;(none)&lt;/code&gt; </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192881"></A>        &lt;/td&gt;&lt;td&gt;&amp;nbsp;&lt;/td&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192882"></A>        &lt;td&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192883"></A>        Retrieves error class name.</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192884"></A>        &lt;/td&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192885"></A>        &lt;/tr&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192886"></A>    &lt;tr&gt;&lt;td colspan=&quot;3&quot;&gt;&lt;hr color=&quot;green&quot; size=&quot;1&quot; /&gt;&lt;/td&gt;&lt;/tr&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192887"></A>    &lt;tr valign=&quot;top&quot;&gt; </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192888"></A>        &lt;td&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192889"></A>        &lt;code&gt;H5Eget_current_stack&lt;br /&gt;(none)&lt;/code&gt; </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192890"></A>        &lt;/td&gt;&lt;td&gt;&amp;nbsp;&lt;/td&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192891"></A>        &lt;td&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192892"></A>        Registers the current error stack.</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192893"></A>        &lt;/td&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192894"></A>        &lt;/tr&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192895"></A>    &lt;tr&gt;&lt;td colspan=&quot;3&quot;&gt;&lt;hr color=&quot;green&quot; size=&quot;1&quot; /&gt;&lt;/td&gt;&lt;/tr&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192896"></A>    &lt;tr valign=&quot;top&quot;&gt; </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192897"></A>        &lt;td&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192898"></A>        &lt;code&gt;H5Eget_msg&lt;br /&gt;(none)&lt;/code&gt; </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192899"></A>        &lt;/td&gt;&lt;td&gt;&amp;nbsp;&lt;/td&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192900"></A>        &lt;td&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192901"></A>        Retrieves an error message.</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192902"></A>        &lt;/td&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192903"></A>        &lt;/tr&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192904"></A>    &lt;tr&gt;&lt;td colspan=&quot;3&quot;&gt;&lt;hr color=&quot;green&quot; size=&quot;1&quot; /&gt;&lt;/td&gt;&lt;/tr&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192905"></A>    &lt;tr valign=&quot;top&quot;&gt; </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192906"></A>        &lt;td&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192907"></A>        &lt;code&gt;H5Eget_num&lt;br /&gt;(none)&lt;/code&gt; </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192908"></A>        &lt;/td&gt;&lt;td&gt;&amp;nbsp;&lt;/td&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192909"></A>        &lt;td&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192910"></A>        Retrieves the number of error messages in an error stack.</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192911"></A>        &lt;/td&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192912"></A>        &lt;/tr&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192913"></A>    &lt;tr&gt;&lt;td colspan=&quot;3&quot;&gt;&lt;hr color=&quot;green&quot; size=&quot;1&quot; /&gt;&lt;/td&gt;&lt;/tr&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192914"></A>    &lt;tr valign=&quot;top&quot;&gt; </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192915"></A>        &lt;td&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192916"></A>        &lt;code&gt;H5Epop&lt;br /&gt;(none)&lt;/code&gt; </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192917"></A>        &lt;/td&gt;&lt;td&gt;&amp;nbsp;&lt;/td&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192918"></A>        &lt;td&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192919"></A>        Deletes specified number of error messages from the error stack.</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192920"></A>        &lt;/td&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192921"></A>        &lt;/tr&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192922"></A>    &lt;tr&gt;&lt;td colspan=&quot;3&quot;&gt;&lt;hr color=&quot;green&quot; size=&quot;1&quot; /&gt;&lt;/td&gt;&lt;/tr&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192923"></A>    &lt;tr valign=&quot;top&quot;&gt; </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192924"></A>        &lt;td&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192925"></A>        &lt;code&gt;H5Eprint&lt;br /&gt;h5eprint_f&lt;/code&gt; </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192926"></A>        &lt;/td&gt;&lt;td&gt;&amp;nbsp;&lt;/td&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192927"></A>        &lt;td&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192928"></A>        Prints the error stack in a default manner.</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192929"></A>        The C function is a macro: see &lt;a href=&quot;../RM/APICompatMacros.html&quot;&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192930"></A>        &amp;ldquo;API Compatibility Macros in HDF5.&amp;rdquo;&lt;/a&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192931"></A>        &lt;/td&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192932"></A>        &lt;/tr&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192933"></A>    &lt;tr&gt;&lt;td colspan=&quot;3&quot;&gt;&lt;hr color=&quot;green&quot; size=&quot;1&quot; /&gt;&lt;/td&gt;&lt;/tr&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192934"></A>    &lt;tr valign=&quot;top&quot;&gt; </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192935"></A>        &lt;td&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192936"></A>        &lt;code&gt;H5Epush&lt;br /&gt;(none)&lt;/code&gt; </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192937"></A>        &lt;/td&gt;&lt;td&gt;&amp;nbsp;&lt;/td&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192938"></A>        &lt;td&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192939"></A>        Pushes new error record onto error stack.</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192940"></A>        The C function is a macro: see &lt;a href=&quot;../RM/APICompatMacros.html&quot;&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192941"></A>        &amp;ldquo;API Compatibility Macros in HDF5.&amp;rdquo;&lt;/a&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192942"></A>        &lt;/td&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192943"></A>        &lt;/tr&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192944"></A>    &lt;tr&gt;&lt;td colspan=&quot;3&quot;&gt;&lt;hr color=&quot;green&quot; size=&quot;1&quot; /&gt;&lt;/td&gt;&lt;/tr&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192945"></A>    &lt;tr valign=&quot;top&quot;&gt; </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192946"></A>        &lt;td&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192947"></A>        &lt;code&gt;H5Eregister_class&lt;br /&gt;(none)&lt;/code&gt; </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192948"></A>        &lt;/td&gt;&lt;td&gt;&amp;nbsp;&lt;/td&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192949"></A>        &lt;td&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192950"></A>        Registers a client library or application program </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192951"></A>        to the HDF5 error API.</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192952"></A>        &lt;/td&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192953"></A>        &lt;/tr&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192954"></A>    &lt;tr&gt;&lt;td colspan=&quot;3&quot;&gt;&lt;hr color=&quot;green&quot; size=&quot;1&quot; /&gt;&lt;/td&gt;&lt;/tr&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192955"></A>    &lt;tr valign=&quot;top&quot;&gt; </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192956"></A>        &lt;td&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192957"></A>        &lt;code&gt;H5Eset_auto&lt;br /&gt;h5eset_auto_f&lt;/code&gt; </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192958"></A>        &lt;/td&gt;&lt;td&gt;&amp;nbsp;&lt;/td&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192959"></A>        &lt;td&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192960"></A>        Turns automatic error printing on or off.</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192961"></A>        The C function is a macro: see &lt;a href=&quot;../RM/APICompatMacros.html&quot;&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192962"></A>        &amp;ldquo;API Compatibility Macros in HDF5.&amp;rdquo;&lt;/a&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192963"></A>        &lt;/td&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192964"></A>        &lt;/tr&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192965"></A>    &lt;tr&gt;&lt;td colspan=&quot;3&quot;&gt;&lt;hr color=&quot;green&quot; size=&quot;1&quot; /&gt;&lt;/td&gt;&lt;/tr&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192966"></A>    &lt;tr valign=&quot;top&quot;&gt; </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192967"></A>        &lt;td&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192968"></A>        &lt;code&gt;H5Eset_current_stack&lt;br /&gt;(none)&lt;/code&gt; </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192969"></A>        &lt;/td&gt;&lt;td&gt;&amp;nbsp;&lt;/td&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192970"></A>        &lt;td&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192971"></A>        Replaces the current error stack.</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192972"></A>        &lt;/td&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192973"></A>        &lt;/tr&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192974"></A>    &lt;tr&gt;&lt;td colspan=&quot;3&quot;&gt;&lt;hr color=&quot;green&quot; size=&quot;1&quot; /&gt;&lt;/td&gt;&lt;/tr&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192975"></A>    &lt;tr valign=&quot;top&quot;&gt; </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192976"></A>        &lt;td&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192977"></A>        &lt;code&gt;H5Eunregister_class&lt;br /&gt;(none)&lt;/code&gt; </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192978"></A>        &lt;/td&gt;&lt;td&gt;&amp;nbsp;&lt;/td&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192979"></A>        &lt;td&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192980"></A>        Removes an error class.</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192981"></A>        &lt;/td&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192982"></A>        &lt;/tr&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192983"></A>    &lt;tr&gt;&lt;td colspan=&quot;3&quot;&gt;&lt;hr color=&quot;green&quot; size=&quot;1&quot; /&gt;&lt;/td&gt;&lt;/tr&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192984"></A>    &lt;tr valign=&quot;top&quot;&gt; </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192985"></A>        &lt;td&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192986"></A>        &lt;code&gt;H5Ewalk&lt;br /&gt;(none)&lt;/code&gt; </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192987"></A>        &lt;/td&gt;&lt;td&gt;&amp;nbsp;&lt;/td&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192988"></A>        &lt;td&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192989"></A>        Walks the error stack for the current thread, </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192990"></A>        calling a specified function.</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192991"></A>        The C function is a macro: see &lt;a href=&quot;../RM/APICompatMacros.html&quot;&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192992"></A>        &amp;ldquo;API Compatibility Macros in HDF5.&amp;rdquo;&lt;/a&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192993"></A>        &lt;/td&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192994"></A>    &lt;tr&gt;&lt;td colspan=&quot;3&quot;&gt;&lt;hr color=&quot;green&quot; size=&quot;3&quot; /&gt;&lt;/td&gt;&lt;/tr&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192995"></A>&lt;/table&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192996"></A>&lt;br /&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192997"></A>&nbsp;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192998"></A>&nbsp;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1192999"></A>&nbsp;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193000"></A>&lt;!-- NEW PAGE --&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193001"></A>&lt;a name=&quot;BasicErrorHandling&quot;&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193002"></A>&lt;h3&gt;9.4. Basic Error Handling Operations&lt;/h3&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193003"></A>&lt;/a&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193004"></A>&nbsp;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193005"></A>&lt;h4&gt;9.4.1. Introduction&lt;/h4&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193006"></A>&nbsp;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193007"></A>&lt;p&gt;Let us first try to understand the error stack.  An &lt;em&gt;error stack&lt;/em&gt; </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193008"></A>  is a collection of error records.   Error records can be pushed onto or </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193009"></A>  popped off the error stack.  By default, when an error occurs deep within </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193010"></A>  the HDF5 Library, an error record is pushed onto an error stack and that </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193011"></A>  function returns a failure indication. Its caller detects the failure, pushes </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193012"></A>  another record onto the stack, and returns a failure indication.  This </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193013"></A>  continues until the API function called by the application returns a failure </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193014"></A>  indication.  The next API function being called will reset the error stack.  </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193015"></A>  All HDF5 Library error records belong to the same error class (explained in </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193016"></A>  Section 5).&lt;/p&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193017"></A>  </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193018"></A>&lt;h4&gt;9.4.2. Error Stack and Error Message&lt;/h4&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193019"></A>&nbsp;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193020"></A>&lt;p&gt;In normal circumstances, an error causes the stack to be printed on the </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193021"></A>  standard error stream automatically.  This automatic error stack is the </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193022"></A>  library&amp;rsquo;s default stack.  For all the functions in this section, </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193023"></A>  whenever an error stack ID is needed as a parameter, &lt;code&gt;H5E_DEFAULT&lt;/code&gt; </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193024"></A>  can be used to indicate the library&amp;rsquo;s default stack.  The first </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193025"></A>  error record of the error stack, number &lt;code&gt;#000&lt;/code&gt;, is produced </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193026"></A>  by the API function itself and is usually sufficient to indicate to </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193027"></A>  the application what went wrong.&lt;/p&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193028"></A>  </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193029"></A>&lt;h4&gt;Example: An Error Report&lt;/h4&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193030"></A>&nbsp;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193031"></A>&lt;p&gt;If an application calls &lt;code&gt;H5Tclose&lt;/code&gt; on a predefined datatype, </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193032"></A>  then the message in the example below is printed on the standard error </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193033"></A>  stream. </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193034"></A>  This is a simple error that has only one component, the API function; </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193035"></A>  other errors may have many components.&lt;/p&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193036"></A>  </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193037"></A>&nbsp;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193038"></A>&lt;table width=&quot;600&quot; cellspacing=&quot;0&quot; align=&quot;center&quot;&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193039"></A>    &lt;tr valign=&quot;top&quot;&gt; </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193040"></A>        &lt;td align=&quot;left&quot;&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193041"></A>        &lt;hr color=&quot;green&quot; size=&quot;3&quot;/&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193042"></A>        &lt;pre&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193043"></A>  HDF5-DIAG: Error detected in HDF5 (1.6.4) thread 0.</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193044"></A>    #000: H5T.c line 462 in H5Tclose(): predefined datatype</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193045"></A>      major: Function argument</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193046"></A>      minor: Bad value&lt;/pre&gt;&lt;/td&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193047"></A>        &lt;/tr&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193048"></A>    &lt;tr&gt;&lt;td&gt;&lt;hr color=&quot;green&quot; size=&quot;1&quot; /&gt;&lt;/td&gt;&lt;/tr&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193049"></A>    &lt;tr valign=&quot;top&quot;&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193050"></A>        &lt;td align=&quot;left&quot;&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193051"></A>        &lt;b&gt;Example 1. An error report&lt;/b&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193052"></A>        &lt;hr color=&quot;green&quot; size=&quot;3&quot;/&gt;&lt;/td&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193053"></A>        &lt;/tr&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193054"></A>&lt;/table&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193055"></A>&lt;br /&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193056"></A>&nbsp;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193057"></A>&nbsp;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193058"></A>&nbsp;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193059"></A>&lt;p&gt;In the example above, we can see that an &lt;em&gt;error record&lt;/em&gt; has a major </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193060"></A>  message and a minor message. A &lt;em&gt;major message&lt;/em&gt; generally </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193061"></A>  indicates where the error happens.  The location can be a dataset or </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193062"></A>  a dataspace, for example.  A &lt;em&gt;minor message&lt;/em&gt; explains further </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193063"></A>  details of the error. An example is &amp;ldquo;unable to open file&amp;rdquo;.  </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193064"></A>  Another </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193065"></A>  specific detail about the error can be found at the end of the first </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193066"></A>  line of each error record.  This &lt;em&gt;error description&lt;/em&gt; is usually </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193067"></A>  added by the library designer to tell what exactly goes wrong.  </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193068"></A>  In the example above, the &amp;ldquo;predefined datatype&amp;rdquo; is an error </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193069"></A>  description.&lt;/p&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193070"></A>  </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193071"></A>&lt;h4&gt;9.4.3. Print and Clear an Error Stack&lt;/h4&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193072"></A>&nbsp;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193073"></A>&lt;p&gt;Besides the automatic error report, the error stack can also be printed </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193074"></A>  and cleared by the functions &lt;code&gt;H5Eprint()&lt;/code&gt; and </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193075"></A>  &lt;code&gt;H5Eclear_stack()&lt;/code&gt;.  If an application wishes to make explicit </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193076"></A>  calls to &lt;code&gt;H5Eprint()&lt;/code&gt; to print the error stack, the </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193077"></A>  automatic printing should be turned off to prevent error messages from </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193078"></A>  being displayed twice (see &lt;code&gt;H5Eset_auto()&lt;/code&gt; below). &lt;/p&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193079"></A>&nbsp;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193080"></A>&lt;!-- NEW PAGE --&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193081"></A>  &lt;p&gt;&lt;b&gt;To print an error stack&lt;/b&gt;&lt;/p&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193082"></A>  </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193083"></A>&lt;p&gt;&lt;code&gt;&lt;em&gt;herr_t&lt;/em&gt; H5Eprint(&lt;em&gt;hid_t&lt;/em&gt; </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193084"></A>  error_stack, &lt;em&gt;FILE *&lt;/em&gt; stream)&lt;/code&gt;&lt;/p&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193085"></A>&nbsp;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193086"></A>&lt;p&gt;This function prints the error stack specified by &lt;code&gt;error_stack&lt;/code&gt; </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193087"></A>  on the </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193088"></A>  specified stream, &lt;code&gt;stream&lt;/code&gt;. If the error stack is empty, </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193089"></A>  a one-line message will be printed. The following is an example of such a </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193090"></A>  message. This message would be generated if the error was in the HDF5 </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193091"></A>  Library. &lt;/p&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193092"></A>  &lt;p&gt;&lt;code&gt;HDF5-DIAG: Error detected in HDF5 Library </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193093"></A>  version: 1.5.62 thread 0.&lt;/code&gt;&lt;/p&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193094"></A>&nbsp;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193095"></A>&nbsp;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193096"></A>&lt;p&gt;&lt;b&gt;To clear an error stack&lt;/b&gt;&lt;/p&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193097"></A>  </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193098"></A>&lt;p&gt;&lt;code&gt;&lt;em&gt;herr_t&lt;/em&gt; H5Eclear_stack(&lt;em&gt;hid_t&lt;/em&gt; </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193099"></A>  error_stack)&lt;/code&gt;&lt;/p&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193100"></A>&nbsp;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193101"></A>&lt;p&gt;The &lt;code&gt;H5Eclear_stack&lt;/code&gt; function shown above clears the error </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193102"></A>  stack specified by </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193103"></A>  &lt;code&gt;error_stack&lt;/code&gt;. &lt;code&gt;H5E_DEFAULT&lt;/code&gt; can be passed in to </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193104"></A>  clear the current error stack.  The current stack is also cleared </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193105"></A>  whenever an API function is called; there are certain exceptions to this </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193106"></A>  rule such as &lt;code&gt;H5Eprint()&lt;/code&gt;. &lt;/p&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193107"></A>  </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193108"></A>&lt;h4&gt;9.4.4. Mute Error Stack&lt;/h4&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193109"></A>&nbsp;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193110"></A>&lt;p&gt;Sometimes an application calls a function for the sake of its return value, </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193111"></A>  fully expecting the function to fail; sometimes the application wants to </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193112"></A>  call &lt;code&gt;H5Eprint()&lt;/code&gt; explicitly.  In these situations, it </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193113"></A>  would be misleading if an error message were still automatically printed.  </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193114"></A>  Using the &lt;code&gt;H5Eset_auto()&lt;/code&gt; function can control the automatic </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193115"></A>  printing of error messages.&lt;/p&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193116"></A>  </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193117"></A>  &lt;p&gt;&lt;b&gt;To enable or disable automatic printing of errors&lt;/b&gt;&lt;/p&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193118"></A>    </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193119"></A>&lt;p&gt;&lt;code&gt;&lt;em&gt;herr_t&lt;/em&gt; H5Eset_auto(&lt;em&gt;hid_t&lt;/em&gt; </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193120"></A>  error_stack, &lt;em&gt;H5E_auto_t&lt;/em&gt; func, </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193121"></A>  &lt;em&gt;void&lt;/em&gt; *client_data)&lt;/code&gt;&lt;/p&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193122"></A>  </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193123"></A>  &lt;p&gt;The H5Eset_auto function can be used to turns on or off the automatic </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193124"></A>  printing of errors for the error stack </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193125"></A>  specified by &lt;code&gt;error_stack&lt;/code&gt;. When turned on (non-null &lt;code&gt;func&lt;/code&gt; </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193126"></A>  pointer), any API function which returns an error indication will first call </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193127"></A>  &lt;code&gt;func&lt;/code&gt;, passing it &lt;code&gt;client_data&lt;/code&gt; as an argument.  </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193128"></A>  When the library is first initialized the auto printing function is set to </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193129"></A>  &lt;code&gt;H5Eprint()&lt;/code&gt; (cast appropriately) and &lt;code&gt;client_data&lt;/code&gt; is </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193130"></A>  the standard error stream pointer, &lt;code&gt;stderr&lt;/code&gt;.&lt;/p&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193131"></A>&nbsp;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193132"></A>  &lt;p&gt;&lt;b&gt;To see the current settings&lt;/b&gt;&lt;/p&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193133"></A>  </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193134"></A>&lt;p&gt;&lt;code&gt;&lt;em&gt;herr_t&lt;/em&gt; H5Eget_auto(&lt;em&gt;hid_t&lt;/em&gt; </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193135"></A>  error_stack, &lt;em&gt;H5E_auto_t&lt;/em&gt; * func, </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193136"></A>  &lt;em&gt;void&lt;/em&gt; **client_data )&lt;/code&gt;&lt;/p&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193137"></A>  </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193138"></A>  &lt;p&gt;The function above returns the current settings for the automatic error </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193139"></A>  stack traversal </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193140"></A>  function, &lt;code&gt;func&lt;/code&gt;, and its data, &lt;code&gt;client_data&lt;/code&gt;. </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193141"></A>  If either or both of the arguments are null, then the value is not </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193142"></A>  returned.&lt;/p&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193143"></A>  </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193144"></A>  &lt;!-- NEW PAGE --&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193145"></A>&lt;h4&gt;Example: Error Control&lt;/h4&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193146"></A>&nbsp;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193147"></A>&lt;p&gt;An application can temporarily turn off error messages while </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193148"></A>&amp;ldquo;probing&amp;rdquo; a function. See the example below.&lt;/p&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193149"></A>&nbsp;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193150"></A>&lt;table width=&quot;600&quot; cellspacing=&quot;0&quot; align=&quot;center&quot;&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193151"></A>    &lt;tr valign=&quot;top&quot;&gt; </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193152"></A>        &lt;td align=&quot;left&quot;&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193153"></A>        &lt;hr color=&quot;green&quot; size=&quot;3&quot;/&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193154"></A>        &lt;pre&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193155"></A>  /* Save old error handler */</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193156"></A>  H5E_auto2_t  oldfunc;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193157"></A>  void *old_client_data;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193158"></A>  </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193159"></A>  H5Eget_auto(error_stack, &amp;amp;old_func, &amp;amp;old_client_data);</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193160"></A>&nbsp;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193161"></A>  /* Turn off error handling */</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193162"></A>  H5Eset_auto(error_stack, NULL, NULL);</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193163"></A>&nbsp;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193164"></A>  /* Probe. Likely to fail, but that&amp;rsquo;s okay */</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193165"></A>  status = H5Fopen (......);</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193166"></A>&nbsp;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193167"></A>  /* Restore previous error handler */</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193168"></A>  H5Eset_auto(error_stack, old_func, old_client_data);&lt;/pre&gt;&lt;/td&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193169"></A>        &lt;/tr&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193170"></A>    &lt;tr&gt;&lt;td&gt;&lt;hr color=&quot;green&quot; size=&quot;1&quot; /&gt;&lt;/td&gt;&lt;/tr&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193171"></A>    &lt;tr valign=&quot;top&quot;&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193172"></A>        &lt;td align=&quot;left&quot;&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193173"></A>        &lt;b&gt;Example 2. Turn off error messages while probing a function&lt;/b&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193174"></A>        &lt;hr color=&quot;green&quot; size=&quot;3&quot;/&gt;&lt;/td&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193175"></A>        &lt;/tr&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193176"></A>&lt;/table&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193177"></A>&lt;br /&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193178"></A>&nbsp;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193179"></A>&nbsp;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193180"></A>&nbsp;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193181"></A>&lt;p&gt;Or automatic printing can be disabled altogether and error messages </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193182"></A>  can be explicitly printed.&lt;/p&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193183"></A>  </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193184"></A>&nbsp;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193185"></A>&lt;table width=&quot;600&quot; cellspacing=&quot;0&quot; align=&quot;center&quot;&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193186"></A>    &lt;tr valign=&quot;top&quot;&gt; </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193187"></A>        &lt;td align=&quot;left&quot;&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193188"></A>        &lt;hr color=&quot;green&quot; size=&quot;3&quot;/&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193189"></A>        &lt;pre&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193190"></A>  /* Turn off error handling permanently */</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193191"></A>  H5Eset_auto(error_stack, NULL, NULL);</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193192"></A>&nbsp;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193193"></A>  /* If failure, print error message */</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193194"></A>  if (H5Fopen (....)&amp;lt;0) {</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193195"></A>      H5Eprint(H5E_DEFAULT, stderr);</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193196"></A>      exit (1);</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193197"></A>  }&lt;/pre&gt;&lt;/td&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193198"></A>        &lt;/tr&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193199"></A>    &lt;tr&gt;&lt;td&gt;&lt;hr color=&quot;green&quot; size=&quot;1&quot; /&gt;&lt;/td&gt;&lt;/tr&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193200"></A>    &lt;tr valign=&quot;top&quot;&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193201"></A>        &lt;td align=&quot;left&quot;&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193202"></A>        &lt;b&gt;Example 3. Disable automatic printing and explicitly print </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193203"></A>        error messages&lt;/b&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193204"></A>        &lt;hr color=&quot;green&quot; size=&quot;3&quot;/&gt;&lt;/td&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193205"></A>        &lt;/tr&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193206"></A>&lt;/table&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193207"></A>&lt;br /&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193208"></A>&nbsp;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193209"></A>&nbsp;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193210"></A>&nbsp;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193211"></A>&lt;h4&gt;9.4.5. Customized Printing of an Error Stack&lt;/h4&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193212"></A>&nbsp;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193213"></A>&lt;p&gt;Applications are allowed to define an automatic error traversal </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193214"></A>  function other than the default &lt;code&gt;H5Eprint()&lt;/code&gt;. For </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193215"></A>  instance, one can define a function that prints a simple, one-line </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193216"></A>  error message to the standard error stream and then exits. The first </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193217"></A>  example below defines a such a function. The second example below installs</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193218"></A>  the function as the error handler.&lt;/p&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193219"></A>  </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193220"></A>&lt;!-- NEW PAGE --&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193221"></A>&lt;table width=&quot;600&quot; cellspacing=&quot;0&quot; align=&quot;center&quot;&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193222"></A>    &lt;tr valign=&quot;top&quot;&gt; </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193223"></A>        &lt;td align=&quot;left&quot;&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193224"></A>        &lt;hr color=&quot;green&quot; size=&quot;3&quot;/&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193225"></A>        &lt;pre&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193226"></A>  herr_t</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193227"></A>  my_hdf5_error_handler(void *unused)</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193228"></A>  {</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193229"></A>     fprintf (stderr, &amp;ldquo;An HDF5 error was detected. Bye.\n&amp;rdquo;);</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193230"></A>     exit (1);</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193231"></A>  }&lt;/pre&gt;&lt;/td&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193232"></A>        &lt;/tr&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193233"></A>    &lt;tr&gt;&lt;td&gt;&lt;hr color=&quot;green&quot; size=&quot;1&quot; /&gt;&lt;/td&gt;&lt;/tr&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193234"></A>    &lt;tr valign=&quot;top&quot;&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193235"></A>        &lt;td align=&quot;left&quot;&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193236"></A>        &lt;b&gt;Example 4. Defining a function to print a simple error message&lt;/b&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193237"></A>        &lt;hr color=&quot;green&quot; size=&quot;3&quot;/&gt;&lt;/td&gt;&lt;/tr&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193238"></A>&lt;/table&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193239"></A>&lt;br /&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193240"></A>&lt;br /&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193241"></A>&nbsp;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193242"></A>&nbsp;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193243"></A>&lt;table width=&quot;600&quot; cellspacing=&quot;0&quot; align=&quot;center&quot;&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193244"></A>    &lt;tr valign=&quot;top&quot;&gt; </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193245"></A>        &lt;td align=&quot;left&quot;&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193246"></A>        &lt;hr color=&quot;green&quot; size=&quot;3&quot;/&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193247"></A>        &lt;pre&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193248"></A>H5Eset_auto(H5E_DEFAULT, my_hdf5_error_handler, NULL);&lt;/pre&gt;&lt;/td&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193249"></A>        &lt;/tr&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193250"></A>    &lt;tr&gt;&lt;td&gt;&lt;hr color=&quot;green&quot; size=&quot;1&quot; /&gt;&lt;/td&gt;&lt;/tr&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193251"></A>    &lt;tr valign=&quot;top&quot;&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193252"></A>        &lt;td align=&quot;left&quot;&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193253"></A>        &lt;b&gt;Example 5. The user-defined error handler&lt;/b&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193254"></A>        &lt;hr color=&quot;green&quot; size=&quot;3&quot;/&gt;&lt;/td&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193255"></A>        &lt;/tr&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193256"></A>&lt;/table&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193257"></A>&lt;br /&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193258"></A>&nbsp;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193259"></A>&nbsp;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193260"></A>&nbsp;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193261"></A>&lt;h4&gt;9.4.6. Walk through the Error Stack&lt;/h4&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193262"></A>&nbsp;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193263"></A>&lt;p&gt;The &lt;code&gt;H5Eprint()&lt;/code&gt; function is actually just a </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193264"></A>  wrapper around the more complex &lt;code&gt;H5Ewalk()&lt;/code&gt; </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193265"></A>  function which traverses an error stack and calls a user-defined </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193266"></A>  function for each member of the stack. The example below shows how </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193267"></A>  &lt;code&gt;H5Ewalk&lt;/code&gt; is used.&lt;/p&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193268"></A>  </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193269"></A>&lt;p&gt;&lt;code&gt;&lt;em&gt;herr_t&lt;/em&gt; H5Ewalk(&lt;em&gt;hid_t&lt;/em&gt; </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193270"></A>  err_stack, &lt;em&gt;H5E_direction_t&lt;/em&gt; </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193271"></A>  direction, &lt;em&gt;H5E_walk_t&lt;/em&gt; func, </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193272"></A>  &lt;em&gt;void&lt;/em&gt; *client_data)&lt;/code&gt;&lt;/p&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193273"></A>  </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193274"></A>  &lt;p&gt;The error stack &lt;code&gt;err_stack&lt;/code&gt; is traversed and </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193275"></A>  &lt;code&gt;func&lt;/code&gt; is </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193276"></A>  called for each member of the stack. Its arguments are an integer </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193277"></A>  sequence number beginning at zero (regardless of &lt;code&gt;direction&lt;/code&gt;) </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193278"></A>  and the &lt;code&gt;client_data&lt;/code&gt; pointer. If &lt;code&gt;direction&lt;/code&gt; </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193279"></A>  is &lt;code&gt;H5E_WALK_UPWARD&lt;/code&gt;, then traversal begins at the inner-most </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193280"></A>  function that detected the error and concludes with the API function. </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193281"></A>  Use &lt;code&gt;H5E_WALK_DOWNWARD&lt;/code&gt; for the opposite order.&lt;/p&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193282"></A>  </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193283"></A>  &lt;h4&gt;9.4.7. Traverse an Error Stack with a Callback Function&lt;/h4&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193284"></A>  </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193285"></A>  &lt;p&gt;An error stack traversal callback function takes three arguments: </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193286"></A>  &lt;code&gt;n&lt;/code&gt; is a sequence number beginning at zero for each traversal, </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193287"></A>  &lt;code&gt;eptr&lt;/code&gt; is a pointer to an error stack member, and </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193288"></A>  &lt;code&gt;client_data&lt;/code&gt; is the same pointer used in the example above </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193289"></A>  passed to &lt;code&gt;H5Ewalk()&lt;/code&gt;. See the example below.&lt;/p&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193290"></A>&nbsp;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193291"></A>&lt;p&gt;&lt;code&gt;typedef &lt;em&gt;herr_t&lt;/em&gt; (*H5E_walk_t)(&lt;em&gt;unsigned&lt;/em&gt; </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193292"></A>  n, &lt;em&gt;H5E_error2_t&lt;/em&gt; *eptr, &lt;em&gt;void&lt;/em&gt; *client_data)&lt;/code&gt;&lt;/p&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193293"></A>&nbsp;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193294"></A>&lt;p&gt;The &lt;code&gt;H5E_error2_t&lt;/code&gt; structure is shown below.&lt;/p&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193295"></A>&lt;!-- NEW PAGE --&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193296"></A>&lt;pre&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193297"></A>typedef struct {</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193298"></A>    hid_t	cls_id;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193299"></A>    hid_t       maj_num;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193300"></A>    hid_t       min_num;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193301"></A>    unsigned    line;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193302"></A>    const char  *func_name;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193303"></A>    const char  *file_name;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193304"></A>    const char  *desc;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193305"></A>} H5E_error2_t;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193306"></A>&lt;/pre&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193307"></A>&nbsp;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193308"></A>&lt;p&gt;The &lt;code&gt;maj_num&lt;/code&gt; and &lt;code&gt;min_num&lt;/code&gt; are major and minor </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193309"></A>error IDs, &lt;code&gt;func_name&lt;/code&gt; is the name of the function where the error </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193310"></A>was detected, &lt;code&gt;file_name&lt;/code&gt; and &lt;code&gt;line&lt;/code&gt; locate the </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193311"></A>error within the HDF5 Library source code, and &lt;code&gt;desc&lt;/code&gt; points </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193312"></A>to a description of the error.&lt;/p&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193313"></A>  </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193314"></A>&nbsp;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193315"></A>&lt;h4&gt;Example: Callback Function&lt;/h4&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193316"></A>&lt;p&gt;The following example shows a user-defined callback function.&lt;/p&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193317"></A>&nbsp;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193318"></A>&lt;table width=&quot;600&quot; cellspacing=&quot;0&quot; align=&quot;center&quot;&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193319"></A>    &lt;tr valign=&quot;top&quot;&gt; </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193320"></A>        &lt;td align=&quot;left&quot;&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193321"></A>        &lt;hr color=&quot;green&quot; size=&quot;3&quot;/&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193322"></A>        &lt;pre&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193323"></A>#define MSG_SIZE       64</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193324"></A>&nbsp;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193325"></A>herr_t</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193326"></A>custom_print_cb(unsigned n, const H5E_error2_t *err_desc, void* client_data)</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193327"></A>{</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193328"></A>    FILE		*stream  = (FILE *)client_data;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193329"></A>    char                maj[MSG_SIZE];</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193330"></A>    char                min[MSG_SIZE];</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193331"></A>    char                cls[MSG_SIZE];</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193332"></A>    const int		indent = 4;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193333"></A>&nbsp;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193334"></A>    /* Get descriptions for the major and minor error numbers */</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193335"></A>    if(H5Eget_class_name(err_desc-&amp;gt;cls_id, cls, MSG_SIZE)&amp;lt;0)</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193336"></A>        TEST_ERROR;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193337"></A>&nbsp;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193338"></A>    if(H5Eget_msg(err_desc-&amp;gt;maj_num, NULL, maj, MSG_SIZE)&amp;lt;0)</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193339"></A>        TEST_ERROR;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193340"></A>&nbsp;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193341"></A>    if(H5Eget_msg(err_desc-&amp;gt;min_num, NULL, min, MSG_SIZE)&amp;lt;0)</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193342"></A>        TEST_ERROR;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193343"></A>&nbsp;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193344"></A>    fprintf (stream, &amp;ldquo;%*serror #%03d: %s in %s(): line %u\n&amp;rdquo;,</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193345"></A>	     indent, &amp;ldquo;&amp;rdquo;, n, err_desc-&amp;gt;file_name,</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193346"></A>	     err_desc-&amp;gt;func_name, err_desc-&amp;gt;line);</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193347"></A>    fprintf (stream, &amp;ldquo;%*sclass: %s\n&amp;rdquo;, indent*2, &amp;ldquo;&amp;rdquo;, cls);</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193348"></A>    fprintf (stream, &amp;ldquo;%*smajor: %s\n&amp;rdquo;, indent*2, &amp;ldquo;&amp;rdquo;, maj);</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193349"></A>    fprintf (stream, &amp;ldquo;%*sminor: %s\n&amp;rdquo;, indent*2, &amp;ldquo;&amp;rdquo;, min);</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193350"></A>&nbsp;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193351"></A>    return 0;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193352"></A>&nbsp;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193353"></A>  error:</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193354"></A>    return -1;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193355"></A>}&lt;/pre&gt;&lt;/td&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193356"></A>        &lt;/tr&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193357"></A>    &lt;tr&gt;&lt;td&gt;&lt;hr color=&quot;green&quot; size=&quot;1&quot; /&gt;&lt;/td&gt;&lt;/tr&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193358"></A>    &lt;tr valign=&quot;top&quot;&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193359"></A>        &lt;td align=&quot;left&quot;&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193360"></A>        &lt;b&gt;Example 6. A user-defined callback function&lt;/b&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193361"></A>        &lt;hr color=&quot;green&quot; size=&quot;3&quot;/&gt;&lt;/td&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193362"></A>        &lt;/tr&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193363"></A>&lt;/table&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193364"></A>&lt;br /&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193365"></A>&lt;p&gt;&lt;b&gt;Programming Note for C++ Developers Using C Functions&lt;/b&gt; &lt;/p&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193366"></A>&nbsp;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193367"></A>&lt;p&gt;If a C routine that takes a function pointer as an argument is called </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193368"></A>from within C++ code, the C routine should be returned from normally. &lt;/p&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193369"></A>&nbsp;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193370"></A>&lt;p&gt;Examples of this kind of routine include callbacks such as </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193371"></A>&lt;code&gt;H5Pset_elink_cb&lt;/code&gt; and &lt;code&gt;H5Pset_type_conv_cb&lt;/code&gt; </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193372"></A>and functions such as &lt;code&gt;H5Tconvert&lt;/code&gt; and &lt;code&gt;H5Ewalk2&lt;/code&gt;.&lt;/p&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193373"></A>&nbsp;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193374"></A>&lt;p&gt;Exiting the routine in its normal fashion allows the HDF5 C Library </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193375"></A>to clean up its work properly. In other words, if the C++ application </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193376"></A>jumps out of the routine back to the C++ &amp;ldquo;catch&amp;rdquo; </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193377"></A>statement, the library is not given the opportunity to close any </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193378"></A>temporary data structures that were set up when the routine was </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193379"></A>called. The C++ application should save some state as the routine is </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193380"></A>started so that any problem that occurs might be diagnosed.&lt;/p&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193381"></A>&nbsp;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193382"></A>&nbsp;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193383"></A>&lt;!-- NEW PAGE --&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193384"></A>&lt;a name=&quot;AdvancedErrorHandling&quot;&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193385"></A>&lt;h3&gt;9.5. Advanced Error Handling Operations&lt;/h3&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193386"></A>&lt;/a&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193387"></A>&nbsp;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193388"></A>&lt;h4&gt;9.5.1. Introduction&lt;/h4&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193389"></A>&nbsp;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193390"></A>&lt;p&gt;Section 4 discusses the basic error handling operations of the library.  </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193391"></A>  In that section, all the error records on the error stack are from the </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193392"></A>  library itself.  In this section, we are going to introduce the operations </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193393"></A>  that allow an application program to push its own error records onto the </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193394"></A>  error stack once it declares an error class of its own through the </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193395"></A>  HDF5 Error API.&lt;/p&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193396"></A>  </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193397"></A>&lt;h4&gt;Example: An Error Report&lt;/h4&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193398"></A>&nbsp;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193399"></A>&lt;p&gt;An error report shows both the library&amp;rsquo;s error record and the </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193400"></A>application&amp;rsquo;s error records. See the example below.&lt;/p&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193401"></A>&nbsp;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193402"></A>&nbsp;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193403"></A>&lt;table width=&quot;600&quot; cellspacing=&quot;0&quot; align=&quot;center&quot;&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193404"></A>    &lt;tr valign=&quot;top&quot;&gt; </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193405"></A>        &lt;td align=&quot;left&quot;&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193406"></A>        &lt;hr color=&quot;green&quot; size=&quot;3&quot;/&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193407"></A>        &lt;pre&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193408"></A>  Error Test-DIAG: Error detected in Error Program (1.0) thread 8192:</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193409"></A>    #000: ../../hdf5/test/error_test.c line 468 in main(): Error test failed</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193410"></A>      major: Error in test</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193411"></A>      minor: Error in subroutine</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193412"></A>    #001: ../../hdf5/test/error_test.c line 150 in test_error(): H5Dwrite failed </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193413"></A>        as supposed to</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193414"></A>      major: Error in IO</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193415"></A>      minor: Error in H5Dwrite</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193416"></A>  HDF5-DIAG: Error detected in HDF5 (1.7.5) thread 8192:</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193417"></A>    #002: ../../hdf5/src/H5Dio.c line 420 in H5Dwrite(): not a dataset</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193418"></A>      major: Invalid arguments to routine</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193419"></A>      minor: Inappropriate type &lt;/pre&gt;&lt;/td&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193420"></A>        &lt;/tr&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193421"></A>    &lt;tr&gt;&lt;td&gt;&lt;hr color=&quot;green&quot; size=&quot;1&quot; /&gt;&lt;/td&gt;&lt;/tr&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193422"></A>    &lt;tr valign=&quot;top&quot;&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193423"></A>        &lt;td align=&quot;left&quot;&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193424"></A>        &lt;b&gt;Example 7. An error report&lt;/b&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193425"></A>        &lt;hr color=&quot;green&quot; size=&quot;3&quot;/&gt;&lt;/td&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193426"></A>        &lt;/tr&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193427"></A>&lt;/table&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193428"></A>&lt;br /&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193429"></A>&nbsp;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193430"></A>&nbsp;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193431"></A>&nbsp;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193432"></A>&lt;p&gt;In the line above error record &lt;code&gt;#002&lt;/code&gt; in the example above, </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193433"></A>  the starting phrase is &lt;code&gt;HDF5&lt;/code&gt;.  This is the error class name </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193434"></A>  of the HDF5 Library.  All of the library&amp;rsquo;s error messages </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193435"></A>  (major and minor) are in this default error class.  </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193436"></A>  The &lt;code&gt;Error Test&lt;/code&gt; in the beginning of the line above error record </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193437"></A>  &lt;code&gt;#000&lt;/code&gt; is the name of the application&amp;rsquo;s error class.  </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193438"></A>  The first two error records, &lt;code&gt;#000&lt;/code&gt; and &lt;code&gt;#001&lt;/code&gt;, </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193439"></A>  are from application&amp;rsquo;s error class.&lt;/p&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193440"></A>  </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193441"></A>  &lt;p&gt;By definition, an error class is a group of major and minor error messages </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193442"></A>  for a library (the HDF5 Library or an application library built on </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193443"></A>  top of the </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193444"></A>  HDF5 Library) or an application program.  The error class can be registered </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193445"></A>  for a </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193446"></A>  library or program through the HDF5 Error API.  Major </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193447"></A>  and minor messages can be defined in an error class.  An application will </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193448"></A>  have object handles for the error class and for major and minor messages for </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193449"></A>  further operation. See the example below.&lt;/p&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193450"></A>  </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193451"></A>&lt;!-- NEW PAGE --&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193452"></A>&lt;table width=&quot;600&quot; cellspacing=&quot;0&quot; align=&quot;center&quot;&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193453"></A>    &lt;tr valign=&quot;top&quot;&gt; </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193454"></A>        &lt;td align=&quot;left&quot;&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193455"></A>        &lt;hr color=&quot;green&quot; size=&quot;3&quot;/&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193456"></A>        &lt;pre&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193457"></A>  #define MSG_SIZE       64</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193458"></A>&nbsp;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193459"></A>  herr_t</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193460"></A>  custom_print_cb(unsigned n, const H5E_error2_t *err_desc, void* client_data)</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193461"></A>  {</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193462"></A>      FILE		*stream  = (FILE *)client_data;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193463"></A>      char                maj[MSG_SIZE];</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193464"></A>      char                min[MSG_SIZE];</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193465"></A>      char                cls[MSG_SIZE];</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193466"></A>      const int		indent = 4;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193467"></A>&nbsp;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193468"></A>      /* Get descriptions for the major and minor error numbers */</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193469"></A>      if(H5Eget_class_name(err_desc-&amp;gt;cls_id, cls, MSG_SIZE)&amp;lt;0)</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193470"></A>          TEST_ERROR;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193471"></A>&nbsp;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193472"></A>      if(H5Eget_msg(err_desc-&amp;gt;maj_num, NULL, maj, MSG_SIZE)&amp;lt;0)</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193473"></A>          TEST_ERROR;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193474"></A>&nbsp;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193475"></A>      if(H5Eget_msg(err_desc-&amp;gt;min_num, NULL, min, MSG_SIZE)&amp;lt;0)</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193476"></A>          TEST_ERROR;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193477"></A>&nbsp;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193478"></A>      fprintf (stream, &amp;ldquo;%*serror #%03d: %s in %s(): line %u\n&amp;rdquo;,</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193479"></A>	       indent, &amp;ldquo;&amp;rdquo;, n, err_desc-&amp;gt;file_name,</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193480"></A>	       err_desc-&amp;gt;func_name, err_desc-&amp;gt;line);</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193481"></A>      fprintf (stream, &amp;ldquo;%*sclass: %s\n&amp;rdquo;, indent*2, &amp;ldquo;&amp;rdquo;, cls);</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193482"></A>      fprintf (stream, &amp;ldquo;%*smajor: %s\n&amp;rdquo;, indent*2, &amp;ldquo;&amp;rdquo;, maj);</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193483"></A>      fprintf (stream, &amp;ldquo;%*sminor: %s\n&amp;rdquo;, indent*2, &amp;ldquo;&amp;rdquo;, min);</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193484"></A>&nbsp;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193485"></A>      return 0;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193486"></A>&nbsp;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193487"></A>    error:</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193488"></A>      return -1;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193489"></A>  }&lt;/pre&gt;&lt;/td&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193490"></A>        &lt;/tr&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193491"></A>    &lt;tr&gt;&lt;td&gt;&lt;hr color=&quot;green&quot; size=&quot;1&quot; /&gt;&lt;/td&gt;&lt;/tr&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193492"></A>    &lt;tr valign=&quot;top&quot;&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193493"></A>        &lt;td align=&quot;left&quot;&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193494"></A>        &lt;b&gt;Example 8. Defining an error class&lt;/b&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193495"></A>        &lt;hr color=&quot;green&quot; size=&quot;3&quot;/&gt;&lt;/td&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193496"></A>        &lt;/tr&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193497"></A>&lt;/table&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193498"></A>&lt;br /&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193499"></A>&nbsp;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193500"></A>&nbsp;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193501"></A>&nbsp;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193502"></A>&lt;h4&gt;9.5.2. More Error API Functions&lt;/h4&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193503"></A>&nbsp;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193504"></A>&lt;p&gt;The Error API has functions that can be used to register or unregister </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193505"></A>  an error class, </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193506"></A>  to create or close error messages, and to query an error class or </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193507"></A>  error message. These functions are illustrated below.&lt;/p&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193508"></A>  </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193509"></A>  &lt;p&gt;&lt;b&gt;To register an error class&lt;/b&gt;&lt;/p&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193510"></A>  </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193511"></A>&lt;code&gt;&lt;em&gt;hid_t&lt;/em&gt; H5Eregister_class(&lt;em&gt;const char*&lt;/em&gt; </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193512"></A>  cls_name, &lt;em&gt;const char*&lt;/em&gt; lib_name, </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193513"></A>  &lt;em&gt;const char*&lt;/em&gt; version)&lt;/code&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193514"></A>&lt;p&gt;This function registers an error class with the HDF5 Library so that the </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193515"></A>  application </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193516"></A>  library or program can report errors together with the HDF5 Library.&lt;/p&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193517"></A>&nbsp;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193518"></A>  &lt;p&gt;&lt;b&gt;To add an error message to an error class&lt;/b&gt;&lt;/p&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193519"></A>  </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193520"></A>&lt;p&gt;&lt;code&gt;&lt;em&gt;hid_t&lt;/em&gt; H5Ecreate_msg(&lt;em&gt;hid_t&lt;/em&gt; class, </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193521"></A>  &lt;em&gt;H5E_type_t&lt;/em&gt; msg_type, &lt;em&gt;const char*&lt;/em&gt; mesg)&lt;/code&gt;&lt;/p&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193522"></A>  &lt;p&gt;This function adds an error message to an error class defined by an </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193523"></A>  application library or program. The error message can be either major </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193524"></A>  or minor which is indicated by parameter &lt;code&gt;msg_type&lt;/code&gt;.&lt;/p&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193525"></A>  </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193526"></A>    &lt;p&gt;&lt;b&gt;To get the name of an error class&lt;/b&gt;&lt;/p&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193527"></A>  </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193528"></A>&lt;p&gt;&lt;code&gt;&lt;em&gt;ssize_t&lt;/em&gt; H5Eget_class_name(&lt;em&gt;hid_t&lt;/em&gt; class_id, </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193529"></A>  &lt;em&gt;char*&lt;/em&gt; name, &lt;em&gt;size_t&lt;/em&gt; size)&lt;/code&gt;&lt;/p&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193530"></A>  &lt;p&gt;This function retrieves the name of the error class specified by </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193531"></A>  the class &lt;code&gt;ID&lt;/code&gt;.&lt;/p&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193532"></A>  </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193533"></A>    &lt;p&gt;&lt;b&gt;To retrieve an error message&lt;/b&gt;&lt;/p&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193534"></A>  </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193535"></A>&lt;p&gt;&lt;code&gt;&lt;em&gt;ssize_t&lt;/em&gt; H5Eget_msg(&lt;em&gt;hid_t&lt;/em&gt; mesg_id, </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193536"></A>  &lt;em&gt;H5E_type_t*&lt;/em&gt; mesg_type, &lt;em&gt;char*&lt;/em&gt; mesg, </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193537"></A>  &lt;em&gt;size_t&lt;/em&gt; size)&lt;/code&gt;&lt;/p&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193538"></A>  &lt;p&gt;This function retrieves the error message including its length and </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193539"></A>  type.&lt;/p&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193540"></A>  </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193541"></A>&nbsp;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193542"></A>    &lt;p&gt;&lt;b&gt;To close an error message&lt;/b&gt;&lt;/p&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193543"></A>  </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193544"></A>&lt;p&gt;&lt;code&gt;&lt;em&gt;herr_t&lt;/em&gt; H5Eclose_msg(&lt;em&gt;hid_t&lt;/em&gt; </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193545"></A>  mesg_id)&lt;/code&gt;&lt;/p&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193546"></A>  &lt;p&gt;This function closes an error message.&lt;/p&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193547"></A>  </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193548"></A>    &lt;p&gt;&lt;b&gt;To remove an error class&lt;/b&gt;&lt;/p&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193549"></A>  </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193550"></A>&lt;p&gt;&lt;code&gt;&lt;em&gt;herr_t&lt;/em&gt; H5Eunregister_class(&lt;em&gt;hid_t&lt;/em&gt; </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193551"></A>  class_id)&lt;/code&gt;&lt;/p&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193552"></A>  &lt;p&gt;This function removes an error class from the Error API.&lt;/p&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193553"></A>  &lt;br /&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193554"></A>&lt;h4&gt;Example: Error Class and its Message&lt;/h4&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193555"></A>&nbsp;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193556"></A>&lt;p&gt;The example below shows how an application creates an error class and </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193557"></A>error messages.&lt;/p&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193558"></A>&nbsp;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193559"></A>&nbsp;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193560"></A>&lt;table width=&quot;600&quot; cellspacing=&quot;0&quot; align=&quot;center&quot;&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193561"></A>    &lt;tr valign=&quot;top&quot;&gt; </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193562"></A>        &lt;td align=&quot;left&quot;&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193563"></A>        &lt;hr color=&quot;green&quot; size=&quot;3&quot;/&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193564"></A>        &lt;pre&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193565"></A>/* Create an error class */</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193566"></A>class_id = H5Eregister_class(ERR_CLS_NAME, PROG_NAME, PROG_VERS);</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193567"></A>&nbsp;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193568"></A>/* Retrieve class name */</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193569"></A>H5Eget_class_name(class_id, cls_name, cls_size); </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193570"></A>&nbsp;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193571"></A>/* Create a major error message in the class */</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193572"></A>maj_id = H5Ecreate_msg(class_id, H5E_MAJOR, &amp;ldquo;... ...&amp;rdquo;);</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193573"></A>&nbsp;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193574"></A>/* Create a minor error message in the class */</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193575"></A>min_id = H5Ecreate_msg(class_id, H5E_MINOR, &amp;ldquo;... ...&amp;rdquo;);&lt;/pre&gt;&lt;/td&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193576"></A>        &lt;/tr&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193577"></A>    &lt;tr&gt;&lt;td&gt;&lt;hr color=&quot;green&quot; size=&quot;1&quot; /&gt;&lt;/td&gt;&lt;/tr&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193578"></A>    &lt;tr valign=&quot;top&quot;&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193579"></A>        &lt;td align=&quot;left&quot;&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193580"></A>        &lt;b&gt;Example 9. Create an error class and error messages&lt;/b&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193581"></A>        &lt;hr color=&quot;green&quot; size=&quot;3&quot;/&gt;&lt;/td&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193582"></A>        &lt;/tr&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193583"></A>&lt;/table&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193584"></A>&lt;br /&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193585"></A>&nbsp;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193586"></A>&nbsp;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193587"></A>&nbsp;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193588"></A>&lt;p&gt;The example below shows how an application closes error messages and </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193589"></A>unregisters the error class.&lt;/p&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193590"></A>&nbsp;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193591"></A>&nbsp;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193592"></A>&lt;table width=&quot;600&quot; cellspacing=&quot;0&quot; align=&quot;center&quot;&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193593"></A>    &lt;tr valign=&quot;top&quot;&gt; </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193594"></A>        &lt;td align=&quot;left&quot;&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193595"></A>        &lt;hr color=&quot;green&quot; size=&quot;3&quot;/&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193596"></A>        &lt;pre&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193597"></A>  H5Eclose_msg(maj_id);</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193598"></A>  H5Eclose_msg(min_id);</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193599"></A>  H5Eunregister_class(class_id);&lt;/pre&gt;&lt;/td&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193600"></A>        &lt;/tr&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193601"></A>    &lt;tr&gt;&lt;td&gt;&lt;hr color=&quot;green&quot; size=&quot;1&quot; /&gt;&lt;/td&gt;&lt;/tr&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193602"></A>    &lt;tr valign=&quot;top&quot;&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193603"></A>        &lt;td align=&quot;left&quot;&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193604"></A>        &lt;b&gt;Example 10. Closing error messages and unregistering the error </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193605"></A>        class&lt;/b&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193606"></A>        &lt;hr color=&quot;green&quot; size=&quot;3&quot;/&gt;&lt;/td&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193607"></A>        &lt;/tr&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193608"></A>&lt;/table&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193609"></A>&lt;br /&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193610"></A>&nbsp;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193611"></A>&nbsp;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193612"></A>&nbsp;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193613"></A>&lt;h4&gt;9.5.3. Pushing an Application Error Message onto Error Stack&lt;/h4&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193614"></A>&nbsp;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193615"></A>&lt;p&gt;An application can push error records onto or pop error records </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193616"></A>  off of the error stack just as the library does internally.  An </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193617"></A>  error stack can be registered, and an object handle can be </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193618"></A>  returned to the application so that the application can </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193619"></A>  manipulate a registered error stack.&lt;/p&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193620"></A>  </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193621"></A>  &lt;p&gt;&lt;b&gt;To register the current stack&lt;/b&gt;&lt;/p&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193622"></A>  </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193623"></A>&lt;p&gt;&lt;code&gt;&lt;em&gt;hid_t&lt;/em&gt; H5Eget_current_stack(void)&lt;/code&gt;&lt;/p&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193624"></A>  &lt;p&gt;This function registers the current error stack, returns an object </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193625"></A>  handle, and clears the current error stack. An empty error stack will </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193626"></A>  also be assigned an ID.&lt;/p&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193627"></A>&nbsp;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193628"></A>&nbsp;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193629"></A>  &lt;p&gt;&lt;b&gt;To replace the current error stack with another&lt;/b&gt;&lt;/p&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193630"></A>  </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193631"></A>&lt;p&gt;&lt;code&gt;&lt;em&gt;herr_t&lt;/em&gt; H5Eset_current_stack(&lt;em&gt;hid_t&lt;/em&gt; </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193632"></A>  error_stack)&lt;/code&gt;&lt;/p&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193633"></A>  &lt;p&gt;This function replaces the current error stack with another error stack </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193634"></A>  specified by &lt;code&gt;error_stack&lt;/code&gt; and clears the current error stack.  </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193635"></A>  The object handle &lt;code&gt;error_stack&lt;/code&gt; is closed after this function </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193636"></A>  call.&lt;/p&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193637"></A>  </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193638"></A>  &lt;p&gt;&lt;b&gt;To push a new error record to the error stack&lt;/b&gt;&lt;/p&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193639"></A>  </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193640"></A>&lt;p&gt;&lt;code&gt;&lt;em&gt;herr_t&lt;/em&gt; H5Epush(&lt;em&gt;hid_t&lt;/em&gt; </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193641"></A>  error_stack, &lt;em&gt;const char*&lt;/em&gt; file, </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193642"></A>  &lt;em&gt;const char*&lt;/em&gt; func, &lt;em&gt;unsigned&lt;/em&gt; line, </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193643"></A>  &lt;em&gt;hid_t&lt;/em&gt; cls_id, &lt;em&gt;hid_t&lt;/em&gt; major_id, </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193644"></A>  &lt;em&gt;hid_t&lt;/em&gt; minor_id, &lt;em&gt;const char*&lt;/em&gt; desc, </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193645"></A>  ... )&lt;/code&gt;&lt;/p&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193646"></A>  &lt;p&gt;This function pushes a new error record onto the error stack for the </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193647"></A>  current thread.&lt;/p&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193648"></A>  </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193649"></A>  &lt;p&gt;&lt;b&gt;To delete some error messages&lt;/b&gt;&lt;/p&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193650"></A>  </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193651"></A>&lt;p&gt;&lt;code&gt;&lt;em&gt;herr_t&lt;/em&gt; H5Epop(&lt;em&gt;hid_t&lt;/em&gt; error_stack, </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193652"></A>  &lt;em&gt;size_t&lt;/em&gt; count)&lt;/code&gt;&lt;/p&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193653"></A>  &lt;p&gt;This function deletes some error messages from the error stack.&lt;/p&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193654"></A>&nbsp;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193655"></A>&nbsp;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193656"></A>  </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193657"></A>  &lt;p&gt;&lt;b&gt;To retrieve the number of error records&lt;/b&gt;&lt;/p&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193658"></A>  </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193659"></A>&lt;p&gt;&lt;code&gt;int H5Eget_num(&lt;em&gt;hid_t&lt;/em&gt; error_stack)&lt;/code&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193660"></A>  &lt;p&gt;This function retrieves the number of error records from an error </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193661"></A>  stack.&lt;/p&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193662"></A>&nbsp;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193663"></A>&lt;!-- NEW PAGE --&gt;  </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193664"></A>  &lt;p&gt;&lt;b&gt;To clear the error stack&lt;/b&gt;&lt;/p&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193665"></A>  </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193666"></A>&lt;p&gt;&lt;code&gt;&lt;em&gt;herr_t&lt;/em&gt; H5Eclear_stack(&lt;em&gt;hid_t&lt;/em&gt; </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193667"></A>  error_stack)&lt;/code&gt;&lt;/p&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193668"></A>  &lt;p&gt;This function clears the error stack.&lt;/p&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193669"></A>  </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193670"></A>  &lt;p&gt;&lt;b&gt;To close the object handle for an error stack&lt;/b&gt;&lt;/p&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193671"></A>  </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193672"></A>&lt;p&gt;&lt;code&gt;&lt;em&gt;herr_t&lt;/em&gt; H5Eclose_stack(&lt;em&gt;hid_t&lt;/em&gt; </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193673"></A>  error_stack&lt;/code&gt;)&lt;/p&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193674"></A>  &lt;p&gt;This function closes the object handle for an error stack and </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193675"></A>  releases its resources.&lt;/p&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193676"></A>  </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193677"></A>  &lt;br /&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193678"></A>&nbsp;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193679"></A>  </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193680"></A>&lt;h4&gt;Example: Working with an Error Stack&lt;/h4&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193681"></A>&nbsp;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193682"></A>&lt;p&gt;The example below shows how an application pushes an error record onto </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193683"></A>the default error stack.&lt;/p&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193684"></A>&nbsp;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193685"></A>&nbsp;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193686"></A>&lt;table width=&quot;600&quot; cellspacing=&quot;0&quot; align=&quot;center&quot;&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193687"></A>    &lt;tr valign=&quot;top&quot;&gt; </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193688"></A>        &lt;td align=&quot;left&quot;&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193689"></A>        &lt;hr color=&quot;green&quot; size=&quot;3&quot;/&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193690"></A>        &lt;pre&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193691"></A>  /* Make call to HDF5 I/O routine */</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193692"></A>  if((dset_id=H5Dopen(file_id, dset_name, access_plist))&amp;lt;0)</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193693"></A>  {</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193694"></A>      /* Push client error onto error stack */</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193695"></A>      H5Epush(H5E_DEFAULT,__FILE__,FUNC,__LINE__,cls_id,CLIENT_ERR_MAJ_IO,</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193696"></A>          CLIENT_ERR_MINOR_OPEN,&amp;ldquo;H5Dopen failed&amp;rdquo;);</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193697"></A>&nbsp;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193698"></A>      /* Indicate error occurred in function */</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193699"></A>      return(0);</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193700"></A>  }&lt;/pre&gt;&lt;/td&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193701"></A>        &lt;/tr&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193702"></A>    &lt;tr&gt;&lt;td&gt;&lt;hr color=&quot;green&quot; size=&quot;1&quot; /&gt;&lt;/td&gt;&lt;/tr&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193703"></A>    &lt;tr valign=&quot;top&quot;&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193704"></A>        &lt;td align=&quot;left&quot;&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193705"></A>        &lt;b&gt;Example 11. Pushing an error message to an error stack&lt;/b&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193706"></A>        &lt;hr color=&quot;green&quot; size=&quot;3&quot;/&gt;&lt;/td&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193707"></A>        &lt;/tr&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193708"></A>&lt;/table&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193709"></A>&lt;br /&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193710"></A>&nbsp;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193711"></A>&nbsp;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193712"></A>&nbsp;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193713"></A>&lt;p&gt;The example below shows how an application registers the current error </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193714"></A>stack and creates an object handle to avoid another HDF5 function </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193715"></A>from clearing the error stack.&lt;/p&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193716"></A>  </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193717"></A>&lt;!-- NEW PAGE --&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193718"></A>&lt;table width=&quot;600&quot; cellspacing=&quot;0&quot; align=&quot;center&quot;&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193719"></A>    &lt;tr valign=&quot;top&quot;&gt; </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193720"></A>        &lt;td align=&quot;left&quot;&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193721"></A>        &lt;hr color=&quot;green&quot; size=&quot;3&quot;/&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193722"></A>        &lt;pre&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193723"></A>if(H5Dwrite(dset_id, mem_type_id, mem_space_id, file_space_id, </P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193724"></A>            dset_xfer_plist_id, buf)&amp;lt;0)</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193725"></A>{</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193726"></A>    /* Push client error onto error stack */</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193727"></A>    H5Epush(H5E_DEFAULT,__FILE__,FUNC,__LINE__,cls_id,CLIENT_ERR_MAJ_IO,</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193728"></A>            CLIENT_ERR_MINOR_HDF5,&amp;ldquo;H5Dwrite failed&amp;rdquo;);</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193729"></A>&nbsp;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193730"></A>    /* Preserve the error stack by assigning an object handle to it */</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193731"></A>    error_stack = H5Eget_current_stack();</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193732"></A>&nbsp;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193733"></A>    /* Close dataset */</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193734"></A>    H5Dclose(dset_id);</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193735"></A>&nbsp;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193736"></A>    /* Replace the current error stack with the preserved one */</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193737"></A>    H5Eset_current_stack(error_stack);</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193738"></A>&nbsp;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193739"></A>    Return(0);</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193740"></A>}&lt;/pre&gt;&lt;/td&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193741"></A>        &lt;/tr&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193742"></A>    &lt;tr&gt;&lt;td&gt;&lt;hr color=&quot;green&quot; size=&quot;1&quot; /&gt;&lt;/td&gt;&lt;/tr&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193743"></A>    &lt;tr valign=&quot;top&quot;&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193744"></A>        &lt;td align=&quot;left&quot;&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193745"></A>        &lt;b&gt;Example 12. Registering the error stack&lt;/b&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193746"></A>        &lt;hr color=&quot;green&quot; size=&quot;3&quot;/&gt;&lt;/td&gt;&lt;/tr&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193747"></A>&lt;/table&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193748"></A>&lt;br /&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193749"></A>&lt;br /&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193750"></A>&lt;br /&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193751"></A>&nbsp;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193752"></A>&nbsp;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193753"></A>&nbsp;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193754"></A>&lt;!-- HEADER RIGHT &quot; &quot; --&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193755"></A>&lt;/body&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1193756"></A>&lt;/html&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475013_pgfId-1181485"></A>&nbsp;</P>
+<P CLASS="FM-Body">
+<A NAME="50475012_pgfId-1192636"></A>&lt;!doctype HTML public &quot;-//W3C//DTD HTML 4.0 Frameset//EN&quot;&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475012_pgfId-1192637"></A>&lt;html&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475012_pgfId-1192638"></A>&lt;head&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475012_pgfId-1192639"></A>&lt;title&gt;Chapter 10: Properties and Property Lists in HDF5&lt;/title&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475012_pgfId-1192640"></A>&nbsp;</P>
+<P CLASS="FM-Body">
+<A NAME="50475012_pgfId-1192641"></A>&lt;!--(Meta)==========================================================--&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475012_pgfId-1192642"></A>&nbsp;</P>
+<P CLASS="FM-Body">
+<A NAME="50475012_pgfId-1192643"></A>&nbsp;</P>
+<P CLASS="FM-Body">
+<A NAME="50475012_pgfId-1192644"></A>&lt;!--(Links)=========================================================--&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475012_pgfId-1192645"></A>&nbsp;</P>
+<P CLASS="FM-Body">
+<A NAME="50475012_pgfId-1192646"></A>&lt;!--( Begin styles definition )=====================================--&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475012_pgfId-1192647"></A>&lt;link href=&quot;ed_styles/NewUGelect.css&quot; rel=&quot;stylesheet&quot; type=&quot;text/css&quot;&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475012_pgfId-1192648"></A>&lt;!--( End styles definition )=======================================--&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475012_pgfId-1192649"></A>&nbsp;</P>
+<P CLASS="FM-Body">
+<A NAME="50475012_pgfId-1192650"></A>&lt;/head&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475012_pgfId-1192651"></A>&nbsp;</P>
+<P CLASS="FM-Body">
+<A NAME="50475012_pgfId-1192652"></A>&lt;body&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475012_pgfId-1192653"></A>&nbsp;</P>
+<P CLASS="FM-Body">
+<A NAME="50475012_pgfId-1192654"></A>&lt;!-- CONTENT STARTS AT LINE 162 --&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475012_pgfId-1192655"></A>&nbsp;</P>
+<P CLASS="FM-Body">
+<A NAME="50475012_pgfId-1192656"></A>&nbsp;</P>
+<P CLASS="FM-Body">
+<A NAME="50475012_pgfId-1192657"></A>&lt;!-- #BeginLibraryItem &quot;/ed_libs/styles_UG.lbi&quot; --&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475012_pgfId-1192658"></A>&lt;!--</P>
+<P CLASS="FM-Body">
+<A NAME="50475012_pgfId-1192659"></A>  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *</P>
+<P CLASS="FM-Body">
+<A NAME="50475012_pgfId-1192660"></A>  * Copyright by The HDF Group.                                               *</P>
+<P CLASS="FM-Body">
+<A NAME="50475012_pgfId-1192661"></A>  * Copyright by the Board of Trustees of the University of Illinois.         *</P>
+<P CLASS="FM-Body">
+<A NAME="50475012_pgfId-1192662"></A>  * All rights reserved.                                                      *</P>
+<P CLASS="FM-Body">
+<A NAME="50475012_pgfId-1192663"></A>  *                                                                           *</P>
+<P CLASS="FM-Body">
+<A NAME="50475012_pgfId-1192664"></A>  * This file is part of HDF5.  The full HDF5 copyright notice, including     *</P>
+<P CLASS="FM-Body">
+<A NAME="50475012_pgfId-1192665"></A>  * terms governing use, modification, and redistribution, is contained in    *</P>
+<P CLASS="FM-Body">
+<A NAME="50475012_pgfId-1192666"></A>  * the files COPYING and Copyright.html.  COPYING can be found at the root   *</P>
+<P CLASS="FM-Body">
+<A NAME="50475012_pgfId-1192667"></A>  * of the source code distribution tree; Copyright.html can be found at the  *</P>
+<P CLASS="FM-Body">
+<A NAME="50475012_pgfId-1192668"></A>  * root level of an installed copy of the electronic HDF5 document set and   *</P>
+<P CLASS="FM-Body">
+<A NAME="50475012_pgfId-1192669"></A>  * is linked from the top-level documents page.  It can also be found at     *</P>
+<P CLASS="FM-Body">
+<A NAME="50475012_pgfId-1192670"></A>  * http://www.hdfgroup.org/HDF5/doc/Copyright.html.  If you do not have      *</P>
+<P CLASS="FM-Body">
+<A NAME="50475012_pgfId-1192671"></A>  * access to either file, you may request a copy from help@hdfgroup.org.     *</P>
+<P CLASS="FM-Body">
+<A NAME="50475012_pgfId-1192672"></A>  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *</P>
+<P CLASS="FM-Body">
+<A NAME="50475012_pgfId-1192673"></A> --&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475012_pgfId-1192674"></A>&lt;!-- #EndLibraryItem --&gt;&lt;!-- HEADER LEFT &quot;HDF5 User's Guide&quot; --&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475012_pgfId-1192675"></A>&lt;!-- HEADER RIGHT &quot;Property Lists in HDF5&quot; --&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475012_pgfId-1192676"></A>&nbsp;</P>
+<P CLASS="FM-Body">
+<A NAME="50475012_pgfId-1192677"></A>&lt;!--( TOC )=========================================================--&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475012_pgfId-1192678"></A>&lt;!--&lt;SCRIPT language=&quot;JavaScript&quot;&gt;                                  --&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475012_pgfId-1192679"></A>&lt;!--</P>
+<P CLASS="FM-Body">
+<A NAME="50475012_pgfId-1192680"></A>document.writeln ('\</P>
+<P CLASS="FM-Body">
+<A NAME="50475012_pgfId-1192681"></A>&lt;table x-use-null-cells\</P>
+<P CLASS="FM-Body">
+<A NAME="50475012_pgfId-1192682"></A>                align=&quot;right&quot;\</P>
+<P CLASS="FM-Body">
+<A NAME="50475012_pgfId-1192683"></A>		width=&quot;240&quot;\</P>
+<P CLASS="FM-Body">
+<A NAME="50475012_pgfId-1192684"></A>		cellspacing=&quot;0&quot;\</P>
+<P CLASS="FM-Body">
+<A NAME="50475012_pgfId-1192685"></A>		class=&quot;tocTable&quot;&gt;\</P>
+<P CLASS="FM-Body">
+<A NAME="50475012_pgfId-1192686"></A>  &lt;tr valign=&quot;top&quot;&gt; \</P>
+<P CLASS="FM-Body">
+<A NAME="50475012_pgfId-1192687"></A>    &lt;td class=&quot;tocTableHeaderCell&quot; colspan=&quot;2&quot;&gt; \</P>
+<P CLASS="FM-Body">
+<A NAME="50475012_pgfId-1192688"></A>        &lt;span class=&quot;TableHead&quot;&gt;Chapter Contents&lt;/span&gt;&lt;/td&gt;\</P>
+<P CLASS="FM-Body">
+<A NAME="50475012_pgfId-1192689"></A>  &lt;/tr&gt;\</P>
+<P CLASS="FM-Body">
+<A NAME="50475012_pgfId-1192690"></A>--&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475012_pgfId-1192691"></A>&lt;!-- Table Version 3 --&gt;&lt;!--\--&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475012_pgfId-1192692"></A>&lt;!--</P>
+<P CLASS="FM-Body">
+<A NAME="50475012_pgfId-1192693"></A>  &lt;tr valign=&quot;top&quot;&gt; \</P>
+<P CLASS="FM-Body">
+<A NAME="50475012_pgfId-1192694"></A>    &lt;td class=&quot;tocTableContentCell2&quot;&gt; \</P>
+<P CLASS="FM-Body">
+<A NAME="50475012_pgfId-1192695"></A>      &lt;a href=&quot;#Intro&quot;&gt;1.&lt;/a&gt;&lt;/td&gt;\</P>
+<P CLASS="FM-Body">
+<A NAME="50475012_pgfId-1192696"></A>    &lt;td class=&quot;tocTableContentCell3&quot;&gt;\</P>
+<P CLASS="FM-Body">
+<A NAME="50475012_pgfId-1192697"></A>	  &lt;a href=&quot;#Intro&quot;&gt;Introduction&lt;/a&gt;&lt;/td&gt; \</P>
+<P CLASS="FM-Body">
+<A NAME="50475012_pgfId-1192698"></A>  &lt;/tr&gt;\</P>
+<P CLASS="FM-Body">
+<A NAME="50475012_pgfId-1192699"></A>  &lt;tr valign=&quot;top&quot;&gt; \</P>
+<P CLASS="FM-Body">
+<A NAME="50475012_pgfId-1192700"></A>    &lt;td class=&quot;tocTableContentCell2&quot;&gt; \</P>
+<P CLASS="FM-Body">
+<A NAME="50475012_pgfId-1192701"></A>      &lt;a href=&quot;#ProgModel&quot;&gt;2.&lt;/a&gt;&lt;/td&gt;\</P>
+<P CLASS="FM-Body">
+<A NAME="50475012_pgfId-1192702"></A>    &lt;td class=&quot;tocTableContentCell3&quot;&gt;\</P>
+<P CLASS="FM-Body">
+<A NAME="50475012_pgfId-1192703"></A>	  &lt;a href=&quot;#ProgModel&quot;&gt;Programming Model&lt;/a&gt;&lt;/td&gt;\</P>
+<P CLASS="FM-Body">
+<A NAME="50475012_pgfId-1192704"></A>  &lt;/tr&gt;\</P>
+<P CLASS="FM-Body">
+<A NAME="50475012_pgfId-1192705"></A>  &lt;tr valign=&quot;top&quot;&gt; \</P>
+<P CLASS="FM-Body">
+<A NAME="50475012_pgfId-1192706"></A>    &lt;td class=&quot;tocTableContentCell2&quot;&gt; \</P>
+<P CLASS="FM-Body">
+<A NAME="50475012_pgfId-1192707"></A>      &lt;a href=&quot;#H5Dump&quot;&gt;3.&lt;/a&gt;&lt;/td&gt;\</P>
+<P CLASS="FM-Body">
+<A NAME="50475012_pgfId-1192708"></A>    &lt;td class=&quot;tocTableContentCell3&quot;&gt;\</P>
+<P CLASS="FM-Body">
+<A NAME="50475012_pgfId-1192709"></A>	  &lt;a href=&quot;#H5Dump&quot;&gt;Using &lt;code&gt;h5dump&lt;/code&gt;&lt;/a&gt;&lt;/td&gt; \</P>
+<P CLASS="FM-Body">
+<A NAME="50475012_pgfId-1192710"></A>  &lt;/tr&gt;\</P>
+<P CLASS="FM-Body">
+<A NAME="50475012_pgfId-1192711"></A>  &lt;tr valign=&quot;top&quot;&gt; \</P>
+<P CLASS="FM-Body">
+<A NAME="50475012_pgfId-1192712"></A>    &lt;td class=&quot;tocTableContentCell2&quot;&gt; \</P>
+<P CLASS="FM-Body">
+<A NAME="50475012_pgfId-1192713"></A>      &lt;a href=&quot;#FunctionSumms&quot;&gt;4.&lt;/a&gt;&lt;/td&gt;\</P>
+<P CLASS="FM-Body">
+<A NAME="50475012_pgfId-1192714"></A>    &lt;td class=&quot;tocTableContentCell3&quot;&gt;\</P>
+<P CLASS="FM-Body">
+<A NAME="50475012_pgfId-1192715"></A>	  &lt;a href=&quot;#FunctionSumms&quot;&gt;File Function Summaries&lt;/a&gt;&lt;/td&gt;\</P>
+<P CLASS="FM-Body">
+<A NAME="50475012_pgfId-1192716"></A>  &lt;/tr&gt;\</P>
+<P CLASS="FM-Body">
+<A NAME="50475012_pgfId-1192717"></A>  &lt;tr valign=&quot;top&quot;&gt; \</P>
+<P CLASS="FM-Body">
+<A NAME="50475012_pgfId-1192718"></A>    &lt;td class=&quot;tocTableContentCell2&quot;&gt; \</P>
+<P CLASS="FM-Body">
+<A NAME="50475012_pgfId-1192719"></A>      &lt;a href=&quot;#CrOpen&quot;&gt;5.&lt;/a&gt;&lt;/td&gt;\</P>
+<P CLASS="FM-Body">
+<A NAME="50475012_pgfId-1192720"></A>    &lt;td class=&quot;tocTableContentCell3&quot;&gt;\</P>
+<P CLASS="FM-Body">
+<A NAME="50475012_pgfId-1192721"></A>	  &lt;a href=&quot;#CrOpen&quot;&gt;Create or Open a File&lt;/a&gt;&lt;/td&gt; \</P>
+<P CLASS="FM-Body">
+<A NAME="50475012_pgfId-1192722"></A>  &lt;/tr&gt;\</P>
+<P CLASS="FM-Body">
+<A NAME="50475012_pgfId-1192723"></A>  &lt;tr valign=&quot;top&quot;&gt; \</P>
+<P CLASS="FM-Body">
+<A NAME="50475012_pgfId-1192724"></A>    &lt;td class=&quot;tocTableContentCell2&quot;&gt; \</P>
+<P CLASS="FM-Body">
+<A NAME="50475012_pgfId-1192725"></A>      &lt;a href=&quot;#Close&quot;&gt;6.&lt;/a&gt;&lt;/td&gt;\</P>
+<P CLASS="FM-Body">
+<A NAME="50475012_pgfId-1192726"></A>    &lt;td class=&quot;tocTableContentCell3&quot;&gt;\</P>
+<P CLASS="FM-Body">
+<A NAME="50475012_pgfId-1192727"></A>	  &lt;a href=&quot;#Close&quot;&gt;Close a File&lt;/a&gt;&lt;/td&gt;\</P>
+<P CLASS="FM-Body">
+<A NAME="50475012_pgfId-1192728"></A>  &lt;/tr&gt;\</P>
+<P CLASS="FM-Body">
+<A NAME="50475012_pgfId-1192729"></A>  &lt;tr valign=&quot;top&quot;&gt; \</P>
+<P CLASS="FM-Body">
+<A NAME="50475012_pgfId-1192730"></A>    &lt;td class=&quot;tocTableContentCell2&quot;&gt; \</P>
+<P CLASS="FM-Body">
+<A NAME="50475012_pgfId-1192731"></A>      &lt;a href=&quot;#PLists&quot;&gt;7.&lt;/a&gt;&lt;/td&gt;\</P>
+<P CLASS="FM-Body">
+<A NAME="50475012_pgfId-1192732"></A>    &lt;td class=&quot;tocTableContentCell3&quot;&gt;\</P>
+<P CLASS="FM-Body">
+<A NAME="50475012_pgfId-1192733"></A>	  &lt;a href=&quot;#PLists&quot;&gt;File Property Lists&lt;/a&gt;\</P>
+<P CLASS="FM-Body">
+<A NAME="50475012_pgfId-1192734"></A>\</P>
+<P CLASS="FM-Body">
+<A NAME="50475012_pgfId-1192735"></A>&lt;br /&gt;\</P>
+<P CLASS="FM-Body">
+<A NAME="50475012_pgfId-1192736"></A>&amp;nbsp;&amp;nbsp;&amp;nbsp;\</P>
+<P CLASS="FM-Body">
+<A NAME="50475012_pgfId-1192737"></A>Creating a list\</P>
+<P CLASS="FM-Body">
+<A NAME="50475012_pgfId-1192738"></A>\</P>
+<P CLASS="FM-Body">
+<A NAME="50475012_pgfId-1192739"></A>&lt;br /&gt;\</P>
+<P CLASS="FM-Body">
+<A NAME="50475012_pgfId-1192740"></A>&amp;nbsp;&amp;nbsp;&amp;nbsp;\</P>
+<P CLASS="FM-Body">
+<A NAME="50475012_pgfId-1192741"></A>Creation properties\</P>
+<P CLASS="FM-Body">
+<A NAME="50475012_pgfId-1192742"></A>\</P>
+<P CLASS="FM-Body">
+<A NAME="50475012_pgfId-1192743"></A>&lt;br /&gt;\</P>
+<P CLASS="FM-Body">
+<A NAME="50475012_pgfId-1192744"></A>&amp;nbsp;&amp;nbsp;&amp;nbsp;\</P>
+<P CLASS="FM-Body">
+<A NAME="50475012_pgfId-1192745"></A>Access properties\</P>
+<P CLASS="FM-Body">
+<A NAME="50475012_pgfId-1192746"></A>\</P>
+<P CLASS="FM-Body">
+<A NAME="50475012_pgfId-1192747"></A>	  &lt;/td&gt;\</P>
+<P CLASS="FM-Body">
+<A NAME="50475012_pgfId-1192748"></A>  &lt;/tr&gt;\</P>
+<P CLASS="FM-Body">
+<A NAME="50475012_pgfId-1192749"></A>  &lt;tr valign=&quot;top&quot;&gt; \</P>
+<P CLASS="FM-Body">
+<A NAME="50475012_pgfId-1192750"></A>    &lt;td class=&quot;tocTableContentCell2&quot;&gt; \</P>
+<P CLASS="FM-Body">
+<A NAME="50475012_pgfId-1192751"></A>      &lt;a href=&quot;#Drivers&quot;&gt;8.&lt;/a&gt;&lt;/td&gt;\</P>
+<P CLASS="FM-Body">
+<A NAME="50475012_pgfId-1192752"></A>    &lt;td class=&quot;tocTableContentCell3&quot;&gt;\</P>
+<P CLASS="FM-Body">
+<A NAME="50475012_pgfId-1192753"></A>	  &lt;a href=&quot;#Drivers&quot;&gt;Storage Layouts and Drivers&lt;/a&gt;\</P>
+<P CLASS="FM-Body">
+<A NAME="50475012_pgfId-1192754"></A>\</P>
+<P CLASS="FM-Body">
+<A NAME="50475012_pgfId-1192755"></A>&lt;br /&gt;\</P>
+<P CLASS="FM-Body">
+<A NAME="50475012_pgfId-1192756"></A>&amp;nbsp;&amp;nbsp;&amp;nbsp;\</P>
+<P CLASS="FM-Body">
+<A NAME="50475012_pgfId-1192757"></A>&lt;span class=&quot;smallcaps&quot;&gt;SEC2&lt;/span&gt;, \</P>
+<P CLASS="FM-Body">
+<A NAME="50475012_pgfId-1192758"></A>&lt;span class=&quot;smallcaps&quot;&gt;STDIO&lt;/span&gt;,\</P>
+<P CLASS="FM-Body">
+<A NAME="50475012_pgfId-1192759"></A>&lt;br /&gt;\</P>
+<P CLASS="FM-Body">
+<A NAME="50475012_pgfId-1192760"></A>&amp;nbsp;&amp;nbsp;&amp;nbsp;\</P>
+<P CLASS="FM-Body">
+<A NAME="50475012_pgfId-1192761"></A>&lt;span class=&quot;smallcaps&quot;&gt;FAMILY&lt;/span&gt;, \</P>
+<P CLASS="FM-Body">
+<A NAME="50475012_pgfId-1192762"></A>&lt;span class=&quot;smallcaps&quot;&gt;MULTI&lt;/span&gt;,\</P>
+<P CLASS="FM-Body">
+<A NAME="50475012_pgfId-1192763"></A>&lt;br /&gt;\</P>
+<P CLASS="FM-Body">
+<A NAME="50475012_pgfId-1192764"></A>&amp;nbsp;&amp;nbsp;&amp;nbsp;\</P>
+<P CLASS="FM-Body">
+<A NAME="50475012_pgfId-1192765"></A>&lt;span class=&quot;smallcaps&quot;&gt;SPLIT&lt;/span&gt;, \</P>
+<P CLASS="FM-Body">
+<A NAME="50475012_pgfId-1192766"></A>&lt;span class=&quot;smallcaps&quot;&gt;MPI&lt;/span&gt;, \</P>
+<P CLASS="FM-Body">
+<A NAME="50475012_pgfId-1192767"></A>&lt;span class=&quot;smallcaps&quot;&gt;CORE&lt;/span&gt;,\</P>
+<P CLASS="FM-Body">
+<A NAME="50475012_pgfId-1192768"></A>&lt;br /&gt;\</P>
+<P CLASS="FM-Body">
+<A NAME="50475012_pgfId-1192769"></A>&amp;nbsp;&amp;nbsp;&amp;nbsp;\</P>
+<P CLASS="FM-Body">
+<A NAME="50475012_pgfId-1192770"></A>--&gt;&lt;!--&lt;span class=code&gt;STREAM&lt;/span&gt;, --&gt;&lt;!--\</P>
+<P CLASS="FM-Body">
+<A NAME="50475012_pgfId-1192771"></A>&lt;span class=&quot;smallcaps&quot;&gt;LOG&lt;/span&gt;\</P>
+<P CLASS="FM-Body">
+<A NAME="50475012_pgfId-1192772"></A>\</P>
+<P CLASS="FM-Body">
+<A NAME="50475012_pgfId-1192773"></A>	  &lt;/td&gt;\</P>
+<P CLASS="FM-Body">
+<A NAME="50475012_pgfId-1192774"></A>  &lt;/tr&gt;\</P>
+<P CLASS="FM-Body">
+<A NAME="50475012_pgfId-1192775"></A>\</P>
+<P CLASS="FM-Body">
+<A NAME="50475012_pgfId-1192776"></A>  &lt;tr valign=&quot;top&quot;&gt; \</P>
+<P CLASS="FM-Body">
+<A NAME="50475012_pgfId-1192777"></A>    &lt;td class=&quot;tocTableContentCell&quot;&gt; \</P>
+<P CLASS="FM-Body">
+<A NAME="50475012_pgfId-1192778"></A>--&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475012_pgfId-1192779"></A>&lt;!-- editingComment -- &quot;tocTableContentCell&quot; and &quot;tocTableContentCell4&quot; \</P>
+<P CLASS="FM-Body">
+<A NAME="50475012_pgfId-1192780"></A>--&gt;&lt;!--\--&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475012_pgfId-1192781"></A>&lt;!-- are the table-closing cell class.\</P>
+<P CLASS="FM-Body">
+<A NAME="50475012_pgfId-1192782"></A>    &lt;td class=&quot;tocTableContentCell2&quot;&gt; \</P>
+<P CLASS="FM-Body">
+<A NAME="50475012_pgfId-1192783"></A>--&gt;&lt;!--\</P>
+<P CLASS="FM-Body">
+<A NAME="50475012_pgfId-1192784"></A>      &lt;a href=&quot;#Examples&quot;&gt;9.&lt;/a&gt;&lt;/td&gt;\</P>
+<P CLASS="FM-Body">
+<A NAME="50475012_pgfId-1192785"></A>    &lt;td class=&quot;tocTableContentCell4&quot;&gt;\</P>
+<P CLASS="FM-Body">
+<A NAME="50475012_pgfId-1192786"></A>	  &lt;a href=&quot;#Examples&quot;&gt;Code Examples&lt;/a&gt;\</P>
+<P CLASS="FM-Body">
+<A NAME="50475012_pgfId-1192787"></A>  &lt;/td&gt;&lt;/tr&gt;\</P>
+<P CLASS="FM-Body">
+<A NAME="50475012_pgfId-1192788"></A>&lt;/table&gt;\</P>
+<P CLASS="FM-Body">
+<A NAME="50475012_pgfId-1192789"></A>')</P>
+<P CLASS="FM-Body">
+<A NAME="50475012_pgfId-1192790"></A>--&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475012_pgfId-1192791"></A>&lt;!-- &lt;/SCRIPT&gt; --&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475012_pgfId-1192792"></A>&lt;!--(End TOC)=======================================================--&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475012_pgfId-1192793"></A>&nbsp;</P>
+<P CLASS="FM-Body">
+<A NAME="50475012_pgfId-1192794"></A>&lt;!-- editingComment</P>
+<P CLASS="FM-Body">
+<A NAME="50475012_pgfId-1192795"></A>--&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475012_pgfId-1192796"></A>&nbsp;</P>
+<P CLASS="FM-Body">
+<A NAME="50475012_pgfId-1192797"></A>&nbsp;</P>
+<P CLASS="FM-Body">
+<A NAME="50475012_pgfId-1192798"></A>&lt;div align=&quot;center&quot;&gt;</P>
+<P CLASS="FM-Body">
+<A NAME="50475012_pgfId-1192799"></A>&lt;a name=&quot;TOP&quot;&gt;</P>
+<p><a href="HDF5_Users_Guide.htm">Main Page</a> | <a href="HDF5_Users_Guide-9.htm">Previous Page</a> | <a href="HDF5_Users_Guide-11.htm">Next Page</a></p></BODY>
+</HTML>
