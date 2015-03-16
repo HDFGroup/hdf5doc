@@ -31,10 +31,8 @@ Section~\ref{sec:architecture} presents the
 current indexing method used within the library for chunking as well as 
 modifications that were made to improve performance when a dataset is 
 being extended. Section~\ref{sec:evaluation} presents performance evaluation 
-results.
-In Section~\ref{sec:related_work} we
-first discuss related work before presenting conclusions and 
-future research directions in Section~\ref{sec:conclusion}.
+results. In Section~\ref{sec:related_work} we discuss related work before
+presenting conclusions and future research directions in Section~\ref{sec:conclusion}.
 
 \begin{figure}
 \begin{subfigure}[b]{.49\linewidth}
@@ -75,12 +73,12 @@ to extend datasets.
 To retrieve elements in the datasets that are stored in chunked form, the 
 chunk containing those elements must be located and accessed. 
 The HDF5 library's default data structure for indexing chunks is based on
-a B-tree data structure, which maps the index
-of the chunk to the file offset where the chunk's elements are stored.
+a B-tree data structure, which maps the index of the chunk to the file offset
+where the chunk's elements are stored.
 
 \subsection{B-Trees}
 
-B-trees are generally a good solution that is used for indexing data blocks
+B-trees are generally used for indexing data blocks
 and one of the main components of file systems~\cite{Comer1979}~\cite{Folk1992}. 
 Insertion of a new entry and lookup is realized in $O(\log_b{n})$, where $n$ is the
 number of nodes and $b$ the order of the tree.
@@ -99,7 +97,7 @@ as the key for locating chunks in the B-tree.
 %inserted in every record, as the chunks are fixed size.
 As shown in figure~\ref{fig:btree1}, each leaf points to the address of a
 chunk. When a dataset is extended, a new entry is added, which may
-imply a node split if the node where the record needs to be inserted is full. 
+generate a node split if the node where the record needs to be inserted is full. 
 It is worth noting that most chunked datasets are either fixed dimension or
 extend in only one dimension. Very few users take advantage of the ability to 
 extend multiple dimensions of a dataset.
@@ -165,15 +163,14 @@ showing how to implement a dynamic array with $O(1)$ append, shrink and lookup
 operations, along with optimal metadata overhead for indexing the array elements.
 For indexing chunks in HDF5 datasets, the array elements in the data blocks are
 pointers to the chunks on disk.
-As mentioned in the paper, the resizable array \textit{super blocks} are not actually 
+As mentioned in~\cite{Brodnik1999}, the resizable array \textit{super blocks} are not actually 
 constructs in the data structure, they are just shown to conceptually group the data 
 blocks that the index block points to. The super blocks help show the pattern of 
 changes to the data blocks: first the size of the data block doubles, then the 
 number of data blocks of that size doubles, then the size doubles again, then the 
 number of data blocks of that size doubles, etc.
 
-A couple of things should be noted about the data structure in
-figure~\ref{fig:ea}:
+A couple of things should be noted about the data structure in figure~\ref{fig:ea}:
 \begin{enumerate}
 \item The super blocks for the first two data blocks are omitted and the pointers
 in the index block point directly to the data blocks.
@@ -184,17 +181,18 @@ actual operation, the index block will certainly be \textit{hot} enough to stay
 in the HDF5 metadata cache, along with many/most of the super blocks,
 making the average number of I/O accesses to retrieve a chunk address between
 $1$ and $2$, in all likelihood.
-\item Super blocks/data blocks which are not yet needed are not allocated and
-have a \textit{nil} pointer in the index block/super block (respectively) that refers to them.
+\item Super blocks/data blocks, which are not yet needed, are not allocated and
+have a \textit{nil} pointer in the index block/super block (respectively) that
+refers to them.
 \item The height of the index block is constant and its height can be computed
 at creation so that resizing it is unnecessary. This can be done by computing
 the maximum number of chunks possible for the file's address range
 (typically 64-bits) and deriving the maximum number of data/index blocks needed
 to index that many blocks. For example, if there are $16$ chunks in the initial
 data block, a chunk size of $2048$ (with a single unlimited dimension), and a
-4-byte (integer) data element size, maximum height of the index block needed to
-store $1.84\times 10^{19}$ bytes of elements (which is the maximum offset possible in a
-64-bit file) is $47$.
+4-byte (integer) data element size, the maximum height of the index block needed to
+store $1.84\times 10^{19}$ bytes of elements (which is the maximum offset
+possible in a 64-bit file) is $47$.
 \end{enumerate}
 
 \subsection{Additional Optimization}
@@ -222,7 +220,7 @@ With these data structures in place, when the chunked dataset has only one
 unlimited maximum dimension, the extensible array indexing method is used,
 allowing chunk access in $O(1)$ time. When it has more than one unlimited
 maximum dimension sizes, the B-tree version 2 indexing method is used, allowing
-chunk access in $O\log_b{n}$, with $b$ the order of the tree and $n$ the
+chunk access in $O(\log_b{n})$, with $b$ the order of the tree and $n$ the
 number of nodes.
 
 \section{Evaluation}
