@@ -1,0 +1,1 @@
+gXMLBuffer="<?xml version=\"1.0\" encoding=\"UTF-8\"?><cki><ck fm=\"Personal Spaceship Operations Manual\" to=\"Additional Resources\" num=\"24\"/></cki>";
