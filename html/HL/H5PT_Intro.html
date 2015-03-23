@@ -66,9 +66,9 @@ data and to mix any number of objects of different types in a single container.
 HDF5 can support different access patterns, simplified data integration, datatype 
 translation, fast I/O, and visualization and analysis software.
 
-<h2>Uses of HDF5 Packet Table</h2> 
+<h2>Using the HDF5 Packet Table</h2> 
 
-<p>The following examples describe typical uses of the HDF5 Packet Table API.
+<p>The following example describes the typical use of the HDF5 Packet Table API.
 
 <p><strong>Writing homogeneous, fixed-sized packets of instrument data</strong>.  
 An experimenter wants to store measurements from a fixed number of sensors.  
@@ -88,22 +88,6 @@ horizontal entry, or "record," in a table.
   </tr>
 </table>
 
-<p><strong>Writing data from multiple sources to a variable-length packet table</strong>.  
-An experimenter wishes to store, in a single table, data from a number of sensor sources.  
-All of the entries in a given packet have the same time stamp, but individual packets can 
-vary in size and content.  (Figure 2.)  To do this, the experimenter can create an HDF5 
-datatype representing a variable-sized packet of data in an HDF5 file.  Each packet corresponds 
-to variable-length record in a table.
-
-<table border="1">
-  <tr>
-    <td align="center"><img src="Images/PTintro_Fig2.jpg"></td>
-  </tr>
-  <tr align="left">
-    <td><strong>Figure 2</strong>. Variable length packet example.</td>
-  </tr>
-</table>
-
 <h2>HDF5 Packet library for flight test data</h2>
 
 <p>Boeing's Flight Test Instrumentations Group and the HDF5 development group at the 
@@ -111,29 +95,14 @@ University of Illinois have developed a library that is particularly suited for 
 data, data that arrives in streams of packets from instruments at 
 potentially very high speeds.
 
-<p><strong>Fixed and variable length packets</strong>.  A key to a general-purpose packet 
-I/O library is that, at a certain level, all packet data falls into two simple structural 
-categories: fixed-length packets and variable-length packets (Figure 3).  In the 
-fixed-length scenario, every record to be stored is of the same length.  In the 
-variable-length scenario, the data length will be variable for each storage time.  
-The length may vary quite widely (even wildly) from one time to another.
+<p>A key to a general-purpose packet I/O library is that, at a certain 
+level, all packet data falls into simple structural categories that can 
+be handled by fixed-length packets. In this scenario, every record to 
+be stored is of the same length.</p>
 
-<table border="1">
-  <tr>
-    <td align="center"><img src="Images/PTintro_Fig3.jpg"></td>
-  </tr>
-  <tr align="left">
-    <td><strong>Figure 3</strong>. Fixed length and variable length packets.</td>
-  </tr>
-</table>
-
-<p>To obtain efficient storage and I/O in HDF5, fixed length packets are stored differently 
-in HDF5 files from variable length packets.  The HDF5 packet library can create Packet Tables 
-containing either fixed length or variable length records and provides similar 
-APIs to access both.
-
-<p>The Packet Table implementation includes a C API, as well as prototype C++ wrapper 
-objects, which are described in the Packet Table Reference Manual.
+<p>The Packet Table implementation includes a C API, as well as prototype 
+C++ wrapper objects, which are described in the Packet Table Reference 
+Manual.</p>
 
 <p><strong>HDF5 "Table" vs. "Packet" APIs</strong>.  The HDF5 packet API is similar to 
 but separate from the HDF5 "Table" API, whose prefix is H5TB.  The H5TB Table is designed 
@@ -166,7 +135,6 @@ how to do the other steps.
   <li>Create and open Packet Table
     <ol type="a">
 	  <li>Create packet table with fixed-size record
-      <li>Create packet table with variable-length record
 	</ol>
   <li>Close Packet Table
   <li>Write and read Packet Table
@@ -179,9 +147,7 @@ how to do the other steps.
     <ol type="a">
 	  <li>Number of packets in the Packet Table
       <li>If an HDF5 object is a Packet Table
-      <li>If a Packet Table is of a variable-size type
 	</ol>
-  <li>Memory management for variable-size Packet Table
 </ol>
 
 <p>Packet Table APIs implement those operations. Full descriptions of Packet Table 
@@ -189,17 +155,15 @@ APIs can be found on the <a href="RM_H5PT.html">H5PT: HDF5 Packet Table</a> page
 of the <a href="../RM/RM_H5Front.html"><cite>HDF5 Reference Manual</cite></a>.
 
 
-<h2>Examples</h2>
+<h2>Example</h2>
 
-<p>These two examples demonstrate the use of the C language version of the Packet Table API
-
-<p><strong>1. Fixed length example</strong>.  Create packet table with fixed-length 
-records and perform writes and reads. 
-<br>
+<p>The example below demonstrates the use of the C language version of 
+the Packet Table API to create a packet table with fixed-length 
+records and to perform writes and reads. 
 (<a href="Examples/ptExampleFL.c">C sample program</a>) 
-(<a href="Examples/ptcppExampleFL.cpp">C++ sample program</a>)
+(<a href="Examples/ptcppExampleFL.cpp">C++ sample program</a>)</p>
 
-<br>
+<br />
 
 <pre>
 #include "H5PT.h"
@@ -292,132 +256,18 @@ int main(void)
     return -1;
 }</pre>
 
-<p><strong>2. Variable length example</strong>.  Create packet table with 
-variable-length records and perform writes and reads.
-<br>
-(<a href="Examples/ptExampleVL.c">C sample program</a>) 
-(<a href="Examples/ptcppExampleVL.cpp">C++ sample program</a>)
+<br />
+<hr />
 
-<pre>
-#include "H5PT.h"
-#include &lt;stdlib.h&gt;
-
-/*-------------------------------------------------------------------------
- * Packet Table Variable-Length Example
- *
- * Example program that creates a variable-length packet table and performs
- * writes and reads.
- *
- *-------------------------------------------------------------------------
- */
- 
-int main(void)
-{
- hid_t          fid;        /* File identifier */
- hid_t          ptable;     /* Packet table identifier */
-
- herr_t         err;        /* Function return status */
- hsize_t        count;      /* Number of records in the table */
- int            x;          /* Loop variable */
-
-    /* Buffers to hold data */
- hvl_t writeBuffer[5];
- hvl_t readBuffer[5];
-
-    /* This example has two different sizes of "record": longs and shorts */
- long longBuffer[5];
- short shortBuffer[5];
-
-   /* Initialize buffers */
- for(x=0; x&lt;5; x++)
- {
-     longBuffer[x] = -x;
-     shortBuffer[x] = x;
- }
-
-    /* Fill the write buffer with a mix of longs and shorts */
-    /* We need to supply the length of each record and a pointer to */
-    /* the beginning of each record. */
- writeBuffer[0].len = sizeof(long);
- writeBuffer[0].p = &amp;(longBuffer[0]);
- writeBuffer[1].len = sizeof(short);
- writeBuffer[1].p = &amp;(shortBuffer[1]);
- writeBuffer[2].len = sizeof(long);
- writeBuffer[2].p = &amp;(longBuffer[2]);
- writeBuffer[3].len = sizeof(long);
- writeBuffer[3].p = &amp;(longBuffer[3]);
- writeBuffer[4].len = sizeof(short);
- writeBuffer[4].p = &amp;(shortBuffer[4]);
-
-    /* Create a file using default properties */
-
-fid=H5Fcreate("packet_table_VLexample.h5",H5F_ACC_TRUNC,H5P_DEFAULT,H5P_DEFAULT);
-
-    /* Create a variable-length packet table within the file */
- ptable = H5PTcreate_vl(fid, "Packet Test Dataset", 1);
- if(ptable == H5I_INVALID_HID)
-     goto out;
-
-    /* Write the entire buffer to the packet table */
- err = H5PTappend(ptable, 5, writeBuffer );
- if(err &lt; 0)
-     goto out;
-
-    /* Get the number of packets in the packet table.  This should be five. */
- err = H5PTget_num_packets(ptable, &count);
- if(err &lt; 0)
-     goto out;
-
- printf("Number of packets in packet table after five appends: %d\n", count);
-
-    /* Read all five packets back */
- err = H5PTread_packets(ptable, 0, 5, readBuffer );
- if(err &lt; 0)
-    goto out;
-
- for(x=0; x&lt;5; x++)
- {
-    printf("Packet %d's length is %d\n", x, readBuffer[x].len);
-    if(readBuffer[x].len == sizeof(long))
-        printf("Packet %d's value is %d\n", x, *( (long *) readBuffer[x].p) );
-    else
-        printf("Packet %d's value is %d\n", x, *( (short *) readBuffer[x].p) );
- }
- 
-    /* Before we close the packet table, we must free the memory that */
-    /* the pointers in readBuffer point to. */
- err = H5PTfree_vlen_readbuff(ptable, 5, readBuffer);
- if(err &lt; 0)
-     goto out;
-
-    /* Close the packet table */
- err = H5PTclose(ptable);
- if(err &lt; 0)
-     goto out;
-
-    /* Close the file */
- H5Fclose(fid);
-
- return 0;
-
- out: /* An error has occurred.  Clean up and exit. */
-    fprintf(stderr, "An error has occurred!\n");
-    H5PTclose(ptable);
-    H5Fclose(fid);
-    return -1;
-}</pre>
-
-<hr>
-
-<address>
-</address>
 <table width=100% border=0>
 <tr><td align=left valign=top>
     <address>
     The HDF Group Help Desk: <img src="../Graphics/help.png" align=top height=16>
     </address>
-    Last modified: 13 January 2011<br>
-    Last modified: 18 January 2012 <i>(Corrected links only.)</i><br>
+    Last modified: 13 January 2011<br />
+    Last modified: 18 January 2012: Corrected links only.<br />
+    Last modified: 13 March 2015: Removed mention of variable-length 
+    packet tables.
 </td></tr>
 </table>
 
