@@ -1,6 +1,6 @@
 var searchData=
 [
-  ['idcomponent',['IdComponent',['../class_h5_1_1_id_component.html#a013a42f5fd29d35d9428c1be8638acfe',1,'H5::IdComponent::IdComponent(const hid_t h5_id)'],['../class_h5_1_1_id_component.html#a1c1e2479afec6ce26734225b434752fb',1,'H5::IdComponent::IdComponent(const IdComponent &amp;original)']]],
+  ['idcomponent',['IdComponent',['../class_h5_1_1_id_component.html#a013a42f5fd29d35d9428c1be8638acfe',1,'H5::IdComponent']]],
   ['idcomponentexception',['IdComponentException',['../class_h5_1_1_id_component_exception.html#a55e4b5b7053de93986eb35cef03190fd',1,'H5::IdComponentException::IdComponentException(const H5std_string &amp;func_name, const H5std_string &amp;message=DEFAULT_MSG)'],['../class_h5_1_1_id_component_exception.html#a9962b590acbbb09ecdd030792899593a',1,'H5::IdComponentException::IdComponentException()']]],
   ['increfcount',['incRefCount',['../class_h5_1_1_id_component.html#a0e75b2e591d2fccd9e4c291a485d4754',1,'H5::IdComponent::incRefCount(const hid_t obj_id) const '],['../class_h5_1_1_id_component.html#a1b34f54d2fd41d885e8ced7613d6abd1',1,'H5::IdComponent::incRefCount() const ']]],
   ['insert',['insert',['../class_h5_1_1_enum_type.html#a00438e9e48a74010dd7c537d2365b0f8',1,'H5::EnumType::insert(const char *name, void *value) const '],['../class_h5_1_1_enum_type.html#ad1e7418d44d60308d11cb2d1fa56b910',1,'H5::EnumType::insert(const H5std_string &amp;name, void *value) const ']]],
