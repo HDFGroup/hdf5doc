@@ -5058,7 +5058,280 @@ document.writeln ("
 </a>
 
   <p>Several datatype classes define special types of objects.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h4>6.5.1. Strings</h4>
+
+  <p>Text data is represented by arrays of characters, called strings. 
+  Many programming languages support different conventions for storing strings, 
+  which may be fixed or variable-length, and may have different rules for 
+  padding unused storage.  HDF5 can represent strings in several ways. 
+  See the figure below.</p>
   
+
+<table width="600" cellspacing="0" align="center">
+    <tr valign="top"> 
+        <td align="center">
+        <hr color="green" size="3"/>
+	
+	<table align="center" width="100%">
+	  <tr align="left">
+	    <td width="5%">&nbsp;</td>
+	    <td width="25%" align="left" valign="top">The&nbsp;Strings&nbsp;to&nbsp;store&nbsp;are:&nbsp;</td>
+		<td width="70%" align="left">&ldquo;Four score&rdquo;,<br /> &ldquo;lazy programmers.&rdquo;</td>
+	  </tr>
+	  <tr>
+	    <td colspan="3">&nbsp;</td>
+	  </tr>
+
+      </table>
+  <table width="100%">
+    <tr align="left">
+      <td width="5%">&nbsp;</td>
+      <td valign="top" align="right">
+        <strong>a)</strong>
+      </td>
+      <td><code>H5T_NATIVE_CHAR</code> the dataset is a one-dimensional 
+        array with 29 elements, each element is a single character.
+      </td>
+    </tr>
+  </table>
+  
+  <table align="center" width="100%">
+	  <tr>
+	    <td width="5%">&nbsp;</td>
+		<td colspan="2">
+		  <table border="1" width="100%">
+		    <tr>
+			  <td align="center">0</td>
+			  <td align="center">1</td>
+			  <td align="center">2</td>
+			  <td align="center">3</td>
+			  <td align="center">4</td>
+			  <td align="center">...</td>
+			  <td align="center">25</td>
+			  <td align="center">26</td>
+			  <td align="center">27</td>
+			  <td align="center">28</td>
+		    </tr>
+		    <tr>
+			  <td align="center">&lsquo;F&rsquo;</td>
+			  <td align="center">&lsquo;o&rsquo;</td>
+			  <td align="center">&lsquo;u&rsquo;</td>
+			  <td align="center">&lsquo;r&rsquo;</td>
+			  <td align="center">&lsquo;&nbsp;&rsquo;</td>
+			  <td align="center">...</td>
+			  <td align="center">&lsquo;r&rsquo;</td>
+			  <td align="center">&lsquo;s&rsquo;</td>
+			  <td align="center">&lsquo;.&rsquo;</td>
+			  <td align="center">&lsquo;\0&rsquo;</td>
+		    </tr>
+		  </table>
+		</td>
+	  </tr>
+	  <tr><td colspan="3">&nbsp;</td></tr>
+      </table>
+	
+	<table width="100%">
+	  <tr align="left">
+	    <td width="5%">&nbsp;</td>
+		<td align="right" valign="top"><strong>b)</strong></td>
+		<td>Fixed-length string<br />
+		  The dataset is a one-dimensional array with 2 elements, 
+                  each element is 20 characters.
+		</td>
+	  </tr>
+	</table>
+    
+	<table align="center" width="100%">
+	  <tr>
+	    <td width="15%">&nbsp;</td>
+		<td colspan="2">
+		  <table border="1" width="50%">
+		    <tr align="center">
+			  <td>&nbsp;&nbsp;0&nbsp;&nbsp;</td>
+			  <td><pre>&ldquo;Four&nbsp;score\0&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&rdquo;</pre></td>
+		    </tr>
+			<tr align="center">
+			  <td>&nbsp;&nbsp;1&nbsp;&nbsp;</td>
+			  <td><pre>&ldquo;lazy&nbsp;programmers.\0&rdquo;</pre></td>
+			</tr>
+		  </table>
+		</td>
+	  </tr>
+      <tr><td colspan="3">&nbsp;</td></tr>
+	</table>
+
+	<table width="100%">
+	  <tr align="left">
+	    <td width="5%">&nbsp;</td>
+		<td align="right" valign="top"><strong>c)</strong></td>
+		<td>Variable-length string<br />
+		  The dataset is a one-dimensional array with 2 
+		  elements, each element is a variable-length string.<br />
+		  This is the same result when stored as fixed-length
+		  string, except that first element of the array will 
+		  need only 11 bytes for storage instead of 20.
+		</td>
+	  </tr>
+	</table>
+	
+        <table align="center" width="100%">
+	  <tr>
+	    <td width="15%">&nbsp;</td>
+		<td colspan="2">
+		  <table border="1" width="50%">
+		    <tr align="center">
+			  <td>&nbsp;&nbsp;0&nbsp;&nbsp;</td>
+			  <td><pre>&ldquo;Four&nbsp;score\0&rdquo;</pre></td>
+		    </tr>
+			<tr align="center">
+			  <td>&nbsp;&nbsp;1&nbsp;&nbsp;</td>
+			  <td><pre>&ldquo;lazy&nbsp;programmers.\0&rdquo;</pre></td>
+			</tr>
+		  </table>
+		</td>
+	  </tr>
+      <tr><td colspan="3">&nbsp;</td></tr>
+	</table>
+	
+	<table align="center" width="100%">
+	  <tr>
+	    <td width="15%">&nbsp;</td>
+		<td colspan="2">
+          <img src="Images/Dtypes_fig34.JPG">
+		</td>
+	</table>
+    <tr><td><hr color="green" size="1" /></td></tr>
+    <tr valign="top">
+        <td align="left" >
+        <b>Figure 16. Ways to represent strings
+        <!-- formerly Figure 34 --></b><hr color="green" size="3"/></td>
+        </tr>  
+</table>
+<br />
+
+
+
+  <p>First, a dataset may have a dataset with datatype 
+  <code>H5T_NATIVE_CHAR</code>, with each character of the string as an 
+  element of the dataset. This will store an unstructured block of text 
+  data, but gives little indication of any structure in the text. See 
+  item a in the figure above. </p>
+  
+
+  <p>A second alternative is to store the data using the datatype class 
+  <code>H5T_STRING</code>, 
+  with each element a fixed length. See item b in the figure above. In this 
+  approach, each element might be a word or a sentence, addressed by 
+  the dataspace. The dataset reserves space for the specified number of 
+  characters, although some strings may be shorter. This approach is 
+  simple and usually is fast to access, but can waste storage space if 
+  the length of the Strings varies.</p>
+  
+  <p>A third alternative is to use a variable-length datatype. See item c in 
+  the figure above. This can be done using the standard mechanisms 
+  described above (e.g., using <code>H5T_NATIVE_CHAR</code> 
+  instead of <code>H5T_NATIVE_INT</code> in Example 25 above).  The 
+  program would use <code>vl_t</code> structures to write and 
+  read the data.</p>
+
+  <p>A fourth alternative is to use a special feature of the string datatype 
+  class to set the size of the datatype to <code>H5T_VARIABLE</code>. See 
+  item c in the figure above. The example below <!-- formerly Figure 35 -->
+  shows a declaration of a datatype of type <code>H5T_C_S1</code> 
+  which is set to <code>H5T_VARIABLE</code>.  The HDF5 Library automatically 
+  translates between this and the <code>vl_t</code> structure. (Note: the 
+  <code>H5T_VARIABLE</code> size can only be used with string datatypes.)</p>
+  
+
+<table width="600" cellspacing="0" align="center">
+    <tr valign="top"> 
+        <td align="left">
+        <hr color="green" size="3"/>
+        <pre>
+  tid1 = H5Tcopy (H5T_C_S1); 
+                    
+  ret = H5Tset_size (tid1, H5T_VARIABLE);</pre></td>
+        </tr>
+    <tr><td><hr color="green" size="1" /></td></tr>
+    <tr valign="top">
+        <td align="left">
+        <b>Example 30. Set the string datatype size to <code>H5T_VARIABLE</code>
+        <!-- formerly Figure 35 --></b>
+        <hr color="green" size="3"/></td>
+        </tr>
+</table>
+<br />
+
+
+
+  <p>Variable-length strings can be read into C strings (i.e., pointers to zero 
+  terminated arrays of <code>char</code>). See the figure below.  </p>
+  
+
+<table width="650" cellspacing="0" align="center">
+    <tr valign="top"> 
+        <td align="left">
+        <hr color="green" size="3"/>
+        <pre>
+  char *rdata[SPACE1_DIM1];  
+
+  ret=H5Dread(dataset, tid1, H5S_ALL, H5S_ALL, xfer_pid, rdata);
+
+  for(i=0; i&lt;SPACE1_DIM1; i++) {   
+           printf(&ldquo;%d: len: %d, str is: %s\n&rdquo;, i, strlen(rdata[i]),rdata[i]);
+  } 
+
+  ret=H5Dvlen_reclaim(tid1, sid1, xfer_pid, rdata);</pre></td>
+        </tr>
+    <tr><td><hr color="green" size="1" /></td></tr>
+    <tr valign="top">
+        <td align="left">
+        <b>Example 31. Read variable-length strings into C strings
+        <!-- formerly Figure 36 --></b>
+        <hr color="green" size="3"/></td>
+        </tr>
+</table>
+<br />
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- 6.9.2015. The "Strings" section below was revised as part of work 
+done with JIRA ticket HDFFV-7955. The work was not finished and not 
+merged with 1.8. I have been converting the trunk version of the UG to 
+FrameMaker. Since this section has not been finished, I am going to use 
+the 1.8 version of this section for the FrameMaker version.
+
+Note that both the trunk and 1.8 versions have a portion of the "Strings" 
+section commented out on 3.23.2012. That portion is still commented out.
+
+The text above this commented out text is the "Strings" section from 
+the 1.8 version without the 2012 portion that was commented out.
+
+
 <h4>6.5.1. Strings</h4>
 
   <p>Text data is represented by arrays of characters called strings. 
@@ -5229,7 +5502,9 @@ document.writeln ("
         <td align="left" >
         <b>Figure 16. A string stored as one-character elements in a 
         one-dimensional array
-        <!-- formerly part of Figure 34 --></b><hr color="green" size="3"/></td>
+        <!-- formerly part of Figure 34 -->
+        <!--
+        </b><hr color="green" size="3"/></td>
         </tr>  
 </table>
 <br />
@@ -5272,7 +5547,9 @@ document.writeln ("
     <tr valign="top">
         <td align="left" >
         <b>Figure 17. Strings stored as fixed-length dataset elements
-        <!-- formerly part of Figure 34 --></b><hr color="green" size="3"/></td>
+        <!-- formerly part of Figure 34 -->
+        <!--
+        </b><hr color="green" size="3"/></td>
         </tr>  
 </table>
 <br />
@@ -5319,7 +5596,9 @@ document.writeln ("
     <tr valign="top">
         <td align="left" >
         <b>Figure 18. Strings stored as variable-length dataset elements
-        <!-- formerly part of Figure 34 --></b><hr color="green" size="3"/></td>
+        <!-- formerly part of Figure 34 -->
+        <!--
+        </b><hr color="green" size="3"/></td>
         </tr>  
 </table>
 <br />
@@ -5328,6 +5607,7 @@ document.writeln ("
   <p>An alternate way to set up variable-length dataset elements is to set
   the size of the string datatype class to <code>H5T_VARIABLE</code>. 
   The example below <!-- formerly Figure 35 -->
+  <!--
   shows a declaration of a datatype of type <code>H5T_C_S1</code> 
   which is set to <code>H5T_VARIABLE</code>.  The HDF5 Library automatically 
   translates between this and the <code>vl_t</code> structure. Note that the 
@@ -5347,7 +5627,9 @@ document.writeln ("
     <tr valign="top">
         <td align="left">
         <b>Example 30. Set the string datatype size to <code>H5T_VARIABLE</code>
-        <!-- formerly Figure 35 --></b>
+        <!-- formerly Figure 35 -->
+        <!--
+        </b>
         <hr color="green" size="3"/></td>
         </tr>
 </table>
@@ -5379,11 +5661,17 @@ document.writeln ("
     <tr valign="top">
         <td align="left">
         <b>Example 31. Read variable-length strings into C strings
-        <!-- formerly Figure 36 --></b>
+        <!-- formerly Figure 36 -->
+        <!--
+        </b>
         <hr color="green" size="3"/></td>
         </tr>
 </table>
 <br />
+
+-->
+
+
 
 
 <!-- 
