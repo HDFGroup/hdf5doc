@@ -1,0 +1,338 @@
+\documentclass[letterpaper,hyper]{THG_RFC}
+
+% Fonts
+\usepackage{ifluatex}
+\ifluatex
+  % Font
+  \usepackage{luatextra, xunicode, unicode-math}
+  \defaultfontfeatures{Ligatures=TeX}
+  \setmainfont[
+    UprightFont={*},
+    BoldFont={*-Bold},
+    ItalicFont={*-Italic},
+    BoldItalicFont={*-BoldItalic},
+    SlantedFont={*-Italic},
+    BoldSlantedFont={*-BoldItalic}
+  ]{CMU Serif}
+  \setsansfont[
+    UprightFont={*},
+    BoldFont={*-Bold},
+    ItalicFont={*-Oblique},
+    BoldItalicFont={*-BoldOblique}
+  ]{CMU Sans Serif}
+  \setmathfont[math-style=ISO, bold-style=ISO]{Asana Math}
+  \setmonofont[
+    UprightFont={*-Regular},
+    BoldFont={*-Bold},
+    ItalicFont={*-Italic},
+    BoldItalicFont={*-BoldItalic}
+  ]{CMU Typewriter}
+\else
+  \usepackage{times} % times / lmodern / mathpazo / palatino
+  \usepackage[scaled=.95]{helvet}
+  \usepackage{courier}
+\fi
+
+% Path to figures, plots
+\graphicspath{{./pics/}{./plots/}}
+
+%% TikZ
+\usepackage{tikz}
+\usetikzlibrary{patterns, shapes, decorations.pathreplacing}
+\usepackage{gnuplot-lua-tikz}
+
+% SI units
+%\usepackage{textcomp}
+\usepackage[binary-units]{siunitx}
+\sisetup{per-mode = symbol}
+\providecommand{\gbps}[1]{\SI{#1}{\giga\byte\per\second}}
+\providecommand{\mbps}[1]{\SI{#1}{\mega\byte\per\second}}
+\providecommand{\gb}[1]{\SI{#1}{\giga\byte}}
+\providecommand{\mb}[1]{\SI{#1}{\mega\byte}}
+\providecommand{\kb}[1]{\SI{#1}{\kilo\byte}}
+
+
+% Code snippets
+\usepackage{listings}
+\def\lstsetc{\lstset{language=C,
+  numbers=left,
+  xleftmargin=20pt,
+  numberstyle=\tiny\color{gray},
+  stepnumber=1,
+  showspaces=false, 
+  showstringspaces=false,
+  breaklines=true,
+  basicstyle=\small\ttfamily,
+  stringstyle=\itshape,
+  commentstyle=\itshape\bfseries,
+  morekeywords={main, size_t, malloc, free,
+    hsize_t, hid_t, herr_t,
+    H5Fcreate, H5Fclose,
+    H5Dcreate, H5Dopen, H5Dclose, H5Dwrite, H5Dread,
+    H5Screate_simple, H5Sclose, H5Sget_select_npoints
+    }
+  }
+}
+
+% Title, author, etc
+\title{New Datatypes}
+\author{Jerome Soumagne}
+\author{Quincey Koziol / Elena Pourmal}
+\date{June 11, 2015}
+\rfcversion{2015-04-29.v3}
+\revision{April 29, 2015}{Version 1 circulated for comment within The HDF Group.}
+\revision{June 10, 2015}{Version 2 circulated for comment within The HDF Group.}
+\revision{June 11, 2015}{Version 3 circulated for comment within The HDF Group.}
+
+%% Start the document
+\begin{document}
+
+%% Add Attribute reference RFC
+
+%% Title
+\maketitle
+
+%% Abstract
+\begin{abstract}
+The C99 standard introduced support for boolean and complex types.
+Boolean and complex types are also supported in C++, Fortran, Java, Python.
+This RFC describes how support for these types can be added within the HDF5 library.
+\end{abstract}
+
+\section{Introduction}
+The HDF5 library defines already datatypes for all common types, i.e., char,
+short, int, long, etc, as well as their specific encoded variation, for instance
+all standard types, as well as little/big endian encoding, etc.
+However, new datatypes were requested by HDF5 users (ESDIS, LLNL, etc) who
+work with scientific applications to support both \textit{boolean} and
+\textit{complex} types. Boolean types should be seen as a distinct conceptual
+type, not as another integer type. An important
+aspect of having a boolean datatype, despite the convenient mapping that it can
+provide between C/C++ codes that use boolean concepts, is to no longer require
+the use of integers for storing boolean data and therefore reduce storage needs. 
+Regarding complex types, they are already natively defined by the C standard,
+therefore not only for convenience but also for performance reasons would it
+makes sense for the HDF5 library to provide a native datatype so that users
+are no longer forced to either use separate datasets or create a
+compound type (which would in this case be composed of real/imaginary fields)
+in order to store and retrieve data. As these types were introduced by the
+C99 standard, this set of datatypes can be defined as new HDF5 native types.
+
+\section{New Datatypes}
+
+The following types are considered: \texttt{\_Bool}, \texttt{float \_Complex},
+\texttt{double \_Complex}, \texttt{long double \_Complex}.
+Next sections are a reminder of the rules that the C standard~\cite{c11} defines
+for these types.
+
+\subsection{\texttt{\_Bool}}
+
+An object declared as type \texttt{\_Bool} is large enough to store the
+values 0 and 1.
+While the number of bits in a \texttt{\_Bool} object is at least
+\texttt{CHAR\_BIT}, the width (number of sign and value bits) of a
+\texttt{\_Bool} may be just 1 bit.
+
+\paragraph{Conversion rules:}
+When any scalar value is converted to \texttt{\_Bool}, the result is 0 if the
+value compares equal to 0; otherwise, the result is 1.
+
+\subsection{\texttt{\_Complex}}
+
+An object declared as type complex is composed of two parts: real and imaginary,
+the real part is always before the imaginary part.
+Values of complex types are equal if and only if both their real parts are equal
+and also their imaginary parts are equal.
+The integer constant 1, \texttt{\_\_STDC\_IEC\_559\_COMPLEX\_\_}, intended to
+indicate adherence to the IEC 60559 compatible complex arithmetic specifications.
+The integer constant 1, \texttt{\_\_STDC\_NO\_COMPLEX\_\_}, intended to indicate
+that the implementation does not support complex types or the \texttt{<complex.h>}
+header.
+
+{\lstsetc
+\begin{lstlisting}
+#include<stdio.h>
+#include<complex.h>
+
+union Example
+{
+  float f[2];
+  float complex c;
+};
+
+int main()
+{
+  union Example example;
+  example.c = 1.0f + 0.0f*I;
+  printf("First element of float: %.4f\n", example.f[0]);
+  printf("Second element of float: %.4f\n", example.f[1]);
+  printf("Real part of complex: %.4f\n", __real__(example.c));
+  printf("Imaginary part of complex: %.4fi\n", __imag__(example.c));
+  return 0;
+}
+\end{lstlisting}
+}
+
+As mentioned in~\cite{ibm2014}, on both big endian and little endian, the first
+element of f is 1.0000 and the second element of f is 0.0000. The real part of
+the complex number c is 1.0000 and the imaginary part is 0.0000i.
+\begin{verbatim}
+First element of float: 1.0000
+Second element of float: 0.0000
+Real part of complex: 1.0000
+Imaginary part of complex: 0.0000i
+\end{verbatim}
+The byte order of the elements of a floating-point and a complex number is
+different between big endian and little endian, but the element order is the
+same.
+
+\paragraph{Conversion rules:}
+\begin{table}[ht]\footnotesize
+\caption{Conversion to/from \texttt{\_Complex} (\texttt{a+b*i}).}
+\label{tab:complex_convert}
+\begin{tabular}{lccc} \toprule
+Types     & Complex                    & Real             & Imaginary          \\
+\midrule
+Complex   & \texttt{conv(a)+conv(b)*i} & \texttt{conv(a)} & \texttt{conv(b)*i} \\
+Real      & \texttt{conv(a)+0*i}       & -                & \texttt{0*i}       \\
+Imaginary & \texttt{0+conv(b)*i}       & \texttt{0}       & -                  \\
+\bottomrule
+\end{tabular}
+\end{table}
+As summarized in~\TableRef{tab:complex_convert},
+when a value of complex type is converted to another complex type, both the real
+and imaginary parts follow the conversion rules for the corresponding real types.
+When a value of real type is converted to a complex type, the real part of the
+complex result value is determined by the rules of conversion to the
+corresponding real type and the imaginary part of the complex result value is a
+positive zero or an unsigned zero.
+When a value of complex type is converted to a real type, the imaginary part of
+the complex value is discarded and the value of the real part is converted
+according to the conversion rules for the corresponding real type.
+When a value of imaginary type is converted to a real type other than
+\texttt{\_Bool}, the result is a positive zero.
+When a value of real type is converted to an imaginary type, the result is a
+positive imaginary zero.
+When a value of imaginary type is converted to a complex type, the real part of
+the complex result value is a positive zero and the imaginary part of the
+complex result value is determined by the conversion rules for the
+corresponding real types.
+When a value of complex type is converted to an imaginary type, the real part
+of the complex value is discarded and the value of the imaginary part is
+converted according to the conversion rules for the corresponding real types.
+
+\section{HDF5 Implementation}
+
+Implementing these new types requires modifications of multiple HDF5 components:
+the core library, the high-level library, the Fortran library, the C++ library,
+the tools. This implies modification of the corresponding tests that support
+these components, as well as of the file format.
+
+\subsection{Core Library Support}
+As already described in~\cite{lu2012}, implementation within the HDF5 library
+of a new datatype requires the following changes:
+\begin{enumerate}
+\item Detect the size of the new type in configure/CMake along with other native datatypes. After the configuration, a new macro called \texttt{H5\_SIZEOF\_XXX}
+is defined as in \texttt{H5pubconf.h} in the src/ directory under the build
+directory. If the compiler does not support this datatype, the value of
+\texttt{H5\_SIZEOF\_XXX} would be 0.
+\item Add the new type for detection in \texttt{src/H5detect.c}. After compiling
+\texttt{H5detect.c} and running \texttt{H5detect}, the properties of the type is
+generated in \texttt{H5Tinit.c}. 
+\item Declare the variables related to the new type in the top of \texttt{H5T.c}.
+\item Release the variable in \texttt{H5T\_term\_interface} of \texttt{H5T.c}.
+\item Make the datatype ID public by defining a macro in \texttt{H5Tpublic.h}.
+\item Declare the variables for alignments in \texttt{H5Tpkg.h}.
+\item Add a printout for the new type in \texttt{H5\_trace} of \texttt{H5trace.c}
+along with other types.
+\item Add the prototypes of hard conversion functions for this new datatype in
+\texttt{H5Tpkg.h}. There should be functions between the new datatype and all
+other native integer types and all native floating-point number types.
+\item Add the definitions of the hard conversion functions for this new datatype
+in \texttt{H5Tconv.c}.
+\item Add test cases for the new type in the test suite, especially the data
+conversion test \texttt{dt\_arith.c}.
+\end{enumerate}
+
+\subsubsection{Boolean Type}
+\texttt{H5T\_NATIVE\_BOOL} will be detected and its
+size\footnote{By default, when compiling with GCC, \texttt{sizeof(bool)}
+is 4 when compiling for Darwin/PowerPC and 1 when compiling for Darwin/x86.}
+defined accordingly.
+Adding support for the type within the core library should be straightforward.
+Conversion routines will follow rules already defined by the C standard.
+
+%\begin{table}[ht]\footnotesize
+%\caption{Conversion to/from \texttt{H5T\_NATIVE\_BOOL}.}
+%\label{tab:bool_convert}
+%\begin{tabular}{lccccccccc} \toprule
+%Types & \texttt{\_Bool} &
+%\texttt{char} & \texttt{short} & \texttt{int} & \texttt{long} & \texttt{llong}
+%& \texttt{float} & \texttt{double} & \texttt{ldouble}\\
+%\midrule
+%\texttt{\_Bool}  & $2^1 - 1$ & $2^1 - 1$ & $2^1 - 1$ & $2^1 - 1$ & $2^1 - 1$ & $2^1 - 1$ & $2^1 - 1$ & $2^1 - 1$ & $2^1 - 1$ \\
+%\texttt{char}    & X & X & X & X & X & X & X & X & X \\
+%\texttt{short}   & X & X & X & X & X & X & X & X & X \\
+%\texttt{int}     & X & X & X & X & X & X & X & X & X \\
+%\texttt{long}    & X & X & X & X & X & X & X & X & X \\
+%\texttt{llong}   & X & X & X & X & X & X & X & X & X \\
+%\texttt{float}   & X & X & X & X & X & X & X & X & X \\
+%\texttt{double}  & X & X & X & X & X & X & X & X & X \\
+%\texttt{ldouble} & X & X & X & X & X & X & X & X & X \\
+%\bottomrule
+%\end{tabular}
+%end{table}
+
+\paragraph{HDF5 boolean type:} It is also worth noting that HDF5 used to define
+a boolean type, referred to as \texttt{hbool\_t}. This boolean type is
+currently defined as an integer, therefore for consistency it will now be
+defined as \texttt{\_Bool} when possible.
+
+\subsubsection{Complex Types}
+\texttt{H5T\_NATIVE\_FLOAT\_COMPLEX}, \texttt{H5T\_NATIVE\_DOUBLE\_COMPLEX},
+and \texttt{H5T\_NATIVE\_LDOUBLE\_COMPLEX} will be detected and their size
+defined accordingly.
+Adding support for this type may require some more work as one may need to
+access real and imaginary parts within the functions that are already defined.
+Conversion routines will follow rules already defined by the C standard.
+
+\subsection{High-level Support}
+The \texttt{H5LT} API makes minimal use of datatypes and support for these
+additional datatypes will be added (straightforward).
+High-level read or write make use of datatypes, they will need to be tested
+using these new types.
+
+\subsection{Fortran Support}
+ISO C bindings are used to provide us with a standard mechanism to pass data
+between Fortran and C. Fortran \texttt{LOGICAL} can be mapped to the C
+\texttt{\_Bool} type by using a special integer kind (\texttt{C\_BOOL}).
+
+\paragraph{Note.}
+We will leave Fortran HL out for now.
+
+\subsection{C++ Support}
+C++ supports \texttt{bool} types, as well as complex numbers, which are available
+through the standard library. 
+
+\subsection{Python Support}
+Python supports boolean values \texttt{True} and \texttt{False}, as well as
+complex types. Therefore these new datatypes make perfect sense for Python
+users.
+
+\subsection{Java Support}
+Java provides boolean types. Complex numbers are defined through classes.
+
+\subsection{Tools Support}
+The following list of tools must be adapted: \texttt{h5dump}, \texttt{h5ls},
+\texttt{h5diff}, \texttt{h5import}, \texttt{h5repack}, \texttt{h5debug}. 
+
+\section{Additional Questions}
+
+\section*{Revision History}
+\makerevisions
+
+%% References
+\bibliographystyle{ieeetr}
+\bibliography{new_datatypes}
+
+\end{document}
