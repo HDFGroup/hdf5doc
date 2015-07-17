@@ -1,0 +1,3146 @@
+<!doctype HTML public "-//W3C//DTD HTML 4.0 Frameset//EN">
+<html>
+<head>
+<title>Chapter 4: HDF5 Groups and Links</title>
+
+<!--(Meta)==========================================================-->
+
+<!--(Links)=========================================================-->
+
+<!--( Begin styles definition )=====================================-->
+<link href="ed_styles/NewUGelect.css" rel="stylesheet" type="text/css">
+<!--( End styles definition )=======================================-->
+
+</head> 
+
+<body>
+
+<!-- #BeginLibraryItem "/ed_libs/styles_UG.lbi" -->
+<!--
+  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+  * Copyright by The HDF Group.                                               *
+  * Copyright by the Board of Trustees of the University of Illinois.         *
+  * All rights reserved.                                                      *
+  *                                                                           *
+  * This file is part of HDF5.  The full HDF5 copyright notice, including     *
+  * terms governing use, modification, and redistribution, is contained in    *
+  * the files COPYING and Copyright.html.  COPYING can be found at the root   *
+  * of the source code distribution tree; Copyright.html can be found at the  *
+  * root level of an installed copy of the electronic HDF5 document set and   *
+  * is linked from the top-level documents page.  It can also be found at     *
+  * http://www.hdfgroup.org/HDF5/doc/Copyright.html.  If you do not have      *
+  * access to either file, you may request a copy from help@hdfgroup.org.     *
+  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+ -->
+<!-- #EndLibraryItem --><!-- HEADER LEFT "HDF5 User's Guide" -->
+<!-- HEADER RIGHT "HDF5 Groups" -->
+
+<!--( TOC )=========================================================-->
+<SCRIPT language="JavaScript">
+<!--
+document.writeln ('\
+<table x-use-null-cells\
+                align=right\
+		width=240\
+		cellspacing="0"\
+		class="tocTable">\
+  <tr valign="top"> \
+    <td class="tocTableHeaderCell" colspan="2"> \
+        <span class="TableHead">Chapter Contents</span></td>\
+  </tr>\
+-->
+<!-- Table Version 3 -->\
+<!--
+  <tr valign="top"> \
+    <td class="tocTableContentCell2"> \
+      <a href="#Intro">1.</a></td>\
+    <td class="tocTableContentCell3">\
+	  <a href="#Intro">Introduction</a></td> \
+  </tr>\
+  <tr valign="top"> \
+    <td class="tocTableContentCell2"> \
+      <a href="#DGroupObj">2.</a></td>\
+    <td class="tocTableContentCell3">\
+	  <a href="#DGroupObj">Description of the Group Object</a></td>\
+  </tr>\
+  <tr valign="top"> \
+    <td class="tocTableContentCell2"> \
+      <a href="#H5Dump">3.</a></td>\
+    <td class="tocTableContentCell3">\
+	  <a href="#H5Dump">Using <code>h5dump</code></a></td> \
+  </tr>\
+  <tr valign="top"> \
+    <td class="tocTableContentCell2"> \
+      <a href="#GroupFuncSums">4.</a></td>\
+    <td class="tocTableContentCell3">\
+	  <a href="#GroupFuncSums">Group (H5G) Function Summaries</a></td>\
+  </tr>\
+  <tr valign="top"> \
+    <td class="tocTableContentCell2"> \
+      <a href="#ProgModel">5.</a></td>\
+    <td class="tocTableContentCell3">\
+	  <a href="#ProgModel">Programming Model</a></td> \
+  </tr>\
+  <tr valign="top"> \
+    <td class="tocTableContentCell2"> \
+      <a href="#DiscoverInfo">6.</a></td>\
+    <td class="tocTableContentCell3">\
+	  <a href="#DiscoverInfo">Discovering Information About Objects</a></td>\
+  </tr>\
+  <tr valign="top"> \
+    <td class="tocTableContentCell2"> \
+      <a href="#DiscoverGrObjs">7.</a></td>\
+    <td class="tocTableContentCell3">\
+	  <a href="#DiscoverGrObjs">Discovering Objects in a Group</a></td>\
+  </tr>\
+  <tr valign="top"> \
+    <td class="tocTableContentCell2"> \
+      <a href="#DiscoverAll">8.</a></td>\
+    <td class="tocTableContentCell3">\
+	  <a href="#DiscoverAll">Discovering All the Objects in the File</a></td>\
+  </tr>
+
+  <tr valign="top"> 
+    <td class="tocTableContentCell"> 
+-->
+<!-- editingComment -- "tocTableContentCell" and "tocTableContentCell4" \
+-->
+<!-- are the table-closing cell class.\
+    <td class="tocTableContentCell2"> \
+-->
+<!--
+      <a href="#Examples">9.</a></td>\
+    <td class="tocTableContentCell4">\
+	  <a href="#Examples">Examples of File Structures</a>\
+-->
+<!--
+  </td></tr>\
+</table>\
+')
+-->
+</SCRIPT>
+<!--(End TOC)=======================================================-->
+
+<!--(TOC VERS 1 and 2)==============================================-->
+<!-- Table Version 1
+  <tr valign="top"> 
+    <td class="tocTableContentCell" colspan="2"> 
+    <a href="#Intro">1: Introduction</a> 
+    <br /> 
+    <a href="#DGroupObj">2: Description of the Group</a>
+    <br /> 
+    <a href="#h5dump">3: Using <code>h5dump</code></a>
+    <br />
+    &nbsp;&nbsp;&nbsp;&nbsp;<a href="#DGroupObj">Object</a> 
+    <br />
+    <a href="#GroupFuncSums">4: Group Function</a> 
+    <br />
+    &nbsp;&nbsp;&nbsp;&nbsp;<a href="#GroupFuncSums">Summaries</a> 
+    <br /> 
+    <a href="#ProgModel">5: The Programming Model</a> 
+    <br /> 
+    <a href="#DiscoverInfo">6: Discovering Information</a> 
+    <br />
+    &nbsp;&nbsp;&nbsp;&nbsp;<a href="#DiscoverInfo">About Objects</a>
+    <br />
+    <a href="#DiscoverAll">7: Discovering All the</a>
+    <br />
+    &nbsp;&nbsp;&nbsp;&nbsp;<a href="#DiscoverAll">Objects in the File</a>
+    <br />
+    <a href="#Examples">8: Examples of File</a> 
+    <br />
+    &nbsp;&nbsp;&nbsp;&nbsp;<a href="#Examples">Structures</a>
+    <br />
+    <a href="#Appendix">9: Appendix</a> 
+    </td>
+  </tr>
+-->
+
+<!-- Table Version 2
+  <tr valign="top"> 
+    <td class="tocTableContentCell2"> 
+    <a href="#Intro">1</a></td>
+    <td class="tocTableContentCell3"><a href="#Intro">Introduction</a> 
+  </tr><tr valign="top"> 
+    <td class="tocTableContentCell2"> 
+    <a href="#DGroupObj">2</a></td>
+    <td class="tocTableContentCell3"><a href="#DGroupObj">Description of the Group Object</a>
+  </tr><tr valign="top"> 
+    <td class="tocTableContentCell2"> 
+    <a href="#h5dump">3</a></td>
+    <td class="tocTableContentCell3"><a href="#h5dump">Using <code>h5dump</code></a> 
+  </tr><tr valign="top"> 
+    <td class="tocTableContentCell2"> 
+    <a href="#GroupFuncSums">4</a></td>
+    <td class="tocTableContentCell3"><a href="#GroupFuncSums">Group Function Summaries</a> 
+  </tr><tr valign="top"> 
+    <td class="tocTableContentCell2"> 
+    <a href="#ProgModel">5</a></td>
+    <td class="tocTableContentCell3"><a href="#ProgModel">Programming Model</a> 
+  </tr><tr valign="top"> 
+    <td class="tocTableContentCell2"> 
+    <a href="#DiscoverInfo">6</a></td>
+    <td class="tocTableContentCell3"><a href="#DiscoverInfo">Discovering Information About Objects</a>
+  </tr><tr valign="top"> 
+    <td class="tocTableContentCell2"> 
+    <a href="#DiscoverAll">7</a></td>
+    <td class="tocTableContentCell3"><a href="#DiscoverGrObjs">Discovering Objects in a Group</a>
+  </tr><tr valign="top"> 
+    <td class="tocTableContentCell2"> 
+    <a href="#DiscoverAll">8</a></td>
+    <td class="tocTableContentCell3"><a href="#DiscoverAll">Discovering All the Objects in the File</a>
+  </tr><tr valign="top"> 
+    <td class="tocTableContentCell2"> 
+    <a href="#Examples">9</a></td>
+    <td class="tocTableContentCell3"><a href="#Examples">Examples of File Structures</a>
+  </tr><tr valign="top"> 
+    <td class="tocTableContentCell"> 
+    <a href="#Appendix">10</a></td>
+    <td class="tocTableContentCell4"><a href="#Appendix">Appendix</a></td>
+  </tr>
+-->
+
+<!--(END TOC VERS 1 and 2)==========================================-->
+
+<div align="center">
+<a name="TOP">
+<h2>Chapter 4<br /><font size="7">HDF5 Groups and Links</font></h2>
+</a>
+</div>
+
+<a name="Intro">
+<h3>4.1. Introduction</h3>
+</a>
+  
+  <p>The core strengths of HDF5 are the capacity to handle large amounts
+  of complex data and the flexibility to manage that data efficiently. The 
+  building blocks that give an HDF5 file its capacity and flexibility are 
+  groups and datasets. Datasets will be described in the next chapter. In 
+  this chapter, groups will be described, and since links are 
+  closely intertwined with groups, links will also be discussed.</p>
+  
+  <p>Groups and links can be used to arrange data in a meaningful way. 
+  For example, objects (groups or datasets) that are used together can 
+  be grouped together. Data that comes from similar sources might also be 
+  grouped together. </p>
+  
+  <p>When groups are nested, they create a hierarchy. This 
+  hierarchy is similar to the tree structure employed on UNIX file 
+  systems using directories and files and on Apple Macintosh and 
+  Microsoft Windows systems using folders and files. HDF5 groups are 
+  analogous to the directories and folders; HDF5 datasets are analogous 
+  to the files.</p>
+
+  <p>The structure of an HDF5 file can also be compared to a geographic 
+  map. Cities and towns are like datasets. They come in a wide variety of 
+  configurations. Roads are like links that help us get to datasets. 
+  Countries, states, and counties are like groups: they help us place 
+  the cities and towns where we live and work. </p>
+
+
+<!--
+1.4.2011, The second paragraph above sets up the comparison between an 
+HDF5 file and a file system directory tree structure. Would a map analogy 
+work better? You have cities and towns of various sizes and complexities
+that are joined by roads. Cities as datasets, and roads as links. 
+Countries and states as groups. I added a draft paragraph above which 
+can join or replace the tree structure paragraph.
+ -->
+
+  
+
+  <p>In the rest of this chapter, the following topics will be 
+  discussed:</p>
+  <ul>
+    <li>Groups and group structure</li>
+    <li>Links</li>
+    <li>Programming with groups and links</li>
+    <li>Retrieving information about objects in a group</li>
+    <li>Discovery of the structure of an HDF5 file and the contained objects</li>
+    <li>Examples of file structures</li>
+    <li>Function calls provided for working with groups and links</li>
+  </ul>
+<br />
+
+<SCRIPT language="JavaScript">
+<!--
+document.writeln ("
+<a name="DGroupObj">
+<div align=right>
+<a href="#TOP"><font size="-1">(Top)</font></a>
+</div>
+</a>
+");
+-->
+</SCRIPT>
+
+<!-- NEW PAGE -->
+<a name="DGroupObj"><a name="DefiningGroupsAndLinks">
+<h3 class=pagebefore>4.2. Defining Groups and Links</h3>
+</a></a>
+
+  <p>Groups and links provide the way for application programs to navigate 
+  to datasets. A <em><b>group</b></em> contains a collection of links. 
+  A <em><b>link</b></em> is a connection between a group and an object. When we 
+  use the term link, we mean a connection between a group and an object 
+  that is unidirectional, has a single source, and has a single target. 
+  </p>
+  
+  <p>The purpose of this section is to describe the basic characteristics 
+  of groups and links. </p>
+  
+  
+  
+  
+
+<a name="Groups">
+<h4>4.2.1. Groups</h4>
+</a>
+
+  <p>A group contains a collection of links. If we could peer inside a group, 
+  we would see a list of the links that are the members of the group. </p>
+  
+  <p>Groups do not have names. When we speak of a group, we use the name 
+  of the link that is connected to the group. </p>
+  
+  <p>Groups are used to organize objects. If we were organizing our data 
+  by year, we might set up groups for 2010, 2009, and 2008 data. To do this, 
+  our file might have three links named 2010, 2009, and 2008 in the root 
+  group. The groups that are the targets of these three links might have 
+  links to datasets that hold our data.</p>
+  
+  <p>To work with groups, application programs use the Groups interface. 
+  The names of the function calls in this interface start with H5G.</p>
+  
+
+
+
+  
+<a name="TheRootGroup">
+<h4>4.2.2. The Root Group</h4>
+</a>
+
+  <p>When a file is created, a group that we call the root group is 
+  created. The root group is the designated starting point for access 
+  to objects in the file.</p>
+  
+  <p>There is no name for this group just as there is no name 
+  applied to any object. When we write about the root group, when we 
+  need to specify the root group in a parameter, we use a 
+  slash, <code>/</code>. </p>
+  
+  <p>Every group is created with a hard link. The hard link that is 
+  created with the root group is a variation of a regular hard link. 
+  The root group's hard link does not have a name and cannot be changed. 
+  This means the root group cannot be deleted. See the 
+  <a href="#HardAndSymbolicLinks"> &ldquo;Hard and Symbolic Links&rdquo;</a> 
+  section for more information. Another variation of a regular hard 
+  link is described in the <a href="#AnonymousGroups">&ldquo;Anonymous 
+  Groups&rdquo;</a> section below.</p>
+  
+  
+  
+  
+<a name="LinkPaths">
+<h4>4.2.3. Link Paths</h4>
+</a>
+
+  <p>A link is a connection or association between a group and an object. 
+  A group is the source of the link, and the object is the target of the 
+  link. </p>
+
+  <p>Every link has a name, and no object has a name. When 
+  we talk about an object, we might call the object by the link's name. 
+  Suppose a group has a link named Y1, and the target of Y1 is a 
+  dataset. If we refer to the dataset as Y1, what we really mean is 
+  the dataset that is the target of the link called Y1. See the figure 
+  below. </p>
+  
+  <p>As more data is added to our file, we can nest datasets within 
+  groups and groups within groups. As we add links to groups, we need 
+  to remember that link names need to be unique within each group. </p>
+  
+  <p>To navigate to a group or dataset, we combine the links to the group 
+  or dataset into a <em><b>link path</b></em>. Link names can be used in 
+  more than one place as long as the link paths are unique.</p>
+  
+  <p>A link path can be absolute or relative. An absolute 
+  link path starts at the root group. A relative link path starts 
+  from some other known position such as a currently open group. </p>
+  
+  <p>A link path looks like a path name in a file system tree structure. 
+  Each link name is separated from another link name by a slash, 
+  <code>/</code>. The link name following a slash is always a member of 
+  the group that is the target of the link name preceding that slash. 
+  For example, in the link path <code>/GroupA/GroupB/Dataset1</code>, 
+  the link <code>GroupB</code> is a member of the group that is the target 
+  of the link <code>GroupA</code>.</p>
+
+  <p>The first component in a link path may be any of the 
+  following:</p>
+
+  <ul>
+    <li>The special character dot (., a period), the current group</li>
+    <li>The special character slash (/), the root group</li>
+    <li>The name of a link that is a member of the current group</li>
+  </ul>
+
+  <p>Link names may be any string of ASCII or UTF-8 characters that do 
+  not contain a slash or a single dot. These are reserved as noted above. 
+  However, users are advised to avoid the use of punctuation and 
+  non-printing characters in link names: these may create problems for 
+  other software. </p>
+
+  <p>In an <em><b>absolute link path</b></em> for an object, we start with 
+  a slash as the root group, and then we add other link names 
+  separated by slashes to get to the object. An example might be 
+  <code>/GroupA/GroupB/Dataset1</code>. What we are really saying 
+  when we write <code>/GroupA/GroupB/Dataset1</code> is the following: 
+  to get to the dataset that is the target of the <code>Dataset1</code> link, 
+  start at the root group, look for the link called <code>GroupA</code>, and 
+  follow it. The <code>GroupA</code> link is a member of the root group. 
+  Next, look for the link called <code>GroupB</code>, and follow it. 
+  <code>GroupB</code> is a member of the group that is the target of 
+  the link called <code>GroupA</code>. Finally, find the link called 
+  <code>Dataset1</code> in the group that is the target of the link called 
+  <code>GroupB</code>, and follow it. </p>
+  
+  <p>A <em><b>relative link path</b></em> starts from some group other 
+  than the root group. In the figure below is a group that is the target 
+  of the link <code>YB</code>. If this group has been opened, it could be 
+  used as the starting point for a relative link path to the dataset that 
+  is the target of the <code>Y3</code> link.  The relative link path 
+  would be <code>YC/Y3</code>.</p>
+
+  <p>There may be multiple link paths to an object. In the figure below, 
+  the dataset that is the target of the absolute link path 
+  <code>/YA/Y1</code> is the same dataset that is the target of the 
+  absolute link path <code>/YA/YB/YC/Y3</code>. </p>
+  
+  <p>The dataset that is the target of the <code>Y1</code> and 
+  <code>Y3</code> links might be accessed using different relative link 
+  paths from the <code>YB</code> group (the group that is the target of 
+  the <code>YB</code> link). Possible relative link paths are 
+  <code>YC/Y3</code> and <code>YC/YD/Y1</code>.</p>
+  
+<!-- NEW PAGE -->
+<table width="500" cellspacing="0" align="center">
+    <tr valign="top"> 
+        <td align="center">
+        <hr color="green" size="3"/>
+        <img height="250" src="Images/groups_fig2a.jpg"></td>
+        </tr>
+    <tr><td><hr color="green" size="1" /></td></tr>
+    <tr valign="top">
+        <td align="left" >
+        <b>Figure 1. An HDF5 file with a directed graph group structure 
+        including a circular reference</b><br />
+        Groups are represented by circles, links by arrows, and datasets 
+        by rectangles. 
+        <hr color="green" size="3"/></td>
+        </tr>
+</table>
+<br />
+
+  <p>Note that relative link paths in HDF5 do not employ the 
+  <code>../ </code> notation. The <code>../ </code> notation is used
+  in UNIX to indicate a parent directory and is not used in HDF5 to indicate
+  a parent group.</p>
+
+  <p>Another feature to note in the figure above is what the link 
+  <code>YD</code> represents. Since the underlying structure of an HDF5 
+  file is a directed graph, circular references such as <code>YD</code> 
+  are possible. If the structure of an HDF5 file kept to a strict tree 
+  structure like that used in file systems, then circular references 
+  would not be possible. In the figure above, the dataset specified 
+  by the <code>/YA/Y1</code> link path could also be specified with 
+  the following link path: <code>/YA/YB/YC/YD/Y1</code>. Another 
+  example is the ZBB link in the <a href="#ExamplesOfGroupsAndLinks">
+  &ldquo;Examples of Groups and Links&rdquo;</a> section below. </p>
+
+  
+  
+<table align="center" width="500" >
+    <tr >
+        <td style="background-color:#E6F2E6">
+        <hr color="green" size="3"/>
+        <p><a name="IdentifiersAndLinkPaths"><b>Identifiers and link 
+        paths</b></a></p>
+        
+        <p>Identifiers are generated and returned to an application when 
+        a group or file is created or opened. Identifiers are then used 
+        in the <code>loc_id</code> parameter along with link paths in the 
+        <code>name</code> parameter of function calls to create or open 
+        other groups and links. Link paths can be either absolute or 
+        relative. Possible identifiers and the appropriate link path type 
+        for each kind of identifier are described below.  </p>
+        
+        <p><b>File identifier and absolute link path.</b> When a file is 
+        created or opened by an application, a file identifier is returned. 
+        When the file identifier is used in a function call, the name 
+        parameter should specify an absolute link path. With the file 
+        identifier and an absolute link path, the function call will be 
+        able to identify the file to work on and the location of the object 
+        from the root group. To operate on the root group, use a file 
+        identifier and a slash, <code>/</code>. If a relative link path 
+        is used with a file identifier, then the relative link path uses 
+        the root group as its starting point.</p>
+        
+        <p><b>Group identifer and relative link path.</b> When a group is 
+        created or opened, a group identifier is returned. When the group 
+        identifier is used in a function call, the <code>name</code> 
+        parameter can specify either a relative link path or an absolute 
+        link path. With the group identifier and a relative link path, 
+        the function call will be able to identify the group and the 
+        location of the object from the group. With the group identifier 
+        and an absolute link path, the function call will be able to 
+        identify the file to work on and the location of the object 
+        from the root group.</p>
+        
+        <p><b>Any identifier and absolute link path.</b> With any 
+        identifier and an absolute link path, a function call can create 
+        or open a group or link that is not connected to the identifier. 
+        The function call uses the identifier to specify the file to 
+        work in and uses the absolute link path to specify the link to 
+        the created or opened group or dataset from the root group.</p>
+        
+        <hr color="green" size="3"/></td>
+        </tr>
+</table>
+<br />
+
+<!-- 2.4.2011. MEE. The statements above about identifiers and absolute 
+and relative link paths seem today to work with groups and links. There 
+are other resources such as attributes, datatypes, and datasets that 
+probably would work with these rules, but how identifiers and link path
+types work with these should be described in their chapters or in the 
+Objects and Identifiers chapter. 
+-->
+  
+  
+  
+
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+<a name="HardAndSymbolicLinks">
+<h4>4.2.4. Hard and Symbolic Links</h4>
+</a>
+  <p>Two types of links have been defined in HDF5: hard and symbolic. Hard 
+  links refer to an object with a physical address, and symbolic links refer 
+  to an object with link paths and names. Characteristics of hard and symbolic 
+  links are listed below.</p>
+  
+  <p>Characteristics of a hard link:</p>
+  <ul>
+    <li>A hard link is made with a physical address in the file</li>
+    <li>A hard link occurs within a single file</li>
+    <li>When a group or dataset is created, a hard link is also
+        created </li>
+    <li>At least one hard link exists for every group or dataset </li>
+    <li>A hard link and the group or dataset that is the target of the link 
+        exist together (hard links cannot dangle) </li>
+    <li>A hard link is created using <code>H5Lcreate_hard</code></li>
+    <li>A group or dataset may be the target of more than one hard link </li>
+    <li>If a group or dataset is not the target of at least one hard link, 
+        then the group or dataset cannot be accessed, and the space occupied 
+        by the group or dataset will be reclaimed the next time the 
+        <code>h5repack</code> tool is run</li>
+    <li>The target of a hard link will increase its reference count by one 
+        when the hard link is created, and the reference count will decline 
+        by one when the hard link is deleted</li>
+</ul>
+
+  <p>Characteristics of a symbolic link:</p>
+  <ul>
+    <li>A symbolic link uses a name rather than a physical address</li>
+    <li>The target of a symbolic link can be changed</li>
+    <li>There are two types of symbolic links: soft and external</li>
+    <li>The target of a soft symbolic link (a soft link) will be a group 
+        or dataset within a file</li>
+    <li>The target of an external symbolic link (an external link) will be 
+        a group or dataset in another file</li>
+    <li>A symbolic link can exist with or without its target object
+        (symbolic links can dangle) </li>
+        <ul>
+        <li>Suppose a symbolic link is created. The target object may or 
+        may not exist when the symbolic link is created. When an application 
+        opens the target object via the symbolic link, then either the 
+        target will be opened, or an error message will be generated.</li>
+        
+        </ul>
+    <li>A symbolic link can be created with <code>H5Lcreate_soft</code> or 
+        <code>H5Lcreate_external</code>
+    <li>A group or dataset may be the target of more than one symbolic 
+        link</li>
+    <li>The target of a symbolic link will not change its reference count 
+        when the symbolic link is created or deleted</li>
+  </ul>
+
+  
+<table align="center" width="500" >
+    <tr >
+        <td style="background-color:#E6F2E6">
+        <hr color="green" size="3"/>
+        <p><a name="ReferenceCount"><b>Reference count
+        </b></a></p>
+        
+        <p>The library maintains for each object a count of the number 
+        of hard links that have the object as their target. This is the 
+        object&rsquo;s <em><b>reference count</b></em>. When the object 
+        is created, a hard link is also created, and the reference count 
+        for the object is set to one. The reference count for an object 
+        is incremented or decremented each time a hard link with the object 
+        as the target is created or deleted. If an object becomes the 
+        target of a symbolic link, the reference count will not be 
+        changed. </p>
+        
+        <p>If the reference count for an object goes to zero, the library 
+        removes the object. Removing the object does not mean that the file 
+        size shrinks by the size occupied by the object. The space that the 
+        object used might at some point be used by other function calls. 
+        Using the <code>h5repack</code> tool will reclaim the unused space 
+        and decrease the file size. </p>
+        
+        <p>The reference count can be altered programmatically with the 
+        <code>H5Oincr_refcount</code> and <code>H5Odec_refcount</code> 
+        functions. For more information, see the 
+        <a href="../RM/RM_H5O.html#Object-IncrRefCount">
+        <code>H5Oincr_refcount</code></a> function call in the 
+        <a href="../RM/RM_H5Front.html" target="RMwindow">
+        <cite>HDF5 Reference Manual</cite></a>. </p>
+        
+        <hr color="green" size="3"/></td>
+        </tr>
+</table>
+<br />
+  
+  
+  
+  <p>For more information, see the 
+  <a href="#ProgModelCreatingHardLinks">&ldquo;Creating Hard 
+  Links&rdquo;</a> and 
+  <a href="#ProgModelCreatingSymbolicLinks">&ldquo;Creating Symbolic 
+  Links&rdquo;</a> sections below.</p>
+  
+  <p>It is also possible to create groups without links. A group created 
+  without a link is called an anonymous group. See 
+  <a href="#AnonymousGroups">&ldquo;Anonymous Groups&rdquo;</a> below for 
+  more information.</p>
+  
+  <p>Users can define their own type of link. User-defined links might be 
+  hard or symbolic, or they might be some kind of combination. See 
+  <a href="#UserDefinedLinks">&ldquo;User-defined Links&rdquo;</a> 
+  below for more information. </p>
+  
+  
+  
+  
+  
+  <a name="AnonymousGroups">
+<h4>4.2.5. Anonymous Groups</h4>
+  </a>
+  <p>Groups can be created without a hard link. When a group is created 
+  this way, it is called an anonymous group. When an anonymous group is 
+  created, a group identifier is returned to the user's application. The 
+  group can be accessed via the group identifier until the group identifier 
+  is closed. </p>
+  
+  <p>Creating a group without a hard link is a temporary condition. If you 
+  want to incorporate the group as part of the disk version of the file, a 
+  hard link must made with the anonymous group as its target. If the group 
+  identifier is closed before the hard link is made, the group can no longer 
+  be accessed. </p>
+  
+  <p>Datasets and committed datatypes can also be created anonymously. </p>
+  
+  <p>See the <code>H5Gcreate_anon</code> function call in the 
+  <a href="../RM/RM_H5Front.html" target="RMwindow"><cite>HDF5 Reference 
+  Manual</cite></a> for more information.</p>
+  
+  <pre>
+  The following is an email from Barbara from 8.15.2013:
+  
+Hi Mark,
+
+I looked at the tests and found an example that just passes in "." for the name of the existing group.
+
+That worked with H5Gcreate_anon! :)
+
+So you *can* use H5Lcreate_hard to make the anonymous group permanent:
+
+    gid = H5Gcreate_anon(file_id, H5P_DEFAULT, H5P_DEFAULT);
+    status = H5Lcreate_hard (gid, ".", file_id, "GroupH5Lcreate_hard",
+         H5P_DEFAULT, H5P_DEFAULT);
+
+You can also use H5Olink to do this:
+
+    gid = H5Gcreate_anon(file_id, H5P_DEFAULT, H5P_DEFAULT);
+    status = H5Olink (gid, file_id, "GroupH5Olink", H5P_DEFAULT, H5P_DEFAULT)
+
+I don't see anywhere in H5Lcreate_hard that it says you can pass in ".", though.
+
+-Barbara
+  
+See HDFFV-8499. FB found that nly H5Olink should be used to create a 
+link to anonymous groups, datasets, and committed datatypes. He talked 
+with Larry, and Larry looked at the test.
+  
+  
+  </pre>
+  
+  
+  
+  <a name="UserDefinedLinks">
+<h4>4.2.6. User-defined Links</h4>
+  </a>
+
+  <p>??????? read 
+  C:\1 MEE\Working\hdf5_trunk\sandbox\H5L,H5O_Resources\H5L_UG_content.doc
+  for more information. </p>
+  
+  <p>??????? rewrite this so as not to just repeat what I wrote a couple 
+  paragraphs above. ??????? Users can define their own type of link with the 
+  <code>H5Lcreate_ud</code> function call. User-defined links might be 
+  hard or symbolic, or they might be some kind of combination. An 
+  external link is an example of how to build a user-defined link. See 
+  the <a href="../RM/RM_H5L.html#Link-CreateUD"><code>H5Lcreate_ud</code>
+  </a> and 
+  <a href="../RM/RM_H5L.html#Link-CreateExternal"><code>H5Lcreate_external</code>
+  </a> function calls in the 
+  <a href="../RM/RM_H5Front.html" target="RMwindow"><cite>HDF5 
+  Reference Manual</cite></a>.</p>
+  
+<!-- 3.9.2011. At some point FB will put into "Advanced Topics" a section 
+on user-defined links. He'll probably use the material in 
+C:\1 MEE\Working\hdf5_trunk\sandbox\H5L,H5O_Resources\H5L_UG_content.doc 
+as a starting point. 
+-->
+
+  <p>??????? user might make an anonymous group, use a user-defined link 
+  to the anon group instead of a hard link, adjust the reference count 
+  programmatically to keep the library from overwriting the space occupied 
+  by the group (might not need to change the reference count this if the 
+  u-d link refers to an address in the same way a hard link does), 
+
+</p>
+<p> ??????? continue from &ldquo;Using User-Defined Links&rdquo; in 
+H5L_UG_content.doc. 
+</p>
+
+
+<br />
+        <hr />
+        <pre>
+          Q item 28
+        </pre>
+        <hr />
+        <br />
+
+  
+
+
+
+  
+  
+  
+  
+  
+<!-- NEW PAGE -->
+<a name="ExamplesOfGroupsAndLinks">
+<h4>4.2.7. Examples of Groups and Links</h4>
+</a>
+  <p>The figures below illustrate the range of possibilities for groups 
+  and links. In the figures, circles are used to represent groups, 
+  rectangles are used for datasets, solid arrows are used for hard links, 
+  and dashed arrows are used for symbolic links.</p>
+
+  <p>In the figure below, the group structure is hierarchical in the same 
+  way a file system operates.</p>
+  
+
+<table width="500" cellspacing="0" align="center">
+    <tr valign="top"> 
+        <td align="center">
+        <hr color="green" size="3"/>
+        <img height="250" src="Images/groups_fig1a.jpg"></td>
+        </tr>
+    <tr><td><hr color="green" size="1" /></td></tr>
+    <tr valign="top">
+        <td align="left" >
+        <b>Figure 2. An HDF5 file with a strictly hierarchical group 
+        structure</b>
+        <hr color="green" size="3"/></td>
+        </tr>
+</table>
+<br />
+
+  <p>In the figure below, the structure takes advantage of the directed 
+  graph&rsquo;s allowance of circular references and illustrates 
+  an extreme case in which a group via link ZBB is a member of itself. 
+  A possible reference to a member dataset such as 
+  <code>/ZA/ZB/ZBB/Z2</code> could be set up. Directed graph structures 
+  can become quite complex.</p>
+  
+
+<!-- NEW PAGE -->
+<table width="500" cellspacing="0" align="center">
+    <tr valign="top"> 
+        <td align="center">
+        <hr color="green" size="3"/>
+      <img height="250" src="Images/groups_fig3a.jpg" 
+        alt="Directed graph HDF5 group structure with self-reference"></td>
+    </tr>
+    <tr><td><hr color="green" size="1" /></td></tr>
+    <tr valign="top">
+        <td align="left" >
+        <b>Figure 3. An HDF5 file with a directed graph group structure and 
+        one group as a member of itself</b>
+        <hr color="green" size="3"/></td>
+    </tr>
+  </table>
+<br />
+
+  <p>The figure below shows an external link, <code>MC</code>. The target of 
+  the link path <code>/MA/MB/MC/NA/N2</code> is a dataset in FileN.h5.</p>
+
+<table width="500" cellspacing="0" align="center">
+    <tr valign="top"> 
+        <td align="center">
+        <hr color="green" size="3"/>
+        <img height="250" src="Images/groups_fig3b.jpg"></td>
+        </tr>
+    <tr><td><hr color="green" size="1" /></td></tr>
+    <tr valign="top">
+        <td align="left" >
+        <b>Figure 4. An HDF5 file with a symbolic link to another HDF5 
+        file</b>
+        <hr color="green" size="3"/></td>
+        </tr>
+</table>
+<br />
+  
+  
+  
+<!-- NEW PAGE -->
+  <a name="SummaryOfGroupAndLinkCharacteristics">
+<h4>4.2.8. Summary of Group and Link Characteristics</h4>
+  </a>
+  <p>Here is a summary of group and link characteristics:</p>
+
+  <p>Groups</p>
+  <ul>
+    <li>Groups do not have names</li>
+    <li>Groups hold links</li>
+    <li>Groups can be empty</li>
+    <li>Groups do not hold objects</li>
+    <li>The root group is automatically created when the HDF5 
+      file is created</li>
+    <li>The root group cannot be deleted</li>
+    <li>H5G function calls are part of the Groups interface</li>
+  </ul>
+  
+  <p>Links</p>
+  <ul>
+    <li>Each link has a name</li>
+    <li>Link names are unique within a group</li>
+    <li>The target of each link is only one group or dataset</li>
+    <li>Each group or dataset is the target of at least one hard link </li>
+    <li>A group or dataset may be the target of many links</li>
+    <li>Links may create circular references</li>
+    <li> A link path is made of the links that it takes to get to a group 
+    or a dataset</li>
+    <li> The links in a link path are separated by slashes</li>
+    <li>A link path may be absolute or relative</li>
+    <li>An HDF5 defined link may be hard or symbolic</li>
+    <li>A symbolic link may be soft or external</li>
+    <li>A user-defined link may be hard, symbolic, or a combination</li>
+    <li>H5L function calls are part of the Links interface</li>
+  </ul>
+
+<br />
+
+
+
+
+
+
+
+<SCRIPT language="JavaScript">
+<!--
+document.writeln ("
+<a name="ProgModel">
+<div align=right>
+<a href="#TOP"><font size="-1">(Top)</font></a>
+</div>
+</a>
+");
+-->
+</SCRIPT>
+
+<!-- NEW PAGE -->
+<a name="ProgModel">
+<h3 class=pagebefore>4.3. Programming Model: Working with Groups 
+and Links</h3>
+</a>
+
+  <p>The purpose of this section is to describe more specifically how 
+  common operations can be done.</p>
+ 
+  <p>The table below shows some common group and link operations and 
+  the function calls used. These operations are implemented in the 
+  H5G, the H5L, and the H5O APIs. See 
+  &ldquo;<a href="#GroupFuncSums">Group and Link Function Summaries</a>&rdquo;
+  below for more information.</p>
+  
+
+<table width="600" cellspacing="0" align="center" cellpadding="0">
+    <tr valign="bottom">
+        <td colspan="2" align="left" valign="bottom">
+        <b>Table 1. Common group, link, and object function calls</b></td>
+        </tr>
+    <tr><td colspan="2"><hr color="green" size="3" /></td></tr>
+    <tr valign="top"> 
+        <td width="70%"> 
+        <b>To do this operation:</b></td>
+        <td width="30%"> 
+        <b>Use this function call:</b></td>
+    <tr><td colspan="2"><hr color="green" size="1" /></td></tr>
+    <tr valign="top"> 
+        <td>Create a group</td>
+        <td><code>H5Gcreate</code></td>
+        </tr>
+    <tr><td colspan="2"><hr color="green" size="1" /></td></tr>
+    <tr valign="top"> 
+        <td>Open a group</td>
+        <td><code>H5Gopen</code></td>
+        </tr>
+    <tr><td colspan="2"><hr color="green" size="1" /></td></tr>
+    <tr valign="top"> 
+        <td>Close a group</td>
+        <td><code>H5Gclose</code></td>
+        </tr>
+    <tr><td colspan="2"><hr color="green" size="1" /></td></tr>
+    <tr valign="top"> 
+        <td>Add an object to a group <br />
+        (create a link from a group to an object)</td>
+        <td><code>H5Lcreate_hard<br />H5Lcreate_soft<br /> 
+        H5Lcreate_external</code></td>
+        </tr>
+    <tr><td colspan="2"><hr color="green" size="1" /></td></tr>
+    <tr valign="top"> 
+        <td>Remove an object from a group<br />
+        (remove from a group the link to an object)</td>
+        <td><code>H5Ldelete</code></td>
+        </tr>
+    <tr><td colspan="2"><hr color="green" size="1" /></td></tr>
+    <tr valign="top"> 
+        <td>Get the identifier for an object</td>
+        <td><code>H5Ovisit<br />H5Oget_info</code></td>
+        </tr>
+    <tr><td colspan="2"><hr color="green" size="1" /></td></tr>
+    <tr valign="top"> 
+        <td>Get the identifiers for all of the 
+        objects in a group</td>
+        <td><code>H5Ovisit</code></td>
+        </tr>
+    <tr><td colspan="2"><hr color="green" size="1" /></td></tr>
+    <tr valign="top"> 
+        <td>Get the name of a link</td>
+        <td><code>H5Lget_info</code></td>
+        </tr>
+    <tr><td colspan="2"><hr color="green" size="1" /></td></tr>
+    <tr valign="top"> 
+        <td>Get the names of all the links 
+        in a group</td>
+        <td><code>H5Literate<br />H5Lvisit</code></td>
+        </tr>
+    <tr><td colspan="2"><hr color="green" size="3" /></td></tr>
+</table>
+<br />
+
+  <p>When a new object is created, the HDF5 Library executes the 
+  link operation in the background immediately after creating the object. 
+  In other words, the creation operation creates the object and creates
+  the hard link that connects the object to a group.</p>
+    
+  <a name="ProgModelCreateGroup"> 
+<h4>4.3.1. Creating a Group</h4>
+  </a>
+  
+  <p>To create a group, use the <code>H5Gcreate</code> function. 
+  When used, <code>H5Gcreate</code> creates a group, opens the group 
+  (returns an identifier that can be used in other operations), and 
+  creates a hard link. </p>
+  
+  <p>To create a group, specify values for the <code>loc_id</code> 
+  and <code>name</code> parameters and use the default property list 
+  parameter value (<code>H5P_DEFAULT</code>) for the property list 
+  parameters. The <code>loc_id</code> parameter is used to specify the 
+  location identifier. The location identifier is the object 
+  identifier for the file or group where the new group will be connected. 
+  The value of the <code>name</code> parameter will be a link or link path. 
+  If the value of <code>loc_id</code> is a file identifier, then the 
+  value of the <code>name</code> parameter will be an absolute link path. 
+  If the value of <code>loc_id</code> is a group identifier, then the 
+  value of the <code>name</code> parameter should be a relative link path 
+  from the group specified with the <code>loc_id</code> parameter. If 
+  <code>loc_id</code> is a group identifier, then the <code>name</code> 
+  parameter could be an absolute link path. See 
+  <a href="#LinkPaths">&ldquo;Link Paths&rdquo;</a> and 
+  <a href="#IdentifiersAndLinkPaths">&ldquo;Identifiers and Link 
+  Paths&rdquo;</a> for more information.  </p>
+  
+  <p>The code in the example below creates three groups. </p>
+  
+  <p>The first group that is created is the target of the 
+  <code>Data</code> link. The <code>Data</code> link 
+  is a member of the root group, and the location identifier 
+  <code>file_id</code> is the object identifier for the file. The 
+  identifier for the file was returned to the application as a result of 
+  the file being opened in the second line of the example.</p>
+  
+  <p>Two other groups are then created and linked to the group that is 
+  the target of the <code>Data</code> link. The first group uses the 
+  file identifier <code>file_id</code> and an absolute link path 
+  for the name of the link. The second group uses the group 
+  identifier <code>group_id</code> and a relative link path for the name 
+  of the link. The identifier <code>group_id</code> was returned when 
+  the group that is the target of the <code>Data</code> link was 
+  created.</p>
+  
+  
+<table width="600" cellspacing="0" align="center">
+    <tr valign="top"> 
+        <td align="left">
+        <hr color="green" size="3"/>
+<pre>
+  hid_t file_id;
+  file = H5Fopen(....);
+
+  group = H5Gcreate(group_id, "/Data", H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+  group_new1 = H5Gcreate(file_id, "/Data/Data_new1", H5P_DEFAULT, H5P_DEFAULT, 
+      H5P_DEFAULT);
+  group_new2 = H5Gcreate(group_id, "Data_new2", H5P_DEFAULT, H5P_DEFAULT, 
+      H5P_DEFAULT);</pre></td>
+        </tr>
+    <tr><td><hr color="green" size="1" /></td></tr>
+    <tr valign="top">
+        <td align="left">
+        <b>Example 1. Creating three new groups</b><br />
+        The default property list parameter is <code>H5P_DEFAULT</code>. 
+        <hr color="green" size="3"/></td>
+        </tr>
+</table>
+<br />
+
+  <p>The three groups created in the example above are shown in the figure
+  below.</p>
+
+
+<!-- NEW PAGE -->
+<table width="500" cellspacing="0" align="center">
+    <tr valign="top"> 
+        <td align="center">
+        <hr color="green" size="3"/>
+      <img height="250" src="Images/groups_fig5a.jpg"></td>
+    </tr>
+    <tr><td><hr color="green" size="1" /></td></tr>
+    <tr valign="top">
+        <td align="left" >
+        <b>Figure 5. Creating groups</b>
+        <hr color="green" size="3"/></td>
+    </tr>
+  </table>
+<br />
+<br />
+
+
+<table align="center" width="500" >
+    <tr >
+        <td style="background-color:#E6F2E6">
+        <hr color="green" size="3"/>
+        <p><b>Programming reminder </b></p>
+        
+        <p>Applications should keep track of every 
+        identifier that is returned to the application. After the 
+        application is finished using an object or file, the appropriate 
+        close function call should be executed with the identifier of 
+        the object or file that will be closed. See 
+        <a href="#ClosingAGroup">&ldquo;Closing a Group&rdquo;</a> 
+        for more information. </p>
+        <hr color="green" size="3"/></td>
+        </tr>
+</table>
+<br />
+
+
+  <a name="OpeningAGroup">
+<h4>4.3.2. Opening a Group</h4>
+  </a>
+  
+  <p>It is often useful to explicitly open a group when working with 
+  objects that are the targets of links that are members of that group. 
+  To open a group, use the <code>H5Gopen</code> function. </p>
+  
+  <p>The example below refers to the groups in Figure 5 above and 
+  illustrates different ways to open groups. Opening a dataset is a similar 
+  process. </p>
+  
+  <p>To open an object using a relative link path, an application 
+  must first open the group or file on which the relative link path is 
+  based. In the first line of the example below, a previously-acquired 
+  file identifier, <code>file_id</code>, is used to open the group 
+  that is the target of the <code>/Data</code> link path, and then 
+  the returned group identifier, <code>group_id</code>, and a relative 
+  link path, <code>Data_new1</code>, are used to open the group that is the 
+  target of the <code>Data_new1</code> link.</p>
+  
+  <p>To open an object using an absolute link path, the application 
+  can use the file identifier, <code>file_id</code>, and an absolute link 
+  path. In the third line of the example below, <code>file_id</code> is used 
+  with <code>/Data/Data_new2</code> to open the group that is the target of 
+  the <code>Data_new2</code> link.</p>
+  
+<!-- NEW PAGE -->
+<table width="600" cellspacing="0" align="center">
+    <tr valign="top"> 
+        <td align="left">
+        <hr color="green" size="3"/>
+<pre>
+  group = H5Gopen(file_id, "/Data", H5P_DEFAULT);
+Q:<b>group = H5Gopen(group_id, "/Data", H5P_DEFAULT);</b> ???????
+
+  group1 = H5Gopen(group_id, "Data_new1", H5P_DEFAULT);
+  group2 = H5Gopen(file_id, "/Data/Data_new2", H5P_DEFAULT);</pre></td>
+        </tr>
+    <tr><td><hr color="green" size="1" /></td></tr>
+    <tr valign="top">
+        <td align="left">
+        <b>Example 2. Open groups with relative and absolute link paths</b>
+        <hr color="green" size="3"/></td>
+        </tr>
+</table>
+<br />
+
+  <a name="CreatingADataset">
+<h4>4.3.3. Creating a Dataset</h4>
+  </a>
+  
+  <p>The process of creating a dataset is like the process of creating 
+  a group that was discussed above. When a dataset is created, a hard 
+  link to it is automatically created. The link will be a member of a 
+  group, and when we talk about the dataset, we will use the name of 
+  the link to refer to the dataset. As with groups, a dataset may be 
+  created in a group by specifying an absolute link path or a relative 
+  link path. The example below illustrates both approaches to creating 
+  a dataset in the group that is the target of the <code>/Data</code> 
+  link. The absolute link path to the first dataset is 
+  <code>/Data/CData</code>. The <code>H5Dcreate</code> function uses a 
+  previously-acquired <code>file_id</code> and the default property list 
+  parameter <code>H5P_DEFAULT</code>. For the second dataset, the example 
+  first opens the group which will be the source of the link to the 
+  dataset, and then uses the <code>group_id</code> and the relative link 
+  <code>Cdata2</code> to create and locate the dataset.</p>
+  
+
+
+<table width="600" cellspacing="0" align="center">
+    <tr valign="top"> 
+        <td align="left">
+        <hr color="green" size="3"/>
+<pre>
+  dataspace = H5Screate_simple(RANK, dims, NULL);
+  dataset1 = H5Dcreate(file_id, "/Data/CData", H5T_NATIVE_INT,
+                    dataspace, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+
+  group = H5Gopen(file_id, "/Data", H5P_DEFAULT);
+Q: <b>group = H5Gopen(file_id, "/Data", H5P_DEFAULT);</b> ???????
+
+  dataset2 = H5Dcreate(group_id, "Cdata2", H5T_NATIVE_INT,
+                    dataspace, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);</pre></td>
+        </tr>
+    <tr><td><hr color="green" size="1" /></td></tr>
+    <tr valign="top">
+        <td align="left">
+        <b>Example 3. Create datasets using absolute and relative link paths</b>
+        <hr color="green" size="3"/></td>
+        </tr>
+</table>
+<br />
+
+<!-- NEW PAGE -->
+  <a name="ClosingAGroup">
+<h4>4.3.4. Closing a Group</h4>
+  </a>
+  
+  <p>To ensure the integrity of HDF5 objects and to release system 
+  resources, an application should always call the appropriate 
+  close function when it is through working with an HDF5 object. 
+  In the case of groups, <code>H5Gclose</code> ends access to the group 
+  and releases any resources the HDF5 Library has maintained 
+  in support of that access including the group identifier.  </p>
+  
+  <p>As illustrated in the example below, all that is required for an 
+  <code>H5Gclose</code> call is the group identifier acquired when 
+  the group was opened. There are no relative versus absolute link path 
+  considerations.</p>
+  
+  
+<table width="600" cellspacing="0" align="center">
+    <tr valign="top"> 
+        <td align="left">
+        <hr color="green" size="3"/>
+    <pre>
+  herr_t status;
+  status = H5Gclose(group_id);</pre></td>
+        </tr>
+    <tr><td><hr color="green" size="1" /></td></tr>
+    <tr valign="top">
+        <td align="left">
+        <b>Example 4. Close a group</b>
+        <hr color="green" size="3"/></td>
+        </tr>
+</table>
+<br />
+
+  <p>A non-negative return value indicates that the group was successuflly 
+  closed and the resources released; a negative return value indicates that
+  the attempt to close the group or release resources failed.</p>
+
+<!-- editingComment
+  <span class="editingComment">  
+         [ [ [ 
+	 Return values have been decidely under-discussed prior to this mention. 
+	 Probably ought to be mentioned with the discussion of each new function call. 
+	 ] ] ]
+	 </span> 
+-->
+
+  <a name="ProgModelCreatingHardLinks">
+<h4>4.3.5. Creating Hard Links </h4>
+  </a>
+
+  <p>When a group or a dataset is created, a hard link is also created. 
+  This hard link gives the group or dataset a location in the group 
+  hierarchy. After a group or dataset is created, additional hard links 
+  can be explicitly added by means of the <code>H5Lcreate_hard</code> 
+  function call to improve access and resource efficiency. See the 
+  <a href="#DefiningGroupsAndLinks"> &ldquo;Defining Groups and 
+  Links&rdquo;</a> section for more information.</p>
+
+  <p>The code in the example below illustrates the creation of a hard link 
+  named <code>Y3</code>. 
+  Once that link is created, the dataset that is the target of the 
+  absolute link path <code>/YA/Y1</code> can also be accessed by means 
+  of the absolute link path <code>/YA/YB/YC/Y3</code>. </p>
+  
+  <p>Here are some comments for each line in the example below.</p>
+  <ol>
+    <li>The file is opened. The identifier <code>file_id</code> is 
+      returned.</li>
+    <li>The group that is the target of the <code>/YA/YB/YC</code> link
+      is opened and returns the <code>group_id</code> identifier.</li>
+    <li>The <code>Y3</code> link is created. The <code>file_id</code> 
+      identifier and the absolute link path <code>/YA/Y1</code> are 
+      used to specify the dataset that will be the target of the new 
+      link. The <code>group_id</code> identifier specifies the group 
+      that is the target of the <code>/YA/YB/YC</code> link is the 
+      source of the new link. The new link is named <code>Y3</code>. 
+      The default property list value (<code>H5P_DEFAULT</code>) is 
+      used for the property list parameters.</li>
+    <li>This line shows an alternate way to create <code>Y3</code>. The 
+      difference between this line and the one above it is the 
+      <code>file_id</code> is used with an absolute link path to 
+      define the new link. </li>
+  </ol>
+  
+<!-- NEW PAGE -->
+<table width="600" cellspacing="0" align="center">
+    <tr valign="top"> 
+        <td align="left">
+        <hr color="green" size="3"/>
+<pre>
+  file = H5Fopen(....);
+  group = H5Gopen(file_id, "/YA/YB/YC", H5P_DEFAULT);
+  
+  status = H5Lcreate_hard(file_id, "/YA/Y1", group_id, "Y3", 
+             H5P_DEFAULT, H5P_DEFAULT)
+
+  status = H5Lcreate_hard(file_id, "/YA/Y1", file_id, "/YA/YB/YC/Y3", 
+             H5P_DEFAULT, H5P_DEFAULT)</pre></td>
+        </tr>
+    <tr><td><hr color="green" size="1" /></td></tr>
+    <tr valign="top">
+        <td align="left">
+        <b>Example 5. Create a hard link</b> 
+        <hr color="green" size="3"/></td>
+        </tr>
+</table>
+<br />
+<br />
+
+
+<table width="500" cellspacing="0" align="center">
+    <tr valign="top"> 
+        <td align="center">
+        <hr color="green" size="3"/>
+        <img height="250" src="Images/groups_fig2a_Ex5.jpg" 
+        alt="Create a hard link"></td>
+    </tr>
+    <tr><td><hr color="green" size="1" /></td></tr>
+    <tr valign="top">
+        <td align="left" >
+        <b>Figure 6. Creating hard links</b>
+        <hr color="green" size="3"/></td>
+    </tr>
+  </table>
+<br />
+
+
+
+  <a name="ProgModelCreatingSymbolicLinks">
+<h4>4.3.6. Creating Symbolic Links</h4>
+  </a>
+  
+  <p>Symbolic links are based on names and not on physical file addresses. 
+  Symbolic links are similar to the soft links, aliases, and shortcuts 
+  that are used with various operating systems. Programmers can use 
+  symbolic links to more easily work with any long link paths they may 
+  be using and to work with objects in other HDF5 files. There are two
+  kinds of symbolic links: soft and external. Soft links are 
+  used within a single file. External links are used between files.</p>
+  
+  <p>A big difference between symbolic links and hard links is the status 
+  of the target when the link is created. The target of a hard link must 
+  exist when the hard link is created. The target of a symbolic link may 
+  or may not exist when the link is created. If a symbolic link is created 
+  and the target does not exist, the link is said to dangle or to be a 
+  dangling link. So, symbolic links are more flexible than hard links.</p>
+
+  <p><b>To create a soft link</b>, use the 
+  <a href="../RM/RM_H5L.html#Link-CreateSoft">
+  <code>H5Lcreate_soft</code></a> function call. The function call has five 
+  parameters. The last two are property lists. In the example below, the 
+  default property list value <code>H5P_DEFAULT</code> is used. The first 
+  three parameters are called in the <cite>HDF5 Reference Manual</cite> 
+  <code>target_path</code>, <code>link_loc_id</code>, and 
+  <code>link_name</code>. </p>
+  
+  <p>The value of <code>target_path</code> is a link path to the target of 
+  the soft link. This is not the soft link. This is what the soft link 
+  resolves to when the soft link is used. The links in this link path 
+  may or may not exist when the soft link is created, but the links and 
+  any intermediate groups in this link path must exist when the soft link 
+  is used in order for the soft link to work. </p>
+  
+  <p>The value of <code>link_loc_id</code> is a file identifier or a 
+  group identifier. If the value of this parameter is a file identifier, 
+  then the values of the <code>target_path</code> and 
+  <code>link_name</code> parameters should be absolute link paths. If 
+  the value of this parameter is a group identifier, then the values of 
+  the <code>target_path</code> and <code>link_name</code> parameters 
+  could be either relative or absolute link paths. A relative link 
+  path would start from the group identifier's group. </p>
+  
+  <p>The value of <code>link_name</code> is the name of the new soft 
+  link.</p>
+  
+  <p>The example below creates a soft link called <code>2010</code> 
+  with a <code>link_loc_id</code> of <code>file_id</code> and a 
+  <code>target_path</code> of <code>/YA/YB/YC/Y3</code>. The example 
+  then opens the dataset that is the target of the soft link.</p>
+  
+  
+<table width="600" cellspacing="0" align="center">
+    <tr valign="top"> 
+        <td align="left">
+        <hr color="green" size="3"/>
+<pre>
+  status = H5Lcreate_soft("/YA/YB/YC/Y3", file_id, "/2010", H5P_DEFAULT, H5P_DEFAULT);
+
+  dataset = H5Dopen(file_id, "/2010", H5P_DEFAULT);</pre></td>
+        </tr>
+    <tr><td><hr color="green" size="1" /></td></tr>
+    <tr valign="top">
+        <td align="left">
+        <b>Example 6. Create a soft link</b>
+        <hr color="green" size="3"/></td>
+        </tr>
+</table>
+<br />
+
+  <p>The figure below illustrates the new soft link created in the 
+  example above. </p>
+  
+
+<table width="500" cellspacing="0" align="center">
+    <tr valign="top"> 
+        <td align="center">
+        <hr color="green" size="3"/>
+        <img height="250" src="Images/groups_fig2a_Ex8.jpg"></td>
+        </tr>
+    <tr><td><hr color="green" size="1" /></td></tr>
+    <tr valign="top">
+        <td align="left" >
+        <b>Figure 7. Creating a soft link</b><br />
+        Groups are represented by circles, hard links by solid arrows, 
+        symbolic links by dashed arrows, and datasets by rectangles. 
+        <hr color="green" size="3"/></td>
+        </tr>
+  </table>
+<br />
+
+  <p><b>To create an external link</b>, use the 
+  <a href="../RM/RM_H5L.html#Link-CreateExternal">
+  <code>H5Lcreate_external</code></a> function call. The parameters used 
+  with <code>H5Lcreate_external</code> are similar to those used with 
+  <code>H5Lcreate_soft</code>. The difference is that an HDF5 file is 
+  specified with <code>H5Lcreate_external</code>.</p>
+  
+  The <code>H5Lcreate_external</code> function has six parameters. The 
+  last two are property lists. In the example below, the default property 
+  list value <code>H5P_DEFAULT</code> is used. The first four parameters 
+  are <code>target_file_name</code>, <code>target_obj_name</code>, 
+  <code>link_loc_id</code>, and <code>link_name</code>. </p>
+  
+  <p>The value of <code>target_file_name</code> is the name of the file 
+  that holds the object that is the target of the external link. Enough 
+  path information should be specified so that the file can be found. In 
+  the example below, the value of <code>target_file_name</code> is 
+  <code>FileN.h5</code>, and the path to the file is 
+  <code>/file_server/data_storage</code>.</p>
+  
+  <p>The value of <code>target_obj_name</code> is a link path to the object 
+  that is the target of the external link. The link path is an absolute 
+  link path in the file specified by the <code>target_file_name</code> 
+  parameter. This is not the external link. This is what the external link 
+  resolves to when the external link is used. The links in this link path 
+  may or may not exist when the external link is created, but the links and 
+  any intermediate groups in this link path must exist when the external link 
+  is used in order for the external link to work. In the example below, 
+  the value of the <code>target_obj_name</code> parameter is 
+  <code>/NA/N1</code>.</p>
+  
+  <p>The value of <code>link_loc_id</code> is a file identifier or a 
+  group identifier. If the value of this parameter is a file identifier, 
+  then the value of the <code>link_name</code> parameter should be an 
+  absolute link path. If the value of this parameter is a group identifier, 
+  then the value of the <code>link_name</code> parameter could be either 
+  relative or absolute link paths. A relative link path would start from 
+  the group identifier's group. In the example below, the value of 
+  <code>link_loc_id</code> is <code>file_id</code>.</p>
+
+  <p>The value of <code>link_name</code> is the name of the new external 
+  link. The value of this parameter might be either a relative or an 
+  absolute link path as described in the paragraph above. In the 
+  example below, the value of <code>link_name</code> is the 
+  absolute link path <code>/MC</code>.</p>
+  
+  <p>After the external link is created in the example below, 
+   the dataset that is the target of the external link is opened. </p>
+  
+
+<table width="600" cellspacing="0" align="center">
+    <tr valign="top"> 
+        <td align="left">
+        <hr color="green" size="3"/>
+<pre>
+  status = H5Lcreate_external("/file_server/data_storage/FileN.h5",
+                "/NA/N1", file_id, "/MC", H5P_DEFAULT, H5P_DEFAULT);
+
+  dataset = H5Dopen(file_id, "/MC", H5P_DEFAULT);</pre></td>
+        </tr>
+    <tr><td><hr color="green" size="1" /></td></tr>
+    <tr valign="top">
+        <td align="left">
+        <b>Example 7. Create an external link</b> 
+        <hr color="green" size="3"/></td>
+        </tr>
+</table>
+<br />
+
+  <p>The figure below illustrates the new external link created in the 
+  example above. </p>
+  
+  
+<table width="500" cellspacing="0" align="center">
+    <tr valign="top"> 
+        <td align="center">
+        <hr color="green" size="3"/>
+        <img height="250" src="Images/groups_fig3b_Ex8.jpg"></td>
+        </tr>
+    <tr><td><hr color="green" size="1" /></td></tr>
+    <tr valign="top">
+        <td align="left" >
+        <b>Figure 8. An HDF5 file with an external link</b>
+        <hr color="green" size="3"/></td>
+        </tr>
+</table>
+  <br />
+  
+  <p>In release 1.8.7, a cache was added to hold the names of files 
+  accessed via external links. The size of this cache can be changed 
+  to help improve performance. For more information, see the entry 
+  in the <a href="../RM/RM_H5Front.html" target="RMwindow">
+  <cite>HDF5 Reference Manual</cite></a> for the 
+  <code>H5Pset_elink_file_cache_size</code> function call. 
+  </p>
+  
+  
+  <b>Mounting a File</b>
+  <p>An external link is a permanent connection between two files. A 
+  temporary connection can be set up with the <code>H5Fmount</code> 
+  function. For more information, see the 
+  &ldquo;<a href="08_TheFile.html">The HDF5 File</a>&rdquo; chapter, 
+  and the <code>H5Fmount</code> function in the 
+  <a href="../RM/RM_H5Front.html"><cite>HDF5 Reference Manual</cite></a>.</p>
+  
+
+  
+  
+  
+<table align="center" width="500" >
+    <tr >
+        <td style="background-color:#E6F2E6">
+        <hr color="green" size="3"/>
+        <p><a name="StrongAndWeakLinks"><b>Strong and Weak Links
+        </b></a></p>
+        
+        <p>Hard links contain a physical address in a file, and the 
+        reference count keeps track of the number of hard links that 
+        hold an object&rsquo;s address. Symbolic links store the link 
+        path of an object and do not effect the reference count for an 
+        object. User-defined links blur this neat division of links 
+        into hard and symbolic types. A user-defined link might be 
+        built so that it changes the reference count like a hard link 
+        and so that it can dangle like a symbolic link.</p>
+        
+        <p>In addition to hard and symbolic links, it might be also be 
+        useful to think about links as being strong or weak. A strong 
+        link effects the reference count of an object. Deleting the last 
+        strong link would make the object inaccessible. A hard link would 
+        be a strong link as would any user-defined link that effected 
+        the reference count. A weak link does not effect the reference 
+        count of an object. A weak link would be more flexible and 
+        ambiguous like symbolic links. </p>
+        <hr color="green" size="3"/></td>
+        </tr>
+</table>
+ <br />
+  
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- NEW PAGE -->
+  <a name="DeletingALink">
+<h4>4.3.7. Deleting a Link</h4>
+  </a>
+  <p>The <code>H5Ldelete</code> function call can be used to remove 
+  hard, soft, external, and user-defined links. </p>
+  
+  <p>The example below refers to the link named <code>Y3</code> that was 
+  created in the section above and shows how to remove a link using a 
+  relative link path and an absolute link path. The first line uses the 
+  <code>group_id</code> identifier for the group that is the source 
+  of the link, the name of the link, <code>Y3</code>, and the default 
+  property list parameter, <code>H5P_DEFAULT</code>. The second line 
+  uses the <code>file_id</code> identifier for the file, an absolute 
+  link path, and the default property list parameter. Only the final 
+  link in the absolute link path will be deleted.</p>
+  
+
+<table width="600" cellspacing="0" align="center">
+    <tr valign="top"> 
+        <td align="left">
+        <hr color="green" size="3"/>
+    <pre>
+  status = H5Ldelete(group_id, "Y3", H5P_DEFAULT);
+  
+  status = H5Ldelete(file_id, "/YA/YB/YC/Y3", H5P_DEFAULT);</pre></td>
+            </tr>
+    <tr><td><hr color="green" size="1" /></td></tr>
+    <tr valign="top">
+        <td align="left">
+        <b>Example 8. Delete a link</b> 
+        <hr color="green" size="3"/></td>
+        </tr>
+</table>
+<br />
+
+
+<table align="center" width="500" >
+    <tr >
+        <td style="background-color:#E6F2E6">
+        <hr color="green" size="3"/>
+        <p><b>How to avoid deleting the last hard link
+        </b></p>
+        
+        <p>When the last hard link to an object is deleted, the object 
+        is no longer accessible. Note that <code>H5Ldelete</code> will 
+        not prevent you from deleting the last link to an object. To see 
+        if an object has only one link, use the <code>H5Oget_info</code> 
+        function. If the value of the rc (reference count) field in 
+        <code>object_info</code> is greater than 1, then a link to the 
+        object can be deleted without making the object inaccessible.</p>
+        
+        <p>It is possible to delete the last hard link to an object and 
+        not make the object inaccessible. Suppose your application opens 
+        a dataset and then deletes the last hard link to the dataset. 
+        While the dataset is open, your application still has a connection 
+        to the dataset through the identifier returned when the dataset 
+        was opened. If your application creates a hard link to the dataset 
+        before it closes the dataset, then the dataset will still be 
+        accessible after the dataset is closed.</p>
+        <hr color="green" size="3"/></td>
+        </tr>
+</table>
+<br />
+
+
+
+
+  <a name="MovingOrRenamingAnObject">
+<h4>4.3.8. Moving or Renaming an Object</h4>
+  </a>
+  
+  <p>When we talk about renaming or moving an object, we do not actually 
+  rename or move the object. An object does not have a name: the name 
+  comes from a link. An object cannot be moved. When the object is created, 
+  it is put in a permanent location in the file. What changes is the 
+  link path to the object. </p>
+  
+  <p>One way to rename or move an object is to use the 
+  <code>H5Lmove</code> function call. This function call will delete the 
+  existing link and create a new link in one operation. </p>
+  
+  <p>Another way to rename or move an object is to use the 
+  <code>H5Ldelete</code> function call and one of the 
+  <code>H5Lcreate_*</code> function calls. These function calls will delete 
+  the existing link and create a new link. </p>
+
+  <p>Exercise caution in the use of <code>H5Lmove</code> and 
+  <code>H5Ldelete</code> as these functions each include a step that 
+  deletes a link to an object. If the link that is removed is the only 
+  hard link to the object, that object will become permanently inaccessible 
+  in the file. </p>
+
+  <p>Scenario 1: Removing the last link</p>
+  <p>To avoid removing the last link to an object or otherwise making an 
+  object inaccessible, use the <code>H5Oget_info</code> 
+  function. Confirm that the value of the reference count field (rc) is 
+  greater than 1. </p>
+
+  <p>Scenario 2: Moving a link that isolates an object</p>
+  <p>Consider the following example. Assume that the group that is the 
+  target of the <code>group2</code> link can only be accessed via the 
+  following absolute link path: <code>/top_group/group1/group2/</code>.</p>
+
+  <p>Suppose <code>H5Lmove</code> is used to move <code>top_group</code> 
+  to the group that is the target of the <code>group2</code> link. 
+  Since <code>top_group</code> was the only route from the root group to 
+  <code>group1</code> (the group that is the target of the 
+  <code>group1</code> link), there is no longer a path by which we can access 
+  <code>group1</code>, <code>group2</code>, or any member datasets. 
+  And since <code>top_group</code> is now a member of <code>group2</code>,
+  <code>top_group</code> itself and any member datasets have thereby also 
+  become inaccessible.</p>
+  
+  <p>For more information on any of these functions, see the 
+  <a href="../RM/RM_H5Front.html" target="RMwindow"><cite>HDF5 
+  Reference Manual</cite></a>.</p>
+
+  
+
+
+
+
+
+<SCRIPT language="JavaScript">
+<!--
+document.writeln ("
+<a name="DiscoverGrObjs">
+<div align=right>
+<a href="#TOP"><font size="-1">(Top)</font></a>
+</div>
+</a>
+");
+-->
+</SCRIPT>
+
+  <a name="DiscoverGrObjs">
+<h4 class=pagebefore>4.3.9. Discovering Groups and Links</h4>
+  </a>
+
+  <p>The structure of an HDF5 file is 
+  <span class="termDefinition">self-describing</span>. This means that 
+  an application can navigate an HDF5 file to discover and understand 
+  some or all of the groups and links in the file. The <code>H5Ovisit</code>, 
+  <code>H5Lexists</code>, <code>H5Literate</code>, and <code>H5Lvisit</code>
+  function calls can be used in the discovery process.</p>
+  
+  <p>The <code>H5Ovisit</code> function enables applications to 
+  retrieve information about the objects in a group and any sub-groups 
+  of that group. This function returns the same information about each 
+  object that is returned with the <code>H5Oget_info</code> function. 
+  The information that is returned for each object by <code>H5Ovisit</code> 
+  includes the following: address, type, reference count, when last 
+  changed, when last accessed, when created, number of attributes, 
+  size, object header size used and free, and other attribute settings.
+  For more information, see the <a href="#DiscoverInfo">&ldquo;Discovering 
+  Information about Groups and Links&rdquo;</a> section below. </p>
+
+  <p>The <code>H5Lexists</code> function enables applications to determine 
+  whether a link with the specified name exists in a group. Only the 
+  presence of the link is checked. The type of link is not checked. This 
+  function call only checks the final link in a link path. To be certain 
+  that the final link in a link path exists, each link in the link path 
+  should be checked.</p>
+
+  <p>The <code>H5Literate</code> function enables applications to iterate 
+  through links in a group. This function does not iterate through the 
+  links in any groups that are targets of links in this group. Suppose 
+  there is a group that is the target of the link called 2010. Suppose 
+  also that this group contains links to three datasets and two groups. 
+  Using <code>H5Literate</code> would tell us that there are five 
+  links, but it would not tell us anything about the links contained 
+  in the two groups. </p>
+      
+  <p>The <code>H5Lvisit</code> function enables applications to iterate 
+  through links in a group and through the links in any sub-groups. This 
+  function does iterate through the links in any groups that are targets 
+  of links in this group unlike <code>H5Literate</code>. Suppose there is 
+  a group that is the target of the link called <code>2010</code>. Suppose 
+  also that this group contains links to three datasets and two groups. 
+  Using <code>H5Lvisit</code> would tell us that there are five links. 
+  <code>H5Lvisit</code> will also investigate the two groups and tell us 
+  about the links contained in the two groups. If those two groups have 
+  sub-groups, then <code>H5Lvisit</code> will investigate all of the 
+  sub-groups. <code>H5Lvisit</code> and <code>H5Literate</code> both 
+  return the same information about each link they encounter. That 
+  information includes the type of link, the creation order if valid, and 
+  the character set used with the link name. The information also includes 
+  one of the following: the address the link points to if the link 
+  is a hard link, or the size of the link if the link is a symbolic link. </p>
+  
+  
+<table width="600" cellspacing="0" align="center" cellpadding="0">
+    <tr valign="bottom">
+        <td colspan="2" align="left" valign="bottom">
+        <b>Table 2. Discovering groups and links</b></td>
+        </tr>
+    <tr><td colspan="2"><hr color="green" size="3" /></td></tr>
+    <tr valign="top"> 
+        <td width="20%"> 
+        <b>Function call</b></td>
+        <td width="80%"> 
+        <b>Purpose</b></td>
+    <tr><td colspan="2"><hr color="green" size="1" /></td></tr>
+    <tr valign="top"> 
+        <td><code>H5Ovisit</code></td>
+        <td>Use to retrieve information about the 
+        objects in a group and any sub-groups of that group. </td>
+        </tr>
+    <tr><td colspan="2"><hr color="green" size="1" /></td></tr>
+    <tr valign="top"> 
+        <td><code>H5Lexists</code></td>
+        <td>Use to determine whether a link with the 
+        specified name exists in a group. </td>
+        </tr>
+    <tr><td colspan="2"><hr color="green" size="1" /></td></tr>
+    <tr valign="top"> 
+        <td><code>H5Literate</code></td>
+        <td>Use to iterate through links in a group.</td>
+        </tr>
+    <tr><td colspan="2"><hr color="green" size="1" /></td></tr>
+    <tr valign="top"> 
+        <td><code>H5Lvisit</code></td>
+        <td>Use to iterate through links in a group 
+        and through the links in any sub-groups. </td>
+        </tr>
+    <tr><td colspan="2"><hr color="green" size="3" /></td></tr>
+</table>
+<br />
+
+  <p>The following examples illustrate how to use functions. These 
+  examples use the files shown in the figure below.</p>
+  
+
+<table width="500" cellspacing="0" align="center">
+    <tr valign="top"> 
+        <td align="center">
+        <hr color="green" size="3"/>
+        <img height="250" src="Images/groups_fig3b_Ex8.jpg"></td>
+    </tr>
+    <tr><td><hr color="green" size="1" /></td></tr>
+    <tr valign="top">
+        <td align="left" >
+        <b>Figure 9. Discovering groups and links</b>
+        <hr color="green" size="3"/></td>
+        </tr>
+</table>
+<br />
+
+  <p>In the comments below, assume that <code>FileM.h5</code> and 
+  <code>FileN.h5</code> have been opened. Assume also that the file 
+  identifier variable <code>file_id_M</code> has been 
+  returned for <code>FileM.h5</code> and the file identifier variable 
+  <code>file_id_N</code> has been returned for <code>FileN.h5</code>.</p>
+  
+  <p>If we want information about the group that is the target of the link 
+  <code>NA</code>, then we might use the following:</p>
+  
+
+<table width="600" cellspacing="0" align="center">
+    <tr valign="top"> 
+        <td align="left">
+        <hr color="green" size="3"/>
+<pre>
+  status = H5Gopen(file_id_N, "/NA", H5P_DEFAULT)
+  status = H5Ovisit(group_id, H5_INDEX_NAME, H5_ITER_NATIVE, object_info, *op_data)</pre>
+        </td></tr>
+    <tr><td><hr color="green" size="1" /></td></tr>
+    <tr valign="top">
+        <td align="left">
+        <b>Example 9. Using <code>H5Ovisit</code></b> 
+        <hr color="green" size="3"/></td>
+        </tr>
+</table>
+<br />
+
+  <p>Since the file is open, we can use <code>file_id_N</code> to open 
+  the group. With <code>group_id</code>, we can investigate the group. In 
+  the <code>H5Ovisit</code> function, we use the <code>group_id</code>, 
+  <code>H5_INDEX_NAME</code> to specify the type of sorting, 
+  <code>H5_ITER_NATIVE</code> to specify that the fastest type of sorting 
+  be used, <code>object_info</code> to specify a buffer for the returned 
+  information, and <code>*op_data</code> to specify a pointer for the 
+  application to use during processing. </p>
+
+  <p>From the function's iterations, we would learn among other things 
+  that the group has four links and that the datasets that are the targets 
+  of those links each have a reference count of one. </p>
+  
+  <p>If we want to see if the link <code>MC</code> exists, then we might 
+  use the following:</p>
+  
+
+
+<table width="600" cellspacing="0" align="center">
+    <tr valign="top"> 
+        <td align="left">
+        <hr color="green" size="3"/>
+<pre>
+  status = H5Lexists(file_id_M, "/MC", H5P_DEFAULT)</pre></td>
+        </tr>
+    <tr><td><hr color="green" size="1" /></td></tr>
+    <tr valign="top">
+        <td align="left">
+        <b>Example 10. Using <code>H5Lexists</code></b> 
+        <hr color="green" size="3"/></td></tr>
+</table>
+<br />
+
+  <p>If we want to examine the links in <code>FileN.h5</code>, then we 
+  might use the following:</p>
+  
+<table width="600" cellspacing="0" align="center">
+    <tr valign="top"> 
+        <td align="left">
+        <hr color="green" size="3"/>
+    <pre>
+  status = H5Gopen(file_id_N, "/", H5P_DEFAULT)
+  status = H5Literate(group_id, H5_INDEX_NAME, H5_ITER_NATIVE, *idx, 
+                      object_info, *op_data)</pre></td>
+        </tr>
+    <tr><td><hr color="green" size="1" /></td></tr>
+    <tr valign="top">
+        <td align="left">
+        <b>Example 11. Using <code>H5Literate</code></b> 
+        <hr color="green" size="3"/></td></tr>
+</table>
+<br />
+
+
+  <p>Since the file is open, we can use <code>file_id_N</code> to open 
+  the root group. With <code>group_id</code>, we can investigate the root 
+  group. In the <code>H5Literate</code> function, we use the 
+  <code>group_id</code>, <code>H5_INDEX_NAME</code> to specify the type of 
+  sorting, <code>H5_ITER_NATIVE</code> to specify that the fastest type of 
+  sorting be used, <code>*idx</code> to specify a pointer to be used if 
+  the iteration process is interrupted, <code>object_info</code> to 
+  specify a buffer for the returned information, and <code>*op_data</code> 
+  to specify a pointer for the application to use during processing. </p>
+
+  <p>From this function, we would learn among other things 
+  that the root group has one hard link. We would not learn anything about 
+  the links contained in the group that is the target of the 
+  <code>/NA</code> link. To learn about all the links in 
+  <code>FileN.h5</code> we might use the following:</p>
+
+<!-- NEW PAGE -->
+<table width="600" cellspacing="0" align="center">
+    <tr valign="top"> 
+        <td align="left">
+        <hr color="green" size="3"/>
+<pre>
+  status = H5Gopen(file_id_N, "/", H5P_DEFAULT)
+  status = H5Lvisit(group_id, H5_INDEX_NAME, H5_ITER_NATIVE, *idx, 
+                    object_info, *op_data)</pre></td>
+            </tr>
+    <tr><td><hr color="green" size="1" /></td></tr>
+    <tr valign="top">
+        <td align="left">
+        <b>Example 12. Using <code>H5Lvisit</code></b> 
+        <hr color="green" size="3"/></td></tr>
+</table>
+<br />
+
+  <p>Since the file is open, we can use <code>file_id_N</code> to open 
+  the root group. With <code>group_id</code>, we can investigate the root 
+  group. In the <code>H5Lvisit</code> function, we use the 
+  <code>group_id</code>, <code>H5_INDEX_NAME</code> to specify the type of 
+  sorting, <code>H5_ITER_NATIVE</code> to specify that the fastest type of 
+  sorting be used, <code>object_info</code> to specify a buffer for the 
+  returned information, and <code>*op_data</code> to specify a pointer for 
+  the application to use during processing. </p>
+
+  <p>From this function, we would learn among other things 
+  that the root group has one hard link and that the group that is the 
+  target of the <code>/NA</code> link holds four hard links. </p>
+
+  <p>For more information, see the <a href="../RM/RM_H5O.html">&ldquo;H5O: 
+  Object Interface&rdquo;</a> and the 
+  <a href="../RM/RM_H5L.html">&ldquo;H5L: Link Interface&rdquo;</a> 
+  sections in the <a href="../RM/RM_H5Front.html" target="RMwindow">
+  <cite>HDF5 Reference Manual</cite></a>. </p>
+  
+  
+
+
+<SCRIPT language="JavaScript">
+<!--
+document.writeln ("
+<a name="DiscoverInfo">
+<div align=right>
+<a href="#TOP"><font size="-1">(Top)</font></a>
+</div>
+</a>
+");
+-->
+</SCRIPT>
+
+  <a name="DiscoverInfo">
+<h4 class=pagebefore>4.3.10. Discovering Objects in a Groups</h4>
+<!-- 2.24.2011. this used to be section 4.3.8 -->
+  </a>
+
+  <p>There is often a need to retrieve information about a group or a 
+  link. For groups, use the <code>H5Oget_info</code> function call. For 
+  links, use the <code>H5Lget_info</code> function call. </p>
+  
+  <p>The following information is retrieved for groups with 
+  <code>H5Oget_info</code>:</p>
+  
+    <ul>
+      <li>Address</li>
+      <li>Type</li>
+      <li><a href="#ReferenceCount">Reference count</a> </li>
+      <li>Time stamp: last changed, last accessed, created</li>
+      <li>Number of attributes</li>
+      <li>Size</li>
+      <li>Object header size used and free</li>
+      <li>Other attribute settings</li>
+      </ul>
+
+  <p>The following information is retrieved for links with 
+  <code>H5Lget_info</code>:</p>
+  
+    <ul>
+      <li>Link type</li>
+      <li>Creation order</li>
+      <li>The character set used to encode the name of the link</li>
+      <li>The file address that the link points to if the link type is 
+        hard</li>
+      <li>The length of the link name if the link type is soft or 
+        external</li>
+      </ul>
+
+      
+  <p>For more information on objects, see the 
+  &ldquo;Objects and Identifiers&rdquo; chapter.</p>
+
+  <p>For more information on the 
+  <a href="../RM/RM_H5L.html#Link-GetInfo"><code>H5Lget_info</code></a> and 
+  <a href="../RM/RM_H5O.html#Object-GetInfo"><code>H5Oget_info</code></a> 
+  functions, see the <a href="../RM/RM_H5Front.html" target="RMwindow">
+  <cite>HDF5 Reference Manual</cite></a>. </p>
+
+
+
+<SCRIPT language="JavaScript">
+<!--
+document.writeln ("
+<a name="h5dump">
+<div align=right>
+<a href="#TOP"><font size="-1">(Top)</font></a>
+</div>
+</a>
+");
+-->
+</SCRIPT>
+
+<!-- NEW PAGE --> 
+  <a name="UsingH5Dump">
+<h4 class=pagebefore>4.3.11. Using <code>h5dump</code></h4>
+  </a>
+
+  <p>The <code>h5dump</code> application program is a command-line 
+  utility that is distributed with HDF5. It can be used to inspect 
+  the contents of an HDF5 file. It can show the structure of a file 
+  so that you can determine where to create an object or so that you 
+  can verify that your application program actually created an object.</p>
+  
+  <p>In the case of the new group created in the 
+  &ldquo;<a href="#ProgModelCreateGroup">Creating a group</a>&rdquo; section, 
+  the following <code>h5dump</code> command will display the 
+  contents of <code>FileZ.h5</code>:</p>
+
+<dir><pre>
+h5dump FileZ.h5 
+</pre></dir>
+
+  <p>
+  Assuming that <code>Data</code>, <code>Data_new1</code>,  and 
+  <code>Data_new2</code> are the only objects that exist in 
+  <code>FileZ.h5</code>, the output will look something like the 
+  following:</p>
+
+<dir><pre>
+HDF5 "FileZ.h5" {
+GROUP "/" {
+GROUP Data {
+GROUP Data_new1 {
+GROUP Data_new2 {
+}
+}
+}
+}
+}
+</pre></dir>
+
+  <p>
+  The <code>h5dump</code> program is described on the 
+  <a href="../RM/Tools.html" target="RMwindow">Tools</a> page of the 
+  <a href="../RM/RM_H5Front.html" 
+  target="RMwindow"><cite>HDF5 Reference Manual</cite></a>.</p>
+  
+  <p>The HDF5 DDL grammar is described in the document
+  <a href="../ddl.html" target="RMwindow">DDL in BNF for HDF5</a>, 
+  an element of this <cite>HDF5 User&rsquo;s Guide</cite>.</p>
+<br />
+
+
+
+  
+<SCRIPT language="JavaScript">
+<!--
+document.writeln ("
+<a name="Examples">
+<div align=right>
+<a href="#TOP"><font size="-1">(Top)</font></a>
+</div>
+</a>
+");
+-->
+</SCRIPT>
+
+<!-- NEW PAGE -->
+<a name="Examples">
+<h3 class=pagebefore>4.4. Examples of Group Structures</h3></a>
+
+
+  <p>This section presents several samples of possible HDF5 group 
+  structures.</p>
+  
+  <p>The figure below shows examples of the structure of a file with three 
+  groups and one dataset. The file in a) contains three groups: 
+  the root group and two member groups. In b), a dataset has been 
+  created and linked to <code>/group1</code> with the link named 
+  <code>dset1</code>. In c), a link named <code>dset2</code> from 
+  <code>/group2</code> to the dataset has been added. Note that there is 
+  only one copy of the dataset; there are two links to it, and it can be 
+  accessed either as <code>/group1/dset1</code> or as 
+  <code>/group2/dset2</code>. The file in d) illustrates that one of the 
+  two links to the dataset can be deleted. In this case, the link from 
+  <code>/group1</code> has been removed.  The dataset itself has not 
+  been deleted; it is still in the file, but it can only be accessed as 
+  <code>/group1/dset2</code>.</p>
+
+<!-- NEW PAGE -->
+<table width="600" cellspacing="0" align="center">
+    <tr><td colspan="3"><hr color="green" size="3" /></td></tr>
+    <tr valign="top">
+        <td align="center">
+        <img src="Images/groups_fig27_a.JPG"></td>
+        <td align="center" valign="top">&nbsp;&nbsp;</td>
+        <td align="center">
+        <img src="Images/groups_fig27_b.JPG"> 
+        </td>
+        </tr>
+    <tr>
+        <td align="center" width="50%">
+        a) The file contains three groups: 
+        the root group, <code>/group1</code>, and <code>/group2</code>.</td>
+        <td align="center" valign="top">&nbsp;&nbsp;</td>
+        <td align="center" width="50%">
+        b) The dataset <code>dset1</code> (or <code>/group1/dset1</code>) 
+        is created in <code>/group1</code>.</td> 
+        </tr>
+    <tr valign="top"> 
+        <td align="center"> 
+        <img src="Images/groups_fig27_aa.JPG"></td>
+        <td align="center" valign="top">&nbsp;&nbsp;</td>
+        <td align="center">
+        <img src="Images/groups_fig27_bb.JPG"></td>
+        </tr>
+    <tr> 
+        <td align="center" valign="top">
+        c) A link named <code>dset2</code> is created in <code>/group2</code>. 
+        </td><td align="center" valign="top">&nbsp;&nbsp;</td>
+        <td align="center">
+        d) The <code>dset1</code> link is removed. The dataset is still in the 
+        file, but can be accessed only as <code>/group2/dset2</code>.
+        </td>
+        </tr>
+    <tr><td colspan="3"><hr color="green" size="1" /></td></tr>
+    <tr valign="top">
+        <td align="left" >
+        <b>Figure 10. Some group structures</b></td>
+        </tr>
+    <tr><td colspan="3"><hr color="green" size="3" /></td></tr>
+</table>
+<br />
+
+<!-- 12.27.10, this used to be figure 9 -->
+
+
+
+
+<!-- NEW PAGE -->
+  <p>The figure below illustrates loops in an HDF5 group structure. 
+  The file in a) contains three groups and a dataset. 
+  The group that is the target of the <code>group2</code> link is a 
+  member of the root group and is also a member of the group that is the 
+  target of the <code>group1</code> link. The group that is the target 
+  of the <code>group2</code> link can be accessed by either of two link 
+  paths: <code>/group2</code> or <code>/group1/GXX</code>. 
+  Similarly, the dataset can be accessed by these link paths: 
+  <code>/group2/dset1</code> or <code>/group1/GXX/dset1</code>.</p>
+
+  <p>A different case is illustrated in b): the dataset is the target 
+  of two links that are both members of the same group. In this case, 
+  the dataset again has two names: <code>/group1/dset1</code> and 
+  <code>/group1/dset2</code>.</p>
+  
+  <p>In c), the dataset that is the target of the <code>dset1</code> 
+  link is a member of two groups. The dataset has three absolute link 
+  paths: <code>/group1/dset1</code>, <code>/group2/dset2</code>, and 
+  <code>/group1/GXX/dset2</code>. </p>
+  
+  <p>In d), two of the groups are members of each other, and the 
+  dataset is a member of both groups. In this case, there are an infinite 
+  number of paths to the dataset because <code>GXX</code> and 
+  <code>GYY</code> can be traversed any number of times on the way from 
+  the root group, <code>/</code>, to the dataset. This can yield a link path 
+  such as <code>/group1/GXX/GYY/GXX/GYY/GXX/dset2</code>.</p>
+
+
+  
+<!-- NEW PAGE -->
+<table width="600" cellspacing="0" align="center">
+    <tr><td colspan="3"><hr color="green" size="3" /></td></tr>
+    <tr valign="top"> 
+        <td align="center">
+        <img src="Images/groups_fig28_a.JPG"></td>
+        <td align="center" valign="top">&nbsp;&nbsp;</td>
+        <td align="center">
+        <img src="Images/groups_fig28_b.JPG"></td>
+        </tr>
+    <tr>
+        <td align="center" width="50%">
+        a) <code>dset1</code> has two names: 
+        <code>/group2/dset1</code> and <code>/group1/GXX/dset1</code>.
+        </td><td>&nbsp;&nbsp;</td>
+        <td align="center" width="50%">
+        b) <code>dset1</code> again has two names: 
+        <code>/group1/dset1</code> and <code>/group1/dset2</code>.
+        </td> 
+        </tr>
+    <tr valign="top"> 
+        <td align="center"> 
+        <img src="Images/groups_fig28_c.JPG">
+        </td><td>&nbsp;&nbsp;</td>
+        <td align="center">
+        <img src="Images/groups_fig28_d.JPG"> 
+        </td>
+        </tr>
+    <tr> 
+        <td align="center" valign="top">
+        c) <code>dset1</code> has three names: 
+        <code>/group1/dset1</code>, <code>/group2/dset2</code>, 
+        and <code>/group1/GXX/dset2</code>.
+        </td><td align="center" valign="top">&nbsp;&nbsp;</td>
+        <td align="center" >
+        d) <code>dset1</code> has many available path names.
+        </td>
+        </tr>
+    <tr><td colspan="3"><hr color="green" size="1" /></td></tr>
+    <tr valign="top">
+        <td align="left" >
+        <b>Figure 11. More sample group structures</b></td>
+        </tr>
+    <tr><td colspan="3"><hr color="green" size="3" /></td></tr>
+</table>
+<br />
+
+<!-- 12.27.10, this used to be figure 10 -->
+
+
+
+  <p>The figure below takes us into the realm of soft links.
+  The original file, shown in a) below, contains only three hard links.
+  In b), a soft link named <code>dset2</code> has been created.
+  The source of the new link is the group that is the target of the 
+  <code>group2</code> link. The target of the new link is also the target 
+  of the <code>/group1/dset1</code> link path.</p>
+  
+  <p>In c), another soft link, <code>dset3</code>, has been created 
+  in the group that is the target of the <code>group2</code> link. The 
+  target of <code>dset3</code> does not yet exist. That target object has 
+  been added in d) along with the hard link <code>dset</code>. The 
+  target dataset is now accessible as either <code>/group2/dset</code> or
+  <code>/group2/dset3</code>.</p>
+
+  
+<table width="600" cellspacing="0" align="center">
+    <tr><td colspan="3"><hr color="green" size="3" /></td></tr>
+    <tr valign="top"> 
+        <td align="center"> 
+        <img src="Images/groups_fig29_a.JPG"></td>
+        <td align="center" valign="top">&nbsp;&nbsp;</td>
+        <td align="center">
+        <img src="Images/groups_fig29_b.JPG"></td>
+        </tr>
+    <tr>
+        <td align="center" valign="top" width="48%">
+        a) The file contains only hard links.</td>
+        <td>&nbsp;&nbsp;</td>
+        <td align="center" valign="top" width="48%">
+        b) The <code>dset2</code> soft link is added.</td> 
+        </tr>
+    <tr valign="top"> 
+        <td align="center"> 
+        <img src="Images/groups_fig29_c.JPG"></td>
+        <td>&nbsp;&nbsp;</td>
+        <td align="center">
+        <img src="Images/groups_fig29_d.JPG"></td>
+        </tr>
+    <tr> 
+        <td align="center" valign="top">
+        c) A soft link named <code>dset3</code> is added with a target 
+        that does not yet exist.</td>
+        <td align="center" valign="top">&nbsp;&nbsp;</td>
+        <td align="center" valign="top">
+        d) The target of the soft link is created or linked.</td>
+        </tr>
+    <tr><td colspan="3"><hr color="green" size="1" /></td></tr>
+    <tr valign="top">
+        <td align="left" >
+        <b>Figure 12. Hard and soft links</b></td>
+        </tr>
+    <tr><td colspan="3"><hr color="green" size="3" /></td></tr>
+</table>
+<br />
+
+<!-- 12.27.10, this used to be figure 11 -->
+
+<!-- NEW PAGE -->
+   
+
+
+  <p>External links are like soft links except that the targets of 
+  external links are objects in other files. In the figure below, a) 
+  shows that FileM.h5 has a dangling external link <code>MC</code>. After 
+  FileN.h5 is created, see b), <code>MC</code> can be resolved.</p>
+
+  
+<table width="500" cellspacing="0" align="center">
+    <tr valign="top"> 
+        <td align="center">
+        <hr color="green" size="3"/>
+        <img height="250" src="Images/groups_fig13a.JPG">
+        </td>
+        </tr>
+    <tr>
+        <td align="center" valign="top">
+        a) An external link <code>MC</code> has been added to FileM.h5.
+        </td> 
+        </tr>
+    <tr><td colspan="3">&nbsp;</td></tr>
+    <tr valign="top"> 
+        <td align="center"> 
+        <img height="250" src="Images/groups_fig13b.JPG">
+        </td>
+        </tr>
+    <tr> 
+        <td align="center" valign="top">
+        b) The target of <code>MC</code> becomes available after FileN.h5
+        is created.
+        </td>
+        </tr>
+    <tr><td><hr color="green" size="1" /></td></tr>
+    <tr valign="top">
+        <td align="left" >
+        <b>Figure 13. External links</b> 
+        <hr color="green" size="3"/></td>
+        </tr>
+</table>
+<br />
+
+
+   
+<SCRIPT language="JavaScript">
+<!--
+document.writeln ("
+<a name="GroupFuncSums">
+<div align=right>
+<a href="#TOP"><font size="-1">(Top)</font></a>
+</div>
+</a>
+");
+-->
+</SCRIPT>
+
+   <!-- NEW PAGE -->
+<a name="GroupFuncSums">
+<h3 class=pagebefore>4.5. Group and Link Function Summaries</h3>
+</a>
+  <p>Function calls related to groups and links are listed below in the 
+  following categories: group (H5G), link (H5L), object (H5O), and 
+  property list (H5P). The object functions listed below have been 
+  included in this chapter because they are replacements for deprecated 
+  group functions. See the &ldquo;Objects and Identifiers&rdquo; chapter 
+  for more information. For more information on any of these interfaces 
+  or functions, see the 
+  <a href="../RM/RM_H5Front.html" target="RMwindow"><cite>HDF5 Reference 
+  Manual</cite></a>.</p>
+  <br /><br />
+  
+<table width="600" cellspacing="0" align="center" cellpadding="0">
+    <tr valign="bottom">
+        <td colspan="3" align="left" valign="bottom">
+        <b>Function Listing 1. Group functions (H5G)
+        </b></td>
+        </tr>
+    <tr><td colspan="3"><hr color="green" size="3" /></td></tr>
+    <tr valign="top"> 
+        <td>
+        <b>C Function<br />Fortran Function</b>
+        </td><td>&nbsp;</td>
+        <td>
+        <b>Purpose</b>
+        </td>
+        </tr>
+    <tr><td colspan="3"><hr color="green" size="1" /></td></tr>
+    <tr valign="top"> 
+        <td>
+        <code>H5Gcreate<br />h5gcreate_f</code> 
+        </td><td>&nbsp;</td>
+        <td>
+        Creates and opens a new group. The C function is a 
+        macro: see <a href="../RM/APICompatMacros.html">&ldquo;API 
+        Compatibility Macros in HDF5.&rdquo;</a>
+        </td>
+        </tr>
+    <tr><td colspan="3"><hr color="green" size="1" /></td></tr>
+    <tr valign="top"> 
+        <td>
+        <code>H5Gcreate_anon<br />h5gcreate_anon_f</code> 
+        </td><td>&nbsp;</td>
+        <td>
+        Creates and opens a new group without linking it into the file 
+        structure. 
+        </td>
+        </tr>
+    <tr><td colspan="3"><hr color="green" size="1" /></td></tr>
+    <tr valign="top"> 
+        <td>
+        <code>H5Gopen<br />h5gopen_f</code> 
+        </td><td>&nbsp;</td>
+        <td>
+        Opens an existing group. The C function is a 
+        macro: see <a href="../RM/APICompatMacros.html">&ldquo;API 
+        Compatibility Macros in HDF5.&rdquo;</a>
+        </td>
+        </tr>
+    <tr><td colspan="3"><hr color="green" size="1" /></td></tr>
+    <tr valign="top"> 
+        <td>
+        <code>H5Gclose<br />h5gclose_f</code> 
+        </td><td>&nbsp;</td>
+        <td>
+        Closes the specified group.
+        </td>
+        </tr>
+    <tr><td colspan="3"><hr color="green" size="1" /></td></tr>
+    <tr valign="top"> 
+        <td>
+        <code>H5Gget_create_plist<br />h5gget_create_plist_f</code> 
+        </td><td>&nbsp;</td>
+        <td>
+        Gets a group creation property list identifier. 
+        </td>
+        </tr>
+    <tr><td colspan="3"><hr color="green" size="1" /></td></tr>
+    <tr valign="top"> 
+        <td>
+        <code>H5Gget_info<br />h5gget_info_f</code> 
+        </td><td>&nbsp;</td>
+        <td>
+        Retrieves information about a group. 
+        Use instead of <code>H5Gget_num_objs</code>.
+        </td>
+        </tr>
+    <tr><td colspan="3"><hr color="green" size="1" /></td></tr>
+    <tr valign="top"> 
+        <td>
+        <code>H5Gget_info_by_idx<br />h5gget_info_by_idx_f</code> 
+        </td><td>&nbsp;</td>
+        <td>
+        Retrieves information about a group according to the group’s 
+        position within an index. 
+        </td>
+        </tr>
+    <tr><td colspan="3"><hr color="green" size="1" /></td></tr>
+    <tr valign="top"> 
+        <td>
+        <code>H5Gget_info_by_name<br />h5gget_info_by_name_f</code> 
+        </td><td>&nbsp;</td>
+        <td>
+        Retrieves information about a group. 
+        </td>
+        </tr>
+    <tr><td colspan="3"><hr color="green" size="1" /></td></tr>
+    <tr valign="top"> 
+        <td>
+        <code>(none)<br />h5gget_obj_info_idx_f</code> 
+        </td><td>&nbsp;</td>
+        <td>
+        Returns name and type of the group member identified by its index.
+        Use with the <code>h5gn_members_f</code> function. 
+        <code>h5gget_obj_info_idx_f</code> and <code>h5gn_members_f</code> 
+        are the Fortran equivalent of 
+        the C function <code>H5Literate</code>.
+        </td>
+        </tr>
+    <tr><td colspan="3"><hr color="green" size="1" /></td></tr>
+    <tr valign="top"> 
+        <td>
+        <code>(none)<br />h5gn_members_f</code> 
+        </td><td>&nbsp;</td>
+        <td>
+        Returns the number of group members.
+        Use with the <code>h5gget_obj_info_idx_f</code> function. 
+        </td>
+        </tr>
+    <tr><td colspan="3"><hr color="green" size="3" /></td></tr>
+</table>
+<br />
+<br />
+
+
+
+<!-- NEW PAGE -->
+<table width="600" cellspacing="0" align="center" cellpadding="0">
+    <tr valign="bottom">
+        <td colspan="3" align="left" valign="bottom">
+        <b>Function Listing 2. Link (H5L) functions
+        </b></td>
+        </tr>
+    <tr><td colspan="3"><hr color="green" size="3" /></td></tr>
+    <tr valign="top"> 
+        <td>
+        <b>C Function<br />Fortran Function</b>
+        </td><td>&nbsp;</td>
+        <td>
+        <b>Purpose</b>
+        </td>
+        </tr>
+    <tr><td colspan="3"><hr color="green" size="1" /></td></tr>
+    <tr valign="top"> 
+        <td>
+        <code>H5Lcreate_hard<br />h5lcreate_hard_f</code> 
+        </td><td>&nbsp;</td>
+        <td>
+        Creates a hard link to an object. 
+        Replaces <code>H5Glink</code> and <code>H5Glink2</code>.
+        </td>
+        </tr>
+    <tr><td colspan="3"><hr color="green" size="1" /></td></tr>
+    <tr valign="top"> 
+        <td>
+        <code>H5Lcreate_soft<br />h5lcreate_soft_f</code> 
+        </td><td>&nbsp;</td>
+        <td>
+        Creates a symbolic link to an object in the same file. 
+        Replaces <code>H5Glink</code> and <code>H5Glink2</code>.
+        </td>
+        </tr>
+    <tr><td colspan="3"><hr color="green" size="1" /></td></tr>
+    <tr valign="top"> 
+        <td>
+        <code>H5Lcreate_external<br />h5lcreate_external_f</code> 
+        </td><td>&nbsp;</td>
+        <td>
+        Creates a symbolic link to an object in a different file. 
+        </td>
+        </tr>
+    <tr><td colspan="3"><hr color="green" size="1" /></td></tr>
+    <tr valign="top"> 
+        <td>
+        <code>H5Lcreate_ud<br />(none)</code> 
+        </td><td>&nbsp;</td>
+        <td>
+        Creates a user-defined link. 
+        </td>
+        </tr>
+    <tr><td colspan="3"><hr color="green" size="1" /></td></tr>
+    <tr valign="top"> 
+        <td>
+        <code>H5Lexists<br />h5lexists_f</code> 
+        </td><td>&nbsp;</td>
+        <td>
+        Determines whether a link with the specified name exists in a 
+        group. 
+        </td>
+        </tr>
+    <tr><td colspan="3"><hr color="green" size="1" /></td></tr>
+    <tr valign="top"> 
+        <td>
+        <code>H5Lcopy<br />h5lcopy_f</code> 
+        </td><td>&nbsp;</td>
+        <td>
+        Copies a link from one location to another. 
+        </td>
+        </tr>
+    <tr><td colspan="3"><hr color="green" size="1" /></td></tr>
+    <tr valign="top"> 
+        <td>
+        <code>H5Literate<br />h5literate_f</code> 
+        </td><td>&nbsp;</td>
+        <td>
+        Iterates through links in a group. 
+        Replaces <code>H5Giterate</code>.
+        See also <code>H5Ovisit</code> and <code>H5Lvisit</code>.
+        </td>
+        </tr>
+    <tr><td colspan="3"><hr color="green" size="1" /></td></tr>
+    <tr valign="top"> 
+        <td>
+        <code>H5Literate_by_name<br />h5literate_by_name_f</code> 
+        </td><td>&nbsp;</td>
+        <td>
+        Iterates through links in a group. 
+        </td>
+        </tr>
+    <tr><td colspan="3"><hr color="green" size="1" /></td></tr>
+    <tr valign="top"> 
+        <td>
+        <code>H5Lvisit<br />(none)</code> 
+        </td><td>&nbsp;</td>
+        <td>
+        Recursively visits all links starting from a specified group. 
+        </td>
+        </tr>
+    <tr><td colspan="3"><hr color="green" size="1" /></td></tr>
+    <tr valign="top"> 
+        <td>
+        <code>H5Lvisit_by_name<br />(none)</code> 
+        </td><td>&nbsp;</td>
+        <td>
+        Recursively visits all links starting from a specified group. 
+        </td>
+        </tr>
+    <tr><td colspan="3"><hr color="green" size="1" /></td></tr>
+    <tr valign="top"> 
+        <td>
+        <code>H5Lget_val<br />(none)</code> 
+        </td><td>&nbsp;</td>
+        <td>
+        Returns the value of a symbolic link. 
+        Replaces <code>H5Gget_linkval</code>.
+        </td>
+        </tr>
+    <tr><td colspan="3"><hr color="green" size="1" /></td></tr>
+    <tr valign="top"> 
+        <td>
+        <code>H5Lget_val_by_idx<br />(none)</code> 
+        </td><td>&nbsp;</td>
+        <td>
+        Retrieves value of the nth link in a group according to the order 
+        within an index. 
+        </td>
+        </tr>
+    <tr><td colspan="3"><hr color="green" size="1" /></td></tr>
+    <tr valign="top"> 
+        <td>
+        <code>H5Lget_info<br />h5lget_info_f</code> 
+        </td><td>&nbsp;</td>
+        <td>
+        Returns information about a link. 
+        Replaces <code>H5Gget_objinfo</code>. 
+        </td>
+        </tr>
+    <tr><td colspan="3"><hr color="green" size="1" /></td></tr>
+    <tr valign="top"> 
+        <td>
+        <code>H5Lget_info_by_idx<br />h5lget_info_by_idx_f</code> 
+        </td><td>&nbsp;</td>
+        <td>
+        Retrieves metadata for a link in a group according to the order 
+        within a field or index. 
+        </td>
+        </tr>
+    <tr><td colspan="3"><hr color="green" size="1" /></td></tr>
+    <tr valign="top"> 
+        <td>
+        <code>H5Lget_name_by_idx<br />h5lget_name_by_idx_f</code> 
+        </td><td>&nbsp;</td>
+        <td>
+        Retrieves name of the nth link in a group according to the order 
+        within a specified field or index.
+        Replaces <code>H5Gget_objname_by_idx</code>.
+        </td>
+        </tr>
+    <tr><td colspan="3"><hr color="green" size="1" /></td></tr>
+    <tr valign="top"> 
+        <td>
+        <code>H5Ldelete<br />h5ldelete_f</code> 
+        </td><td>&nbsp;</td>
+        <td>
+        Removes a link from a group. 
+        Replaces <code>H5Gunlink</code>.
+        </td>
+        </tr>
+    <tr><td colspan="3"><hr color="green" size="1" /></td></tr>
+    <tr valign="top"> 
+        <td>
+        <code>H5Ldelete_by_idx<br />h5ldelete_by_idx_f</code> 
+        </td><td>&nbsp;</td>
+        <td>
+        Removes the nth link in a group. 
+        </td>
+        </tr>
+    <tr><td colspan="3"><hr color="green" size="1" /></td></tr>
+    <tr valign="top"> 
+        <td>
+        <code>H5Lmove<br />h5lmove_f</code> 
+        </td><td>&nbsp;</td>
+        <td>
+        Renames a link within an HDF5 file. 
+        Replaces <code>H5Gmove</code> and <code>H5Gmove2</code>.
+        </td>
+        </tr>
+    <tr><td colspan="3"><hr color="green" size="1" /></td></tr>
+    <tr valign="top"> 
+        <td>
+        <code>H5Lregister<br />(none)</code> 
+        </td><td>&nbsp;</td>
+        <td>
+        Registers user-defined link class or changes behavior of 
+        existing class. 
+        </td>
+        </tr>
+    <tr><td colspan="3"><hr color="green" size="1" /></td></tr>
+    <tr valign="top"> 
+        <td>
+        <code>H5Lunregister<br />(none)</code> 
+        </td><td>&nbsp;</td>
+        <td>
+        Unregisters a class of user-defined links. 
+        </td>
+        </tr>
+    <tr><td colspan="3"><hr color="green" size="1" /></td></tr>
+    <tr valign="top"> 
+        <td>
+        <code>H5Lis_registered<br />h5lis_registered_f</code> 
+        </td><td>&nbsp;</td>
+        <td>
+        Determines whether a class of user-defined links is registered. 
+        </td>
+        </tr>
+    <tr><td colspan="3"><hr color="green" size="1" /></td></tr>
+    <tr valign="top"> 
+        <td>
+        <code>H5Lunpack_elink_val<br />(none)</code> 
+        </td><td>&nbsp;</td>
+        <td>
+        Decodes external link information. 
+        </td>
+        </tr>
+    <tr><td colspan="3"><hr color="green" size="3" /></td></tr>
+</table>
+<br />
+<br />
+
+
+
+<table width="600" cellspacing="0" align="center" cellpadding="0">
+    <tr valign="bottom">
+        <td colspan="3" align="left" valign="bottom">
+        <b>Function Listing 3. Object (H5O) functions
+        </b></td>
+        </tr>
+    <tr><td colspan="3"><hr color="green" size="3" /></td></tr>
+    <tr valign="top"> 
+        <td>
+        <b>C Function<br />Fortran Function</b>
+        </td><td>&nbsp;</td>
+        <td>
+        <b>Purpose</b>
+        </td>
+        </tr>
+    <tr><td colspan="3"><hr color="green" size="1" /></td></tr>
+    <tr valign="top"> 
+        <td>
+        <code>H5Oget_info<br />(none)</code> 
+        </td><td>&nbsp;</td>
+        <td>
+        Retrieves the metadata for an object. 
+        Replaces <code>H5Gget_objinfo</code>. 
+        </td>
+        </tr>
+    <tr><td colspan="3"><hr color="green" size="1" /></td></tr>
+    <tr valign="top"> 
+        <td>
+        <code>H5Oget_info_by_idx<br />(none)</code> 
+        </td><td>&nbsp;</td>
+        <td>
+        Retrieves the metadata for an object which is identified 
+        by an index position. 
+        Replaces <code>H5Gget_objtype_by_idx</code>.
+        </td>
+        </tr>
+    <tr><td colspan="3"><hr color="green" size="1" /></td></tr>
+    <tr valign="top"> 
+        <td>
+        <code>H5Oget_info_by_name<br />h5oget_info_by_name_f</code> 
+        </td><td>&nbsp;</td>
+        <td>
+        Retrieves the metadata for an object, identifying the object by 
+        location and relative name. 
+        </td>
+        </tr>
+    <tr><td colspan="3"><hr color="green" size="1" /></td></tr>
+    <tr valign="top"> 
+        <td>
+        <code>H5Oget_comment<br />(none)</code> 
+        </td><td>&nbsp;</td>
+        <td>
+        Gets the comment for specified object. 
+        Replaces <code>H5Gget_comment</code>.
+        </td>
+        </tr>
+    <tr><td colspan="3"><hr color="green" size="1" /></td></tr>
+    <tr valign="top"> 
+        <td>
+        <code>H5Oset_comment<br />(none)</code> 
+        </td><td>&nbsp;</td>
+        <td>
+        Sets the comment for specified object. 
+        Replaces <code>H5Gset_comment</code>.
+        </td>
+        </tr>
+    <tr><td colspan="3"><hr color="green" size="1" /></td></tr>
+    <tr valign="top"> 
+        <td>
+        <code>H5Ovisit<br />h5ovisit_f</code> 
+        </td><td>&nbsp;</td>
+        <td>
+        Recursively visits all objects accessible from a specified object. 
+        </td>
+        </tr>
+    <tr><td colspan="3"><hr color="green" size="3" /></td></tr>
+</table>
+<br />
+<br />
+
+
+<!-- NEW PAGE -->
+<table width="600" cellspacing="0" align="center" cellpadding="0">
+    <tr valign="bottom">
+        <td colspan="3" align="left" valign="bottom">
+        <b>Function Listing 4. Group creation property list functions (H5P)
+        </b></td>
+        </tr>
+    <tr><td colspan="3"><hr color="green" size="3" /></td></tr>
+    <tr valign="top"> 
+        <td>
+        <b>C Function<br />Fortran Function</b>
+        </td><td>&nbsp;</td>
+        <td>
+        <b>Purpose</b>
+        </td>
+        </tr>
+    <tr><td colspan="3"><hr color="green" size="1" /></td></tr>
+    <tr valign="top"> 
+        <td>
+        <code>H5Pall_filters_avail<br />(none)</code> 
+        </td><td>&nbsp;</td>
+        <td>
+        Verifies that all required filters are available.
+        </td>
+        </tr>
+    <tr><td colspan="3"><hr color="green" size="1" /></td></tr>
+    <tr valign="top"> 
+        <td>
+        <code>H5Pget_filter<br />h5pget_filter_f</code> 
+        </td><td>&nbsp;</td>
+        <td>
+        Returns information about a filter in a pipeline. The C function is a 
+        macro: see <a href="../RM/APICompatMacros.html">&ldquo;API 
+        Compatibility Macros in HDF5.&rdquo;</a>
+        </td>
+        </tr>
+    <tr><td colspan="3"><hr color="green" size="1" /></td></tr>
+    <tr valign="top"> 
+        <td>
+        <code>H5Pget_filter_by_id<br />h5pget_filter_by_id_f</code> 
+        </td><td>&nbsp;</td>
+        <td>
+        Returns information about the specified filter. The C function is a 
+        macro: see <a href="../RM/APICompatMacros.html">&ldquo;API 
+        Compatibility Macros in HDF5.&rdquo;</a>
+        </td>
+        </tr>
+    <tr><td colspan="3"><hr color="green" size="1" /></td></tr>
+    <tr valign="top"> 
+        <td>
+        <code>H5Pget_nfilters<br />h5pget_nfilters_f</code> 
+        </td><td>&nbsp;</td>
+        <td>
+        Returns the number of filters in the pipeline.
+        </td>
+        </tr>
+    <tr><td colspan="3"><hr color="green" size="1" /></td></tr>
+    <tr valign="top"> 
+        <td>
+        <code>H5Pmodify_filter<br />h5pmodify_filter_f</code> 
+        </td><td>&nbsp;</td>
+        <td>
+        Modifies a filter in the filter pipeline.
+        </td>
+        </tr>
+    <tr><td colspan="3"><hr color="green" size="1" /></td></tr>
+    <tr valign="top"> 
+        <td>
+        <code>H5Premove_filter<br />h5premove_filter_f</code> 
+        </td><td>&nbsp;</td>
+        <td>
+        Deletes one or more filters in the filter pipeline.
+        </td>
+        </tr>
+    <tr><td colspan="3"><hr color="green" size="1" /></td></tr>
+    <tr valign="top"> 
+        <td>
+        <code>H5Pset_deflate<br />h5pset_deflate_f</code> 
+        </td><td>&nbsp;</td>
+        <td>
+        Sets the deflate (GNU gzip) compression method and compression level.
+        </td>
+        </tr>
+    <tr><td colspan="3"><hr color="green" size="1" /></td></tr>
+    <tr valign="top"> 
+        <td>
+        <code>H5Pset_filter<br />h5pset_filter_f</code> 
+        </td><td>&nbsp;</td>
+        <td>
+        Adds a filter to the filter pipeline.
+        </td>
+        </tr>
+    <tr><td colspan="3"><hr color="green" size="1" /></td></tr>
+    <tr valign="top"> 
+        <td>
+        <code>H5Pset_fletcher32<br />h5pset_fletcher32_f</code> 
+        </td><td>&nbsp;</td>
+        <td>
+        Sets up use of the Fletcher32 checksum filter.
+        </td>
+        </tr>
+    <tr><td colspan="3"><hr color="green" size="1" /></td></tr>
+    <tr valign="top"> 
+        <td>
+        <code>H5Pset_fletcher32<br />h5pset_fletcher32_f</code> 
+        </td><td>&nbsp;</td>
+        <td>
+        Sets up use of the Fletcher32 checksum filter.
+        </td>
+        </tr>
+    <tr><td colspan="3"><hr color="green" size="1" /></td></tr>
+    <tr valign="top"> 
+        <td>
+        <code>H5Pset_link_phase_change<br />h5pset_link_phase_change_f</code> 
+        </td><td>&nbsp;</td>
+        <td>
+        Sets the parameters for conversion between compact and dense groups.
+        </td>
+        </tr>
+    <tr><td colspan="3"><hr color="green" size="1" /></td></tr>
+    <tr valign="top"> 
+        <td>
+        <code>H5Pget_link_phase_change<br />h5pget_link_phase_change_f</code> 
+        </td><td>&nbsp;</td>
+        <td>
+        Queries the settings for conversion between compact and dense groups. 
+        </td>
+        </tr>
+    <tr><td colspan="3"><hr color="green" size="1" /></td></tr>
+    <tr valign="top"> 
+        <td>
+        <code>H5Pset_est_link_info<br />h5pset_est_link_info_f</code> 
+        </td><td>&nbsp;</td>
+        <td>
+        Sets estimated number of links and length of link names in a group. 
+        </td>
+        </tr>
+    <tr><td colspan="3"><hr color="green" size="1" /></td></tr>
+    <tr valign="top"> 
+        <td>
+        <code>H5Pget_est_link_info<br />h5pget_est_link_info_f</code> 
+        </td><td>&nbsp;</td>
+        <td>
+        Queries data required to estimate required local heap or object header size. 
+        </td>
+        </tr>
+    <!-- NEW PAGE -->
+    <tr><td colspan="3"><hr color="green" size="1" /></td></tr>
+    <tr valign="top"> 
+        <td>
+        <code>H5Pset_nlinks<br />h5pset_nlinks_f</code> 
+        </td><td>&nbsp;</td>
+        <td>
+        Sets maximum number of soft or user-defined link traversals. 
+        </td>
+        </tr>
+    <tr><td colspan="3"><hr color="green" size="1" /></td></tr>
+    <tr valign="top"> 
+        <td>
+        <code>H5Pget_nlinks<br />h5pget_nlinks_f</code> 
+        </td><td>&nbsp;</td>
+        <td>
+        Retrieves the maximum number of link traversals. 
+        </td>
+        </tr>
+    <tr><td colspan="3"><hr color="green" size="1" /></td></tr>
+    <tr valign="top"> 
+        <td>
+        <code>H5Pset_link_creation_order<br />h5pset_link_creation_order_f</code> 
+        </td><td>&nbsp;</td>
+        <td>
+        Sets creation order tracking and indexing for links in a group. 
+        </td>
+        </tr>
+    <tr><td colspan="3"><hr color="green" size="1" /></td></tr>
+    <tr valign="top"> 
+        <td>
+        <code>H5Pget_link_creation_order<br />h5pget_link_creation_order_f</code> 
+        </td><td>&nbsp;</td>
+        <td>
+        Queries whether link creation order is tracked and/or indexed in a group. 
+        </td>
+        </tr>
+    <tr><td colspan="3"><hr color="green" size="1" /></td></tr>
+    <tr valign="top"> 
+        <td>
+        <code>H5Pset_create_intermediate_group<br />h5pset_create_inter_group_f</code> 
+        </td><td>&nbsp;</td>
+        <td>
+        Specifies in the property list whether to create missing intermediate 
+        groups. 
+        </td>
+        </tr>
+    <tr><td colspan="3"><hr color="green" size="1" /></td></tr>
+    <tr valign="top"> 
+        <td>
+        <code>H5Pget_create_intermediate_group<br />(none)</code> 
+        </td><td>&nbsp;</td>
+        <td>
+        Determines whether the property is set to enable creating missing 
+        intermediate groups. 
+        </td>
+        </tr>
+    <tr><td colspan="3"><hr color="green" size="1" /></td></tr>
+    <tr valign="top"> 
+        <td>
+        <code>H5Pset_char_encoding<br />h5pset_char_encoding_f</code> 
+        </td><td>&nbsp;</td>
+        <td>
+        Sets the character encoding used to encode a string. 
+        Use to set ASCII or UTF-8 character encoding for object names.
+        </td>
+        </tr>
+    <tr><td colspan="3"><hr color="green" size="1" /></td></tr>
+    <tr valign="top"> 
+        <td>
+        <code>H5Pget_char_encoding<br />h5pget_char_encoding_f</code> 
+        </td><td>&nbsp;</td>
+        <td>
+        Retrieves the character encoding used to create a string. 
+        </td>
+        </tr>
+    <tr><td colspan="3"><hr color="green" size="3" /></td></tr>
+</table>
+<br />
+<br />
+
+
+<table width="600" cellspacing="0" align="center" cellpadding="0">
+    <tr valign="bottom">
+        <td colspan="3" align="left" valign="bottom">
+        <b>Function Listing 5. Other external link functions
+        </b></td>
+        </tr>
+    <tr><td colspan="3"><hr color="green" size="3" /></td></tr>
+    <tr valign="top"> 
+        <td>
+        <b>C Function<br />Fortran Function</b>
+        </td><td>&nbsp;</td>
+        <td>
+        <b>Purpose</b>
+        </td>
+        </tr>
+    <tr><td colspan="3"><hr color="green" size="1" /></td></tr>
+    <tr valign="top">
+        <td>
+        <code>H5Pset/get_elink_file_cache_size</code>
+        <br />
+        <code>(none)</code></td><td>&nbsp;</td>
+        <td>
+        Sets/retrieves the size of the external link open file cache 
+        from the specified file access property list. </td>
+        </tr>
+    <tr><td colspan="3"><hr color="green" size="1" /></td></tr>
+    <tr valign="top">
+        <td>
+        <code>H5Fclear_elink_file_cache</code>
+        <br />
+        <code>(none)</code></td><td>&nbsp;</td>
+        <td>
+        Clears the external link open file cache for a file. 
+        </td>
+        </tr>
+    <tr><td colspan="3"><hr color="green" size="3" /></td></tr>
+</table>
+<br />
+<br />
+
+
+
+<SCRIPT language="JavaScript">
+<!--
+document.writeln ("
+<a name="NotesForAdvancedUsers">
+<div align=right>
+<a href="#TOP"><font size="-1">(Top)</font></a>
+</div>
+</a>
+");
+-->
+</SCRIPT>
+
+   <!-- NEW PAGE -->
+  <a name="NotesForAdvancedUsers">
+<h3 class=pagebefore>4.6. Notes for Advanced Users</h3>
+  </a>
+  <p>The purpose of this section is to provide extra information about 
+  groups and links.</p>
+  
+  <a name="LinkIndexingAndCompactGroupStorage">
+<h4>4.6.1. Link Indexing and Compact Group Storage </h4>
+  </a>
+  
+  <p>In HDF5 Release 1.8.0, a second link indexing and group storage 
+  format was added. The new format enables more efficient compact storage 
+  for very small groups, improved link indexing for large groups, 
+  and other advanced features. The original link indexing format - links 
+  are stored in the group&rsquo;s local heap and are indexed with a B-tree 
+  - remains the default. The new implementation is required for external 
+  and user-defined links and also enables the use of link names consisting 
+  of non-ASCII character sets. For more information, see the 
+  <a href="../RM/RM_H5G.html#Group-GroupStyles">
+  &ldquo;Group Implementations in HDF5&rdquo;</a> section in the 
+  <a href="../RM/RM_H5Front.html" target="RMwindow"><cite>HDF5 
+  Reference Manual</cite></a>.</p>
+  
+  
+  
+<!-- 2.15.2011. MEE. This section below may have some information from Neil
+
+<h4>4.6.5. External Links</h4>
+  
+  <p>???????2.4.2011. Neil will send me an RFC for a new external link
+  related function. Add info here or where appropriate. This new 
+  function(s) will be part of 1.8.7.</p>
+  
+-->  
+
+  
+
+
+<br /><br /><br />
+<!-- FOR USE WITH PRINT VERSION --------------------------------------
+<br /><br /><br /><br /><br /><br /><br /><br /><br /><br />
+<br /><br /><br /><br /><br /><br /><br /><br /><br /><br />
+<br /><br /><br /><br /><br /><br /><br /><br /><br /><br />
+<br /><br /><br /><br /><br />
+<!-- FOR USE WITH PRINT VERSION -------------------------------------->
+
+<a name="FootNote"><hr width="200px" align="left"></a>
+
+  <p><font size="-1"><sup><a href="#SupScript1">1</a></sup>It could be said 
+  that HDF5 extends the organizing concepts of a file system to the 
+  internal structure of a single file.</font></p>
+  
+
+<!-- HEADER RIGHT " " -->
+  
+</body>
+</html>
+
