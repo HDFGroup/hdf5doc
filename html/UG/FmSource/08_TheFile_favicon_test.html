@@ -1,0 +1,3094 @@
+<!DOCTYPE html 
+      PUBLIC "-//W3C//DTD HTML 4.01//EN"
+      "http://www.w3.org/TR/html4/strict.dtd">
+<html lang="en-US">
+<head profile="http://www.w3.org/2005/10/profile">
+<link rel="icon" 
+      type="image/png" 
+      href="HDF_favicon_16x16.png">
+
+<!-- see this page for more info on favicons:
+http://www.w3.org/2005/10/howto-favicon
+-->
+
+
+
+
+
+<!-- original
+<!doctype HTML public "-//W3C//DTD HTML 4.0 Frameset//EN">
+<html>
+<head>
+-->
+<title>Chapter 3: The HDF5 File</title>
+
+<!--(Meta)==========================================================-->
+
+
+<!--(Links)=========================================================-->
+
+<!--( Begin styles definition )=====================================-->
+<link href="ed_styles/NewUGelect.css" rel="stylesheet" type="text/css">
+<!--( End styles definition )=======================================-->
+
+
+<!--( Begin favicon definition )=====================================--
+<link rel="icon" href="C:\1 MEE\Working\hdf5_trunk_dev_support\graphics\Logos_THG\HDF_Favicon\HDF_favicon_16x16.png" type="image/gif">
+<!--( End favicon definition )=======================================-->
+
+
+
+</head>
+
+<body>
+
+<!-- #BeginLibraryItem "/ed_libs/styles_UG.lbi" -->
+<!--
+  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+  * Copyright by The HDF Group.                                               *
+  * Copyright by the Board of Trustees of the University of Illinois.         *
+  * All rights reserved.                                                      *
+  *                                                                           *
+  * This file is part of HDF5.  The full HDF5 copyright notice, including     *
+  * terms governing use, modification, and redistribution, is contained in    *
+  * the files COPYING and Copyright.html.  COPYING can be found at the root   *
+  * of the source code distribution tree; Copyright.html can be found at the  *
+  * root level of an installed copy of the electronic HDF5 document set and   *
+  * is linked from the top-level documents page.  It can also be found at     *
+  * http://www.hdfgroup.org/HDF5/doc/Copyright.html.  If you do not have      *
+  * access to either file, you may request a copy from help@hdfgroup.org.     *
+  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+ -->
+<!-- #EndLibraryItem --><!-- HEADER LEFT "HDF5 User's Guide" -->
+<!-- HEADER RIGHT "The HDF5 File" -->
+
+<!--( TOC )=========================================================-->
+<!--<SCRIPT language="JavaScript">                                  -->
+<!--
+document.writeln ('\
+<table x-use-null-cells\
+                align="right"\
+		width="240"\
+		cellspacing="0"\
+		class="tocTable">\
+  <tr valign="top"> \
+    <td class="tocTableHeaderCell" colspan="2"> \
+        <span class="TableHead">Chapter Contents</span></td>\
+  </tr>\
+-->
+<!-- Table Version 3 --><!--\-->
+<!--
+  <tr valign="top"> \
+    <td class="tocTableContentCell2"> \
+      <a href="#Intro">1.</a></td>\
+    <td class="tocTableContentCell3">\
+	  <a href="#Intro">Introduction</a></td> \
+  </tr>\
+  <tr valign="top"> \
+    <td class="tocTableContentCell2"> \
+      <a href="#PModel">2.</a></td>\
+    <td class="tocTableContentCell3">\
+	  <a href="#PModel">Programming Model</a></td>\
+  </tr>\
+  <tr valign="top"> \
+    <td class="tocTableContentCell2"> \
+      <a href="#H5Dump">3.</a></td>\
+    <td class="tocTableContentCell3">\
+	  <a href="#H5Dump">Using <code>h5dump</code></a></td> \
+  </tr>\
+  <tr valign="top"> \
+    <td class="tocTableContentCell2"> \
+      <a href="#FuncSumms">4.</a></td>\
+    <td class="tocTableContentCell3">\
+	  <a href="#FuncSumms">File Function Summaries</a></td>\
+  </tr>\
+  <tr valign="top"> \
+    <td class="tocTableContentCell2"> \
+      <a href="#CrOpen">5.</a></td>\
+    <td class="tocTableContentCell3">\
+	  <a href="#CrOpen">Create or Open a File</a></td> \
+  </tr>\
+  <tr valign="top"> \
+    <td class="tocTableContentCell2"> \
+      <a href="#Close">6.</a></td>\
+    <td class="tocTableContentCell3">\
+	  <a href="#Close">Close a File</a></td>\
+  </tr>\
+  <tr valign="top"> \
+    <td class="tocTableContentCell2"> \
+      <a href="#PLists">7.</a></td>\
+    <td class="tocTableContentCell3">\
+	  <a href="#PLists">File Property Lists</a>\
+\
+<br />\
+&nbsp;&nbsp;&nbsp;\
+Creating a list\
+\
+<br />\
+&nbsp;&nbsp;&nbsp;\
+Creation properties\
+\
+<br />\
+&nbsp;&nbsp;&nbsp;\
+Access properties\
+\
+	  </td>\
+  </tr>\
+  <tr valign="top"> \
+    <td class="tocTableContentCell2"> \
+      <a href="#Drivers">8.</a></td>\
+    <td class="tocTableContentCell3">\
+	  <a href="#Drivers">Storage Layouts and Drivers</a>\
+\
+<br />\
+&nbsp;&nbsp;&nbsp;\
+<span class="smallcaps">SEC2</span>, \
+<span class="smallcaps">STDIO</span>,\
+<br />\
+&nbsp;&nbsp;&nbsp;\
+<span class="smallcaps">FAMILY</span>, \
+<span class="smallcaps">MULTI</span>,\
+<br />\
+&nbsp;&nbsp;&nbsp;\
+<span class="smallcaps">SPLIT</span>, \
+<span class="smallcaps">MPI</span>, \
+<span class="smallcaps">CORE</span>,\
+<br />\
+&nbsp;&nbsp;&nbsp;\
+--><!--<span class=code>STREAM</span>, --><!--\
+<span class="smallcaps">LOG</span>\
+\
+	  </td>\
+  </tr>\
+\
+  <tr valign="top"> \
+    <td class="tocTableContentCell"> \
+-->
+<!-- editingComment -- "tocTableContentCell" and "tocTableContentCell4" \
+--><!--\-->
+<!-- are the table-closing cell class.\
+    <td class="tocTableContentCell2"> \
+--><!--\
+      <a href="#Examples">9.</a></td>\
+    <td class="tocTableContentCell4">\
+	  <a href="#Examples">Code Examples</a>\
+  </td></tr>\
+</table>\
+')
+-->
+<!-- </SCRIPT> -->
+<!--(End TOC)=======================================================-->
+
+<!-- editingComment
+-->
+
+
+<div align="center">
+<a name="TOP">
+<h2>Chapter 3<br /><font size="7">The HDF5 File</font></h2>
+</a>
+</div>
+
+
+<a name="Intro">
+<h3>3.1. Introduction</h3>
+</a>
+<p>The purpose of this chapter is to describe how to work with HDF5 data 
+files. </p>
+
+<p>If HDF5 data is to be written to or read from a file, the file must 
+ first be explicitly created or opened with the appropriate file driver 
+ and access privileges. Once all work with the file is complete, the file 
+ must be explicitly closed. </p>
+
+<p>This chapter discusses the following:</p>
+
+<ul>
+	
+	<li>File access modes</li>
+	<li>Creating, opening, and closing files</li>
+	<li>The use of file creation property lists</li>
+	<li>The use of file access property lists</li>
+        <li>The use of low-level file drivers</li>
+</ul>
+
+ <p>This chapter assumes an understanding of the material presented 
+ in the data model chapter, &ldquo;<a href="03_DataModel.html">HDF5 
+ Data Model and File Structure</a>.&rdquo;</p>
+
+<h4>3.1.1. <a name="FileAccessModes">File Access Modes</a></h4> 
+
+
+<p>There are two issues regarding file access:</p>
+  <ul>
+      <li>What should happen when a new file is created but a file
+          of the same name already exists?  Should the create action
+          fail, or should the existing file be overwritten?</li>
+      <li>Is a file to be opened with read-only or read-write access?</li>
+  </ul>
+
+<p>Four access modes address these concerns. Two of these modes can 
+be used with <code>H5Fcreate</code>, and two modes can be used with 
+<code>H5Fopen</code>.</p>
+    <ul>
+	<li><code>H5Fcreate</code> accepts <code>H5F_ACC_EXCL</code> or 
+        <code>H5F_ACC_TRUNC</code> </li>
+	<li><code>H5Fopen</code> accepts <code>H5F_ACC_RDONLY</code> 
+            or <code>H5F_ACC_RDWR</code></li>
+    </ul>
+<p>The access modes are described in the table below.</p>
+
+<!-- NEW PAGE -->
+
+<table width="600" cellspacing="0" align="center" cellpadding="0">
+    <tr valign="bottom">
+        <td colspan="2" align="left" valign="bottom">
+        <b>Table 1. Access flags and modes</b></td>
+        </tr>
+    <tr><td colspan="2"><hr color="green" size="3" /></td></tr>
+    <tr valign="top"> 
+        <td width="25%"> 
+        <b>Access Flag</b></td>
+        <td width="75%"> 
+        <b>Resulting Access Mode</b></td>
+    <tr><td colspan="2"><hr color="green" size="1" /></td></tr>
+    <tr valign="top">
+        <td>
+        <code>H5F_ACC_EXCL</code></td>
+        <td>
+        If the file already exists, <code>H5Fcreate</code> fails.  
+        If the file does not exist, it is created and opened with 
+        read-write access. <i>(Default)</i></td></tr>
+    <tr><td colspan="2"><hr color="green" size="1" /></td></tr>
+    <tr valign="top">
+        <td>
+        <code>H5F_ACC_TRUNC</code></td>
+        <td>
+        If the file already exists, the file is opened with read-write access, 
+        and new data will overwrite any existing data. If the file does not 
+        exist, it is created and opened with read-write access.</td></tr>
+    <tr><td colspan="2"><hr color="green" size="1" /></td></tr>
+    <tr valign="top">
+        <td>
+        <code>H5F_ACC_RDONLY</code></td>
+        <td>
+        An existing file is opened with read-only access.  
+        If the file does not exist, <code>H5Fopen</code> fails.
+        <i>(Default)</i></td></tr>
+    <tr><td colspan="2"><hr color="green" size="1" /></td></tr>
+    <tr valign="top">
+        <td>
+        <code>H5F_ACC_RDWR</code></td>
+        <td>
+        An existing file is opened with read-write access.  
+        If the file does not exist, <code>H5Fopen</code> fails.</td></tr>
+    <tr><td colspan="2"><hr color="green" size="3" /></td></tr>
+</table>
+<br />
+
+
+
+<p>By default, <code>H5Fopen</code> opens a file for read-only access; 
+ passing <code>H5F_ACC_RDWR</code> allows read-write access to the file. </p>
+
+<p>By default, <code>H5Fcreate</code> fails if the file already exists; 
+ only passing <code>H5F_ACC_TRUNC</code> allows the truncating of an 
+ existing file.</p>
+
+
+<h4>3.1.2. File Creation and File Access Properties</h4>
+
+ <p>File creation and file access property lists control the 
+    more complex aspects of creating and accessing files.  </p>
+
+<p><span class="termDefinition">File creation property lists</span> 
+    control the characteristics of a file such as 
+    the size of the user-block, a user-definable data block;
+    the size of data address parameters; properties of the B-trees 
+    that are used to manage the data in the file; and certain 
+    HDF5 library versioning information. </p>
+
+ <p>See the <a href="#FileCreationProperties">&ldquo;File Creation 
+    Properties,&rdquo;</a> section below, for a more detailed discussion 
+    of file creation properties and appropriate references to the 
+    <a href="../RM/RM_H5Front.html"> 
+    <cite>HDF5 Reference Manual</cite></a>.
+    If you have no special requirements for these file characteristics, 
+    you can simply specify <code>H5P_DEFAULT</code> for the default 
+    file creation property list when a file creation property list 
+    is called for.</p>
+
+<p><span class="termDefinition">File access property lists</span> 
+    control properties and means of accessing a file such as 
+    data alignment characteristics, metadata block and cache sizes,
+    data sieve buffer size, garbage collection settings, and 
+    parallel I/O. Data alignment, metadata block and cache sizes, 
+    and data sieve buffer size are factors in improving I/O performance.</p>
+
+    <p>See the <a href="#FileAccessProperties">&ldquo;File Access 
+    Properties&rdquo;</a> section below for a more detailed discussion of 
+    file access properties and appropriate references to the 
+    <cite>HDF5 Reference Manual</cite>. If you have no special 
+    requirements for these file access characteristics, you can simply 
+    specify <code>H5P_DEFAULT</code> for the default file access 
+    property list when a file access property list is called for.</p>
+
+<!--(UML Model Box)=================================================-->
+
+<table width="600" cellspacing="0" align="center">
+    <tr valign="top"> 
+        <td align="center">
+        <hr color="green" size="3"/>
+        <img src="Images/UML_FileAndProps.gif">
+        </td></tr>
+    <tr><td><hr color="green" size="1" /></td></tr>
+    <tr valign="top">
+        <td align="left" >
+        <b>Figure 1. UML model for an HDF5 file and its property lists</b>
+        <hr color="green" size="3"/></td>
+        </tr>
+</table>
+<br />
+
+
+
+<h4>3.1.3. Low-level File Drivers</h4>
+
+<p>The concept of an HDF5 file is actually rather abstract: 
+ the address space for what is normally thought of as an HDF5 file
+ might correspond to any of the following at the storage level:</p>
+ <ul>
+     <li>Single file on a standard file system</li>
+     <li>Multiple files on a standard file system</li>
+     <li>Multiple files on a parallel file system</li>
+     <li>Block of memory within an application&rsquo;s memory space</li>
+     <li>More abstract situations such as virtual files</li>
+ </ul>
+ <p>This HDF5 address space is generally referred to as an <em>HDF5 file</em> 
+    regardless of its organization at the storage level. </p>
+
+ <p>HDF5 accesses a file (the address space) through various types of 
+    <em>low-level file drivers</em>. The default HDF5 file storage 
+    layout is as an unbuffered permanent file which is a single, 
+    contiguous file on local disk. Alternative layouts are designed to 
+    suit the needs of a variety of systems, environments, and applications.</p>
+
+<SCRIPT language="JavaScript">
+<!--
+document.writeln ("
+<a name="PModel">
+<div align="right">
+<a href="#TOP"><font size="-1">(Top)</font></a>
+</div>
+</a>
+");
+-->
+</SCRIPT>
+
+<!-- NEW PAGE -->
+<a name="PModel">
+<h3 class="pagebefore">3.2. Programming Model</h3>
+</a>
+    <p>Programming models for creating, opening, and closing HDF5 files 
+    are described in the sub-sections below.</p>
+    
+<h4>3.2.1. Creating a New File</h4>
+
+<p>The programming model for creating 
+ a new HDF5 file can be summarized as follows:</p>
+
+<ul>
+	<li>Define the file creation property list</li>
+	<li>Define the file access property list</li>
+	<li>Create the file</li>
+</ul>
+
+<p>First, consider the simple case where we use the default 
+values for the property lists. See the example below.</p>
+
+
+
+<table width="600" cellspacing="0" align="center">
+    <tr valign="top"> 
+        <td align="left">
+        <hr color="green" size="3"/>
+    <pre>
+  file_id = H5Fcreate ("SampleFile.h5", H5F_ACC_EXCL,
+      H5P_DEFAULT, H5P_DEFAULT)</pre></td>
+        </tr>
+    <tr><td><hr color="green" size="1" /></td></tr>
+    <tr valign="top">
+        <td align="left">
+        <b>Example 1. Creating an HDF5 file using property list defaults</b>
+        <hr color="green" size="3"/></td>
+        </tr>
+</table>
+<br />
+
+ <p>Note that this example specifies that <code>H5Fcreate</code> should fail 
+ if <code>SampleFile.h5</code> already exists.</p>
+
+    <p>A more complex case is shown in the example below. In this example, 
+    we define file creation and access property lists (though we do not 
+    assign any properties), specify that <code>H5Fcreate</code> should 
+    fail if <code>SampleFile.h5</code> already exists, and create a 
+    new file named <code>SampleFile.h5</code>. The example does not 
+    specify a driver, so the default driver, 
+    <code>H5FD_SEC2</code>, will be used.</p>
+
+
+
+<table width="600" cellspacing="0" align="center">
+    <tr valign="top"> 
+        <td align="left">
+        <hr color="green" size="3"/>
+    <pre>
+  fcplist_id = H5Pcreate (H5P_FILE_CREATE)
+    &lt;...<em>set desired file creation properties</em>...&gt;
+  faplist_id = H5Pcreate (H5P_FILE_ACCESS)
+    &lt;...<em>set desired file access properties</em>...&gt;
+  file_id = H5Fcreate ("SampleFile.h5", H5F_ACC_EXCL, fcplist_id, faplist_id)</pre></td>
+        </tr>
+    <tr><td><hr color="green" size="1" /></td></tr>
+    <tr valign="top">
+        <td align="left">
+        <b>Example 2. Creating an HDF5 file using property lists</b>
+        <hr color="green" size="3"/></td>
+        </tr>
+</table>
+<br />
+
+    <p>Notes: </p>
+    <p>A root group is automatically created in a file when the file 
+    is first created.</p>
+    <p>File property lists, once defined, can be reused when another 
+    file is created within the same application.</p>
+
+
+<h4>3.2.2. Opening an Existing File</h4>
+
+<p>The programming model for opening an existing HDF5 file can be summarized 
+ as follows:</p>
+
+<ul>
+	<li>Define or modify the file access property list 
+            including a low-level file driver (optional)</li>
+	<li>Open the file</li>
+</ul>
+
+
+    <p>The code in the example below shows how to open an existing file with
+    read-only access.</p>
+
+
+<table width="600" cellspacing="0" align="center">
+    <tr valign="top"> 
+        <td align="left">
+        <hr color="green" size="3"/>
+    <pre>
+  faplist_id = H5Pcreate (H5P_FILE_ACCESS)
+  status = H5Pset_fapl_stdio (faplist_id)
+  file_id = H5Fopen ("SampleFile.h5", H5F_ACC_RDONLY, faplist_id)</pre></td>
+        </tr>
+    <tr><td><hr color="green" size="1" /></td></tr>
+    <tr valign="top">
+        <td align="left">
+        <b>Example 3. Opening an HDF5 file</b>
+        <hr color="green" size="3"/></td>
+        </tr>
+</table>
+<br />
+
+<h4>3.2.3. Closing a File</h4>
+
+<p>The programming model for closing an HDF5 file is very simple:</p>
+
+<ul>
+    <li>Close file</li>
+</ul>
+
+<p>We close <code>SampleFile.h5</code> with the code in the example below.</p>
+
+
+
+<table width="600" cellspacing="0" align="center">
+    <tr valign="top"> 
+        <td align="left">
+        <hr color="green" size="3"/>
+    <pre>
+  status = H5Fclose (file_id)</pre></td>
+        </tr>
+    <tr><td><hr color="green" size="1" /></td></tr>
+    <tr valign="top">
+        <td align="left">
+        <b>Example 4. Closing an HDF5 file</b>
+        <hr color="green" size="3"/></td>
+        </tr>
+</table>
+<br />
+
+<p>Note that <code>H5Fclose</code> flushes all unwritten data to storage and 
+that <code>file_id</code> is the identifier returned for 
+<code>SampleFile.h5</code> by <code>H5Fopen</code>.</p>
+
+<p>More comprehensive discussions regarding all of these steps 
+   are provided below.</p>
+
+<SCRIPT language="JavaScript">
+<!--
+document.writeln ("
+<a name="H5Dump">
+<div align="right">
+<a href="#TOP"><font size="-1">(Top)</font></a>
+</div>
+</a>
+");
+-->
+</SCRIPT>
+
+<!-- NEW PAGE -->
+<a name="H5Dump">
+<h3 class="pagebefore">3.3. Using <code>h5dump</code> to View a File</h3>
+</a>
+
+<p><code>h5dump</code> is a command-line utility that is included in 
+the HDF5 distribution. This program provides a straight-forward means of 
+inspecting the contents of an HDF5 file. You can use <code>h5dump</code>
+to verify that a program is generating the intended HDF5 file. 
+<code>h5dump</code> displays ASCII output formatted according to the 
+HDF5 DDL grammar.</p>
+
+<p>The following <code>h5dump</code> command will display the 
+contents of <code>SampleFile.h5</code>:</p>
+
+<pre>
+    h5dump SampleFile.h5 
+</pre>
+
+<p>If no datasets or groups have been created in and 
+no data has been written to the file, 
+the output will look something like the following:</p>
+
+<pre>
+    HDF5 "SampleFile.h5" {
+    GROUP "/" {
+    }
+    }
+</pre>
+
+<p>Note that the root group, indicated above by <code>/</code>, 
+ was automatically created when the file was created.</p>
+
+<p><code>h5dump</code> is fully described on the 
+ <a href="../RM/Tools.html" target="RMwindow">Tools</a> page of the 
+ <a href="../RM/RM_H5Front.html" target="RMwindow">
+ <cite>HDF5 Reference Manual</cite></a>.
+ The HDF5 DDL grammar is fully described in the document
+ <a href="../ddl.html" target="RMwindow">DDL in BNF for HDF5</a>,
+ an element of this <cite>HDF5 User&rsquo;s Guide</cite>.</p>
+
+<SCRIPT language="JavaScript">
+<!--
+document.writeln ("
+<a name="FuncSumms">
+<div align="right">
+<a href="#TOP"><font size="-1">(Top)</font></a>
+</div>
+</a>
+");
+-->
+</SCRIPT>
+
+<!-- NEW PAGE -->
+<a name="FuncSumms">
+<h3 class="pagebefore">3.4. File Function Summaries</h3>
+</a>
+<p>General library functions and macros (H5), file functions (H5F), file 
+   related property list functions (H5P), and file driver functions (H5P) 
+   are listed below.</p>
+
+   
+<table width="600" cellspacing="0" align="center" cellpadding="0">
+    <tr valign="bottom">
+        <td colspan="3" align="left" valign="bottom">
+        <b>Function Listing 1. General library functions and macros (H5)
+        </b></td>
+        </tr>
+    <tr><td colspan="3"><hr color="green" size="3" /></td></tr>
+    <tr valign="top"> 
+        <td>
+        <b>C Function<br />Fortran Function</b></td><td>&nbsp;</td>
+        <td>
+        <b>Purpose</b></td>
+        </tr>
+    <tr><td colspan="3"><hr color="green" size="1" /></td></tr>
+    <tr valign="top">
+        <td>
+        <code>H5check_version</code>
+        <br />
+        <code>h5check_version_f</code></td><td>&nbsp;</td>
+        <td>
+        Verifies that HDF5 library versions are consistent.</td>
+        </tr>
+    <tr><td colspan="3"><hr color="green" size="1" /></td></tr>
+    <tr valign="top">
+        <td>
+        <code>H5close</code>
+        <br />
+        <code>h5close_f</code></td><td>&nbsp;</td>
+        <td>
+        Flushes all data to disk, closes all open identifiers, and cleans up 
+        memory.</td>
+        </tr>
+    <tr><td colspan="3"><hr color="green" size="1" /></td></tr>
+    <tr valign="top">
+        <td>
+        <code>H5dont_atexit</code>
+        <br />
+        <code>h5dont_atexit_f</code></td><td>&nbsp;</td>
+        <td>
+        Instructs the library not to install the <code>atexit</code> cleanup 
+        routine. </td>
+        </tr>
+    <tr><td colspan="3"><hr color="green" size="1" /></td></tr>
+    <tr valign="top">
+        <td>
+        <code>H5garbage_collect</code>
+        <br />
+        <code>h5garbage_collect_f</code></td><td>&nbsp;</td>
+        <td>
+        Garbage collects on all free-lists of all types. </td>
+        </tr>
+    <tr><td colspan="3"><hr color="green" size="1" /></td></tr>
+    <tr valign="top">
+        <td>
+        <code>H5get_libversion</code>
+        <br />
+        <code>h5get_libversion_f</code></td><td>&nbsp;</td>
+        <td>
+        Returns the HDF library release number.</td>
+        </tr>
+    <tr><td colspan="3"><hr color="green" size="1" /></td></tr>
+    <tr valign="top">
+        <td>
+        <code>H5open</code>
+        <br />
+        <code>h5open_f</code></td><td>&nbsp;</td>
+        <td>
+        Initializes the HDF5 library.</td>
+        </tr>
+    <tr><td colspan="3"><hr color="green" size="1" /></td></tr>
+    <tr valign="top">
+        <td>
+        <code>H5set_free_list_limits</code>
+        <br />
+        <code>h5set_free_list_limits_f</code></td><td>&nbsp;</td>
+        <td>
+        Sets free-list size limits.</td>
+        </tr>
+    <tr><td colspan="3"><hr color="green" size="1" /></td></tr>
+    <tr valign="top">
+        <td>
+        <code>H5_VERSION_GE</code>
+        <br />
+        <code>(none)</code></td><td>&nbsp;</td>
+        <td>
+        Determines whether the version of the library being used is greater 
+        than or equal to the specified version.</td>
+        </tr>
+    <tr><td colspan="3"><hr color="green" size="1" /></td></tr>
+    <tr valign="top">
+        <td>
+        <code>H5_VERSION_LE</code>
+        <br />
+        <code>(none)</code></td><td>&nbsp;</td>
+        <td>
+        Determines whether the version of the library being used is less than 
+        or equal to the specified version.</td>
+        </tr>
+        <tr><td colspan="3"><hr color="green" size="3" /></td></tr>
+</table>
+<br /><br />
+   
+   
+<!-- NEW PAGE -->
+<table width="600" cellspacing="0" align="center" cellpadding="0">
+    <tr valign="bottom">
+        <td colspan="3" align="left" valign="bottom">
+        <b>Function Listing 2. File functions (H5F)
+        </b></td></tr>
+    <tr><td colspan="3"><hr color="green" size="3" /></td></tr>
+    <tr valign="top"> 
+        <td>
+        <b>C Function<br />Fortran Function</b></td><td>&nbsp;</td>
+        <td>
+        <b>Purpose</b></td>
+        </tr>
+    <tr><td colspan="3"><hr color="green" size="1" /></td></tr>
+    <tr valign="top">
+        <td>
+        <code>H5Fclear_elink_file_cache</code>
+        <br />
+        <code>(none)</code></td><td>&nbsp;</td>
+        <td>
+        Clears the external link open file cache for a file. 
+        </td>
+        </tr>
+    <tr><td colspan="3"><hr color="green" size="1" /></td></tr>
+    <tr valign="top">
+        <td>
+        <code>H5Fclose</code>
+        <br />
+        <code>h5fclose_f</code></td><td>&nbsp;</td>
+        <td>
+        Closes HDF5 file.
+        </td>
+        </tr>
+    <tr><td colspan="3"><hr color="green" size="1" /></td></tr>
+    <tr valign="top">
+        <td>
+        <code>H5Fcreate</code>
+        <br />
+        <code>h5fcreate_f</code></td><td>&nbsp;</td>
+        <td>
+        Creates new HDF5 file.
+        </td>
+        </tr>
+    <tr><td colspan="3"><hr color="green" size="1" /></td></tr>
+    <tr valign="top">
+        <td>
+        <code>H5Fflush</code>
+        <br />
+        <code>h5fflush_f</code></td><td>&nbsp;</td>
+        <td>
+        Flushes data to HDF5 file on storage medium.
+        </td>
+        </tr>
+    <tr><td colspan="3"><hr color="green" size="1" /></td></tr>
+    <tr valign="top">
+        <td>
+        <code>H5Fget_access_plist</code>
+        <br />
+        <code>h5fget_access_plist_f</code></td><td>&nbsp;</td>
+        <td>
+        Returns a file access property list identifier.
+        </td>
+        </tr>
+    <tr><td colspan="3"><hr color="green" size="1" /></td></tr>
+    <tr valign="top">
+        <td>
+        <code>H5Fget_create_plist</code>
+        <br />
+        <code>h5fget_create_plist_f</code></td><td>&nbsp;</td>
+        <td>
+        Returns a file creation property list identifier.
+        </td>
+        </tr>
+    <tr><td colspan="3"><hr color="green" size="1" /></td></tr>
+    <tr valign="top">
+        <td>
+        <code>H5Fget_file_image</code>
+        <br />
+        <code>h5fget_file_image_f</code></td><td>&nbsp;</td>
+        <td>
+        Retrieves a copy of the image of an existing, open file. 
+        </td>
+        </tr>
+    <tr><td colspan="3"><hr color="green" size="1" /></td></tr>
+    <tr valign="top">
+        <td>
+        <code>H5Fget_filesize</code>
+        <br />
+        <code>h5fget_filesize_f</code></td><td>&nbsp;</td>
+        <td>
+        Returns the size of an HDF5 file.
+        </td>
+        </tr>
+    <tr><td colspan="3"><hr color="green" size="1" /></td></tr>
+    <tr valign="top">
+        <td>
+        <code>H5Fget_freespace</code>
+        <br />
+        <code>h5fget_freespace_f</code></td><td>&nbsp;</td>
+        <td>
+        Returns the amount of free space in a file.
+        </td>
+        </tr>
+    <tr><td colspan="3"><hr color="green" size="1" /></td></tr>
+    <tr valign="top">
+        <td>
+        <code>H5Fget_info</code>
+        <br />
+        <code>(none)</code></td><td>&nbsp;</td>
+        <td>
+        Returns global information for a file.
+        </td>
+        </tr>
+    <tr><td colspan="3"><hr color="green" size="1" /></td></tr>
+    <tr valign="top">
+        <td>
+        <code>H5Fget_intent</code>
+        <br />
+        <code>(none)</code></td><td>&nbsp;</td>
+        <td>
+        Determines the read/write or read-only status of a file.
+        </td>
+        </tr>
+    <tr><td colspan="3"><hr color="green" size="1" /></td></tr>
+    <tr valign="top">
+        <td>
+        <code>H5Fget_mdc_config</code>
+        <br />
+        <code>(none)</code></td><td>&nbsp;</td>
+        <td>
+        Obtain current metadata cache configuration for target file.
+        </td>
+        </tr>
+    <tr><td colspan="3"><hr color="green" size="1" /></td></tr>
+    <tr valign="top">
+        <td>
+        <code>H5Fget_mdc_hit_rate</code>
+        <br />
+        <code>(none)</code></td><td>&nbsp;</td>
+        <td>
+        Obtain target file&rsquo;s metadata cache hit rate.
+        </td>
+        </tr>
+    <tr><td colspan="3"><hr color="green" size="1" /></td></tr>
+    <tr valign="top">
+        <td>
+        <code>H5Fget_mdc_size</code>
+        <br />
+        <code>(none)</code></td><td>&nbsp;</td>
+        <td>
+        Obtain current metadata cache size data for specified file.
+        </td>
+        </tr>
+    <tr><td colspan="3"><hr color="green" size="1" /></td></tr>
+    <tr valign="top">
+        <td>
+        <code>H5Fget_mpi_atomicity</code>
+        <br />
+        <code>h5fget_mpi_atomicity_f</code></td><td>&nbsp;</td>
+        <td>
+        Retrieves the atomicity mode in use. 
+        </td>
+        </tr>
+    <tr><td colspan="3"><hr color="green" size="1" /></td></tr>
+    <tr valign="top">
+        <td>
+        <code>H5Fget_name</code>
+        <br />
+        <code>h5fget_name_f</code></td><td>&nbsp;</td>
+        <td>
+        Retrieves the name of the file to which the object belongs.
+        </td>
+        </tr>
+    <!-- NEW PAGE -->
+    <tr><td colspan="3"><hr color="green" size="1" /></td></tr>
+    <tr valign="top">
+        <td>
+        <code>H5Fget_obj_count</code>
+        <br />
+        <code>h5fget_obj_count_f</code></td><td>&nbsp;</td>
+        <td>
+        Returns the number of open object identifiers for an open file.
+        </td>
+        </tr>
+    <tr><td colspan="3"><hr color="green" size="1" /></td></tr>
+    <tr valign="top">
+        <td>
+        <code>H5Fget_obj_ids</code>
+        <br />
+        <code>h5fget_obj_ids_f</code></td><td>&nbsp;</td>
+        <td>
+        Returns a list of open object identifiers.
+        </td>
+        </tr>
+    <tr><td colspan="3"><hr color="green" size="1" /></td></tr>
+    <tr valign="top">
+        <td>
+        <code>H5Fget_vfd_handle</code>
+        <br />
+        <code>(none)</code></td><td>&nbsp;</td>
+        <td>
+        Returns pointer to the file handle from the virtual file driver.
+        </td>
+        </tr>
+    <tr><td colspan="3"><hr color="green" size="1" /></td></tr>
+    <tr valign="top">
+        <td>
+        <code>H5Fis_hdf5</code>
+        <br />
+        <code>h5fis_hdf5_f</code></td><td>&nbsp;</td>
+        <td>
+        Determines whether a file is in the HDF5 format.
+        </td>
+        </tr>
+    <tr><td colspan="3"><hr color="green" size="1" /></td></tr>
+    <tr valign="top">
+        <td>
+        <code>H5Fmount</code>
+        <br />
+        <code>h5fmount_f</code></td><td>&nbsp;</td>
+        <td>
+        Mounts a file.
+        </td>
+        </tr>
+    <tr><td colspan="3"><hr color="green" size="1" /></td></tr>
+    <tr valign="top">
+        <td>
+        <code>H5Fopen</code>
+        <br />
+        <code>h5fopen_f</code></td><td>&nbsp;</td>
+        <td>
+        Opens existing HDF5 file.
+        </td>
+        </tr>
+    <tr><td colspan="3"><hr color="green" size="1" /></td></tr>
+    <tr valign="top">
+        <td>
+        <code>H5Freopen</code>
+        <br />
+        <code>h5freopen_f</code></td><td>&nbsp;</td>
+        <td>
+        Returns a new identifier for a previously-opened HDF5 file.
+        </td>
+        </tr>
+    <tr><td colspan="3"><hr color="green" size="1" /></td></tr>
+    <tr valign="top">
+        <td>
+        <code>H5Freset_mdc_hit_rate_stats</code>
+        <br />
+        <code>(none)</code></td><td>&nbsp;</td>
+        <td>
+        Reset hit rate statistics counters for the target file. 
+        </td>
+        </tr>
+    <tr><td colspan="3"><hr color="green" size="1" /></td></tr>
+    <tr valign="top">
+        <td>
+        <code>H5Fset_mdc_config</code>
+        <br />
+        <code>(none)</code></td><td>&nbsp;</td>
+        <td>
+        Use to configure metadata cache of target file. 
+        </td>
+        </tr>
+    <tr><td colspan="3"><hr color="green" size="1" /></td></tr>
+    <tr valign="top">
+        <td>
+        <code>H5Fset_mpi_atomicity</code>
+        <br />
+        <code>h5fset_mpi_atomicity_f</code></td><td>&nbsp;</td>
+        <td>
+        Use to set the MPI atomicity mode. 
+        </td>
+        </tr>
+    <tr><td colspan="3"><hr color="green" size="1" /></td></tr>
+    <tr valign="top">
+        <td>
+        <code>H5Funmount</code>
+        <br />
+        <code>h5funmount_f</code></td><td>&nbsp;</td>
+        <td>
+        Unmounts a file.
+        </td>
+        </tr>
+    <tr><td colspan="3"><hr color="green" size="3" /></td></tr>
+</table>
+<br /><br />
+
+<!-- NEW PAGE -->
+<table width="600" cellspacing="0" align="center" cellpadding="0">
+    <tr valign="bottom">
+        <td colspan="3" align="left" valign="bottom">
+        <b>Function Listing 3. File creation property list functions (H5P)
+        </b></td>
+        </tr>
+    <tr><td colspan="3"><hr color="green" size="3" /></td></tr>
+    <tr valign="top">
+        <td>
+        <b>C Function<br />Fortran Function</b></td><td>&nbsp;</td>
+        <td>
+        <b>Purpose</b></td></tr>
+    <tr><td colspan="3"><hr color="green" size="1" /></td></tr>
+    <tr valign="top">
+        <td>
+        <code>H5Pset/get_userblock</code>
+        <br />
+        <code>h5pset/get_userblock_f</code></td><td>&nbsp;</td>
+        <td>
+        Sets/retrieves size of user-block.</td></tr>
+    <tr><td colspan="3"><hr color="green" size="1" /></td></tr>
+    <tr valign="top">
+        <td>
+        <code>H5Pset/get_sizes</code>
+        <br />
+        <code>h5pset/get_sizes_f</code></td><td>&nbsp;</td>
+        <td>
+        Sets/retrieves byte size of offsets and lengths used to 
+        address objects in HDF5 file.</td></tr>
+    <tr><td colspan="3"><hr color="green" size="1" /></td></tr>
+    <tr valign="top">
+        <td>
+        <code>H5Pset/get_sym_k</code>
+        <br />
+        <code>h5pset/get_sym_k_f</code></td><td>&nbsp;</td>
+        <td>
+        Sets/retrieves size of parameters used to control 
+        symbol table nodes.</td></tr>
+    <tr><td colspan="3"><hr color="green" size="1" /></td></tr>
+    <tr valign="top">
+        <td>
+        <code>H5Pset/get_istore_k</code>
+        <br />
+        <code>h5pset/get_istore_k_f</code></td><td>&nbsp;</td>
+        <td>
+        Sets/retrieves size of parameter used to control B-trees 
+        for indexing chunked datasets.</td></tr>
+    <tr><td colspan="3"><hr color="green" size="1" /></td></tr>
+    <tr valign="top">
+        <td>
+        <code>H5Pget_file_image</code>
+        <br />
+        <code>h5pget_file_image_f</code></td><td>&nbsp;</td>
+        <td>
+        Retrieves a copy of the file image designated as the initial 
+        content and structure of a file. </td></tr>
+    <tr><td colspan="3"><hr color="green" size="1" /></td></tr>
+    <tr valign="top">
+        <td>
+        <code>H5Pset_file_image</code>
+        <br />
+        <code>h5pset_file_image_f</code></td><td>&nbsp;</td>
+        <td>
+        Sets an initial file image in a memory buffer. </td></tr>
+    <tr><td colspan="3"><hr color="green" size="1" /></td></tr>
+    <tr valign="top">
+        <td>
+        <code>H5Pset_shared_mesg_nindexes</code>
+        <br />
+        <code>h5pset_shared_mesg_nindexes_f</code></td><td>&nbsp;</td>
+        <td>
+        Sets number of shared object header message indexes. </td></tr>
+    <tr><td colspan="3"><hr color="green" size="1" /></td></tr>
+    <tr valign="top">
+        <td>
+        <code>H5Pget_shared_mesg_nindexes</code>
+        <br />
+        <code>(none)</code></td><td>&nbsp;</td>
+        <td>
+        Retrieves number of shared object header message indexes in 
+        file creation property list. </td></tr>
+    <tr><td colspan="3"><hr color="green" size="1" /></td></tr>
+    <tr valign="top">
+        <td>
+        <code>H5Pset_shared_mesg_index</code>
+        <br />
+        <code>h5pset_shared_mesg_index_f</code></td><td>&nbsp;</td>
+        <td>
+        Configures the specified shared object header message index.</td></tr>
+    <tr><td colspan="3"><hr color="green" size="1" /></td></tr>
+    <tr valign="top">
+        <td>
+        <code>H5Pget_shared_mesg_index</code>
+        <br />
+        <code>(none)</code></td><td>&nbsp;</td>
+        <td>
+        Retrieves the configuration settings for a shared message index. 
+        </td></tr>
+    <tr><td colspan="3"><hr color="green" size="1" /></td></tr>
+    <tr valign="top">
+        <td>
+        <code>H5Pset_shared_mesg_phase_change</code>
+        <br />
+        <code>(none)</code></td><td>&nbsp;</td>
+        <td>
+        Sets shared object header message storage phase change thresholds. 
+        </td></tr>
+    <tr><td colspan="3"><hr color="green" size="1" /></td></tr>
+    <tr valign="top">
+        <td>
+        <code>H5Pget_shared_mesg_phase_change</code>
+        <br />
+        <code>(none)</code></td><td>&nbsp;</td>
+        <td>
+        Retrieves shared object header message phase change information. 
+        </td></tr>
+    <tr><td colspan="3"><hr color="green" size="1" /></td></tr>
+    <tr valign="top">
+        <td>
+        <code>H5Pget_version</code>
+        <br />
+        <code>h5pget_version_f</code></td><td>&nbsp;</td>
+        <td>
+        Retrieves version information for various objects for 
+        file creation property list.</td></tr>
+    <tr><td colspan="3"><hr color="green" size="3" /></td></tr>
+</table>
+<br /><br />
+
+
+<!-- NEW PAGE -->
+<table width="600" cellspacing="0" align="center" cellpadding="0">
+    <tr valign="bottom">
+        <td colspan="3" align="left" valign="bottom">
+        <b>Function Listing 4. File access property list functions (H5P)
+        </b></td>
+        </tr>
+    <tr><td colspan="3"><hr color="green" size="3" /></td></tr>
+    <tr valign="top"> 
+        <td>
+        <b>C Function<br />Fortran Function</b>
+        </td><td>&nbsp;</td>
+        <td>
+        <b>Purpose</b>
+        </td>
+        </tr>
+    <tr><td colspan="3"><hr color="green" size="1" /></td></tr>
+    <tr valign="top">
+        <td>
+        <code>H5Pset/get_alignment</code>
+        <br />
+        <code>h5pset/get_alignment_f</code></td><td>&nbsp;</td>
+        <td>
+        Sets/retrieves alignment properties.</td>
+        </tr>
+    <tr><td colspan="3"><hr color="green" size="1" /></td></tr>
+    <tr valign="top">
+        <td>
+        <code>H5Pset/get_cache</code>
+        <br />
+        <code>h5pset/get_cache_f</code></td><td>&nbsp;</td>
+        <td>
+        Sets/retrieves metadata cache and raw data chunk cache 
+        parameters.</td>
+        </tr>
+    <tr><td colspan="3"><hr color="green" size="1" /></td></tr>
+    <tr valign="top">
+        <td>
+        <code>H5Pset/get_elink_file_cache_size</code>
+        <br />
+        <code>(none)</code></td><td>&nbsp;</td>
+        <td>
+        Sets/retrieves the size of the external link open file cache 
+        from the specified file access property list. </td>
+        </tr>
+    <tr><td colspan="3"><hr color="green" size="1" /></td></tr>
+    <tr valign="top">
+        <td>
+        <code>H5Pset/get_fclose_degree</code>
+        <br />
+        <code>h5pset/get_fclose_degree_f</code></td><td>&nbsp;</td>
+        <td>
+        Sets/retrieves file close degree property.</td>
+        </tr>
+    <tr><td colspan="3"><hr color="green" size="1" /></td></tr>
+    <tr valign="top">
+        <td>
+        <code>H5Pset/get_gc_references</code>
+        <br />
+        <code>h5pset/get_gc_references_f</code></td><td>&nbsp;</td>
+        <td>
+        Sets/retrieves garbage collecting references flag.</td></tr>
+    <tr><td colspan="3"><hr color="green" size="1" /></td></tr>
+    <tr valign="top">
+        <td>
+        <code>H5Pset_family_offset</code>
+        <br />
+        <code>h5pset_family_offset_f</code></td><td>&nbsp;</td>
+        <td>
+        Sets offset property for low-level access to a file in a family of 
+        files.</td>
+        </tr>
+    <tr><td colspan="3"><hr color="green" size="1" /></td></tr>
+    <tr valign="top">
+        <td>
+        <code>H5Pget_family_offset</code>
+        <br />
+        <code>(none)</code></td><td>&nbsp;</td>
+        <td>
+        Retrieves a data offset from the file access property list.</td>
+        </tr>
+    <tr><td colspan="3"><hr color="green" size="1" /></td></tr>
+    <tr valign="top">
+        <td>
+        <code>H5Pset/get_meta_block_size</code>
+        <br />
+        <code>h5pset/get_meta_block_size_f</code></td><td>&nbsp;</td>
+        <td>
+        Sets the minimum metadata block size or 
+        retrieves the current metadata block size setting.</td>
+        </tr>
+    <tr><td colspan="3"><hr color="green" size="1" /></td></tr>
+    <tr valign="top">
+        <td>
+        <code>H5Pset_mdc_config</code>
+        <br />
+        <code>(none)</code></td><td>&nbsp;</td>
+        <td>
+        Set the initial metadata cache configuration in the indicated 
+        File Access Property List to the supplied value.</td>
+        </tr>
+    <tr><td colspan="3"><hr color="green" size="1" /></td></tr>
+    <tr valign="top">
+        <td>
+        <code>H5Pget_mdc_config</code>
+        <br />
+        <code>(none)</code></td><td>&nbsp;</td>
+        <td>
+        Get the current initial metadata cache configuration from the 
+        indicated File Access Property List.</td>
+        </tr>
+    <tr><td colspan="3"><hr color="green" size="1" /></td></tr>
+    <tr valign="top">
+        <td>
+        <code>H5Pset/get_sieve_buf_size</code>
+        <br />
+        <code>h5pset/get_sieve_buf_size_f</code></td><td>&nbsp;</td>
+        <td>
+        Sets/retrieves maximum size of data sieve buffer.</td>
+        </tr>
+    <tr><td colspan="3"><hr color="green" size="1" /></td></tr>
+    <tr valign="top">
+        <td>
+        <code>H5Pset_libver_bounds</code>
+        <br />
+        <code>h5pset_libver_bounds_f</code></td><td>&nbsp;</td>
+        <td>
+        Sets bounds on library versions, and indirectly format versions, 
+        to be used when creating objects.</td>
+        </tr>
+    <tr><td colspan="3"><hr color="green" size="1" /></td></tr>
+    <tr valign="top">
+        <td>
+        <code>H5Pget_libver_bounds</code>
+        <br />
+        <code>(none)</code></td><td>&nbsp;</td>
+        <td>
+        Retrieves library version bounds settings that indirectly control 
+        the format versions used when creating objects.</td>
+        </tr>
+    <tr><td colspan="3"><hr color="green" size="1" /></td></tr>
+    <tr valign="top">
+        <td>
+        <code>H5Pset_small_data_block_size</code>
+        <br />
+        <code>h5pset_small_data_block_size_f</code></td><td>&nbsp;</td>
+        <td>
+        Sets the size of a contiguous block reserved for small data.</td>
+        </tr>
+    <!-- NEW PAGE -->
+    <tr><td colspan="3"><hr color="green" size="1" /></td></tr>
+    <tr valign="top">
+        <td>
+        <code>H5Pget_small_data_block_size</code>
+        <br />
+        <code>h5pget_small_data_block_size_f</code></td><td>&nbsp;</td>
+        <td>
+        Retrieves the current small data block size setting.</td>
+        </tr>
+    <tr><td colspan="3"><hr color="green" size="3" /></td></tr>
+</table>
+<br /><br />
+
+
+
+<table width="600" cellspacing="0" align="center" cellpadding="0">
+    <tr valign="bottom">
+        <td colspan="3" align="left" valign="bottom">
+        <b>Function Listing 5. File driver functions (H5P)
+        </b></td>
+        </tr>
+    <tr><td colspan="3"><hr color="green" size="3" /></td></tr>
+    <tr valign="top"> 
+        <td>
+        <b>C Function<br />Fortran Function</b>
+        </td><td>&nbsp;</td>
+        <td>
+        <b>Purpose</b>
+        </td>
+        </tr>
+    <tr><td colspan="3"><hr color="green" size="1" /></td></tr>
+    <tr valign="top">
+        <td>
+        <code>H5Pset_driver</code>
+        <br />
+        <code>(none)</code></td><td>&nbsp;</td>
+        <td>
+        Sets a file driver.</td></tr>
+    <tr><td colspan="3"><hr color="green" size="1" /></td></tr>
+    <tr valign="top">
+        <td>
+        <code>H5Pget_driver</code>
+        <br />
+        <code>h5pget_driver_f</code></td><td>&nbsp;</td>
+        <td>
+        Returns the identifier for the driver used to create a file.</td></tr>
+    <tr><td colspan="3"><hr color="green" size="1" /></td></tr>
+    <tr valign="top">
+        <td>
+        <code>H5Pget_driver_info</code>
+        <br />
+        <code>(none)</code></td><td>&nbsp;</td>
+        <td>
+        Returns a pointer to file driver information.</td></tr>
+    <tr><td colspan="3"><hr color="green" size="1" /></td></tr>
+    <tr valign="top">
+        <td>
+        <code>H5Pset/get_fapl_core</code>
+        <br />
+        <code>h5pset/get_fapl_core_f</td><td>&nbsp;</td>
+        <td>
+        Sets driver for buffered memory files (i.e., in RAM) 
+        or retrieves information regarding driver.</td></tr>
+    <tr><td colspan="3"><hr color="green" size="1" /></td></tr>
+    <tr valign="top">
+        <td>
+        <code>H5Pset_fapl_direct</code>
+        <br />
+        <code>h5pset_fapl_direct_f</td><td>&nbsp;</td>
+        <td>
+        Sets up use of the direct I/O driver.</td></tr>
+    <tr><td colspan="3"><hr color="green" size="1" /></td></tr>
+    <tr valign="top">
+        <td>
+        <code>H5Pget_fapl_direct</code>
+        <br />
+        <code>h5pget_fapl_direct_f</td><td>&nbsp;</td>
+        <td>
+        Retrieves direct I/O driver settings.</td></tr>
+    <tr><td colspan="3"><hr color="green" size="1" /></td></tr>
+    <tr valign="top">
+        <td>
+        <code>H5Pset/get_fapl_family</code>
+        <br />
+        <code>h5pset/get_fapl_family_f</code></td><td>&nbsp;</td>
+        <td>
+        Sets driver for file families, 
+        designed for systems that do not support files larger than 2 gigabytes,
+        or retrieves information regarding driver.</td></tr>
+    <tr><td colspan="3"><hr color="green" size="1" /></td></tr>
+    <tr valign="top">
+        <td>
+        <code>H5Pset_fapl_log</code>
+        <br />
+        <code>(none)</code></td><td>&nbsp;</td>
+        <td>
+        Sets logging driver.</td></tr>
+    <tr><td colspan="3"><hr color="green" size="1" /></td></tr>
+    <tr valign="top">
+        <td>
+        <code>H5Pset/get_fapl_mpio</code>
+        <br />
+        <code>h5pset/get_fapl_mpio_f</code></td><td>&nbsp;</td>
+        <td>
+        Sets driver for files on parallel file systems (MPI I/O)
+        or retrieves information regarding the driver.</td></tr>
+    <tr><td colspan="3"><hr color="green" size="1" /></td></tr>
+    <tr valign="top">
+        <td>
+        <code>H5Pset_fapl_mpiposix</code>
+        <br />
+        <code>h5pset_fapl_mpiposix_f</code></td><td>&nbsp;</td>
+        <td>
+        No longer available.
+        </td>
+        <!-- vfd no longer available. 3.28.2014.
+        <td>
+        Stores MPI IO communicator information to a file access property list.
+        </td>
+        -->
+        </tr>
+    <tr><td colspan="3"><hr color="green" size="1" /></td></tr>
+    <tr valign="top">
+        <td>
+        <code>H5Pget_fapl_mpiposix</code>
+        <br />
+        <code>h5pget_fapl_mpiposix_f</code></td><td>&nbsp;</td>
+        <td>
+        No longer available.
+        </td>
+        <!-- vfd no longer available. 3.28.2014.
+        <td>
+        Returns MPI communicator information.
+        </td>
+        -->
+    <tr><td colspan="3"><hr color="green" size="1" /></td></tr>
+    <tr valign="top">
+        <td>
+        <code>H5Pset/get_fapl_multi</code>
+        <br />
+        <code>h5pset/get_fapl_multi_f</code></td><td>&nbsp;</td>
+        <td>
+        Sets driver for multiple files, 
+        separating categories of metadata and raw data,
+        or retrieves information regarding driver.</td></tr>
+    <tr><td colspan="3"><hr color="green" size="1" /></td></tr>
+    <tr valign="top">
+        <td>
+        <code>H5Pset_fapl_sec2</code>
+        <br />
+        <code>h5pset_fapl_sec2_f</code></td><td>&nbsp;</td>
+        <td>
+        Sets driver for unbuffered permanent files or retrieves information 
+        regarding driver.</td></tr>
+    <tr><td colspan="3"><hr color="green" size="1" /></td></tr>
+    <tr valign="top">
+        <td>
+        <code>H5Pset_fapl_split</code>
+        <br />
+        <code>h5pset_fapl_split_f</code></td><td>&nbsp;</td>
+        <td>
+        Sets driver for split files, a limited case of multiple files
+        with one metadata file and one raw data file.</td></tr>
+    <tr><td colspan="3"><hr color="green" size="1" /></td></tr>
+    <tr valign="top">
+        <td>
+        <code>H5Pset_fapl_stdio</code>
+        <br />
+        <code>H5Pset_fapl_stdio_f</code></td><td>&nbsp;</td>
+        <td>
+        Sets driver for buffered permanent files.</td></tr>
+<!--
+<tr valign="top">
+<td colspan="1"
+	rowspan="1"
+	style="padding-right: 10px; padding-left: 10px;
+                        border-bottom-width: 1px;
+                        border-bottom-color: #008000;
+                        border-bottom-style: Solid;"
+	width="23.025%">
+<code>H5Pset/get_fapl_stream</code>
+   <br />
+   (none)</td>
+<td colspan="1"
+	rowspan="1"
+	style="padding-right: 10px; padding-left: 10px;
+                        border-bottom-width: 1px;
+                        border-bottom-color: #008000;
+                        border-bottom-style: Solid;"
+	width="76.975%">
+Sets driver for streaming data (i.e., no stored file)
+ or retrieves information regarding driver.</td></tr>
+-->
+
+    <tr><td colspan="3"><hr color="green" size="1" /></td></tr>
+    <tr valign="top">
+        <td>
+        <code>H5Pset_fapl_windows</code>
+        <br />
+        <code>(none)</code></td><td>&nbsp;</td>
+        <td>
+        Sets the Windows I/O driver.</td></tr>
+    <tr><td colspan="3"><hr color="green" size="1" /></td></tr>
+    <tr valign="top">
+        <td>
+        <code>H5Pset_multi_type</code>
+        <br />
+        <code>(none)</code></td><td>&nbsp;</td>
+        <td>
+        Specifies type of data to be accessed via the MULTI driver 
+        enabling more direct access.</td></tr>
+    <tr><td colspan="3"><hr color="green" size="1" /></td></tr>
+    <tr valign="top">
+        <td>
+        <code>H5Pget_multi_type</code>
+        <br />
+        <code>(none)</code></td><td>&nbsp;</td>
+        <td>
+        Retrieves type of data property for MULTI driver.</td></tr>
+    <tr><td colspan="3"><hr color="green" size="3" /></td></tr>
+</table>
+<br />
+
+<SCRIPT language="JavaScript">
+<!--
+document.writeln ("
+<a name="CrOpen">
+<div align="right">
+<a href="#TOP"><font size="-1">(Top)</font></a>
+</div>
+</a>
+");
+-->
+</SCRIPT>
+
+<!-- NEW PAGE -->
+<a name="CrOpen">
+<h3 class="pagebefore">3.5. Creating or Opening an HDF5 File</h3>
+</a>
+
+<!-- editingComment
+  <span class="editingComment">
+  [ [ [ Link each function in 8.5 through 8.8 to its RM entry. ] ] ]
+  </span>
+-->
+<p>This section describes in more detail how to create and how to open 
+files. </p>
+
+<p>New HDF5 files are created and opened with <code>H5Fcreate</code>; 
+ existing files are opened with <code>H5Fopen</code>. 
+ Both functions return an object identifier which must eventually 
+ be released by calling <code>H5Fclose</code>.</p>
+
+<dl>
+ <dt><span class="RunningHead">To create a new file</span>, call 
+ <code>H5Fcreate</code>:
+
+ <dd>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    <code>hid_t H5Fcreate (const char *<em>name</em>, 
+          unsigned <em>flags</em>, 
+          <br />
+          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+          hid_t <em>fcpl_id</em>, 
+          hid_t <em>fapl_id</em>)</code>
+</dl>
+
+<p><code>H5Fcreate</code> creates a new file named <code><em>name</em></code> 
+ in the current directory. 
+ The file is opened with read and write access; 
+ if the <code>H5F_ACC_TRUNC</code> flag is set, any pre-existing file 
+ of the same name in the same directory is truncated.
+ If <code>H5F_ACC_TRUNC</code> is not set or
+ <code>H5F_ACC_EXCL</code> is set and if a file of the same name exists,
+ <code>H5Fcreate</code> will fail. </p>
+
+<p>The new file is created with the properties specified in the property 
+ lists <code><em>fcpl_id</em></code> and <code><em>fapl_id</em></code>. 
+ <code>fcpl</code> is short for file creation property list. 
+ <code>fapl</code> is short for file access property list. Specifying 
+ <code>H5P_DEFAULT</code> for either the creation or access property 
+ list calls for the library&rsquo;s default creation or access properties.
+ See &ldquo;<a href="#PLists">File Property Lists</a>&rdquo; below 
+ for details on setting property list values. 
+ See &ldquo;<a href="#FileAccessModes">File Access Modes</a>&rdquo; 
+ above for the list of file access flags and their descriptions.</p>
+ 
+<p>If <code>H5Fcreate</code> successfully creates the file, 
+ it returns a file identifier for the new file. This identifier will be 
+ used by the application any time an object identifier, an OID, for the 
+ file is required. Once the application has finished working with a file, 
+ the identifier should be released and the file closed with 
+ <code>H5Fclose</code>. </p>
+
+
+<dl>
+  <dt><span class="RunningHead">To open an existing file</span>, 
+      call <code>H5Fopen</code>:
+
+  <dd>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    <code>hid_t H5Fopen (const char *<em>name</em>, unsigned <em>flags</em>, 
+          hid_t <em>fapl_id</em>) </code>
+</dl>
+
+<p><code>H5Fopen</code> opens an existing file with 
+ read-write access if <code>H5F_ACC_RDWR</code> is set and 
+ read-only access if <code>H5F_ACC_RDONLY</code> is set. </p>
+
+<p><em>fapl_id</em> is the file access property list identifier.
+ Alternatively, <code>H5P_DEFAULT</code> indicates that the application
+ relies on the default I/O access parameters. 
+ Creating and changing access property lists is documented further below. </p>
+
+<p>A file can be opened more than once via multiple <code>H5Fopen</code> 
+ calls. Each such call returns a unique file identifier and the file can 
+ be accessed through any of these file identifiers as long as they remain 
+ valid. Each of these file identifiers must be released by calling 
+ <code>H5Fclose</code> when it is no longer needed. </p>
+ 
+
+<SCRIPT language="JavaScript">
+<!--
+document.writeln ("
+<a name="Close">
+<div align="right">
+<a href="#TOP"><font size="-1">(Top)</font></a>
+</div>
+</a>
+");
+-->
+</SCRIPT>
+
+<!-- NEW PAGE -->
+<a name="Close">
+<h3 class="pagebefore">3.6. Closing an HDF5 File</h3>
+</a>
+
+<p><code>H5Fclose</code> both closes a file and releases the 
+ file identifier returned by <code>H5Fopen</code> or <code>H5Fcreate</code>. 
+ <code>H5Fclose</code> must be called when an application 
+ is done working with a file; 
+ while the HDF5 Library makes every effort to maintain file integrity,
+ failure to call <code>H5Fclose</code> may result in the file 
+ being abandoned in an incomplete or corrupted state. </p>
+
+<dl>
+  <dt><span class="RunningHead">To close a file</span>, 
+      call <code>H5Fclose</code>:
+
+  <dd>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    <code>herr_t H5Fclose (hid_t <em>file_id</em>)</code>
+</dl>
+
+<p>This function releases resources associated with an open file.
+ After closing a file, the file identifier, 
+ <code><em>file_id</em></code>, cannnot be used again 
+ as it will be undefined.</p>
+
+<p><code>H5Fclose</code> fulfills three purposes: 
+ to ensure that the file is left in an uncorrupted state, 
+ to ensure that all data has been written to the file, 
+ and to release resources.   Use 
+ <a href="../RM/RM_H5F.html#File-Flush" target="RMwindow">
+ <code>H5Fflush</code></a> if you wish to ensure that all data has 
+ been written to the file but it is premature to close it.</p>
+
+<p><em>Note regarding serial mode behavior:</em>
+ When <code>H5Fclose</code> is called in serial mode, 
+ it closes the file and terminates new access to it, 
+ but it does not terminate access to objects that remain 
+ individually open within the file.  
+ That is, if <code>H5Fclose</code> is called for a file but one or 
+ more objects within the file remain open, those objects will remain 
+ accessible until they are individually closed.  
+ To illustrate, assume that a file, <code>fileA</code>, contains 
+ a dataset, <code>data_setA</code>, and that both are open when 
+ <code>H5Fclose</code> is called for <code>fileA</code>. 
+ <code>data_setA</code> will remain open and accessible, 
+ including writable, until it is explicitly closed.  
+ The file will be automatically and finally closed once all objects within 
+ it have been closed.</p>
+
+<p><em>Note regarding parallel mode behavior:</em>
+ Once <code>H5Fclose</code> has been called in parallel mode,
+ access is no longer available to any object within the file.</p>
+
+
+<SCRIPT language="JavaScript">
+<!--
+document.writeln ("
+<a name="PLists">
+<div align="right">
+<a href="#TOP"><font size="-1">(Top)</font></a>
+</div>
+</a>
+");
+-->
+</SCRIPT>
+
+<!-- NEW PAGE -->
+<a name="PLists">
+<h3 class="pagebefore">3.7. File Property Lists</h3>
+</a>
+
+<p>Additional information regarding file structure and access 
+ are passed to <code>H5Fcreate</code> and <code>H5Fopen</code> 
+ through property list objects.
+ Property lists provide a portable and extensible method of 
+ modifying file properties via simple API functions. 
+ There are two kinds of file-related property lists: </p>
+ <ul>
+    <li>File creation property lists
+    <li>File access property lists
+ </ul>
+
+<p>
+ In the following sub-sections, we discuss only one file creation property, 
+ user-block size, in detail as a model for the user.  
+ Other file creation and file access properties are mentioned and 
+ defined briefly, but the model is not expanded for each; 
+ complete syntax, parameter, and usage information for every 
+ property list function is provided in the
+ &ldquo;<a href="../RM/RM_H5P.html" target="RMwindow">H5P: Property List 
+ Interface</a>&rdquo; chapter of the 
+ <a href="../RM/RM_H5Front.html" target="RMwindow">
+ <cite>HDF5 Reference Manual</cite></a>.</p>
+ 
+<!-- editingComment
+Also see 
+ <span class=EditingComment>[ [ [ property lists chapter -- definitional 
+ discussion ] ] ]</span> 
+ in this <cite>HDF5 User's Guide</cite> for further discussion of 
+ property lists.</p>
+-->
+
+
+<h4>3.7.1. Creating a Property List</h4>
+
+
+<p>If you do not wish to rely on the default file creation and 
+ access properties, you must first create a property list with 
+ <code>H5Pcreate</code>.</p>
+
+<dir><pre>
+hid_t H5Pcreate (hid_t <em>cls_id</em>)
+</pre></dir>
+
+<p><code><em>type</em></code> is the type of property list being created.
+In this case, the appropriate values are 
+ <code>H5P_FILE_CREATE</code> for a file creation property list and
+ <code>H5P_FILE_ACCESS</code> for a file access property list.</p>
+
+
+<p>Thus, the following calls create a file creation property list and a 
+ file access property list with identifiers <code><em>fcpl_id</em></code> 
+ and <code><em>fapl_id</em></code>, respectively:
+<dir><pre>
+fcpl_id = H5Pcreate (H5P_FILE_CREATE) 
+fapl_id = H5Pcreate (H5P_FILE_ACCESS) 
+</pre></dir>
+
+Once the property lists have been created, the properties themselves can 
+be modified via the functions described in the following sub-sections.
+
+<a name="FileCreationProperties">
+<p>&nbsp;</p>
+</a>
+
+
+<h4>3.7.2. File Creation Properties</h4>
+
+
+<p>File creation property lists control the file metadata, which is 
+maintained in the superblock of the file. These properties are used 
+only when a file is first created.</p>
+
+<p><span class="RunningHead">User-block size </span></p>
+
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    <code>herr_t H5Pset_userblock (hid_t <em>plist</em>, 
+          hsize_t <em>size</em>)</code>
+    <br />
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    <code>herr_t H5Pget_userblock (hid_t <em>plist</em>, 
+          hsize_t *<em>size</em>)</code>
+
+ <p>The <em>user-block</em> is a fixed-length block of data 
+ located at the beginning of the file and is ignored by the 
+ HDF5 Library. 
+ This block is specifically set aside for any data or information 
+ that developers determine to be useful to their applications but 
+ that will not be used by the HDF5 Library. 
+ The <code><em>size</em></code> of the user-block is defined in bytes
+ and may be set to any power of two with a minimum size of 512 bytes. 
+ In other words, user-blocks might be 512, 1024, or 2048 bytes in size.</p>
+ 
+ <p>This property is set with <code>H5Pset_userblock</code> 
+ and queried via <code>H5Pget_userblock</code>. For example, if an 
+ application needed a 4K user-block, then the following function call
+ could be used:</p>
+
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    <code>status = H5Pset_userblock(fcpl_id, 4096)</code>
+
+    <p>The property list could later be queried with</p>
+
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    <code>status = H5Pget_userblock(fcpl_id, size)</code>
+
+    <p>and the value <code>4096</code> would be returned in the parameter
+ <code><em>size</em></code>.</p>
+
+ <p>Other properties, described below, are set and queried in exactly 
+ the same manner. Syntax and usage are detailed in the 
+ &ldquo;<a href="../RM/RM_H5P.html" target="RMwindow">H5P: Property List 
+ Interface</a>&rdquo; section of the <a href="../RM/RM_H5Front.html" 
+ target="RMwindow"><cite>HDF5 Reference Manual</cite></a>.
+<!-- editingComment
+ <span class=editingcomment>[ [ [ Though we could spell it all out here if 
+ deemed necessary. ] ] ]</span>
+-->
+ </p>
+
+<span class="RunningHead">Offset and length sizes </span>
+
+ <p>This property specifies the number of bytes used to store 
+ the offset and length of objects in the HDF5 file. 
+ Values of 2, 4, and 8 bytes are currently supported 
+ to accommodate 16-bit, 32-bit, and 64-bit file address spaces. </p>
+ 
+ <p>These properties are set and queried via 
+ <code>H5Pset_sizes</code> and <code>H5Pget_sizes</code>. 
+ </p>
+
+<span class="RunningHead">Symbol table parameters </span>
+
+
+ <p>The size of symbol table B-trees can be controlled by 
+ setting the 1/2-rank and 1/2-node size parameters of the B-tree. </p>
+ 
+ <p>These properties are set and queried via 
+ <code>H5Pset_sym_k</code> and <code>H5Pget_sym_k</code>. </p>
+
+<span class="RunningHead">Indexed storage parameters </span>
+
+
+ <p>The size of indexed storage B-trees can be controlled 
+ by setting the 1/2-rank and 1/2-node size parameters of the B-tree. </p>
+ 
+ <p>These properties are set and queried via 
+ <code>H5Pset_istore_k</code> and <code>H5Pget_istore_k</code>. </p>
+
+<span class="RunningHead">Version information </span>
+
+ <p>Various objects in an HDF5 file may over time appear in different
+ versions.  The HDF5 Library keeps track of the version of each object 
+ in the file.  </p>
+
+ <p>Version information is retrieved via <code>H5Pget_version</code>.</p>
+
+<a name="FileAccessProperties">
+<p>&nbsp;</p>
+</a>
+
+<!-- NEW PAGE -->
+<h4>3.7.3. File Access Properties</h4>
+
+
+<p>This section discusses file access properties that are not related to 
+ the low-level file drivers.  
+ File drivers are discussed separately in 
+ &ldquo;<a href="#Drivers">Alternate File Storage Layouts and Low-level 
+ File Drivers</a>,&rdquo; later in this chapter. </p>
+
+<p>File access property lists control various aspects of file I/O
+ and structure.  </p>
+
+<dl>
+
+<dt><span class="RunningHead">Data alignment </span>
+
+<dd>Sometimes file access is faster if certain data elements are 
+ aligned in a specific manner.  This can be controlled by setting alignment 
+ properties via the <code>H5Pset_alignment</code> function. 
+ There are two values involved:
+ <ul>
+    <li>A threshhold value</li>
+    <li>An alignment interval</li>
+ </ul>
+ <p>Any allocation request at least as large as the threshold will 
+ be aligned on an address that is a multiple of the alignment interval. </p>
+
+<dt><span class="RunningHead">Metadata block allocation size</span>
+
+<dd>Metadata typically exists as very small chunks of data;
+ storing metadata elements in a file without blocking them can
+ result in hundreds or thousands of very small data elements 
+ in the file.  This can result in a highly fragmented file and 
+ seriously impede I/O. By blocking metadata elements, these small 
+ elements can be grouped in larger sets, thus alleviating both problems.
+ 
+ <p>
+ <code>H5Pset_meta_block_size</code> sets the minimum size in bytes
+ of metadata block allocations.
+ <code>H5Pget_meta_block_size</code> retrieves the current 
+ minimum metadata block allocation size.</p>
+
+<dt><span class="RunningHead">Metadata cache</span>
+
+<dd>Metadata and raw data I/O speed are often governed by the size 
+ and frequency of disk reads and writes.  In many cases, the speed 
+ can be substantially improved by the use of an appropriate cache.
+ 
+ <p>
+ <code>H5Pset_cache</code> sets the minimum cache size for both 
+ metadata and raw data and a preemption value for raw data chunks.
+ <code>H5Pget_cache</code> retrieves the current values.
+ </p>
+
+<dt><span class="RunningHead">Data sieve buffer size</span>
+
+<dd>Data sieve buffering is used by certain file drivers to speed
+ data I/O and is most commonly when working with dataset hyperslabs.
+ For example, using a buffer large enough to hold several pieces of 
+ a dataset as it is read in for hyperslab selections will boost 
+ performance noticeably.
+
+ <p>
+ <code>H5Pset_sieve_buf_size</code> sets the maximum size in bytes
+ of the data sieve buffer.
+ <code>H5Pget_sieve_buf_size</code> retrieves the current maximum size 
+ of the data sieve buffer.
+ </p>
+
+<dt><span class="RunningHead">Garbage collection references</span>
+
+<dd>Dataset region references and other reference types use space 
+ in an HDF5 file&rsquo;s global heap. 
+ If garbage collection is on (<code>1</code>) and the 
+ user passes in an uninitialized value in a reference structure, 
+ the heap might become corrupted. 
+ When garbage collection is off (<code>0</code>), however, 
+ and the user re-uses a reference, the previous heap block 
+ will be orphaned and not returned to the free heap space.  
+ When garbage collection is on, the user must initialize the 
+ reference structures to <code>0</code> or risk heap corruption.
+
+ <p>
+ <code>H5Pset_gc_references</code> sets the garbage collecting 
+ references flag. 
+ </p>
+
+</dl>
+
+<SCRIPT language="JavaScript">
+<!--
+document.writeln ("
+<a name="Drivers">
+<div align="right">
+<a href="#TOP"><font size="-1">(Top)</font></a>
+</div>
+</a>
+");
+-->
+</SCRIPT>
+
+<!-- NEW PAGE -->
+<a name="Drivers">
+<h3 class="pagebefore">3.8. Alternate File Storage Layouts and Low-level 
+File Drivers</h3></a>
+
+<p>The concept of an HDF5 file is actually rather abstract: 
+ the address space for what is normally thought of as an HDF5 file
+ might correspond to any of the following:
+ <ul>
+     <li>Single file on standard file system</li>
+     <li>Multiple files on standard file system</li>
+     <li>Multiple files on parallel file system</li>
+     <li>Block of memory within application&rsquo;s memory space</li>
+     <li>More abstract situations such as virtual files </li>
+         <!--
+         or streaming I/O
+         -->
+ </ul>
+ <p>This HDF5 address space is generally referred to as an <em>HDF5 file</em> 
+ regardless of its organization at the storage level. </p>
+
+<p>HDF5 employs an extremely flexible mechanism called the 
+ <em>virtual file layer</em>, or VFL, for file I/O.  
+ A full understanding of the VFL is only necessary if you plan to write 
+ your own drivers (see &ldquo;Virtual File Layer&rdquo;
+ and &ldquo;List of VFL Functions&rdquo; in the 
+ <a href="../TechNotes.html" target="RMwindow">
+ <cite>HDF5 Technical Notes</cite></a>). For our purposes here, it is 
+ sufficient to know that the low-level drivers used for file I/O 
+ reside in the VFL, as illustrated in the following figure.
+ Note that <code>H5FD_STREAM</code> is not available with 1.8.x 
+ and later versions of the library.</p>
+
+
+ 
+<table width="600" cellspacing="0" align="center">
+    <tr valign="top"> 
+        <td align="center">
+        <hr color="green" size="3"/>
+        <img src="Images/VFL_Drivers.jpg">
+        </td></tr>
+<tr><td><hr color="green" size="1" /></td></tr>
+<tr valign="top">
+    <td align="left" >
+        <b>Figure 2. I/O path from application 
+        through VFL and low-level drivers to storage</b>
+        <hr color="green" size="3"/></td></tr>
+</table>
+<br />
+
+<p>As mentioned above, HDF5 applications access HDF5 files through 
+ various <em>low-level file drivers</em>. 
+ The default driver for that layout is the POSIX driver (also known 
+ as the SEC2 driver), <code>H5FD_SEC2</code>. Alternative layouts and 
+ drivers are designed to suit the needs of a variety of systems, 
+ environments, and applications. The drivers are listed in the table below.
+ </p>
+
+<!-- NEW PAGE -->
+
+
+<!-- 
+<p>??????? php include statement for Table 2. Supported file drivers
+??????? </p>
+-->
+<table width="600" cellspacing="0" align="center" cellpadding="0">
+    <tr valign="bottom">
+        <td colspan="7" align="left" valign="bottom">
+        <b>Table 2. Supported file drivers</b></td>
+        </tr>
+
+<?php include("../_topic/DriversTable.htm"); ?> 
+ 
+</table>
+ 
+ 
+
+  <p>For more information, see the 
+  <a href="../RM/RM_H5Front.html" target="RMwindow"><cite>HDF5 Reference 
+  Manual</cite></a> entries for the function calls shown in the column on 
+  the right in the table above. </p>
+
+  <p>Note that the low-level file drivers manage alternative <i>file</i> 
+  storage layouts. <i>Dataset</i> storage layouts (chunking, 
+  compression, and external dataset storage) are managed independently 
+  of file storage layouts. </p>
+
+  <p>If an application requires a special-purpose low-level driver,
+  the VFL provides a public API for creating one.
+  For more information on how to create a driver, 
+  see &ldquo;Virtual File Layer&rdquo;
+  and &ldquo;List of VFL Functions&rdquo; in the 
+  <a href="../TechNotes.html" target="RMwindow"><cite>HDF5 Technical 
+  Notes</cite></a>.</p>
+
+
+<!-- NEW PAGE -->
+<h4>3.8.1. Identifying the Previously-used File Driver</h4>
+
+<p>When creating a new HDF5 file, no history exists, so the 
+ file driver must be specified if it is to be other than the default.</p>
+
+<p>When opening existing files, however, the application may need 
+ to determine which low-level driver was used to create the file.
+ The function <code>H5Pget_driver</code> is used for this purpose. 
+ See the example below.</p>
+
+
+
+<table width="600" cellspacing="0" align="center">
+    <tr valign="top"> 
+        <td align="left">
+        <hr color="green" size="3"/>
+    <pre>
+  hid_t H5Pget_driver (hid_t <em>fapl_id</em>)</pre></td>
+        </tr>
+    <tr><td><hr color="green" size="1" /></td></tr>
+    <tr valign="top">
+        <td align="left">
+        <b>Example 5. Identifying a driver</b>
+        <hr color="green" size="3"/></td>
+        </tr>
+</table>
+<br />
+
+<p><code>H5Pget_driver</code> returns a constant identifying the 
+ low-level driver for the access property list <em>fapl_id</em>. 
+ For example, if the file was created with the POSIX (aka SEC2) 
+ driver, <code>H5Pget_driver</code> returns <code>H5FD_SEC2</code>.</p>
+
+<p>If the application opens an HDF5 file without both determining 
+ the driver used to create the file and setting up the use of that 
+ driver, the HDF5 Library will examine the superblock and the 
+ driver definition block to identify the driver.  
+ See the <cite><a href="../H5.format.html" 
+ target="FFSwindow">HDF5 File Format Specification</a></cite> 
+ for detailed descriptions of the superblock and the driver definition 
+ block.</p>
+
+
+<h4>3.8.2. The POSIX (aka SEC2) Driver</h4>
+
+  <p>The POSIX driver, <code>H5FD_SEC2</code>, uses functions from 
+  section 2 of the POSIX manual to access unbuffered files stored on 
+  a local file system. This driver is also known as the SEC2 driver. 
+  The HDF5 Library buffers metadata regardless of the low-level driver, 
+  but using this driver prevents data from being buffered again by the 
+  lowest layers of the library.</p>
+
+  <p>The function <code>H5Pset_fapl_sec2</code> sets the file access 
+   properties to use the POSIX driver. See the example below.</p>
+
+<table width="600" cellspacing="0" align="center">
+    <tr valign="top"> 
+        <td align="left">
+        <hr color="green" size="3"/>
+    <pre>
+  herr_t H5Pset_fapl_sec2 (hid_t <em>fapl_id</em>)</pre></td>
+        </tr>
+    <tr><td><hr color="green" size="1" /></td></tr>
+    <tr valign="top">
+        <td align="left">
+        <b>Example 6. Using the POSIX, aka SEC2, driver</b>
+        <hr color="green" size="3"/></td>
+        </tr>
+</table>
+<br />
+
+  <p>Any previously-defined driver properties are erased from the property 
+  list.</p>
+
+  <p>Additional parameters may be added to this function in the future. 
+  Since there are no additional variable settings associated with 
+  the POSIX driver, there is no <code>H5Pget_fapl_sec2</code> function.</p>
+
+
+  
+<h4>3.8.3. The Direct Driver</h4>
+
+  <p>The Direct driver, <code>H5FD_DIRECT</code>, functions like the 
+  POSIX driver except that data is written to or read from the file 
+  synchronously without being cached by the system.</p>
+
+  <p>The functions <code>H5Pset_fapl_direct</code> and 
+  <code>H5Pget_fapl_direct</code> are used to manage file access properties. 
+  See the example below.</p>
+
+<table width="600" cellspacing="0" align="center">
+    <tr valign="top"> 
+        <td align="left">
+        <hr color="green" size="3"/>
+    <pre>
+  herr_t H5Pset_fapl_direct( hid_t <i>fapl_id</i>, size_t <i>alignment</i>, 
+        size_t <i>block_size</i>, size_t <i>cbuf_size</i> )
+
+  herr_t H5Pget_fapl_direct( hid_t <i>fapl_id</i>, size_t <i>*alignment</i>, 
+        size_t <i>*block_size</i>, size_t <i>*cbuf_size</i> )</pre></td>
+        </tr>
+    <tr><td><hr color="green" size="1" /></td></tr>
+    <tr valign="top">
+        <td align="left">
+        <b>Example 7. Using the Direct driver</b>
+        <hr color="green" size="3"/></td>
+        </tr>
+</table>
+<br />
+
+  <p><code>H5Pset_fapl_direct</code> sets the file access properties 
+  to use the Direct driver; any previously defined driver properties 
+  are erased from the property list. <code>H5Pget_fapl_direct</code> 
+  retrieves the file access properties used with the Direct driver. 
+  <code>fapl_id</code> is the file access property list identifier. 
+  <code>alignment</code> is the memory alignment boundary. 
+  <code>block_size</code> is the file system block size. 
+  <code>cbuf_size</code> is the copy buffer size.</p>
+
+  <p>Additional parameters may be added to this function in the future. </p>
+
+
+
+<h4>3.8.4. The Log Driver</h4>
+
+<p>The Log driver, <code>H5FD_LOG</code>, is 
+ designed for situations where it is necessary to log file access activity.</p>
+
+<p>The function <code>H5Pset_fapl_log</code> is used to manage
+ logging properties. See the example below.</p>
+ 
+
+<table width="600" cellspacing="0" align="center">
+    <tr valign="top"> 
+        <td align="left">
+        <hr color="green" size="3"/>
+    <pre>
+  herr_t H5Pset_fapl_log (hid_t <em>fapl_id</em>, const char *<em>logfile</em>,
+           unsigned int <em>flags</em>, size_t <em>buf_size</em>)</pre></td>
+        </tr>
+    <tr><td><hr color="green" size="1" /></td></tr>
+    <tr valign="top">
+        <td align="left">
+        <b>Example 8. Logging file access</b>
+        <hr color="green" size="3"/></td>
+        </tr>
+</table>
+<br />
+
+  <p><code>H5Pset_fapl_log</code> sets the file access property list 
+  to use the Log driver. File access characteristics are identical to 
+  access via the POSIX driver. Any previously defined driver properties 
+  are erased from the property list. </p>
+
+  <p>Log records are written to the file <code><em>logfile</em></code>.</p>
+
+  <p>The logging levels set with the <code><em>verbosity</em></code> 
+  parameter are shown in the table below. </p>
+
+<table width="600" cellspacing="0" align="center" cellpadding="0">
+    <tr valign="bottom">
+        <td colspan="2" align="left" valign="bottom">
+        <b>Table 3. Logging levels</b></td>
+        </tr>
+    <tr><td colspan="2"><hr color="green" size="3" /></td></tr>
+    <tr valign="top"> 
+        <td width="10%"><b>Level</b></td>
+        <td width="90%"><b>Comments</b></td>
+        </tr>
+    <tr><td colspan="2"><hr color="green" size="1" /></td></tr>
+    <tr valign="top"> 
+        <td>0</td>
+        <td>Performs no logging.</td>
+        </tr>
+    <tr><td colspan="2"><hr color="green" size="1" /></td></tr>
+    <tr valign="top"> 
+        <td>1</td>
+        <td>Records where writes and reads occur in the file.</td>
+        </tr>
+    <tr><td colspan="2"><hr color="green" size="1" /></td></tr>
+    <tr valign="top"> 
+        <td>2</td>
+        <td>Records where writes and reads occur in the file and what 
+        kind of data is written at each location. This includes raw 
+        data or any of several types of metadata (object headers, 
+        superblock, B-tree data, local headers, or global headers).</td>
+        </tr>
+    <tr><td colspan="2"><hr color="green" size="3" /></td></tr>
+</table>
+<br />
+
+<p>There is no <code>H5Pget_fapl_log</code> function.</p>
+
+<p>Additional parameters may be added to this function in the future. </p>
+
+
+
+<h4>3.8.5. The Windows Driver</h4>
+
+  <p>The Windows driver, <code>H5FD_WINDOWS</code>, was modified in 
+  HDF5-1.8.8 to be a wrapper of the POSIX driver, <code>H5FD_SEC2</code>. 
+  In other words, if the Windows drivers is used, any file I/O will 
+  instead use the functionality of the POSIX driver. This change should 
+  be transparent to all user applications. The Windows driver used to be 
+  the default driver for Windows systems. The POSIX driver is now the 
+  default. </p>
+
+  <p>The function <code>H5Pset_fapl_windows</code> sets the file access 
+   properties to use the Windows driver. See the example below.</p>
+
+<table width="600" cellspacing="0" align="center">
+    <tr valign="top"> 
+        <td align="left">
+        <hr color="green" size="3"/>
+    <pre>
+  herr_t H5Pset_fapl_windows (hid_t <em>fapl_id</em>)</pre></td>
+        </tr>
+    <tr><td><hr color="green" size="1" /></td></tr>
+    <tr valign="top">
+        <td align="left">
+        <b>Example 9. Using the Windows driver</b>
+        <hr color="green" size="3"/></td>
+        </tr>
+</table>
+<br />
+
+  <p>Any previously-defined driver properties are erased from the property 
+  list.</p>
+
+  <p>Additional parameters may be added to this function in the future. 
+  Since there are no additional variable settings associated with 
+  the POSIX driver, there is no <code>H5Pget_fapl_windows</code> function.</p>
+
+
+
+<h4>3.8.6. The STDIO Driver</h4>
+
+  <p>The STDIO driver, <code>H5FD_STDIO</code>, accesses permanent files 
+  in a local file system like the POSIX driver does. The STDIO driver also 
+  has an additional layer of buffering beneath the HDF5 Library. </p>
+
+  <p>The function <code>H5Pset_fapl_stdio</code> sets the file access 
+  properties to use the STDIO driver. See the example below.</p>
+
+
+
+<table width="600" cellspacing="0" align="center">
+    <tr valign="top"> 
+        <td align="left">
+        <hr color="green" size="3"/>
+    <pre>
+  herr_t H5Pset_fapl_stdio (hid_t <em>fapl_id</em>)</pre></td>
+        </tr>
+    <tr><td><hr color="green" size="1" /></td></tr>
+    <tr valign="top">
+        <td align="left">
+        <b>Example 10. Using the STDIO driver</b>
+        <hr color="green" size="3"/></td>
+        </tr>
+</table>
+<br />
+
+  <p>Any previously defined driver properties are erased from the property 
+  list.</p>
+
+  <p>Additional parameters may be added to this function in the future. 
+  Since there are no additional variable settings associated with 
+  the STDIO driver, there is no <code>H5Pget_fapl_stdio</code> function.</p>
+
+  
+  
+<h4>3.8.7. The Memory (aka Core) Driver</h4>
+
+<p>There are several situations in which it is reasonable, 
+ sometimes even required, to maintain a file entirely in system memory.
+ You might want to do so if, for example, either of the following 
+ conditions apply:</p>
+ <ul>
+    <li>Performance requirements are so stringent that 
+        disk latency is a limiting factor</li>
+    <li>You are working with small, temporary files that will not 
+        be retained and, thus, need not be written to storage media</li>
+ </ul>
+
+  <p>The Memory driver, <code>H5FD_CORE</code>, provides a mechanism 
+  for creating and managing such in-memory files. The functions 
+  <code>H5Pset_fapl_core</code> and <code>H5Pget_fapl_core</code> 
+  manage file access properties. See the example below.</p>
+
+
+<table width="600" cellspacing="0" align="center">
+    <tr valign="top"> 
+        <td align="left">
+        <hr color="green" size="3"/>
+    <pre>
+  herr_t H5Pset_fapl_core (hid_t <em>access_properties</em>, 
+           size_t <em>block_size</em>, hbool_t <em>backing_store</em>)
+  herr_t H5Pget_fapl_core (hid_t <em>access_properties</em>, 
+           size_t *<em>block_size</em>), hbool_t *<em>backing_store</em>)</pre></td>
+        </tr>
+    <tr><td><hr color="green" size="1" /></td></tr>
+    <tr valign="top">
+        <td align="left">
+        <b>Example 11. Managing file access for in-memory files</b>
+        <hr color="green" size="3"/></td>
+        </tr>
+</table>
+<br />
+
+  <p><code>H5Pset_fapl_core</code> sets the file access property list
+  to use the Memory driver; any previously defined driver properties 
+  are erased from the property list. </p>
+ 
+  <p>Memory for the file will always be allocated in units of the 
+  specified <code><em>block_size</em></code>. </p>
+
+
+  <p>The <code><em>backing_store</em></code> Boolean flag is set when 
+  the in-memory file is created. <code><em>backing_store</em></code> 
+  indicates whether to write the file contents to disk when the file 
+  is closed. If <code><em>backing_store</em></code> is set to 1 (TRUE), 
+  the file contents are flushed to a file with the same name as the 
+  in-memory file when the file is closed or access to the file is 
+  terminated in memory. If <code><em>backing_store</em></code> is set 
+  to 0 (FALSE), the file is not saved.</p>
+  
+  <p>The application is allowed to open an existing file with the 
+  <code><em>H5FD_CORE</em></code> driver.  While using 
+  <code><em>H5Fopen</em></code> to open an existing file, if 
+  <code><em>backing_store</em></code> is set to <code><em>1</em></code> 
+  and the <code><em>flag</em></code> for <code><em>H5Fopen</em></code>
+  is set to <code><em>H5F_ACC_RDWR</em></code>, changes to the file 
+  contents will be saved to the file when the file is closed.  If 
+  <code><em>backing_store</em></code> is set to <code><em>0</em></code> 
+  and the <code><em>flag</em></code> for <code><em>H5Fopen</em></code> 
+  is set to <code><em>H5F_ACC_RDWR</em></code>, changes to the file 
+  contents will be lost when the file is closed.  If the 
+  <code><em>flag</em></code> for <code><em>H5Fopen</em></code> is set to 
+  <code><em>H5F_ACC_RDONLY</em></code>, no change to the file will be allowed 
+  either in memory or on file.</p>
+
+  <p>If the file access property list is set to use the Memory driver, 
+  <code>H5Pget_fapl_core</code> will return <code><em>block_size</em></code> 
+  and <code><em>backing_store</em></code> with the relevant file access 
+  property settings.</p>
+
+<p>Note the following important points regarding in-memory files:</p>
+    <ul>
+    <li>Local temporary files are created and accessed directly 
+        from memory without ever being written to disk</li>
+    <li>Total file size must not exceed the available virtual memory</li>
+    <li>Only one HDF5 file identifier can be opened for the file, the 
+        identifier returned by <code>H5Fcreate</code> or 
+        <code>H5Fopen</code></li>
+    <li>The changes to the file will be discarded when access is 
+        terminated unless <code><em>backing_store</em></code> is set 
+        to <code>1</code></li>
+    </ul>
+
+<p>Additional parameters may be added to these functions in the future. </p>
+
+<p>See the &ldquo;<a href=
+"../Advanced/FileImageOperations/HDF5FileImageOperations.pdf">HDF5 
+File Image Operations</a>&rdquo; section for information on more 
+advanced usage of the Memory file driver, and see the 
+&ldquo;<a href=
+"../Advanced/ModifiedRegionWrites/ModifiedRegionWrites.pdf">
+Modified Region Writes</a>&rdquo; section for information on how to 
+set write operations so that only modified regions are written to 
+storage.
+</p>
+
+
+<h4>3.8.8. The Family Driver</h4>
+
+  <p>HDF5 files can become quite large, and this can create problems on 
+  systems that do not support files larger than 2 gigabytes.
+  The HDF5 <b><i>file family</i></b> mechanism 
+  is designed to solve the problems this creates by splitting 
+  the HDF5 file address space across several smaller files.  
+  This structure does not affect how metadata and raw data are stored:
+  they are mixed in the address space just as they would be in a 
+  single, contiguous file.</p>
+
+  <p>HDF5 applications access a family of files via the 
+  Family driver, <code>H5FD_FAMILY</code>. The functions 
+  <code>H5Pset_fapl_family</code> and <code>H5Pget_fapl_family</code> 
+  are used to manage file family properties. See the example below.</p>
+
+
+<table width="600" cellspacing="0" align="center">
+    <tr valign="top"> 
+        <td align="left">
+        <hr color="green" size="3"/>
+    <pre>
+  herr_t H5Pset_fapl_family (hid_t <em>fapl_id</em>, hsize_t <em>memb_size</em>, 
+        hid_t <em>member_properties</em>)
+
+  herr_t H5Pget_fapl_family (hid_t <em>fapl_id</em>, hsize_t *<em>memb_size</em>, 
+        hid_t *<em>member_properties</em>)</pre></td>
+        </tr>
+    <tr><td><hr color="green" size="1" /></td></tr>
+    <tr valign="top">
+        <td align="left">
+        <b>Example 12. Managing file family properties</b>
+        <hr color="green" size="3"/></td>
+        </tr>
+</table>
+<br />
+
+  <p>Each member of the family is the same <i>logical</i> size though 
+  the size and disk storage reported by file system listing tools may be 
+  substantially smaller. Examples of file system listing tools are 
+  <code>&rsquo;ls -l&rsquo;</code> on a Unix system or the detailed folder 
+  listing on an Apple Macintosh or Microsoft Windows system.
+  The name passed to <code>H5Fcreate</code> or <code>H5Fopen</code> 
+  should include a <code>printf(3c)</code>-style integer format specifier 
+  which will be replaced with the family member number.
+  The first family member is numbered zero (<code>0</code>). </p>
+
+<!-- NEW PAGE -->
+  <p><code>H5Pset_fapl_family</code> sets the access properties to use 
+  the Family driver; any previously defined driver properties are erased 
+  from the property list. <code><em>member_properties</em></code> will 
+  serve as the file access property list for each member of the file family.
+  <code><em>memb_size</em></code> specifies the logical size, in bytes,
+  of each family member. <code><em>memb_size</em></code> is used only 
+  when creating a new file or truncating an existing file; otherwise 
+  the member size is determined by the size of the first member of the 
+  family being opened. Note: If the size of the <code>off_t</code> 
+  type is four bytes, the maximum family member size is usually 
+  2^31-1 because the byte at offset 2,147,483,647 is generally inaccessible. </p>
+
+  <p><code>H5Pget_fapl_family</code> is used to retrieve file family 
+  properties. If the file access property list is set to use the 
+  Family driver, <em>member_properties</em> will be returned with a 
+  pointer to a copy of the appropriate member access property list.
+  If <code><em>memb_size</em></code> is non-null, it will contain 
+  the logical size, in bytes, of family members. </p>
+
+  <p>Additional parameters may be added to these functions in the future. </p>
+
+
+<h4>Unix Tools and an HDF5 Utility</h4>
+
+  <p>It occasionally becomes necessary to <b>repartition</b> a file family.
+  A command-line utility for this purpose, <code>h5repart</code>, is 
+  distributed with the HDF5 Library.</p>
+
+ <dl>
+    <dd><code>h5repart</code> [<code>-v</code>] 
+        [<code>-b</code> <em>block_size</em>[<em>suffix</em>]] 
+        [<code>-m</code> <em>member_size</em>[<em>suffix</em>]] 
+        <em>source destination</em> 
+ </dl>
+
+  <p><code>h5repart</code> repartitions an HDF5 file by copying the source file 
+  or file family to the destination file or file family, preserving holes 
+  in the underlying UNIX files. Families are used for the source and/or 
+  destination if the name includes a <code>printf</code>-style integer 
+  format such as <code>%d</code>.  
+  The <code>-v</code> switch prints input and output file names on the 
+  standard error stream for progress monitoring, 
+  <code>-b</code> sets the I/O block size (the default is 1KB), and 
+  <code>-m</code> sets the output member size if the destination is a 
+  family name (the default is 1GB).  
+  <code><em>block_size</em></code> and <code><em>member_size</em></code>
+  may be suffixed with the letters <code>g</code>, <code>m</code>, or 
+  <code>k</code> for GB, MB, or KB respectively. </p>
+
+  <p>The <code>h5repart</code> utility is described on the 
+  <a href="../RM/Tools.html" target="RMwindow">Tools</a> page of the 
+  <a href="../RM/RM_H5Front.html" target="RMwindow">
+  <cite>HDF5 Reference Manual</cite></a>.</p>
+
+  <p>An existing HDF5 file can be split into a family of files by running
+  the file through <code>split(1)</code> on a UNIX system and numbering 
+  the output files. However, the HDF5 Library is lazy about extending 
+  the size of family members, so a valid file cannot generally be 
+  created by concatenation of the family members. </p>
+
+  <p>Splitting the file and rejoining the segments by concatenation
+  (<code>split(1)</code> and <code>cat(1)</code> on UNIX systems)
+  does not generate files with holes; holes are preserved only through 
+  the use of <code>h5repart</code>. </p>
+
+  
+  
+  
+  
+<!-- NEW PAGE -->
+<h4>3.8.9. The Multi Driver</h4>
+
+  <p>In some circumstances, it is useful to separate metadata from 
+  raw data and some types of metadata from other types of metadata. 
+  Situations that would benefit from use of the Multi driver include 
+  the following:</p>
+  <ul>
+    <li>In networked situations where the small metadata files 
+      can be kept on local disks but larger raw data files 
+      must be stored on remote media</li>
+    <li>In cases where the raw data is extremely large</li>
+    <li>In situations requiring frequent access to metadata held
+      in RAM while the raw data can be efficiently held on disk</li>
+  </ul>
+  <p>In either case, access to the metadata is substantially 
+  easier with the smaller, and possibly more localized, metadata files.
+  This often results in improved application performance.</p>
+
+  <p>The Multi driver, <code>H5FD_MULTI</code>, provides a mechanism 
+  for segregating raw data and different types of metadata into multiple 
+  files. The functions <code>H5Pset_fapl_multi</code> and 
+  <code>H5Pget_fapl_multi</code> are used to manage access properties 
+  for these multiple files. See the example below.</p>
+
+
+<table width="600" cellspacing="0" align="center">
+    <tr valign="top"> 
+        <td align="left">
+        <hr color="green" size="3"/>
+    <pre>
+  herr_t H5Pset_fapl_multi (hid_t <em>fapl_id</em>, const H5FD_mem_t *<em>memb_map</em>,
+            const hid_t *<em>memb_fapl</em>, const char * const *<em>memb_name</em>,
+            const haddr_t *<em>memb_addr</em>, hbool_t <em>relax</em>)
+  herr_t H5Pget_fapl_multi (hid_t <em>fapl_id</em>, const H5FD_mem_t *<em>memb_map</em>,
+            const hid_t *<em>memb_fapl</em>, const char **<em>memb_name</em>,
+            const haddr_t *<em>memb_addr</em>, hbool_t *<em>relax</em>)</pre></td>
+        </tr>
+    <tr><td><hr color="green" size="1" /></td></tr>
+    <tr valign="top">
+        <td align="left">
+        <b>Example 13. Managing access properties for multiple files</b>
+        <hr color="green" size="3"/></td>
+        </tr>
+</table>
+<br />
+
+  <p><code>H5Pset_fapl_multi</code> sets the file access properties 
+  to use the Multi driver; any previously defined driver properties are 
+  erased from the property list. With the Multi driver invoked, the 
+  application will provide a base name to <code>H5Fopen</code> or 
+  <code>H5Fcreate</code>. The files will be named by that base name as 
+  modified by the rule indicated in <code><em>memb_name</em></code>.
+  File access will be governed by the file access property list 
+  <code><em>memb_properties</em></code>. </p>
+
+  <p>See 
+  <a href="../RM/RM_H5P.html#Property-SetFaplMulti"
+  target="RMwindow"><code>H5Pset_fapl_multi</code></a>  and
+  <a href="../RM/RM_H5P.html#Property-GetFaplMulti"
+  target="RMwindow"><code>H5Pget_fapl_multi</code></a>  
+  in the <cite>HDF5 Reference Manual</cite> for descriptions 
+  of these functions and their usage.</p>
+
+  <p>Additional parameters may be added to these functions in the future. </p>
+
+
+<h4>3.8.10. The Split Driver</h4>
+
+  <p>The Split driver, <code>H5FD_SPLIT</code>, is a limited case of the 
+  Multi driver where only two files are created. One file holds metadata, 
+  and the other file holds raw data. </p>
+
+  <p>The function <code>H5Pset_fapl_split</code> is used to manage Split 
+  file access properties. See the example below.</p>
+
+<!-- NEW PAGE -->
+<table width="600" cellspacing="0" align="center">
+    <tr valign="top"> 
+        <td align="left">
+        <hr color="green" size="3"/>
+    <pre>
+  herr_t H5Pset_fapl_split (hid_t <em>access_properties</em>, 
+      const char *<em>meta_extension</em>, hid_t <em>meta_properties</em>, 
+      const char *<em>raw_extension</em>, hid_t <em>raw_properties</em></pre></td>
+        </tr>
+    <tr><td><hr color="green" size="1" /></td></tr>
+    <tr valign="top">
+        <td align="left">
+        <b>Example 14. Managing access properties for split files</b>
+        <hr color="green" size="3"/></td>
+        </tr>
+</table>
+<br />
+
+  <p><code>H5Pset_fapl_split</code> sets the file access properties 
+  to use the Split driver; any previously defined driver properties 
+  are erased from the property list. </p>
+
+
+  <p>With the Split driver invoked, the application will provide a base 
+  file name such as <code><em>file_name</em></code> to 
+  <code>H5Fcreate</code> or <code>H5Fopen</code>. The metadata and raw 
+  data files in storage will then be named 
+  <code><em>file_name.meta_extension</em></code> and 
+  <code><em>file_name.raw_extension</em></code>, respectively. For 
+  example, if <code><em>meta_extension</em></code> is defined as 
+  <code>.meta</code> and <code><em>raw_extension</em></code> is defined 
+  as <code>.raw</code>, the final filenames will be 
+  <code><em>file_name</em>.meta</code> and 
+  <code><em>file_name</em>.raw</code>.</p>
+
+  <p>Each file can have its own file access property list. 
+  This allows the creative use of other low-level file drivers.
+  For instance, the metadata file can be held in RAM and accessed 
+  via the Memory driver while the raw data file is stored on disk and 
+  accessed via the POSIX driver. Metadata file access will be governed 
+  by the file access property list in <em>meta_properties</em>. 
+  Raw data file access will be governed by the file access property
+  list in <em>raw_properties</em>. </p>
+
+  <p>Additional parameters may be added to these functions in the future. 
+  Since there are no additional variable settings associated with 
+  the Split driver, there is no <code>H5Pget_fapl_split</code> function.</p>
+
+
+
+<h4>3.8.11. The Parallel Driver</h4>
+
+  <p>Parallel environments require a parallel low-level driver. HDF5&rsquo;s 
+  default driver for parallel systems is called the Parallel driver, 
+  <code>H5FD_MPIO</code>. This driver uses the MPI standard for both 
+  communication and file I/O.</p>
+
+  <p>The functions <code>H5Pset_fapl_mpio</code> and 
+  <code>H5Pget_fapl_mpio</code> are used to manage file access properties 
+  for the <code>H5FD_MPIO</code> driver. See the example below.</p>
+
+
+<table width="600" cellspacing="0" align="center">
+    <tr valign="top"> 
+        <td align="left">
+        <hr color="green" size="3"/>
+    <pre>
+  herr_t H5Pset_fapl_mpio (hid_t <em>fapl_id</em>, MPI_Comm <em>comm</em>, 
+           MPI_info <em>info</em>)
+  herr_t H5Pget_fapl_mpio (hid_t <em>fapl_id</em>, MPI_Comm *<em>comm</em>, 
+           MPI_info *<em>info</em>)</pre></td>
+        </tr>
+    <tr><td><hr color="green" size="1" /></td></tr>
+    <tr valign="top">
+        <td align="left">
+        <b>Example 15. Managing parallel file access properties</b>
+        <hr color="green" size="3"/></td>
+        </tr>
+</table>
+<br />
+
+  <p>The file access properties managed by <code>H5Pset_fapl_mpio</code> 
+  and retrieved by <code>H5Pget_fapl_mpio</code> are 
+  the MPI communicator, <code><em>comm</em></code>, and
+  the MPI info object, <code><em>info</em></code>. <code>comm</code> 
+  and <code>info</code> are used for file open. <code>info</code> is an 
+  information object much like an HDF5 property list. Both are defined 
+  in <code>MPI_FILE_OPEN</code> of MPI-2. </p>
+
+  <p>The communicator and the info object are saved in the file access 
+  property list <code><em>fapl_id</em></code>.
+  <code><em>fapl_id</em></code> can then be passed to 
+  <code>MPI_FILE_OPEN</code> to create and/or open the file. </p>
+
+  <p><code>H5Pset_fapl_mpio</code> and <code>H5Pget_fapl_mpio</code> 
+  are available only in the parallel HDF5 Library and are not collective 
+  functions. The Parallel driver is available only in 
+  the parallel HDF5 Library.</p>
+
+  <p>Additional parameters may be added to these functions in the future. </p>
+
+
+<!-- as of 3.24.2014, the parallel posix driver, mpi-posix, is no longer 
+available.
+<h4>3.8.12. The Parallel POSIX Driver</h4>
+
+  <p>In addition to the Parallel driver, <code>H5FD_MPIO</code>, HDF5 
+  has the Parallel POSIX driver, <code>H5FD_MPIPOSIX</code>. This Parallel 
+  POSIX driver uses MPI for communication and POSIX file-system calls 
+  for file I/O.</p>
+
+  <p>The functions <code>H5Pset_fapl_mpiposix</code> and 
+  <code>H5Pget_fapl_mpiposix</code> are used to manage file access properties 
+  for the <code>H5FD_MPIPOSIX</code> driver. See the example below.</p>
+
+
+<table width="600" cellspacing="0" align="center">
+    <tr valign="top"> 
+        <td align="left">
+        <hr color="green" size="3"/>
+    <pre>
+  herr_t H5Pset_fapl_mpiposix (hid_t <em>fapl_id</em>, MPI_Comm <em>comm</em>, 
+        hbool_t <em>use_gpfs_hints</em>)
+
+  herr_t H5Pget_fapl_mpiposix (hid_t <em>fapl_id</em>, MPI_Comm *<em>comm</em>, 
+        hbool_t *<em>use_gpfs_hints</em>)</pre></td>
+        </tr>
+    <tr><td><hr color="green" size="1" /></td></tr>
+    <tr valign="top">
+        <td align="left">
+        <b>Example 16. Managing parallel POSIX file access properties</b>
+        <hr color="green" size="3"/></td>
+        </tr>
+</table>
+<br />
+
+  <p>The file access properties managed 
+  by <code>H5Pset_fapl_mpiposix</code> and retrieved by 
+  <code>H5Pget_fapl_mpiposix</code> are the MPI communicator, 
+  <code><em>comm</em></code>, and the parameter 
+  <code><em>use_gpfs_hints</em></code>. <code><em>comm</em></code> and 
+  <code><em>use_gpfs_hints</em></code> are used for file 
+  open. <code><em>comm</em></code> is defined in <code>MPI_FILE_OPEN</code> of MPI-2. 
+  </p>
+
+  <p>The <code><em>comm</em></code> and the 
+  <code><em>use_gpfs_hints</em></code> parameter values 
+  are saved in the file access property list <code><em>fapl_id</em></code>.
+  </p>
+
+  <p>
+  <code>H5Pset_fapl_mpiposix</code> and <code>H5Pget_fapl_mpiposix</code> 
+  are available only in the parallel HDF5 Library and are not collective 
+  functions. The Parallel POSIX driver is available only in 
+  the parallel HDF5 Library.</p>
+
+  <p>Additional parameters may be added to these functions in the future. </p>
+-->
+<br />
+
+
+<!-- re-insert printing page break header here -->
+<!--
+                     STREAM DRIVER REMOVED FROM HDF5 
+                       DECEMBER 2007/RELEASE 1.8.0
+                        DUE TO LICENSING CONCERNS	
+
+<h4>8.9 Streaming I/O -- 
+    <span class="smallcaps">STREAM</span> driver</h4>
+
+
+<p>The <span class="smallcaps">STREAM</span> driver is designed 
+ for situations where data is to be streamed across the network 
+ rather than written to a local file.
+
+<p>The functions <code>H5Pset_fapl_stream</code> and
+ <code>H5Pget_fapl_stream</code> are used to manage 
+ streaming file access properties: 
+
+ <dl>
+    <dd><code>herr_t H5Pset_fapl_stream (hid_t <em>fapl_id</em>,
+                     H5FD_stream_fapl_t *<em>fapl</em>)</code>
+    <dd><code>herr_t H5Pget_fapl_stream (hid_t <em>fapl_id</em>,
+                     H5FD_stream_fapl_t *<em>fapl</em>)</code>
+ </dl>
+
+<p><code>H5Pset_fapl_stream</code> sets up the use of the 
+ <span class="smallcaps">STREAM</span> driver.
+
+<p><code><em>fapl_id</em></code> is the identifier for the 
+ file access property list currently in use.
+
+<p><code><em>fapl</em></code> is the streaming file access property list
+ and is an <code>H5FD_stream_fapl_t</code> struct containing the 
+ following elements:
+
+ <div align="center">
+   <table border="0">
+     <tr align="left">
+       <td><code>size_t</code></td>
+       <td><code><em>increment</em></code></td></tr>
+     <tr align="left">
+       <td><code>H5FD_STREAM_SOCKET_TYPE&nbsp;</code></td>
+       <td><code><em>socket</em></code></td></tr>
+     <tr align="left">
+       <td><code>hbool_t</code></td>
+       <td><code><em>do_socket_io</em></code></td></tr>
+     <tr align="left">
+       <td><code>unsigned int</code></td>
+       <td><code><em>backlog</em></code></td></tr>
+     <tr align="left">
+       <td><code>H5FD_stream_broadcast_t&nbsp;</code></td>
+       <td><code><em>broadcast_fn</em></code></td></tr>
+     <tr align="left">
+       <td><code>void *</code></td>
+       <td><code><em>broadcast_arg</em></code></td></tr>
+   </table>
+ </div>
+
+ <ul>
+   <li><code><em>increment</em></code> specifies how much memory 
+     to allocate each time additional memory is required.  
+   <li><code><em>socket</em></code> is an external socket descriptor;
+     if a valid socket argument is provided, that socket will be used.
+   <li><code><em>do_socket_io</em></code> is a boolean value specifying 
+     whether to perform I/O on <code><em>socket</em></code>.
+   <li><code><em>backlog</em></code> is the argument for the 
+     <code>listen</code> call.
+   <li><code><em>broadcast_fn</em></code> is the broadcast callback 
+     function.
+   <li><code><em>broadcast_arg</em></code> is the user argument to 
+     the broadcast callback function.
+ </ul>
+
+<p><code>H5Pget_fapl_stream</code> retrieves the values stored in
+ the <code><em>fapl</em></code> struct.
+
+<p><code>H5Pset_fapl_stream</code> and <code>H5Pget_fapl_stream</code> 
+ are not intended for use in parallel environments.
+
+-->
+
+
+<SCRIPT language="JavaScript">
+<!--
+document.writeln ("
+<a name="Examples">
+<div align="right">
+<a href="#TOP"><font size="-1">(Top)</font></a>
+</div>
+</a>
+");
+-->
+</SCRIPT>
+
+
+<a name="Examples">
+<h3 class="pagebefore">3.9. Code Examples for Opening and Closing Files</h3>
+</a>
+
+<!-- editingComment
+<p class=editingcomment>[ [ [ Comprehensive example set yet to be prepared. ] ] ]</p>
+-->
+<br />
+
+<h4>3.9.1. Example Using the <code>H5F_ACC_TRUNC</code> Flag</h4>
+
+<p>The following example uses the <code>H5F_ACC_TRUNC</code> flag when it 
+ creates a new file. The default file creation and file access properties
+ are also used. Using <code>H5F_ACC_TRUNC</code> means the function 
+ will look for an existing file with the name specified by the function. 
+ In this case, that name is <code>FILE</code>. If the function does not 
+ find an existing file, it will create one. If it does find an existing 
+ file, it will empty the file in preparation for a new set of data. 
+ The identifier for the "new" file will be passed back to the application 
+ program. See the "<a href="#FileAccessModes">File Access Modes</a>" 
+ section for more information.</p>
+
+
+
+<table width="600" cellspacing="0" align="center">
+    <tr valign="top"> 
+        <td align="left">
+        <hr color="green" size="3"/>
+    <pre>
+  hid_t file;                                     /*  identifier   */
+  
+  /* Create a new file using H5F_ACC_TRUNC access, default file 
+   * creation properties, and default file access properties.      */
+  file = H5Fcreate(FILE, H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT);
+  
+  /* Close the file.                                               */
+  status = H5Fclose(file);</pre></td>
+        </tr>
+    <tr><td><hr color="green" size="1" /></td></tr>
+    <tr valign="top">
+        <td align="left">
+        <b>Example 17. Creating a file with default creation and 
+        access properties</b>
+        <hr color="green" size="3"/></td>
+        </tr>
+</table>
+<br />
+
+<h4>3.9.2. Example with the File Creation Property List</h4>
+
+<p>The example below shows how to create a file with 64-bit object 
+offsets and lengths.</p>
+
+
+
+<table width="600" cellspacing="0" align="center">
+    <tr valign="top"> 
+        <td align="left">
+        <hr color="green" size="3"/>
+    <pre>
+  hid_t create_plist;
+  hid_t file_id;
+  create_plist = H5Pcreate(H5P_FILE_CREATE);
+  H5Pset_sizes(create_plist, 8, 8);
+  file_id = H5Fcreate(&quot;test.h5&quot;, H5F_ACC_TRUNC,
+                      create_plist, H5P_DEFAULT);
+      .
+      .
+      .
+  H5Fclose(file_id);</pre></td>
+        </tr>
+    <tr><td><hr color="green" size="1" /></td></tr>
+    <tr valign="top">
+        <td align="left">
+        <b>Example 18. Creating a file with 64-bit offsets</b>
+        <hr color="green" size="3"/></td>
+        </tr>
+</table>
+<br />
+
+<!-- NEW PAGE -->
+<h4>3.9.3. Example with File Access Property List</h4>
+
+<p>This example shows how to open an existing file for independent datasets 
+ access by MPI parallel I/O:</p>
+
+<table width="600" cellspacing="0" align="center">
+    <tr valign="top"> 
+        <td align="left">
+        <hr color="green" size="3"/>
+    <pre>
+  hid_t access_plist;
+  hid_t file_id;
+  access_plist = H5Pcreate(H5P_FILE_ACCESS);
+  H5Pset_fapl_mpi(access_plist, MPI_COMM_WORLD, MPI_INFO_NULL);
+  
+  /* H5Fopen must be called collectively */
+  file_id = H5Fopen(&quot;test.h5&quot;, H5F_ACC_RDWR, access_plist); 
+     .
+     .
+     .
+  /* H5Fclose must be called collectively */
+  H5Fclose(file_id);</pre></td>
+        </tr>
+    <tr><td><hr color="green" size="1" /></td></tr>
+    <tr valign="top">
+        <td align="left">
+        <b>Example 19. Opening an existing file for parallel I/O</b>
+        <hr color="green" size="3"/></td>
+        </tr>
+</table>
+<br />
+
+
+
+<a name="MountingFiles">
+<h3>3.10. Working with Multiple HDF5 Files</h3>
+</a>
+<p>Multiple HDF5 files can be associated so that the files can be worked 
+with as though all the information is in a single HDF5 file. A temporary 
+association can be set up by means of the <code>H5Fmount</code> function. 
+A permanent association can be set up by means of the external link 
+function <code>H5Lcreate_external</code>. </p>
+
+<p>The purpose of this section is to describe what happens when the 
+<code>H5Fmount</code> function is used to mount one file on another. </p>
+
+<p>When a file is mounted on another, the mounted file is mounted at 
+a group, and the root group of the mounted file takes the place of that 
+group until the mounted file is unmounted or until the files are closed. </p>
+
+<p>The figure below shows two files before one is mounted on the other. 
+File1 has two groups and three datasets. The group that is the target of 
+the A link has links, Z and Y, to two of the datasets. The group that is 
+the target of the B link has a link, W, to the other dataset. File2 has 
+three groups and three datasets. The groups in File2 are the targets of 
+the AA, BB, and CC links. The datasets in File2 are the targets of the 
+ZZ, YY, and WW links. </p>
+
+<table width="600" cellspacing="0" align="center">
+    <tr valign="top"> 
+        <td align="center">
+        <hr color="green" size="3"/>
+        <img height="300"src="Images/Files_fig3.JPG">
+        </td></tr>
+<tr><td><hr color="green" size="1" /></td></tr>
+<tr valign="top">
+    <td align="left" >
+        <b>Figure 3. Two separate files</b>
+        <hr color="green" size="3"/></td></tr>
+</table>
+<br />
+
+
+
+<p>The figure below shows the two files after File2 has been mounted 
+File1 at the group that is the target of the B link.</p>
+
+<table width="600" cellspacing="0" align="center">
+    <tr valign="top"> 
+        <td align="center">
+        <hr color="green" size="3"/>
+        <img height="300" src="Images/Files_fig4.JPG">
+        </td></tr>
+<tr><td><hr color="green" size="1" /></td></tr>
+<tr valign="top">
+    <td align="left" >
+        <b>Figure 4. File2 mounted on File1 </b>
+
+        <hr color="green" size="3"/></td></tr>
+</table>
+<br />
+
+
+
+<p>Note that the dataset that is the target of the W link is not shown 
+in the figure above. That dataset is masked by the mounted file. </p>
+
+<p>If a file is mounted on a group that has members, those members are 
+hidden until the mounted file is unmounted. There are two ways around this 
+if you need to work with a group member. One is to mount the file on an 
+empty group. Another is to open the group member before you mount the 
+file. Opening the group member will return an identifier that you can 
+use to locate the group member. </p>
+
+<p>The example below shows how <code>H5Fmount</code> might be used to 
+mount File2 onto File1. </p>
+
+<table width="600" cellspacing="0" align="center">
+    <tr valign="top"> 
+        <td align="left">
+        <hr color="green" size="3"/>
+    <pre>
+  status = H5Fmount(loc_id, "/B", child_id, plist_id) </pre></td>
+        </tr>
+    <tr><td><hr color="green" size="1" /></td></tr>
+
+    <tr valign="top">
+        <td align="left">
+        <b>Example 20.Using <code>H5Fmount</code> </b><br />
+        loc_id is the file identifier for File1, /B is the link path to the 
+        group where File2 is mounted, child_id is the file identifier 
+        for File2, and plist_id is a property list identifier.
+        <hr color="green" size="3"/></td>
+        </tr>
+</table>
+<br />
+
+
+
+<p>For more information, see the 
+&ldquo;<a href="09_Groups.html">HDF5 Groups</a>&rdquo; chapter, and the 
+<code>H5Fmount</code>, <code>H5Funmount</code>, and 
+<code>H5Lcreate_external</code> functions in the 
+<a href="../RM/RM_H5Front.html"><cite>HDF5 Reference Manual</cite></a>.</p>
+
+
+
+
+
+
+<br /><br />
+</body>
+</html>
