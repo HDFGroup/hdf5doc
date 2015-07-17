@@ -83,22 +83,10 @@ function callBackCSHLoaded(xmlDoc, arrIndex)
 		}
 		else
 			gTopicURL = gDefTopicURL;
-	}	
-	var cshModeParam = "";
-	var appendChar = "";
-	var cshModeFlag = getUrlParameter(RHCSHMODE);
-	if(cshModeFlag == TRUESTR)
-	{
-		cshModeParam = RHCSHMODE + "=" + cshModeFlag;
-		if(gTopicURL.indexOf("?") == -1)
-			appendChar = "?";
-		else
-			appendChar = "&";
 	}
-	gTopicURL = gTopicURL + appendChar + cshModeParam;
-	redirectToTopic();
+	redirectToTopic(true);
 }
-function redirectToTopic()
+function redirectToTopic(bReload)
 {
 	var bNewWin = getUrlParameter(RHNEWWINDOW);
 	var strWndName = getUrlParameter(RHWINDOW);
@@ -110,7 +98,20 @@ function redirectToTopic()
 			showTopicWindow(gCSHWnd);
 	}
 	else
-		window.location = gTopicURL;
+	{
+		if (bReload == true)
+		{
+			window.location.href = gTopicURL;
+		}
+		else
+		{
+			var target = document.querySelector("[name=" + gTopicFrameName + "]");
+
+			if (target) {
+				target.contentWindow.location.replace(gTopicURL);
+			}
+		}
+	}
 
 }
 
@@ -156,8 +157,16 @@ function showTopicWindow(oWnd)
 	{
 		if (gbNav6)
 		{
+			if (navigator.appVersion.indexOf("rv:11.0") > -1)
+			{
+				// IE 11
+				gBrowserWnd = window.open(gTopicURL, sNewName, strOpt);
+			}
+			else
+			{
 			gBrowserWnd=window.open("about:blank",sNewName,strOpt);
 			setTimeout("postWindowNSOpen();",100);
+		}
 		}
 		else
 		{

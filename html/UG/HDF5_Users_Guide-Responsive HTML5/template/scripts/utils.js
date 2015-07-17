@@ -35,7 +35,7 @@ function getUrlParamString(url)
 	if(url == null || url == 'undefined')
 		url = document.location.href;
 	if(url.indexOf("?") != -1)
-		paramstr = url.substring(url.indexOf("?"));
+		paramstr = getUrlWithoutBookmark(url.substring(url.indexOf("?")));
 	return paramstr;
 }
 function getUrlParameter(paramName, url)
@@ -43,13 +43,13 @@ function getUrlParameter(paramName, url)
   if(url == null || url == 'undefined')
 	url = document.location.href;
   paramName = paramName.replace(/[\[]/,"\\\[").replace(/[\]]/,"\\\]");
-  var regexS = "[\\?&]"+paramName+"=([^&#]*)";
+  var regexS = "[\\?&#]"+paramName+"=([^&#]*)";
   var regex = new RegExp(regexS);
   var results = regex.exec(url);
   if( results == null )
     return "";
   else
-    return results[1];
+    return results[1] && decodeURIComponent(results[1]);
 }
 function getUrlBookmark(url)
 {
@@ -62,36 +62,40 @@ function getUrlBookmark(url)
 }
 function getUrlWithoutBookmark(url)
 {
-  var urlwithoutbookmark = "";
   if(url == null || url == 'undefined')
 	url = document.location.href;
+  
+  var urlwithoutbookmark = url;
+  
   if(url.indexOf("#") != -1)
 	urlwithoutbookmark = url.substring(0, url.indexOf("#"));
   return urlwithoutbookmark;
 }
 function getUrlWithoutParameterAndBookMark(url)
 {
-  var urlwithoutparameter = "";
   if(url == null || url == 'undefined')
 	url = document.location.href;
+  
+  var urlwithoutparameter = url;
+
   if(url.indexOf("?") != -1)
 	urlwithoutparameter = url.substring(0, url.indexOf("?"));
   return getUrlWithoutBookmark(urlwithoutparameter);
 }
 function GetSearchTextFromURL(bRemoveSlash)
 {
-	var strQuery = getUrlParameter(RHSEARCHSTR);
-	strQuery = decodeURIComponent(strQuery);
-	strQuery= unescape(strQuery);
-	return strQuery;
+	return getUrlParameter(RHSEARCHSTR);
 }
 
 function GetSynonymsFromURL()
 {
 	var strQuery = getUrlParameter(RHSYNSTR);
-	strQuery = decodeURIComponent(strQuery);
-	strQuery = unescape(strQuery);
 	return strQuery.split(" ");
+}
+
+function GetHighlightTextFromURL()
+{
+	return getUrlParameter(RHHIGHLIGHTTERM);
 }
 
 function lTrim(str)
@@ -317,17 +321,6 @@ function writeBreadCrumbs() {
         var brselem = document.getElementById("brseq"+i);
         brselem.innerHTML = strTrail;
     }
-}
-
-//Code for breadcrumb variable check for bookmark
-var gbBreadCrumb 	= 0;
-var strDocumentUrl = document.location.href;
-var n = strDocumentUrl.toLowerCase().indexOf("bc-");
-if(n != -1)
-{
-	document.location.href = strDocumentUrl.substring(0, n);
-	var bc = strDocumentUrl.substring(n+3);
-	gbBreadCrumb = bc;
 }
 
 ////BreadCrumb functions End

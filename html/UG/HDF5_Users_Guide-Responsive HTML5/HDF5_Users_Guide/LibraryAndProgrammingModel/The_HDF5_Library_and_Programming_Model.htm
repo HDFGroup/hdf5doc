@@ -1,0 +1,1007 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+
+ <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+ <title>The HDF5 Library and Programming Model</title>
+
+ <meta content="How to fly your personal spaceship" name="search-keywords" />
+ <meta name="generator" content="Adobe FrameMaker 12" />
+ <meta name="Originator" content="ImportMif" />
+ <meta name="OriginalFile" content="C:\1 MEE\Working\hdf5_trunk\html\UG\FmSource\LibraryAndProgrammingModel.fm" />
+ <link rel="stylesheet" href="LibraryAndProgrammingModel.css" type="text/css" />
+
+
+<script type="text/javascript" language="JavaScript">
+//<![CDATA[
+function reDo() {
+  if (innerWidth != origWidth || innerHeight != origHeight)
+     location.reload();
+}
+if ((parseInt(navigator.appVersion) == 4) && (navigator.appName == "Netscape")) {
+	origWidth = innerWidth;
+	origHeight = innerHeight;
+	onresize = reDo;
+}
+onerror = null; 
+//]]>
+</script>
+<style type="text/css">
+<!--
+div.WebHelpPopupMenu { position:absolute;
+left:0px;
+top:0px;
+z-index:4;
+visibility:hidden; }
+p.WebHelpNavBar { text-align:right; }
+-->
+</style>
+
+<script type="text/javascript" src="../../template/scripts/rh.min.js"></script>
+<script type="text/javascript" src="../../template/scripts/common.min.js"></script>
+<script type="text/javascript" src="../../template/scripts/topic.min.js"></script>
+<script type="text/javascript" src="../../template/scripts/constants.js"></script>
+<script type="text/javascript" src="../../template/scripts/utils.js"></script>
+<script type="text/javascript" src="../../template/scripts/mhutils.js"></script>
+<script type="text/javascript" src="../../template/scripts/mhlang.js"></script>
+<script type="text/javascript" src="../../template/scripts/mhver.js"></script>
+<script type="text/javascript" src="../../template/scripts/settings.js"></script>
+<script type="text/javascript" src="../../template/scripts/XmlJsReader.js"></script>
+<script type="text/javascript" src="../../template/scripts/loadparentdata.js"></script>
+<script type="text/javascript" src="../../template/scripts/loadscreen.js"></script>
+<script type="text/javascript" src="../../template/scripts/loadprojdata.js"></script>
+<script type="text/javascript" src="../../template/scripts/mhtopic.js"></script>
+<script type="text/javascript" >
+gRootRelPath = "../..";
+gCommonRootRelPath = "../..";
+gTopicId = "2";
+</script>
+ <meta name="brsprev" value="HDF5_Users_Guide/DataModelAndFileStructure/The_HDF5_Data_Model_and_File_Structure.htm">
+ <meta name="brsnext" value="HDF5_Users_Guide/TheFile/The_HDF5_File.htm">
+</head>
+
+<body>
+<script type="text/javascript" src="../../ehlpdhtm.js"></script>
+
+ <p class="FM__Heading_Level1">2. <a name="XREF_ProgModelChapter"></a>The HDF5 Library and Programming Model</p>
+ <p class="FM__Body">The HDF5 Library implements the HDF5 abstract data model and storage model. These models were described in the preceding chapter. </p>
+ <p class="FM__Body">Two major objectives of the HDF5 products are to provide tools that can be used on as many computa&#173;tional platforms as possible (portability), and to provide a reasonably object-oriented data model and pro&#173;gramming interface. </p>
+ <p class="FM__Body">To be as portable as possible, the HDF5 Library is implemented in portable C. C is not an object-oriented language, but the library uses several mechanisms and conventions to implement an object model.</p>
+ <p class="FM__Body">One mechanism the HDF5 library uses is to implement the objects as data structures. To refer to an object, the HDF5 library implements its own pointers. These pointers are called identifiers. An identifier is then used to invoke operations on a specific instance of an object. For example, when a group is opened, the API returns a group identifier. This identifier is a reference to that specific group and will be used to invoke future operations on that group. The identifier is valid only within the context it is created and remains valid until it is closed or the file is closed. This mechanism is essentially the same as the mechanism that C++ or other object-oriented languages use to refer to objects except that the syntax is C. </p>
+ <p class="FM__Body">Similarly, object-oriented languages collect all the methods for an object in a single name space. An exam&#173;ple is the methods of a C++ class. The C language does not have any such mechanism, but the HDF5 Library simulates this through its API naming convention. API function names begin with a common prefix that is related to the class of objects that the function operates on. The table below lists the HDF5 objects and the standard prefixes used by the corresponding HDF5 APIs. For example, functions that operate on data&#173;type objects all have names beginning with H5T.</p>
+<div width="100%" align="center">
+ <table style=" border-spacing:0; padding-left:6.00pt; padding-top:6.00pt; padding-right:6.00pt; padding-bottom:6.00pt; float:aligncenter; width:100%; max-width:216.00pt;" cellspacing="0">
+  <caption class="FM__CaptionTable1" x-list-start="1">Table 2-1. The HDF5 API naming scheme</caption>
+  <tr style=" height : 23.00pt;">
+  <th style="width : 108.000pt; border-top-style: solid; border-top-width: 1px; border-top-color: #228a22; border-bottom-style: solid; border-bottom-width: 1px; border-bottom-color: #228a22; vertical-align : top;padding-left: 6.00pt; padding-top: 3.00pt; padding-right: 6.00pt; padding-bottom: 3.00pt;">
+  <p class="FM__Heading_Cell">Prefix</p>
+</th>
+  <th style="width : 108.000pt; border-top-style: solid; border-top-width: 1px; border-top-color: #228a22; border-bottom-style: solid; border-bottom-width: 1px; border-bottom-color: #228a22; vertical-align : top;padding-left: 6.00pt; padding-top: 3.00pt; padding-right: 6.00pt; padding-bottom: 3.00pt;">
+  <p class="FM__Heading_Cell">Operates on</p>
+</th>
+</tr>
+  <tr style=" height : 23.00pt;">
+  <td style="width : 108.000pt; border-bottom-style: solid; border-bottom-width: 1px; border-bottom-color: #228a22; vertical-align : top;padding-left: 6.00pt; padding-top: 3.00pt; padding-right: 6.00pt; padding-bottom: 3.00pt;">
+  <p class="FM__BodyCellCode"><a name="IX_H5A"></a>H5A</p>
+</td>
+  <td style="width : 108.000pt; border-bottom-style: solid; border-bottom-width: 1px; border-bottom-color: #228a22; vertical-align : top;padding-left: 6.00pt; padding-top: 3.00pt; padding-right: 6.00pt; padding-bottom: 3.00pt;">
+  <p class="FM__BodyCell">Attributes</p>
+</td>
+</tr>
+  <tr style=" height : 23.00pt;">
+  <td style="width : 108.000pt; border-bottom-style: solid; border-bottom-width: 1px; border-bottom-color: #228a22; vertical-align : top;padding-left: 6.00pt; padding-top: 3.00pt; padding-right: 6.00pt; padding-bottom: 3.00pt;">
+  <p class="FM__BodyCellCode"><a name="IX_H5D"></a>H5D</p>
+</td>
+  <td style="width : 108.000pt; border-bottom-style: solid; border-bottom-width: 1px; border-bottom-color: #228a22; vertical-align : top;padding-left: 6.00pt; padding-top: 3.00pt; padding-right: 6.00pt; padding-bottom: 3.00pt;">
+  <p class="FM__BodyCell">Datasets</p>
+</td>
+</tr>
+  <tr style=" height : 23.00pt;">
+  <td style="width : 108.000pt; border-bottom-style: solid; border-bottom-width: 1px; border-bottom-color: #228a22; vertical-align : top;padding-left: 6.00pt; padding-top: 3.00pt; padding-right: 6.00pt; padding-bottom: 3.00pt;">
+  <p class="FM__BodyCellCode"><a name="IX_H5E"></a>H5E</p>
+</td>
+  <td style="width : 108.000pt; border-bottom-style: solid; border-bottom-width: 1px; border-bottom-color: #228a22; vertical-align : top;padding-left: 6.00pt; padding-top: 3.00pt; padding-right: 6.00pt; padding-bottom: 3.00pt;">
+  <p class="FM__BodyCell">Error reports</p>
+</td>
+</tr>
+  <tr style=" height : 23.00pt;">
+  <td style="width : 108.000pt; border-bottom-style: solid; border-bottom-width: 1px; border-bottom-color: #228a22; vertical-align : top;padding-left: 6.00pt; padding-top: 3.00pt; padding-right: 6.00pt; padding-bottom: 3.00pt;">
+  <p class="FM__BodyCellCode"><a name="IX_H5F"></a>H5F</p>
+</td>
+  <td style="width : 108.000pt; border-bottom-style: solid; border-bottom-width: 1px; border-bottom-color: #228a22; vertical-align : top;padding-left: 6.00pt; padding-top: 3.00pt; padding-right: 6.00pt; padding-bottom: 3.00pt;">
+  <p class="FM__BodyCell">Files</p>
+</td>
+</tr>
+  <tr style=" height : 23.00pt;">
+  <td style="width : 108.000pt; border-bottom-style: solid; border-bottom-width: 1px; border-bottom-color: #228a22; vertical-align : top;padding-left: 6.00pt; padding-top: 3.00pt; padding-right: 6.00pt; padding-bottom: 3.00pt;">
+  <p class="FM__BodyCellCode"><a name="IX_H5G"></a>H5G</p>
+</td>
+  <td style="width : 108.000pt; border-bottom-style: solid; border-bottom-width: 1px; border-bottom-color: #228a22; vertical-align : top;padding-left: 6.00pt; padding-top: 3.00pt; padding-right: 6.00pt; padding-bottom: 3.00pt;">
+  <p class="FM__BodyCell">Groups</p>
+</td>
+</tr>
+  <tr style=" height : 23.00pt;">
+  <td style="width : 108.000pt; border-bottom-style: solid; border-bottom-width: 1px; border-bottom-color: #228a22; vertical-align : top;padding-left: 6.00pt; padding-top: 3.00pt; padding-right: 6.00pt; padding-bottom: 3.00pt;">
+  <p class="FM__BodyCellCode"><a name="IX_H5I"></a>H5I</p>
+</td>
+  <td style="width : 108.000pt; border-bottom-style: solid; border-bottom-width: 1px; border-bottom-color: #228a22; vertical-align : top;padding-left: 6.00pt; padding-top: 3.00pt; padding-right: 6.00pt; padding-bottom: 3.00pt;">
+  <p class="FM__BodyCell">Identifiers</p>
+</td>
+</tr>
+  <tr style=" height : 23.00pt;">
+  <td style="width : 108.000pt; border-bottom-style: solid; border-bottom-width: 1px; border-bottom-color: #228a22; vertical-align : top;padding-left: 6.00pt; padding-top: 3.00pt; padding-right: 6.00pt; padding-bottom: 3.00pt;">
+  <p class="FM__BodyCellCode"><a name="IX_H5L"></a>H5L</p>
+</td>
+  <td style="width : 108.000pt; border-bottom-style: solid; border-bottom-width: 1px; border-bottom-color: #228a22; vertical-align : top;padding-left: 6.00pt; padding-top: 3.00pt; padding-right: 6.00pt; padding-bottom: 3.00pt;">
+  <p class="FM__BodyCell">Links</p>
+</td>
+</tr>
+  <tr style=" height : 23.00pt;">
+  <td style="width : 108.000pt; border-bottom-style: solid; border-bottom-width: 1px; border-bottom-color: #228a22; vertical-align : top;padding-left: 6.00pt; padding-top: 3.00pt; padding-right: 6.00pt; padding-bottom: 3.00pt;">
+  <p class="FM__BodyCellCode"><a name="IX_H5O"></a>H5O</p>
+</td>
+  <td style="width : 108.000pt; border-bottom-style: solid; border-bottom-width: 1px; border-bottom-color: #228a22; vertical-align : top;padding-left: 6.00pt; padding-top: 3.00pt; padding-right: 6.00pt; padding-bottom: 3.00pt;">
+  <p class="FM__BodyCell">Objects</p>
+</td>
+</tr>
+  <tr style=" height : 23.00pt;">
+  <td style="width : 108.000pt; border-bottom-style: solid; border-bottom-width: 1px; border-bottom-color: #228a22; vertical-align : top;padding-left: 6.00pt; padding-top: 3.00pt; padding-right: 6.00pt; padding-bottom: 3.00pt;">
+  <p class="FM__BodyCellCode"><a name="IX_H5P"></a>H5P</p>
+</td>
+  <td style="width : 108.000pt; border-bottom-style: solid; border-bottom-width: 1px; border-bottom-color: #228a22; vertical-align : top;padding-left: 6.00pt; padding-top: 3.00pt; padding-right: 6.00pt; padding-bottom: 3.00pt;">
+  <p class="FM__BodyCell">Property lists</p>
+</td>
+</tr>
+  <tr style=" height : 23.00pt;">
+  <td style="width : 108.000pt; border-bottom-style: solid; border-bottom-width: 1px; border-bottom-color: #228a22; vertical-align : top;padding-left: 6.00pt; padding-top: 3.00pt; padding-right: 6.00pt; padding-bottom: 3.00pt;">
+  <p class="FM__BodyCellCode"><a name="IX_H5R"></a>H5R</p>
+</td>
+  <td style="width : 108.000pt; border-bottom-style: solid; border-bottom-width: 1px; border-bottom-color: #228a22; vertical-align : top;padding-left: 6.00pt; padding-top: 3.00pt; padding-right: 6.00pt; padding-bottom: 3.00pt;">
+  <p class="FM__BodyCell">References</p>
+</td>
+</tr>
+  <tr style=" height : 23.00pt;">
+  <td style="width : 108.000pt; border-bottom-style: solid; border-bottom-width: 1px; border-bottom-color: #228a22; vertical-align : top;padding-left: 6.00pt; padding-top: 3.00pt; padding-right: 6.00pt; padding-bottom: 3.00pt;">
+  <p class="FM__BodyCellCode"><a name="IX_H5S"></a>H5S</p>
+</td>
+  <td style="width : 108.000pt; border-bottom-style: solid; border-bottom-width: 1px; border-bottom-color: #228a22; vertical-align : top;padding-left: 6.00pt; padding-top: 3.00pt; padding-right: 6.00pt; padding-bottom: 3.00pt;">
+  <p class="FM__BodyCell">Dataspaces</p>
+</td>
+</tr>
+  <tr style=" height : 23.00pt;">
+  <td style="width : 108.000pt; border-bottom-style: solid; border-bottom-width: 1px; border-bottom-color: #228a22; vertical-align : top;padding-left: 6.00pt; padding-top: 3.00pt; padding-right: 6.00pt; padding-bottom: 3.00pt;">
+  <p class="FM__BodyCellCode"><a name="IX_H5T"></a>H5T</p>
+</td>
+  <td style="width : 108.000pt; border-bottom-style: solid; border-bottom-width: 1px; border-bottom-color: #228a22; vertical-align : top;padding-left: 6.00pt; padding-top: 3.00pt; padding-right: 6.00pt; padding-bottom: 3.00pt;">
+  <p class="FM__BodyCell">Datatypes</p>
+</td>
+</tr>
+  <tr style=" height : 23.00pt;">
+  <td style="width : 108.000pt; border-bottom-style: solid; border-bottom-width: 1px; border-bottom-color: #228a22; vertical-align : top;padding-left: 6.00pt; padding-top: 3.00pt; padding-right: 6.00pt; padding-bottom: 3.00pt;">
+  <p class="FM__BodyCellCode"><a name="IX_H5Z"></a>H5Z</p>
+</td>
+  <td style="width : 108.000pt; border-bottom-style: solid; border-bottom-width: 1px; border-bottom-color: #228a22; vertical-align : top;padding-left: 6.00pt; padding-top: 3.00pt; padding-right: 6.00pt; padding-bottom: 3.00pt;">
+  <p class="FM__BodyCell">Filters</p>
+</td>
+</tr>
+ </table>
+</div>
+ <p class="FM__Body">&nbsp;</p>
+ <p class="FM__Heading_Level2"><a name="TOC_2_1_The_HDF5_Programming"></a>2.1. The HDF5 Programmin<a name="XREF_Hdf5ProgrammingModel"></a>g Model</p>
+ <p class="FM__Body">In this section we introduce the HDF5 <span class="FM_EH_EmphasisHeavy">programming model</span>&#160;by means of a series of short code samples. These samples illustrate a broad selection of common HDF5 tasks. More details are provided in the follow&#173;ing chapters and in the <span class="FM_LT_LinkText"><a href="http://www.hdfgroup.org/HDF5/doc/RM/RM_H5Front.html">HDF5 Reference Manual</a></span>.</p>
+ <p class="FM__Heading_Level3"><a name="TOC_2_1_1_Creating_an_HDF5"></a>2.1.1. Creating a<a name="XREF_CreateFile"></a>n HDF5 File</p>
+ <p class="FM__Body"><a name="IX_H5P_DEFAULT"></a>Before an HDF5 file can be used or referred to in any manner, it must be explicitly created or opened. When the need for access to a file ends, the file must be closed. The example below provides a C code fragment illustrating these steps. In this example, the values for the file creation property list and the file access property list are set to the defaults <span class="FM_Code">H5P_DEFAULT</span>.</p>
+<div width="100%" align="center">
+ <table style=" border-spacing:0; padding-left:6.00pt; padding-top:6.00pt; padding-right:6.00pt; padding-bottom:6.00pt; float:aligncenter; margin-top:12.00pt; width:100%; max-width:432.00pt;" cellspacing="0">
+  <caption class="FM__CaptionCodeExample1" x-list-start="1" align="bottom">Code Example 2-1. Creating and closing an HDF5 file</caption>
+  <tr style=" height : 139.00pt;">
+  <td style="width : 432.000pt; border-top-style: solid; border-top-width: 1px; border-top-color: #228a22; border-bottom-style: solid; border-bottom-width: 1px; border-bottom-color: #228a22; vertical-align : top;padding-left: 6.00pt; padding-top: 3.00pt; padding-right: 6.00pt; padding-bottom: 3.00pt;">
+  <p class="FM__BodyCellCode">hid_t &#160;&#160;&#160;&#160;&#160;&#160;file; &#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;/* declare file identifier */</p>
+  <p class="FM__BodyCellCode">/*</p>
+  <p class="FM__BodyCellCode"><a name="IX_H5F_ACC_TRUNC"></a>* Create a new file using H5F_ACC_TRUNC </p>
+  <p class="FM__BodyCellCode">* to truncate and overwrite any file of the same name,</p>
+  <p class="FM__BodyCellCode">* default file creation properties, and </p>
+  <p class="FM__BodyCellCode">* default file access properties.</p>
+  <p class="FM__BodyCellCode">* Then close the file.</p>
+  <p class="FM__BodyCellCode">*/</p>
+  <p class="FM__BodyCellCode"><a name="IX_H5Fcreate"></a>file = H5Fcreate(FILE, H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT);</p>
+  <p class="FM__BodyCellCode"><a name="IX_H5Fclose"></a>status = H5Fclose(file);</p>
+</td>
+</tr>
+ </table>
+</div>
+ <p class="FM__Body">&nbsp;</p>
+ <p class="FM__Body"><a name="IX_H5F_ACC_EXCL"></a><a name="IX_H5F_ACC_TRUNC_1"></a>Note: If there is a possibility that a file of the declared name already exists and you wish to open a new file regardless of that possibility, the flag <span class="FM_Code">H5F_ACC_TRUNC</span>&#160;will cause the operation to overwrite the previous file. If the operation should fail in such a circumstance, use the flag <span class="FM_Code">H5F_ACC_EXCL</span> instead.</p>
+ <p class="FM__Heading_Level3"><a name="TOC_2_1_2_Creating_and"></a>2.1.2. Creating an<a name="XREF_CreateDataset"></a>d Initializing a Dataset</p>
+ <p class="FM__Body">The essential objects within a dataset are datatype and dataspace. These are independent objects and are created separately from any dataset to which they may be attached. Hence, creating a dataset requires, at a minimum, the following steps:</p>
+ <p class="FM__ListNumbered1_Level1">1.<span style='word-spacing:normal; font:6.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>Create and initialize a dataspace for the dataset</p>
+ <p class="FM__ListNumbered_Level1">2.<span style='word-spacing:normal; font:6.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>Define a datatype for the dataset</p>
+ <p class="FM__ListNumbered_Level1">3.<span style='word-spacing:normal; font:6.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>Create and initialize the dataset</p>
+ <p class="FM__Body">&nbsp;</p>
+ <p class="FM__Body">The code in the example below illustrates the execution of these steps.</p>
+<div width="100%" align="center">
+ <table style=" border-spacing:0; padding-left:6.00pt; padding-top:6.00pt; padding-right:6.00pt; padding-bottom:6.00pt; float:aligncenter; margin-top:12.00pt; width:100%; max-width:432.00pt;" cellspacing="0">
+  <caption class="FM__CaptionCodeExample" align="bottom">Code Example 2-2. Create a dataset</caption>
+  <tr style=" height : 126.00pt;">
+  <td style="width : 432.000pt; border-top-style: solid; border-top-width: 1px; border-top-color: #228a22; vertical-align : top;padding-left: 6.00pt; padding-top: 3.00pt; padding-right: 6.00pt; padding-bottom: 3.00pt;">
+  <p class="FM__BodyCellCode">hid_t &#160;&#160;&#160;dataset, datatype, dataspace; &#160;/* declare identifiers */</p>
+  <p class="FM__BodyCellCode">&nbsp;</p>
+  <p class="FM__BodyCellCode">/* </p>
+  <p class="FM__BodyCellCode">* Create a dataspace: Describe the size of the array and </p>
+  <p class="FM__BodyCellCode">* create the dataspace for a fixed-size dataset. </p>
+  <p class="FM__BodyCellCode">*/</p>
+  <p class="FM__BodyCellCode">dimsf[0] = NX;</p>
+  <p class="FM__BodyCellCode">dimsf[1] = NY;</p>
+  <p class="FM__BodyCellCode"><a name="IX_H5Screate_simple"></a>dataspace = H5Screate_simple(RANK, dimsf, NULL); </p>
+</td>
+</tr>
+  <tr style=" height : 87.00pt;">
+  <td style="width : 432.000pt; vertical-align : top;padding-left: 6.00pt; padding-top: 3.00pt; padding-right: 6.00pt; padding-bottom: 3.00pt;">
+  <p class="FM__BodyCellCode">/*</p>
+  <p class="FM__BodyCellCode">* Define a datatype for the data in the dataset.</p>
+  <p class="FM__BodyCellCode">* We will store little endian integers.</p>
+  <p class="FM__BodyCellCode">*/</p>
+  <p class="FM__BodyCellCode"><a name="IX_H5T_NATIVE_INT"></a><a name="IX_H5Tcopy"></a>datatype = H5Tcopy(H5T_NATIVE_INT);</p>
+  <p class="FM__BodyCellCode"><a name="IX_H5T_ORDER_LE"></a><a name="IX_H5Tset_order"></a>status = H5Tset_order(datatype, H5T_ORDER_LE);</p>
+</td>
+</tr>
+  <tr style=" height : 126.00pt;">
+  <td style="width : 432.000pt; border-bottom-style: solid; border-bottom-width: 1px; border-bottom-color: #228a22; vertical-align : top;padding-left: 6.00pt; padding-top: 3.00pt; padding-right: 6.00pt; padding-bottom: 3.00pt;">
+  <p class="FM__BodyCellCode">/*</p>
+  <p class="FM__BodyCellCode">* Create a new dataset within the file using the defined </p>
+  <p class="FM__BodyCellCode">* dataspace and datatype and default dataset creation</p>
+  <p class="FM__BodyCellCode">* properties.</p>
+  <p class="FM__BodyCellCode">* NOTE: H5T_NATIVE_INT can be used as the datatype if </p>
+  <p class="FM__BodyCellCode">* conversion to little endian is not needed.</p>
+  <p class="FM__BodyCellCode">*/</p>
+  <p class="FM__BodyCellCode"><a name="IX_H5Dcreate"></a>dataset = H5Dcreate(file, DATASETNAME, datatype, dataspace,</p>
+  <p class="FM__BodyCellCodeIndent">H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT); </p>
+</td>
+</tr>
+ </table>
+</div>
+ <p class="FM__Body">&nbsp;</p>
+ <p class="FM__Heading_Level3"><a name="TOC_2_1_3_Closing_an_Object"></a>2.1.3. Closing an Obje<a name="XREF_CloseObject"></a>ct</p>
+ <p class="FM__Body">An application should close an object such as a datatype, dataspace, or dataset once the object is no lon&#173;ger needed. Since each is an independent object, each must be released (or closed) separately. This action is frequently referred to as <span class="FM_EH_EmphasisHeavy">releasing the object’s identifier</span>. The code in the example below closes the datatype, dataspace, and dataset that were created in the preceding section.</p>
+<div width="100%" align="center">
+ <table style=" border-spacing:0; padding-left:6.00pt; padding-top:6.00pt; padding-right:6.00pt; padding-bottom:6.00pt; float:aligncenter; margin-top:12.00pt; width:100%; max-width:432.00pt;" cellspacing="0">
+  <caption class="FM__CaptionCodeExample" align="bottom">Code Example 2-3. Close an object</caption>
+  <tr style=" height : 48.00pt;">
+  <td style="width : 432.000pt; border-top-style: solid; border-top-width: 1px; border-top-color: #228a22; border-bottom-style: solid; border-bottom-width: 1px; border-bottom-color: #228a22; vertical-align : top;padding-left: 6.00pt; padding-top: 3.00pt; padding-right: 6.00pt; padding-bottom: 3.00pt;">
+  <p class="FM__BodyCellCode"><a name="IX_H5Tclose"></a>H5Tclose(datatype); </p>
+  <p class="FM__BodyCellCode"><a name="IX_H5Dclose"></a>H5Dclose(dataset); </p>
+  <p class="FM__BodyCellCode"><a name="IX_H5Sclose"></a>H5Sclose(dataspace);</p>
+</td>
+</tr>
+ </table>
+</div>
+ <p class="FM__Body">&nbsp;</p>
+ <p class="FM__Body">There is a long list of HDF5 Library items that return a unique identifier when the item is created or opened. Each time that one of these items is opened, a unique identifier is returned. Closing a file does not mean that the groups, datasets, or other open items are also closed. Each opened item must be closed separately.</p>
+ <p class="FM__Body">For more information, see “<span class="FM_LT_LinkText"><a href="http://www.hdfgroup.org/HDF5/doc/Advanced/UsingIdentifers/index.html">Using Identifiers</a></span>” in the “Advanced Topics” page.</p>
+ <p class="FM__Heading_SubSection">How Closing a File Effects Othe<a name="XREF_ClosingAFileNotes"></a>r Open Structural Elements</p>
+ <p class="FM__Body">Every structural element in an HDF5 file can be opened, and these elements can be opened more than once. Elements range in size from the entire file down to attributes. When an element is opened, the HDF5 Library returns a unique identifier to the application. Every element that is opened must be closed. If an element was opened more than once, each identifier that was returned to the application must be closed. For example, if a dataset was opened twice, both dataset identifiers must be released (closed) before the dataset can be considered closed. Suppose an application has opened a file, a group in the file, and two datasets in the group. In order for the file to be totally closed, the file, group, and datasets must each be closed. Closing the file before the group or the datasets will not effect the state of the group or datasets: the group and datasets will still be open.</p>
+ <p class="FM__Body"><a name="IX_H5Pset_fclose_degree"></a><a name="IX_H5Fclose_1"></a><a name="IX_H5F_CLOSE_STRONG"></a><a name="IX_H5close"></a>There are several exceptions to the above general rule. One is when the <span class="FM_Code">H5close</span>&#160;function is used. <span class="FM_Code">H5close</span>&#160;causes a general shutdown of the library: all data is written to disk, all identifiers are closed, and all memory used by the library is cleaned up. Another exception occurs on parallel processing systems. Suppose on a parallel system an application has opened a file, a group in the file, and two datasets in the group. If the application uses the <span class="FM_Code">H5Fclose</span>&#160;function to close the file, the call will fail with an error. The open group and datasets must be closed before the file can be closed. A third exception is when the file access property list includes the property <span class="FM_Code">H5F_CLOSE_STRONG</span>. This property closes any open elements when the file is closed with <span class="FM_Code">H5Fclose</span>. For more information, see the <span class="FM_LT_LinkTextCode"><a href="http://www.hdfgroup.org/HDF5/doc/RM/RM_H5P.html#Property-SetFcloseDegree">H5Pset_fclose_degree</a></span> func&#173;tion in the <span class="FM_EI_EmphasisItalic">HDF5 Reference Manual</span>.</p>
+ <p class="FM__Heading_Level3"><a name="TOC_2_1_4_Writing_or_Reading"></a>2.1.4. Writing or Reading a Datas<a name="XREF_WriteRead"></a>et to or from a File</p>
+ <p class="FM__Body"><a name="IX_H5Dwrite"></a>Having created the dataset, the actual data can be written with a call to <span class="FM_Code">H5Dwrite</span>. See the example below.</p>
+<div width="100%" align="center">
+ <table style=" border-spacing:0; padding-left:6.00pt; padding-top:6.00pt; padding-right:6.00pt; padding-bottom:6.00pt; float:aligncenter; margin-top:12.00pt; width:100%; max-width:432.00pt;" cellspacing="0">
+  <caption class="FM__CaptionCodeExample" align="bottom">Code Example 2-4. Writing a dataset</caption>
+  <tr style=" height : 87.00pt;">
+  <td style="width : 432.000pt; border-top-style: solid; border-top-width: 1px; border-top-color: #228a22; border-bottom-style: solid; border-bottom-width: 1px; border-bottom-color: #228a22; vertical-align : top;padding-left: 6.00pt; padding-top: 3.00pt; padding-right: 6.00pt; padding-bottom: 3.00pt;">
+  <p class="FM__BodyCellCode">/*</p>
+  <p class="FM__BodyCellCode">* Write the data to the dataset using default transfer</p>
+  <p class="FM__BodyCellCode">* properties.</p>
+  <p class="FM__BodyCellCode">*/</p>
+  <p class="FM__BodyCellCode"><a name="IX_H5S_ALL"></a><a name="IX_H5T_NATIVE_INT_1"></a><a name="IX_H5Dwrite_1"></a>status = H5Dwrite(dataset, H5T_NATIVE_INT, H5S_ALL, H5S_ALL,</p>
+  <p class="FM__BodyCellCodeIndent">H5P_DEFAULT, data);</p>
+</td>
+</tr>
+ </table>
+</div>
+ <p class="FM__Body">&nbsp;</p>
+ <p class="FM__Body"><a name="IX_H5S_ALL_1"></a><a name="IX_H5Dwrite_2"></a>Note that the third and fourth <span class="FM_Code">H5Dwrite</span>&#160;parameters in the above example describe the dataspaces in memory and in the file, respectively. For now, these are both set to <span class="FM_Code">H5S_ALL</span>&#160;which indicates that the entire dataset is to be written. The selection of partial datasets and the use of differing dataspaces in memory and in storage will be discussed later in this chapter and in more detail elsewhere in this guide.</p>
+ <p class="FM__Body"><a name="IX_H5Dwrite_3"></a><a name="IX_H5Dread"></a>Reading the dataset from storage is similar to writing the dataset to storage. To read an entire dataset, substitute <span class="FM_Code">H5Dread</span>&#160;for <span class="FM_Code">H5Dwrite</span> in the above example.</p>
+ <p class="FM__Heading_Level3"><a name="TOC_2_1_5_Reading_and"></a>2.1.5. Reading and Writin<a name="XREF_PartialWR"></a>g a Portion of a Dataset</p>
+ <p class="FM__Body">The previous section described writing or reading an entire dataset. HDF5 also supports access to portions of a dataset. These parts of datasets are known as <span class="FM_EH_EmphasisHeavy">selections</span>. </p>
+ <p class="FM__Body"><a name="IX_hyperslab"></a>The simplest type of selection is a <span class="FM_EH_EmphasisHeavy">simple hyperslab</span>. This is an <span class="FM_Code">n</span>-dimensional rectangular sub-set of a dataset where <span class="FM_Code">n</span> is equal to the dataset’s rank. Other available selections include a more complex hyper&#173;slab with user-defined stride and block size, a list of independent points, or the union of any of these.</p>
+ <p class="FM__Body">The figure below shows several sample selections.</p>
+<div width="100%" align="center">
+ <table style=" border-spacing:0; padding-left:2.00pt; padding-top:2.00pt; padding-right:2.00pt; padding-bottom:2.00pt; float:aligncenter; margin-top:12.00pt; width:100%; max-width:432.00pt;" cellspacing="0">
+  <caption class="FM__CaptionFigure1" x-list-start="1" align="bottom">Figure 2-1. Dataset selections</caption>
+  <tr style=" height : 119.72pt;">
+  <td style="width : 432.000pt; border-top-style: solid; border-top-width: 1px; border-top-color: #228a22; ">
+  <div align="center"><img alt="Pmodel_fig5_a.jpg" style=" margin-left:0.750pt; margin-top:0.750pt; margin-right:1.500pt; margin-bottom:0.750pt; width:100%; max-width:404px;" id="image0" src="Pmodel_fig5_a.jpg" />
+  </div>
+  <p class="FM__BodyFigureSmall">&nbsp;</p>
+</td>
+</tr>
+  <tr style=" height : 119.72pt;">
+  <td style="width : 432.000pt; ">
+  <div align="center"><img alt="Pmodel_fig5_b.jpg" style=" margin-left:0.750pt; margin-top:0.750pt; margin-right:1.500pt; margin-bottom:0.750pt; width:100%; max-width:404px;" id="image1" src="Pmodel_fig5_b.jpg" />
+  </div>
+  <p class="FM__BodyFigureSmall">&nbsp;</p>
+</td>
+</tr>
+  <tr style=" height : 137.36pt;">
+  <td style="width : 432.000pt; ">
+  <div align="center"><img alt="Pmodel_fig5_c.jpg" style=" margin-left:0.750pt; margin-top:0.750pt; margin-right:1.500pt; margin-bottom:0.750pt; width:100%; max-width:404px;" id="image2" src="Pmodel_fig5_c.jpg" />
+  </div>
+  <p class="FM__BodyFigureSmall">&nbsp;</p>
+</td>
+</tr>
+  <tr style=" height : 134.77pt;">
+  <td style="width : 432.000pt; ">
+  <div align="center"><img alt="Pmodel_fig5_d.jpg" style=" margin-left:0.750pt; margin-top:0.750pt; margin-right:1.500pt; margin-bottom:1.500pt; width:100%; max-width:404px;" id="image3" src="Pmodel_fig5_d.jpg" />
+  </div>
+  <p class="FM__BodyFigureSmall">&nbsp;</p>
+</td>
+</tr>
+  <tr style=" height : 44.21pt;">
+  <td style="width : 432.000pt; border-bottom-style: solid; border-bottom-width: 1px; border-bottom-color: #228a22; ">
+  <div align="center"><img alt="Pmodel_fig5_e.jpg" style=" margin-left:0.750pt; margin-top:0.750pt; margin-right:1.500pt; margin-bottom:0.750pt; width:100%; max-width:404px;" id="image4" src="Pmodel_fig5_e.jpg" />
+  </div>
+  <p class="FM__BodyFigureSmall">&nbsp;</p>
+  <p class="FM__BodyFigureSmall">&nbsp;</p>
+</td>
+</tr>
+ </table>
+</div>
+ <p class="FM__CaptionNote">Note: In the figure above, selections can take the form of a simple hyperslab, a hyperslab with user-defined stride and block, a selection of points, or a union of any of these forms.</p>
+ <p class="FM__Body"><a name="IX_hyperslab_1"></a>Selections and hyperslabs are portions of a dataset. As described above, a <span class="FM_EH_EmphasisHeavy">simple hyperslab</span> is a rectangu&#173;lar array of data elements with the same rank as the dataset’s dataspace. Thus, a simple hyperslab is a log&#173;ically contiguous collection of points within the dataset.</p>
+ <p class="FM__Body">The more general case of a <span class="FM_EH_EmphasisHeavy">hyperslab</span>&#160;can also be a regular pattern of points or blocks within the dataspace. Four parameters are required to describe a general hyperslab: the starting coordinates, the block size, the stride or space between blocks, and the number of blocks. These parameters are each expressed as a one-dimensional array with length equal to the rank of the dataspace and are described in the table below.</p>
+<div width="100%" align="center">
+ <table style=" border-spacing:0; padding-left:6.00pt; padding-top:6.00pt; padding-right:6.00pt; padding-bottom:6.00pt; float:aligncenter; width:100%; max-width:432.00pt;" cellspacing="0">
+  <caption class="FM__CaptionTable">Table 2-2. Hyperslab parameters</caption>
+  <tr style=" height : 23.00pt;">
+  <th style="width : 72.000pt; border-top-style: solid; border-top-width: 1px; border-top-color: #228a22; border-bottom-style: solid; border-bottom-width: 1px; border-bottom-color: #228a22; vertical-align : top;padding-left: 6.00pt; padding-top: 3.00pt; padding-right: 6.00pt; padding-bottom: 3.00pt;">
+  <p class="FM__Heading_Cell">Parameter</p>
+</th>
+  <th style="width : 360.000pt; border-top-style: solid; border-top-width: 1px; border-top-color: #228a22; border-bottom-style: solid; border-bottom-width: 1px; border-bottom-color: #228a22; vertical-align : top;padding-left: 6.00pt; padding-top: 3.00pt; padding-right: 6.00pt; padding-bottom: 3.00pt;">
+  <p class="FM__Heading_Cell">Definition</p>
+</th>
+</tr>
+  <tr style=" height : 36.00pt;">
+  <td style="width : 72.000pt; border-bottom-style: solid; border-bottom-width: 1px; border-bottom-color: #228a22; vertical-align : top;padding-left: 6.00pt; padding-top: 3.00pt; padding-right: 6.00pt; padding-bottom: 3.00pt;">
+  <p class="FM__BodyCellCode" style="font-style : italic;"><span class="FM_CodeItalic">start</span></p>
+</td>
+  <td style="width : 360.000pt; border-bottom-style: solid; border-bottom-width: 1px; border-bottom-color: #228a22; vertical-align : top;padding-left: 6.00pt; padding-top: 3.00pt; padding-right: 6.00pt; padding-bottom: 3.00pt;">
+  <p class="FM__BodyCell">The coordinates of the starting location of the hyperslab in the dataset’s dataspace.</p>
+</td>
+</tr>
+  <tr style=" height : 75.00pt;">
+  <td style="width : 72.000pt; border-bottom-style: solid; border-bottom-width: 1px; border-bottom-color: #228a22; vertical-align : top;padding-left: 6.00pt; padding-top: 3.00pt; padding-right: 6.00pt; padding-bottom: 3.00pt;">
+  <p class="FM__BodyCellCode" style="font-style : italic;"><span class="FM_CodeItalic">block</span></p>
+</td>
+  <td style="width : 360.000pt; border-bottom-style: solid; border-bottom-width: 1px; border-bottom-color: #228a22; vertical-align : top;padding-left: 6.00pt; padding-top: 3.00pt; padding-right: 6.00pt; padding-bottom: 3.00pt;">
+  <p class="FM__BodyCell">The size of each block to be selected from the dataspace. If the <span class="FM_Code">block</span> param&#173;eter is set to NULL, the block size defaults to a single element in each dimen&#173;sion, as if the block array was set to all <span class="FM_Code">1</span>s (all ones). This will result in the selection of a uniformly spaced set of <span class="FM_Code">count</span>&#160;points starting at <span class="FM_Code">start</span>&#160;and on the interval defined by <span class="FM_Code">stride</span>. </p>
+</td>
+</tr>
+  <tr style=" height : 49.00pt;">
+  <td style="width : 72.000pt; border-bottom-style: solid; border-bottom-width: 1px; border-bottom-color: #228a22; vertical-align : top;padding-left: 6.00pt; padding-top: 3.00pt; padding-right: 6.00pt; padding-bottom: 3.00pt;">
+  <p class="FM__BodyCellCode" style="font-style : italic;"><span class="FM_CodeItalic">stride</span></p>
+</td>
+  <td style="width : 360.000pt; border-bottom-style: solid; border-bottom-width: 1px; border-bottom-color: #228a22; vertical-align : top;padding-left: 6.00pt; padding-top: 3.00pt; padding-right: 6.00pt; padding-bottom: 3.00pt;">
+  <p class="FM__BodyCell">The number of elements separating the starting point of each element or block to be selected. If the <span class="FM_Code">stride</span>&#160;parameter is set to NULL, the stride size defaults to 1 (one) in each dimension and no elements are skipped.</p>
+</td>
+</tr>
+  <tr style=" height : 23.00pt;">
+  <td style="width : 72.000pt; border-bottom-style: solid; border-bottom-width: 1px; border-bottom-color: #228a22; vertical-align : top;padding-left: 6.00pt; padding-top: 3.00pt; padding-right: 6.00pt; padding-bottom: 3.00pt;">
+  <p class="FM__BodyCellCode" style="font-style : italic;"><span class="FM_CodeItalic">count</span></p>
+</td>
+  <td style="width : 360.000pt; border-bottom-style: solid; border-bottom-width: 1px; border-bottom-color: #228a22; vertical-align : top;padding-left: 6.00pt; padding-top: 3.00pt; padding-right: 6.00pt; padding-bottom: 3.00pt;">
+  <p class="FM__BodyCell">The number of elements or blocks to select along each dimension. &#160;&#160;&#160;</p>
+</td>
+</tr>
+ </table>
+</div>
+ <p class="FM__Body">&nbsp;</p>
+ <p class="FM__Heading_SubSection">Reading Data into a Differently Shaped Memory Block</p>
+ <p class="FM__Body">For maximum flexibility in user applications, a selection in storage can be mapped into a differently-shaped selection in memory. All that is required is that the two selections contain the same number of data elements. In this example, we will first define the selection to be read from the dataset in storage, and then we will define the selection as it will appear in application memory.</p>
+ <p class="FM__Body">Suppose we want to read a 3 x 4 hyperslab from a two-dimensional dataset in a file beginning at the data&#173;set element &lt;1,2&gt;. The first task is to create the dataspace that describes the overall rank and dimensions of the dataset in the file and to specify the position and size of the in-file hyperslab that we are extracting from that dataset. See the code below. </p>
+<div width="100%" align="center">
+ <table style=" border-spacing:0; padding-left:6.00pt; padding-top:6.00pt; padding-right:6.00pt; padding-bottom:6.00pt; float:aligncenter; margin-top:12.00pt; width:100%; max-width:432.00pt;" cellspacing="0">
+  <caption class="FM__CaptionCodeExample" align="bottom">Code Example 2-5. Define the selection to be read from storage</caption>
+  <tr style=" height : 100.00pt;">
+  <td style="width : 432.000pt; border-top-style: solid; border-top-width: 1px; border-top-color: #228a22; vertical-align : top;padding-left: 6.00pt; padding-top: 3.00pt; padding-right: 6.00pt; padding-bottom: 3.00pt;">
+  <p class="FM__BodyCellCode">/* </p>
+  <p class="FM__BodyCellCode">* Define dataset dataspace in file.</p>
+  <p class="FM__BodyCellCode">*/</p>
+  <p class="FM__BodyCellCode"><a name="IX_H5Dget_space"></a>dataspace = H5Dget_space(dataset); &#160;&#160;&#160;/* dataspace identifier */</p>
+  <p class="FM__BodyCellCode"><a name="IX_H5Sget_simple_extent"></a>rank &#160;&#160;&#160;&#160;&#160;= H5Sget_simple_extent_ndims(dataspace);</p>
+  <p class="FM__BodyCellCode"><a name="IX_H5Sget_simple_extent_dims"></a>status_n &#160;= H5Sget_simple_extent_dims(dataspace, dims_out, NULL);</p>
+  <p class="FM__BodyCellCode">&nbsp;</p>
+</td>
+</tr>
+  <tr style=" height : 126.00pt;">
+  <td style="width : 432.000pt; border-bottom-style: solid; border-bottom-width: 1px; border-bottom-color: #228a22; vertical-align : top;padding-left: 6.00pt; padding-top: 3.00pt; padding-right: 6.00pt; padding-bottom: 3.00pt;">
+  <p class="FM__BodyCellCode">/* </p>
+  <p class="FM__BodyCellCode">* Define hyperslab in the dataset. </p>
+  <p class="FM__BodyCellCode">*/</p>
+  <p class="FM__BodyCellCode">offset[0] = 1;</p>
+  <p class="FM__BodyCellCode">offset[1] = 2;</p>
+  <p class="FM__BodyCellCode">count[0] &#160;= 3;</p>
+  <p class="FM__BodyCellCode">count[1] &#160;= 4;</p>
+  <p class="FM__BodyCellCode"><a name="IX_H5S_SELECT_SET"></a><a name="IX_H5Sselect_hyperslab"></a>status = H5Sselect_hyperslab(dataspace, H5S_SELECT_SET, offset, </p>
+  <p class="FM__BodyCellCodeIndent">NULL, count, NULL);</p>
+</td>
+</tr>
+ </table>
+</div>
+ <p class="FM__Body">&nbsp;</p>
+ <p class="FM__Body">The next task is to define a dataspace in memory. Suppose that we have in memory a three-dimensional 7 x 7 x 3 array into which we wish to read the two-dimensional 3 x 4 hyperslab described above and that we want the memory selection to begin at the element &lt;3,0,0&gt; and reside in the plane of the first two dimen&#173;sions of the array. Since the in-memory dataspace is three-dimensional, we have to describe the in-mem&#173;ory selection as three-dimensional. Since we are keeping the selection in the plane of the first two dimensions of the in-memory dataset, the in-memory selection will be a 3 x 4 x 1 array defined as &lt;3,4,1&gt;. </p>
+ <p class="FM__Body">Notice that we must describe two things: the dimensions of the in-memory array, and the size and posi&#173;tion of the hyperslab that we wish to read in. The code below illustrates how this would be done.</p>
+<div width="100%" align="center">
+ <table style=" border-spacing:0; padding-left:6.00pt; padding-top:6.00pt; padding-right:6.00pt; padding-bottom:6.00pt; float:aligncenter; margin-top:12.00pt; width:100%; max-width:432.00pt;" cellspacing="0">
+  <caption class="FM__CaptionCodeExample" align="bottom">Code Example 2-6. Define the memory dataspace and selection</caption>
+  <tr style=" height : 113.00pt;">
+  <td style="width : 432.000pt; border-top-style: solid; border-top-width: 1px; border-top-color: #228a22; vertical-align : top;padding-left: 6.00pt; padding-top: 3.00pt; padding-right: 6.00pt; padding-bottom: 3.00pt;">
+  <p class="FM__BodyCellCode">/*</p>
+  <p class="FM__BodyCellCode">* Define memory dataspace.</p>
+  <p class="FM__BodyCellCode">*/</p>
+  <p class="FM__BodyCellCode">dimsm[0] = 7;</p>
+  <p class="FM__BodyCellCode">dimsm[1] = 7;</p>
+  <p class="FM__BodyCellCode">dimsm[2] = 3;</p>
+  <p class="FM__BodyCellCode"><a name="IX_H5Screate_simple_1"></a>memspace = H5Screate_simple(RANK_OUT,dimsm,NULL); &#160;&#160;</p>
+  <p class="FM__BodyCellCode">&nbsp;</p>
+</td>
+</tr>
+  <tr style=" height : 152.00pt;">
+  <td style="width : 432.000pt; border-bottom-style: solid; border-bottom-width: 1px; border-bottom-color: #228a22; vertical-align : top;padding-left: 6.00pt; padding-top: 3.00pt; padding-right: 6.00pt; padding-bottom: 3.00pt;">
+  <p class="FM__BodyCellCode">/* </p>
+  <p class="FM__BodyCellCode">* Define memory hyperslab. </p>
+  <p class="FM__BodyCellCode">*/</p>
+  <p class="FM__BodyCellCode">offset_out[0] = 3;</p>
+  <p class="FM__BodyCellCode">offset_out[1] = 0;</p>
+  <p class="FM__BodyCellCode">offset_out[2] = 0;</p>
+  <p class="FM__BodyCellCode">count_out[0] &#160;= 3;</p>
+  <p class="FM__BodyCellCode">count_out[1] &#160;= 4;</p>
+  <p class="FM__BodyCellCode">count_out[2] &#160;= 1;</p>
+  <p class="FM__BodyCellCode"><a name="IX_H5S_SELECT_SET_1"></a><a name="IX_H5Sselect_hyperslab_1"></a>status = H5Sselect_hyperslab(memspace, H5S_SELECT_SET, </p>
+  <p class="FM__BodyCellCodeIndent">offset_out, NULL, count_out, NULL);</p>
+</td>
+</tr>
+ </table>
+</div>
+ <p class="FM__Body">&nbsp;</p>
+ <p class="FM__Body">The hyperslab defined in the code above has the following parameters: <span class="FM_Code">start=(3,0,0)</span>, <span class="FM_Code">count=(3,4,1)</span>, stride and block size are <span class="FM_Code">NULL</span>.</p>
+ <p class="FM__Heading_SubSection">Writing Data into a Differently Shaped Disk Storage Block</p>
+ <p class="FM__Body"><a name="IX_vector"></a>Now let’s consider the opposite process of writing a selection from memory to a selection in a dataset in a file. Suppose that the source dataspace in memory is a 50-element, one-dimensional array called <span class="FM_Code">vec&#173;tor</span>&#160;and that the source selection is a 48-element simple hyperslab that starts at the second element of <span class="FM_Code">vector</span>. See the figure below.</p>
+<div width="100%" align="center">
+ <table style=" border-spacing:0; padding-left:2.00pt; padding-top:2.00pt; padding-right:2.00pt; padding-bottom:2.00pt; float:aligncenter; margin-top:12.00pt; width:100%; max-width:306.00pt;" cellspacing="0">
+  <caption class="FM__CaptionFigure" align="bottom">Figure 2-2. A one-dimensional array</caption>
+  <tr style=" height : 47.02pt;">
+  <td style="width : 306.000pt; border-top-style: solid; border-top-width: 1px; border-top-color: #228a22; border-bottom-style: solid; border-bottom-width: 1px; border-bottom-color: #228a22; ">
+  <div align="center"><img alt="Pmodel_fig2.JPG" style=" margin-left:0.750pt; margin-top:0.750pt; margin-right:0.750pt; margin-bottom:0.750pt; width:100%; max-width:279px;" id="image5" src="Pmodel_fig2.JPG" />
+  </div>
+  <p class="FM__BodyFigureSmall">&nbsp;</p>
+  <p class="FM__BodyFigureSmall">&nbsp;</p>
+</td>
+</tr>
+ </table>
+</div>
+ <p class="FM__Body">&nbsp;</p>
+ <p class="FM__Body">Further suppose that we wish to write this data to the file as a series of 3 x 2-element blocks in a two-dimensional dataset, skipping one row and one column between blocks. Since the source selection con&#173;tains 48 data elements and each block in the destination selection contains 6 data elements, we must define the destination selection with 8 blocks. We will write 2 blocks in the first dimension and 4 in the second. The code below shows how to achieve this objective.</p>
+<div width="100%" align="center">
+ <table style=" border-spacing:0; padding-left:6.00pt; padding-top:6.00pt; padding-right:6.00pt; padding-bottom:6.00pt; float:aligncenter; margin-top:12.00pt; width:100%; max-width:432.00pt;" cellspacing="0">
+  <caption class="FM__CaptionCodeExample" align="bottom">Code Example 2-7. The destination selection</caption>
+  <tr style=" height : 61.00pt;">
+  <td style="width : 432.000pt; border-top-style: solid; border-top-width: 1px; border-top-color: #228a22; vertical-align : top;padding-left: 6.00pt; padding-top: 3.00pt; padding-right: 6.00pt; padding-bottom: 3.00pt;">
+  <p class="FM__BodyCellCode">/* Select the hyperslab for the dataset in the file, using </p>
+  <p class="FM__BodyCellCode">* 3 x 2 blocks, a (4,3) stride, a (2,4) count, and starting </p>
+  <p class="FM__BodyCellCode">* at the position (0,1).</p>
+  <p class="FM__BodyCellCode">*/</p>
+</td>
+</tr>
+  <tr style=" height : 100.00pt;">
+  <td style="width : 432.000pt; vertical-align : top;padding-left: 6.00pt; padding-top: 3.00pt; padding-right: 6.00pt; padding-bottom: 3.00pt;">
+  <p class="FM__BodyCellCode">start[0] &#160;= 0; start[1] &#160;= 1;</p>
+  <p class="FM__BodyCellCode">stride[0] = 4; stride[1] = 3;</p>
+  <p class="FM__BodyCellCode">count[0] &#160;= 2; count[1] &#160;= 4; &#160;&#160;&#160;</p>
+  <p class="FM__BodyCellCode">block[0] &#160;= 3; block[1] &#160;= 2;</p>
+  <p class="FM__BodyCellCode"><a name="IX_H5S_SELECT_SET_2"></a><a name="IX_H5Sselect_hyperslab_2"></a>ret = H5Sselect_hyperslab(fid, H5S_SELECT_SET, start, stride, </p>
+  <p class="FM__BodyCellCodeIndent">count, block);</p>
+  <p class="FM__BodyCellCode">&nbsp;</p>
+</td>
+</tr>
+  <tr style=" height : 74.00pt;">
+  <td style="width : 432.000pt; vertical-align : top;padding-left: 6.00pt; padding-top: 3.00pt; padding-right: 6.00pt; padding-bottom: 3.00pt;">
+  <p class="FM__BodyCellCode">/*</p>
+  <p class="FM__BodyCellCode">* Create dataspace for the first dataset.</p>
+  <p class="FM__BodyCellCode">*/</p>
+  <p class="FM__BodyCellCode"><a name="IX_H5Screate_simple_2"></a>mid1 = H5Screate_simple(MSPACE1_RANK, dim1, NULL);</p>
+  <p class="FM__BodyCellCode">&nbsp;</p>
+</td>
+</tr>
+  <tr style=" height : 74.00pt;">
+  <td style="width : 432.000pt; vertical-align : top;padding-left: 6.00pt; padding-top: 3.00pt; padding-right: 6.00pt; padding-bottom: 3.00pt;">
+  <p class="FM__BodyCellCode">/*</p>
+  <p class="FM__BodyCellCode">* Select hyperslab. </p>
+  <p class="FM__BodyCellCode">* We will use 48 elements of the vector buffer starting at the </p>
+  <p class="FM__BodyCellCode">* second element. Selected elements are 1 2 3 . . . 48</p>
+  <p class="FM__BodyCellCode">*/</p>
+</td>
+</tr>
+  <tr style=" height : 178.00pt;">
+  <td style="width : 432.000pt; border-bottom-style: solid; border-bottom-width: 1px; border-bottom-color: #228a22; vertical-align : top;padding-left: 6.00pt; padding-top: 3.00pt; padding-right: 6.00pt; padding-bottom: 3.00pt;">
+  <p class="FM__BodyCellCode">start[0] &#160;= 1;</p>
+  <p class="FM__BodyCellCode">stride[0] = 1;</p>
+  <p class="FM__BodyCellCode">count[0] &#160;= 48;</p>
+  <p class="FM__BodyCellCode">block[0] &#160;= 1;</p>
+  <p class="FM__BodyCellCode"><a name="IX_H5S_SELECT_SET_3"></a><a name="IX_H5Sselect_hyperslab_3"></a>ret = H5Sselect_hyperslab(mid1, H5S_SELECT_SET, start, stride, </p>
+  <p class="FM__BodyCellCodeIndent">count, block);</p>
+  <p class="FM__BodyCellCode">&nbsp;</p>
+  <p class="FM__BodyCellCode">/*</p>
+  <p class="FM__BodyCellCode">* Write selection from the vector buffer to the dataset in the </p>
+  <p class="FM__BodyCellCode">* file.</p>
+  <p class="FM__BodyCellCode">*</p>
+  <p class="FM__BodyCellCode"><a name="IX_H5P_DEFAULT_1"></a><a name="IX_H5T_NATIVE_INT_2"></a><a name="IX_H5Dwrite_4"></a>ret = H5Dwrite(dataset, H5T_NATIVE_INT, mid1, fid, H5P_DEFAULT, </p>
+  <p class="FM__BodyCellCodeIndent">vector)</p>
+</td>
+</tr>
+ </table>
+</div>
+ <p class="FM__Body">&nbsp;</p>
+ <p class="FM__Heading_Level3"><a name="TOC_2_1_6_Getting"></a>2.1.6. Getting Informati<a name="XREF_GetInfo"></a>on about a Dataset</p>
+ <p class="FM__Body">Although reading is analogous to writing, it is often first necessary to query a file to obtain information about the dataset to be read. For instance, we often need to determine the datatype associated with a dataset, or its dataspace (in other words, rank and dimensions). As illustrated in the code example below, there are several <span class="FM_EH_EmphasisHeavy">get</span> routines for obtaining this information.</p>
+<div width="100%" align="center">
+ <table style=" border-spacing:0; padding-left:6.00pt; padding-top:6.00pt; padding-right:6.00pt; padding-bottom:6.00pt; float:aligncenter; margin-top:12.00pt; width:100%; max-width:432.00pt;" cellspacing="0">
+  <caption class="FM__CaptionCodeExample" align="bottom">Code Example 2-8. Routines to get dataset parameters</caption>
+  <tr style=" height : 165.00pt;">
+  <td style="width : 432.000pt; border-top-style: solid; border-top-width: 1px; border-top-color: #228a22; vertical-align : top;padding-left: 6.00pt; padding-top: 3.00pt; padding-right: 6.00pt; padding-bottom: 3.00pt;">
+  <p class="FM__BodyCellCode">/*</p>
+  <p class="FM__BodyCellCode">* Get datatype and dataspace identifiers, &#160;</p>
+  <p class="FM__BodyCellCode">* then query datatype class, order, and size, and </p>
+  <p class="FM__BodyCellCode">* then query dataspace rank and dimensions.</p>
+  <p class="FM__BodyCellCode">*/</p>
+  <p class="FM__BodyCellCode">&nbsp;</p>
+  <p class="FM__BodyCellCode"><a name="IX_H5Dget_type"></a>datatype = H5Dget_type (dataset); &#160;/* datatype identifier */</p>
+  <p class="FM__BodyCellCode"><a name="IX_H5Tget_class"></a>class = H5Tget_class (datatype);</p>
+  <p class="FM__BodyCellCode"><a name="IX_H5T_INTEGER"></a>if (class == H5T_INTEGER) printf(&quot;Dataset has INTEGER type \n&quot;);</p>
+  <p class="FM__BodyCellCode">order = H5Tget_order (datatype);</p>
+  <p class="FM__BodyCellCode"><a name="IX_H5T_ORDER_LE_1"></a>if (order == H5T_ORDER_LE) printf(&quot;Little endian order \n&quot;);</p>
+  <p class="FM__BodyCellCode">&nbsp;</p>
+</td>
+</tr>
+  <tr style=" height : 126.00pt;">
+  <td style="width : 432.000pt; border-bottom-style: solid; border-bottom-width: 1px; border-bottom-color: #228a22; vertical-align : top;padding-left: 6.00pt; padding-top: 3.00pt; padding-right: 6.00pt; padding-bottom: 3.00pt;">
+  <p class="FM__BodyCellCode"><a name="IX_H5Tget_size"></a>size = H5Tget_size (datatype);</p>
+  <p class="FM__BodyCellCode">printf (&quot;Size is %d \n&quot;, size);</p>
+  <p class="FM__BodyCellCode"><a name="IX_H5Dget_space_1"></a>dataspace = H5Dget_space (dataset); /* dataspace identifier */</p>
+  <p class="FM__BodyCellCode">&nbsp;</p>
+  <p class="FM__BodyCellCode">/* Find rank and retrieve current and maximum dimension </p>
+  <p class="FM__BodyCellCode">* sizes. </p>
+  <p class="FM__BodyCellCode">*/ </p>
+  <p class="FM__BodyCellCode">&nbsp;</p>
+  <p class="FM__BodyCellCode"><a name="IX_H5Sget_simple_extent_dims_1"></a>rank = H5Sget_simple_extent_dims (dataspace, dims, max_dims);</p>
+</td>
+</tr>
+ </table>
+</div>
+ <p class="FM__Body">&nbsp;</p>
+ <p class="FM__Heading_Level3"><a name="TOC_2_1_7_Creating_and"></a>2.1.7. Creating and Defining Compoun<a name="XREF_CreateCDType"></a>d Datatypes</p>
+ <p class="FM__Body"><a name="IX_compound_datatype"></a>A <span class="FM_EH_EmphasisHeavy">compound datatype</span>&#160;is a collection of one or more data elements. Each element might be an atomic type, a small array, or another compound datatype.</p>
+ <p class="FM__Body">The provision for nested compound datatypes allows these structures to become quite complex. An HDF5 compound datatype has some similarities to a C struct or a Fortran common block. Though not originally designed with databases in mind, HDF5 compound datatypes are sometimes used in a way that is similar to a database record. Compound datatypes can become either a powerful tool or a complex and difficult-to-debug construct. Reasonable caution is advised.</p>
+ <p class="FM__Body"><a name="IX_H5T_COMPOUND"></a>To create and use a compound datatype, you need to create a datatype with class <span class="FM_EH_EmphasisHeavy">compound</span> (<span class="FM_Code">H5T_COM&#173;POUND</span>) and specify the total size of the data element in bytes. A compound datatype consists of zero or more uniquely named members. Members can be defined in any order but must occupy non-overlapping regions within the datum. The table below lists the properties of compound datatype members.</p>
+<div width="100%" align="center">
+ <table style=" border-spacing:0; padding-left:6.00pt; padding-top:6.00pt; padding-right:6.00pt; padding-bottom:6.00pt; float:aligncenter; width:100%; max-width:432.00pt;" cellspacing="0">
+  <caption class="FM__CaptionTable">Table 2-3. Compound datatype member properties</caption>
+  <tr style=" height : 23.00pt;">
+  <th style="width : 99.694pt; border-top-style: solid; border-top-width: 1px; border-top-color: #228a22; border-bottom-style: solid; border-bottom-width: 1px; border-bottom-color: #228a22; vertical-align : top;padding-left: 6.00pt; padding-top: 3.00pt; padding-right: 6.00pt; padding-bottom: 3.00pt;">
+  <p class="FM__Heading_Cell">Parameter</p>
+</th>
+  <th style="width : 332.306pt; border-top-style: solid; border-top-width: 1px; border-top-color: #228a22; border-bottom-style: solid; border-bottom-width: 1px; border-bottom-color: #228a22; vertical-align : top;padding-left: 6.00pt; padding-top: 3.00pt; padding-right: 6.00pt; padding-bottom: 3.00pt;">
+  <p class="FM__Heading_Cell">Definition</p>
+</th>
+</tr>
+  <tr style=" height : 49.00pt;">
+  <td style="width : 99.694pt; border-bottom-style: solid; border-bottom-width: 1px; border-bottom-color: #228a22; vertical-align : top;padding-left: 6.00pt; padding-top: 3.00pt; padding-right: 6.00pt; padding-bottom: 3.00pt;">
+  <p class="FM__BodyCell">Index</p>
+</td>
+  <td style="width : 332.306pt; border-bottom-style: solid; border-bottom-width: 1px; border-bottom-color: #228a22; vertical-align : top;padding-left: 6.00pt; padding-top: 3.00pt; padding-right: 6.00pt; padding-bottom: 3.00pt;">
+  <p class="FM__BodyCell">An index number between zero and N-1, where N is the number of members in the compound. The elements are indexed in the order of their location in the array of bytes. </p>
+</td>
+</tr>
+  <tr style=" height : 23.00pt;">
+  <td style="width : 99.694pt; border-bottom-style: solid; border-bottom-width: 1px; border-bottom-color: #228a22; vertical-align : top;padding-left: 6.00pt; padding-top: 3.00pt; padding-right: 6.00pt; padding-bottom: 3.00pt;">
+  <p class="FM__BodyCell">Name</p>
+</td>
+  <td style="width : 332.306pt; border-bottom-style: solid; border-bottom-width: 1px; border-bottom-color: #228a22; vertical-align : top;padding-left: 6.00pt; padding-top: 3.00pt; padding-right: 6.00pt; padding-bottom: 3.00pt;">
+  <p class="FM__BodyCell">A string that must be unique within the members of the same datatype.</p>
+</td>
+</tr>
+  <tr style=" height : 23.00pt;">
+  <td style="width : 99.694pt; border-bottom-style: solid; border-bottom-width: 1px; border-bottom-color: #228a22; vertical-align : top;padding-left: 6.00pt; padding-top: 3.00pt; padding-right: 6.00pt; padding-bottom: 3.00pt;">
+  <p class="FM__BodyCell">Datatype</p>
+</td>
+  <td style="width : 332.306pt; border-bottom-style: solid; border-bottom-width: 1px; border-bottom-color: #228a22; vertical-align : top;padding-left: 6.00pt; padding-top: 3.00pt; padding-right: 6.00pt; padding-bottom: 3.00pt;">
+  <p class="FM__BodyCell">An HDF5 datatype.</p>
+</td>
+</tr>
+  <tr style=" height : 36.00pt;">
+  <td style="width : 99.694pt; border-bottom-style: solid; border-bottom-width: 1px; border-bottom-color: #228a22; vertical-align : top;padding-left: 6.00pt; padding-top: 3.00pt; padding-right: 6.00pt; padding-bottom: 3.00pt;">
+  <p class="FM__BodyCell">Offset</p>
+</td>
+  <td style="width : 332.306pt; border-bottom-style: solid; border-bottom-width: 1px; border-bottom-color: #228a22; vertical-align : top;padding-left: 6.00pt; padding-top: 3.00pt; padding-right: 6.00pt; padding-bottom: 3.00pt;">
+  <p class="FM__BodyCell">A fixed byte offset which defines the location of the first byte of that member in the compound datatype.</p>
+</td>
+</tr>
+ </table>
+</div>
+ <p class="FM__Body">&nbsp;</p>
+ <p class="FM__Body">Properties of the members of a compound datatype are defined when the member is added to the com&#173;pound type. These properties cannot be modified later. </p>
+ <p class="FM__Heading_SubSection">Defining Compound Datatypes</p>
+ <p class="FM__Body">Compound datatypes must be built out of other datatypes. To do this, you first create an empty com&#173;pound datatype and specify its total size. Members are then added to the compound datatype in any order. </p>
+ <p class="FM__Body">Each member must have a descriptive name. This is the key used to uniquely identify the member within the compound datatype. A member name in an HDF5 datatype does not necessarily have to be the same as the name of the corresponding member in the C struct in memory although this is often the case. You also do not need to define all the members of the C struct in the HDF5 compound datatype (or vice versa). </p>
+ <p class="FM__Body">Usually a C struct will be defined to hold a data point in memory, and the offsets of the members in mem&#173;ory will be the offsets of the struct members from the beginning of an instance of the struct. The library defines the macro that computes the offset of member <span class="FM_Code">m</span>&#160;within a struct variable <span class="FM_Code">s</span>: </p>
+ <p class="FM__BodyCodeIndent">HOFFSET(s,m)</p>
+ <p class="FM__Body"><a name="IX_complex_t"></a>The code below shows an example in which a compound datatype is created to describe complex num&#173;bers whose type is defined by the <span class="FM_Code">complex_t</span> struct.</p>
+<div width="100%" align="center">
+ <table style=" border-spacing:0; padding-left:6.00pt; padding-top:6.00pt; padding-right:6.00pt; padding-bottom:6.00pt; float:aligncenter; margin-top:12.00pt; width:100%; max-width:432.00pt;" cellspacing="0">
+  <caption class="FM__CaptionCodeExample" align="bottom">Code Example 2-9. A compound datatype for complex numbers</caption>
+  <tr style=" height : 152.00pt;">
+  <td style="width : 432.000pt; border-top-style: solid; border-top-width: 1px; border-top-color: #228a22; border-bottom-style: solid; border-bottom-width: 1px; border-bottom-color: #228a22; vertical-align : top;padding-left: 6.00pt; padding-top: 3.00pt; padding-right: 6.00pt; padding-bottom: 3.00pt;">
+  <p class="FM__BodyCellCode">Typedef struct {</p>
+  <p class="FM__BodyCellCodeIndent">double re; &#160;&#160;/*real part */</p>
+  <p class="FM__BodyCellCodeIndent">double im; &#160;&#160;/*imaginary part */</p>
+  <p class="FM__BodyCellCode">} complex_t;</p>
+  <p class="FM__BodyCellCode">&nbsp;</p>
+  <p class="FM__BodyCellCode">complex_t tmp; &#160;/*used only to compute offsets */</p>
+  <p class="FM__BodyCellCode"><a name="IX_H5T_COMPOUND_1"></a><a name="IX_H5Tcreate"></a>hid_t complex_id = H5Tcreate (H5T_COMPOUND, sizeof tmp);</p>
+  <p class="FM__BodyCellCode"><a name="IX_HOFFSET"></a><a name="IX_H5Tinsert"></a>H5Tinsert (complex_id, &quot;real&quot;, HOFFSET(tmp,re),</p>
+  <p class="FM__BodyCellCodeIndent"><a name="IX_H5T_NATIVE_DOUBLE"></a>H5T_NATIVE_DOUBLE);</p>
+  <p class="FM__BodyCellCode"><a name="IX_H5Tinsert_1"></a>H5Tinsert (complex_id, &quot;imaginary&quot;, HOFFSET(tmp,im),</p>
+  <p class="FM__BodyCellCodeIndent"><a name="IX_H5T_NATIVE_DOUBLE_1"></a>H5T_NATIVE_DOUBLE);</p>
+</td>
+</tr>
+ </table>
+</div>
+ <p class="FM__Body">&nbsp;</p>
+ <p class="FM__Heading_Level3"><a name="TOC_2_1_8_Creating_and"></a>2.1.8. Creating and Writing Extenda<a name="XREF_ExtendChunked"></a>ble Datasets</p>
+ <p class="FM__Body">An extendable dataset is one whose dimensions can grow. One can define an HDF5 dataset to have certain initial dimensions with the capacity to later increase the size of any of the initial dimensions. For example, the figure below shows a &#160;3 x 3 dataset (a) which is later extended to be a 10 x 3 dataset by adding 7 rows (b), and further extended to be a 10 x 5 dataset by adding two columns (c).</p>
+<div width="100%" align="center">
+ <table style=" border-spacing:0; padding-left:2.00pt; padding-top:2.00pt; padding-right:2.00pt; padding-bottom:2.00pt; float:aligncenter; margin-top:12.00pt; width:100%; max-width:432.00pt;" cellspacing="0">
+  <caption class="FM__CaptionFigure" align="bottom">Figure 2-3. Extending a dataset</caption>
+  <tr style=" height : 306.00pt;">
+  <td style="width : 432.000pt; border-top-style: solid; border-top-width: 1px; border-top-color: #228a22; border-bottom-style: solid; border-bottom-width: 1px; border-bottom-color: #228a22; ">
+  <div align="center"><img alt="Pmodel_fig3.JPG" style=" margin-left:0.750pt; margin-top:0.750pt; margin-right:1.500pt; margin-bottom:1.500pt; width:100%; max-width:493px;" id="image6" src="Pmodel_fig3.JPG" />
+  </div>
+  <p class="FM__BodyFigureSmall">&nbsp;</p>
+  <p class="FM__BodyFigureSmall">&nbsp;</p>
+</td>
+</tr>
+ </table>
+</div>
+ <p class="FM__Body">&nbsp;</p>
+ <p class="FM__Body">HDF5 requires the use of chunking when defining extendable datasets. Chunking makes it possible to extend datasets efficiently without having to reorganize contiguous storage excessively. </p>
+ <p class="FM__Body">To summarize, an extendable dataset requires two conditions:</p>
+ <p class="FM__ListNumbered1_Level1">1.<span style='word-spacing:normal; font:6.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>Define the dataspace of the dataset as unlimited in all dimensions that might eventually be extended</p>
+ <p class="FM__ListNumbered_Level1">2.<span style='word-spacing:normal; font:6.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>Enable chunking in the dataset creation properties</p>
+ <p class="FM__Body">For example, suppose we wish to create a dataset similar to the one shown in the figure above. We want to start with a 3 x 3 dataset, and then later we will extend it. To do this, go through the steps below.</p>
+ <p class="FM__Body"><a name="IX_H5S_UNLIMITED"></a>First, declare the dataspace to have unlimited dimensions. See the code shown below. Note the use of the predefined constant <span class="FM_Code">H5S_UNLIMITED</span> to specify that a dimension is unlimited.</p>
+<div width="100%" align="center">
+ <table style=" border-spacing:0; padding-left:6.00pt; padding-top:6.00pt; padding-right:6.00pt; padding-bottom:6.00pt; float:aligncenter; margin-top:12.00pt; width:100%; max-width:432.00pt;" cellspacing="0">
+  <caption class="FM__CaptionCodeExample" align="bottom">Code Example 2-10. Declaring a dataspace with unlimited dimensions</caption>
+  <tr style=" height : 113.00pt;">
+  <td style="width : 432.000pt; border-top-style: solid; border-top-width: 1px; border-top-color: #228a22; border-bottom-style: solid; border-bottom-width: 1px; border-bottom-color: #228a22; vertical-align : top;padding-left: 6.00pt; padding-top: 3.00pt; padding-right: 6.00pt; padding-bottom: 3.00pt;">
+  <p class="FM__BodyCellCode">/* dataset dimensions at creation time */ </p>
+  <p class="FM__BodyCellCode">Hsize_t dims[2] = {3, 3}; </p>
+  <p class="FM__BodyCellCode"><a name="IX_H5S_UNLIMITED_1"></a>hsize_t maxdims[2] = {H5S_UNLIMITED, H5S_UNLIMITED};</p>
+  <p class="FM__BodyCellCode">&nbsp;</p>
+  <p class="FM__BodyCellCode">/*</p>
+  <p class="FM__BodyCellCode">* Create the data space with unlimited dimensions. </p>
+  <p class="FM__BodyCellCode">*/</p>
+  <p class="FM__BodyCellCode"><a name="IX_H5Screate_simple_3"></a>dataspace = H5Screate_simple(RANK, dims, maxdims);</p>
+</td>
+</tr>
+ </table>
+</div>
+ <p class="FM__Body">&nbsp;</p>
+ <p class="FM__Body">Next, set the dataset creation property list to enable chunking. See the code below.</p>
+<div width="100%" align="center">
+ <table style=" border-spacing:0; padding-left:6.00pt; padding-top:6.00pt; padding-right:6.00pt; padding-bottom:6.00pt; float:aligncenter; margin-top:12.00pt; width:100%; max-width:432.00pt;" cellspacing="0">
+  <caption class="FM__CaptionCodeExample" align="bottom">Code Example 2-11. Enable chunking</caption>
+  <tr style=" height : 100.00pt;">
+  <td style="width : 432.000pt; border-top-style: solid; border-top-width: 1px; border-top-color: #228a22; border-bottom-style: solid; border-bottom-width: 1px; border-bottom-color: #228a22; vertical-align : top;padding-left: 6.00pt; padding-top: 3.00pt; padding-right: 6.00pt; padding-bottom: 3.00pt;">
+  <p class="FM__BodyCellCode">hid_t cparms; </p>
+  <p class="FM__BodyCellCode">hsize_t chunk_dims[2] ={2, 5};</p>
+  <p class="FM__BodyCellCode">/* </p>
+  <p class="FM__BodyCellCode">* Modify dataset creation properties to enable chunking.</p>
+  <p class="FM__BodyCellCode">*/</p>
+  <p class="FM__BodyCellCode"><a name="IX_H5P_DATASET_CREATE_1"></a><a name="IX_H5Pcreate"></a>cparms = H5Pcreate (H5P_DATASET_CREATE);</p>
+  <p class="FM__BodyCellCode"><a name="IX_H5Pset_chunk"></a>status = H5Pset_chunk(cparms, RANK, chunk_dims);</p>
+</td>
+</tr>
+ </table>
+</div>
+ <p class="FM__Body">&nbsp;</p>
+ <p class="FM__Body">The next step is to create the dataset. See the code below.</p>
+<div width="100%" align="center">
+ <table style=" border-spacing:0; padding-left:6.00pt; padding-top:6.00pt; padding-right:6.00pt; padding-bottom:6.00pt; float:aligncenter; margin-top:12.00pt; width:100%; max-width:432.00pt;" cellspacing="0">
+  <caption class="FM__CaptionCodeExample" align="bottom">Code Example 2-12. Create a dataset</caption>
+  <tr style=" height : 87.00pt;">
+  <td style="width : 432.000pt; border-top-style: solid; border-top-width: 1px; border-top-color: #228a22; border-bottom-style: solid; border-bottom-width: 1px; border-bottom-color: #228a22; vertical-align : top;padding-left: 6.00pt; padding-top: 3.00pt; padding-right: 6.00pt; padding-bottom: 3.00pt;">
+  <p class="FM__BodyCellCode">/*</p>
+  <p class="FM__BodyCellCode">* Create a new dataset within the file using cparms</p>
+  <p class="FM__BodyCellCode">* creation properties.</p>
+  <p class="FM__BodyCellCode">*/</p>
+  <p class="FM__BodyCellCode"><a name="IX_H5T_NATIVE_INT_3"></a><a name="IX_H5Dcreate_1"></a>dataset = H5Dcreate(file, DATASETNAME, H5T_NATIVE_INT, dataspace,</p>
+  <p class="FM__BodyCellCodeIndent">H5P_DEFAULT, cparms, H5P_DEFAULT);</p>
+</td>
+</tr>
+ </table>
+</div>
+ <p class="FM__Body">&nbsp;</p>
+ <p class="FM__Body"><a name="IX_H5Dextend"></a>Finally, when the time comes to extend the size of the dataset, invoke <span class="FM_Code">H5Dextend</span>. Extending the dataset along the first dimension by seven rows leaves the dataset with new dimensions of &lt;10,3&gt;. See the code below.</p>
+<div width="100%" align="center">
+ <table style=" border-spacing:0; padding-left:6.00pt; padding-top:6.00pt; padding-right:6.00pt; padding-bottom:6.00pt; float:aligncenter; margin-top:12.00pt; width:100%; max-width:432.00pt;" cellspacing="0">
+  <caption class="FM__CaptionCodeExample" align="bottom">Code Example 2-13. Extend the dataset by seven rows</caption>
+  <tr style=" height : 100.00pt;">
+  <td style="width : 432.000pt; border-top-style: solid; border-top-width: 1px; border-top-color: #228a22; border-bottom-style: solid; border-bottom-width: 1px; border-bottom-color: #228a22; vertical-align : top;padding-left: 6.00pt; padding-top: 3.00pt; padding-right: 6.00pt; padding-bottom: 3.00pt;">
+  <p class="FM__BodyCellCode">/*</p>
+  <p class="FM__BodyCellCode">* Extend the dataset. Dataset becomes 10 x 3.</p>
+  <p class="FM__BodyCellCode">*/</p>
+  <p class="FM__BodyCellCode">dims[0] = dims[0] + 7;</p>
+  <p class="FM__BodyCellCode">size[0] = dims[0]; </p>
+  <p class="FM__BodyCellCode">size[1] = dims[1]; </p>
+  <p class="FM__BodyCellCode"><a name="IX_H5Dextend_1"></a>status = H5Dextend (dataset, size);</p>
+</td>
+</tr>
+ </table>
+</div>
+ <p class="FM__Body">&nbsp;</p>
+ <p class="FM__Heading_Level3"><a name="TOC_2_1_9_Creating_and"></a>2.1.9. Creating and Working wit<a name="XREF_Groups"></a>h Groups</p>
+ <p class="FM__Body">Groups provide a mechanism for organizing meaningful and extendable sets of datasets within an HDF5 file. The H5G API provides several routines for working with groups. </p>
+ <p class="FM__Body">&nbsp;</p>
+ <p class="FM__Heading_SubSection">Creating a Group</p>
+ <p class="FM__Body">With no datatype, dataspace, or storage layout to define, creating a group is considerably simpler than creating a dataset. For example, the following code creates a group called <span class="FM_Code">Data</span>&#160;in the root group of <span class="FM_Code">file</span>.</p>
+<div width="100%" align="center">
+ <table style=" border-spacing:0; padding-left:6.00pt; padding-top:6.00pt; padding-right:6.00pt; padding-bottom:6.00pt; float:aligncenter; margin-top:12.00pt; width:100%; max-width:432.00pt;" cellspacing="0">
+  <caption class="FM__CaptionCodeExample" align="bottom">Code Example 2-14. Create a group</caption>
+  <tr style=" height : 74.00pt;">
+  <td style="width : 432.000pt; border-top-style: solid; border-top-width: 1px; border-top-color: #228a22; border-bottom-style: solid; border-bottom-width: 1px; border-bottom-color: #228a22; vertical-align : top;padding-left: 6.00pt; padding-top: 3.00pt; padding-right: 6.00pt; padding-bottom: 3.00pt;">
+  <p class="FM__BodyCellCode">/*</p>
+  <p class="FM__BodyCellCode">* &#160;Create a group in the file.</p>
+  <p class="FM__BodyCellCode">*/</p>
+  <p class="FM__BodyCellCode"><a name="IX_H5Gcreate"></a>grp = H5Gcreate(file, &quot;/Data&quot;, H5P_DEFAULT, H5P_DEFAULT, </p>
+  <p class="FM__BodyCellCodeIndent">H5P_DEFAULT);</p>
+</td>
+</tr>
+ </table>
+</div>
+ <p class="FM__Body">&nbsp;</p>
+ <p class="FM__Body"><a name="IX_H5Gcreate_1"></a>A group may be created within another group by providing the absolute name of the group to the <span class="FM_Code">H5Gcreate</span>&#160;function or by specifying its location. For example, to create the group <span class="FM_Code">Data_new</span>&#160;in the group <span class="FM_Code">Data</span>, you might use the sequence of calls shown below.</p>
+<div width="100%" align="center">
+ <table style=" border-spacing:0; padding-left:6.00pt; padding-top:6.00pt; padding-right:6.00pt; padding-bottom:6.00pt; float:aligncenter; margin-top:12.00pt; width:100%; max-width:432.00pt;" cellspacing="0">
+  <caption class="FM__CaptionCodeExample" align="bottom">Code Example 2-15. Create a group within a group</caption>
+  <tr style=" height : 191.00pt;">
+  <td style="width : 432.000pt; border-top-style: solid; border-top-width: 1px; border-top-color: #228a22; border-bottom-style: solid; border-bottom-width: 1px; border-bottom-color: #228a22; vertical-align : top;padding-left: 6.00pt; padding-top: 3.00pt; padding-right: 6.00pt; padding-bottom: 3.00pt;">
+  <p class="FM__BodyCellCode">/*</p>
+  <p class="FM__BodyCellCode">* Create group &quot;Data_new&quot; in the group &quot;Data&quot; by specifying</p>
+  <p class="FM__BodyCellCode">* absolute name of the group.</p>
+  <p class="FM__BodyCellCode">*/</p>
+  <p class="FM__BodyCellCode"><a name="IX_H5Gcreate_2"></a>grp_new = H5Gcreate(file, &quot;/Data/Data_new&quot;, H5P_DEFAULT, </p>
+  <p class="FM__BodyCellCodeIndent">H5P_DEFAULT, H5P_DEFAULT);</p>
+  <p class="FM__BodyCellCode">&nbsp;</p>
+  <p class="FM__BodyCell">or </p>
+  <p class="FM__BodyCellCode">&nbsp;</p>
+  <p class="FM__BodyCellCode">/*</p>
+  <p class="FM__BodyCellCode">* Create group &quot;Data_new&quot; in the &quot;Data&quot; group.</p>
+  <p class="FM__BodyCellCode">*/</p>
+  <p class="FM__BodyCellCode">grp_new = H5Gcreate(grp, &quot;Data_new&quot;, H5P_DEFAULT, H5P_DEFAULT, </p>
+  <p class="FM__BodyCellCodeIndent">H5P_DEFAULT);</p>
+</td>
+</tr>
+ </table>
+</div>
+ <p class="FM__Body">&nbsp;</p>
+ <p class="FM__Body"><a name="IX_H5Gcreate_3"></a>This first parameter of <span class="FM_Code">H5Gcreate</span>&#160;is a location identifier. <span class="FM_Code">file</span>&#160;in the first example specifies only the file. <span class="FM_Code">grp</span>&#160;in the second example specifies a particular group in a particular file. Note that in this instance, the group identifier <span class="FM_Code">grp</span>&#160;is used as the first parameter in the <span class="FM_Code">H5Gcreate</span>&#160;call so that the relative name of <span class="FM_Code">Data_new</span> can be used.</p>
+ <p class="FM__Body"><a name="IX_H5Gcreate_4"></a>The third parameter of <span class="FM_Code">H5Gcreate</span>&#160;optionally specifies how much file space to reserve to store the names of objects that will be created in this group. If a non-positive value is supplied, the library provides a default size.</p>
+ <p class="FM__Body"><a name="IX_H5Gclose"></a>Use <span class="FM_Code">H5Gclose</span>&#160;to close the group and release the group identifier. </p>
+ <p class="FM__Heading_SubSection">Creating a Dataset within a Group</p>
+ <p class="FM__Body">As with groups, a dataset can be created in a particular group by specifying either its absolute name in the file or its relative name with respect to that group. The next code excerpt uses the absolute name.</p>
+<div width="100%" align="center">
+ <table style=" border-spacing:0; padding-left:6.00pt; padding-top:6.00pt; padding-right:6.00pt; padding-bottom:6.00pt; float:aligncenter; margin-top:12.00pt; width:100%; max-width:432.00pt;" cellspacing="0">
+  <caption class="FM__CaptionCodeExample" align="bottom">Code Example 2-16. Create a dataset within a group using an absolute name</caption>
+  <tr style=" height : 100.00pt;">
+  <td style="width : 432.000pt; border-top-style: solid; border-top-width: 1px; border-top-color: #228a22; vertical-align : top;padding-left: 6.00pt; padding-top: 3.00pt; padding-right: 6.00pt; padding-bottom: 3.00pt;">
+  <p class="FM__BodyCellCode">/*</p>
+  <p class="FM__BodyCellCode">* Create the dataset &quot;Compressed_Data&quot; in the group Data using </p>
+  <p class="FM__BodyCellCode">* the absolute name. The dataset creation property list is </p>
+  <p class="FM__BodyCellCode">* modified to use GZIP compression with the compression </p>
+  <p class="FM__BodyCellCode">* effort set to 6. Note that compression can be used only when</p>
+  <p class="FM__BodyCellCode">* the dataset is chunked.</p>
+  <p class="FM__BodyCellCode">*/</p>
+</td>
+</tr>
+  <tr style=" height : 139.00pt;">
+  <td style="width : 432.000pt; border-bottom-style: solid; border-bottom-width: 1px; border-bottom-color: #228a22; vertical-align : top;padding-left: 6.00pt; padding-top: 3.00pt; padding-right: 6.00pt; padding-bottom: 3.00pt;">
+  <p class="FM__BodyCellCode">dims[0] = 1000;</p>
+  <p class="FM__BodyCellCode">dims[1] = 20;</p>
+  <p class="FM__BodyCellCode">cdims[0] = 20;</p>
+  <p class="FM__BodyCellCode">cdims[1] = 20;</p>
+  <p class="FM__BodyCellCode"><a name="IX_H5Screate_simple_4"></a>dataspace = H5Screate_simple(RANK, dims, NULL);</p>
+  <p class="FM__BodyCellCode"><a name="IX_H5P_DATASET_CREATE_2"></a><a name="IX_H5Pcreate_1"></a>plist = H5Pcreate(H5P_DATASET_CREATE);</p>
+  <p class="FM__BodyCellCodeIndent"><a name="IX_H5Pset_chunk_1"></a>H5Pset_chunk(plist, 2, cdims);</p>
+  <p class="FM__BodyCellCodeIndent"><a name="IX_H5Pset_deflate"></a>H5Pset_deflate(plist, 6);</p>
+  <p class="FM__BodyCellCode"><a name="IX_H5Dcreate_2"></a>dataset = H5Dcreate(file, &quot;/Data/Compressed_Data&quot;, </p>
+  <p class="FM__BodyCellCodeIndent"><a name="IX_H5T_NATIVE_INT_4"></a>H5T_NATIVE_INT, dataspace, H5P_DEFAULT, plist, H5P_DEFAULT);</p>
+</td>
+</tr>
+ </table>
+</div>
+ <p class="FM__Body">&nbsp;</p>
+ <p class="FM__Body">Alternatively, you can first obtain an identifier for the group in which the dataset is to be created, and then create the dataset with a relative name.</p>
+<div width="100%" align="center">
+ <table style=" border-spacing:0; padding-left:6.00pt; padding-top:6.00pt; padding-right:6.00pt; padding-bottom:6.00pt; float:aligncenter; margin-top:12.00pt; width:100%; max-width:432.00pt;" cellspacing="0">
+  <caption class="FM__CaptionCodeExample" align="bottom">Code Example 2-17. Create a dataset within a group using a relative name</caption>
+  <tr style=" height : 165.00pt;">
+  <td style="width : 432.000pt; border-top-style: solid; border-top-width: 1px; border-top-color: #228a22; border-bottom-style: solid; border-bottom-width: 1px; border-bottom-color: #228a22; vertical-align : top;padding-left: 6.00pt; padding-top: 3.00pt; padding-right: 6.00pt; padding-bottom: 3.00pt;">
+  <p class="FM__BodyCellCode">/* </p>
+  <p class="FM__BodyCellCode">* Open the group.</p>
+  <p class="FM__BodyCellCode">*/</p>
+  <p class="FM__BodyCellCode"><a name="IX_H5Gopen"></a>grp = H5Gopen(file, &quot;Data&quot;, H5P_DEFAULT);</p>
+  <p class="FM__BodyCellCode">&nbsp;</p>
+  <p class="FM__BodyCellCode">/*</p>
+  <p class="FM__BodyCellCode">* Create the dataset &quot;Compressed_Data&quot; in the &quot;Data&quot; group</p>
+  <p class="FM__BodyCellCode">* by providing a group identifier and a relative dataset </p>
+  <p class="FM__BodyCellCode">* name as parameters to the H5Dcreate function.</p>
+  <p class="FM__BodyCellCode">*/</p>
+  <p class="FM__BodyCellCode"><a name="IX_H5T_NATIVE_INT_5"></a><a name="IX_H5Dcreate_3"></a>dataset = H5Dcreate(grp, &quot;Compressed_Data&quot;, H5T_NATIVE_INT,</p>
+  <p class="FM__BodyCellCodeIndent">dataspace, H5P_DEFAULT, plist, H5P_DEFAULT);</p>
+</td>
+</tr>
+ </table>
+</div>
+ <p class="FM__Body">&nbsp;</p>
+ <p class="FM__Heading_SubSection">Accessing an Object in a Group</p>
+ <p class="FM__Body">Any object in a group can be accessed by its absolute or relative name. The first code snippet below illus&#173;trates the use of the absolute name to access the dataset <span class="FM_Code">Compressed_Data</span>&#160;in the group <span class="FM_Code">Data</span>&#160;created in the examples above. The second code snippet illustrates the use of the relative name.</p>
+<div width="100%" align="center">
+ <table style=" border-spacing:0; padding-left:6.00pt; padding-top:6.00pt; padding-right:6.00pt; padding-bottom:6.00pt; float:aligncenter; margin-top:12.00pt; width:100%; max-width:432.00pt;" cellspacing="0">
+  <caption class="FM__CaptionCodeExample" align="bottom">Code Example 2-18. Accessing a group using its absolute name</caption>
+  <tr style=" height : 61.00pt;">
+  <td style="width : 432.000pt; border-top-style: solid; border-top-width: 1px; border-top-color: #228a22; border-bottom-style: solid; border-bottom-width: 1px; border-bottom-color: #228a22; vertical-align : top;padding-left: 6.00pt; padding-top: 3.00pt; padding-right: 6.00pt; padding-bottom: 3.00pt;">
+  <p class="FM__BodyCellCode">/*</p>
+  <p class="FM__BodyCellCode">* Open the dataset &quot;Compressed_Data&quot; in the &quot;Data&quot; group. </p>
+  <p class="FM__BodyCellCode">*/</p>
+  <p class="FM__BodyCellCode"><a name="IX_H5Dopen"></a>dataset = H5Dopen(file, &quot;/Data/Compressed_Data&quot;, H5P_DEFAULT);</p>
+</td>
+</tr>
+ </table>
+</div>
+<div width="100%" align="center">
+ <table style=" border-spacing:0; padding-left:6.00pt; padding-top:6.00pt; padding-right:6.00pt; padding-bottom:6.00pt; float:aligncenter; margin-top:12.00pt; width:100%; max-width:432.00pt;" cellspacing="0">
+  <caption class="FM__CaptionCodeExample" align="bottom">Code Example 2-19. Accessing a group using its relative name</caption>
+  <tr style=" height : 126.00pt;">
+  <td style="width : 432.000pt; border-top-style: solid; border-top-width: 1px; border-top-color: #228a22; border-bottom-style: solid; border-bottom-width: 1px; border-bottom-color: #228a22; vertical-align : top;padding-left: 6.00pt; padding-top: 3.00pt; padding-right: 6.00pt; padding-bottom: 3.00pt;">
+  <p class="FM__BodyCellCode">/*</p>
+  <p class="FM__BodyCellCode">* Open the group &quot;data&quot; in the file.</p>
+  <p class="FM__BodyCellCode">*/</p>
+  <p class="FM__BodyCellCode"><a name="IX_H5Gopen_1"></a>grp &#160;= H5Gopen(file, &quot;Data&quot;, H5P_DEFAULT);</p>
+  <p class="FM__BodyCellCode">&nbsp;</p>
+  <p class="FM__BodyCellCode">/*</p>
+  <p class="FM__BodyCellCode">* Access the &quot;Compressed_Data&quot; dataset in the group.</p>
+  <p class="FM__BodyCellCode">*/</p>
+  <p class="FM__BodyCellCode"><a name="IX_H5Dopen_1"></a>dataset = H5Dopen(grp, &quot;Compressed_Data&quot;, H5P_DEFAULT);</p>
+</td>
+</tr>
+ </table>
+</div>
+ <p class="FM__Body">&nbsp;</p>
+ <p class="FM__Heading_Level3"><a name="TOC_2_1_10_Working_with"></a>2.1.10. Working with Attribu<a name="XREF_Attrs"></a>tes</p>
+ <p class="FM__Body">An attribute is a small dataset that is attached to a normal dataset or group. Attributes share many of the characteristics of datasets, so the programming model for working with attributes is similar in many ways to the model for working with datasets. The primary differences are that an attribute must be attached to a dataset or a group and sub-setting operations cannot be performed on attributes. </p>
+ <p class="FM__Body"><a name="IX_H5Aclose"></a><a name="IX_H5Awrite"></a><a name="IX_H5Acreate"></a><a name="IX_H5Screate"></a>To create an attribute belonging to a particular dataset or group, first create a dataspace for the attribute with the call to <span class="FM_Code">H5Screate</span>, and then create the attribute using <span class="FM_Code">H5Acreate</span>. For example, the code shown below creates an attribute called <span class="FM_Code">Integer_attribute</span> that is a member of a dataset whose iden&#173;tifier is <span class="FM_Code">dataset</span>. The attribute identifier is <span class="FM_Code">attr2</span>. <span class="FM_Code">H5Awrite</span>&#160;then sets the value of the attribute of that of the integer variable point. <span class="FM_Code">H5Aclose</span> then releases the attribute identifier.</p>
+<div width="100%" align="center">
+ <table style=" border-spacing:0; padding-left:6.00pt; padding-top:6.00pt; padding-right:6.00pt; padding-bottom:6.00pt; float:aligncenter; margin-top:12.00pt; width:100%; max-width:432.00pt;" cellspacing="0">
+  <caption class="FM__CaptionCodeExample" align="bottom">Code Example 2-20. Create an attribute</caption>
+  <tr style=" height : 35.00pt;">
+  <td style="width : 432.000pt; border-top-style: solid; border-top-width: 1px; border-top-color: #228a22; vertical-align : top;padding-left: 6.00pt; padding-top: 3.00pt; padding-right: 6.00pt; padding-bottom: 3.00pt;">
+  <p class="FM__BodyCellCode">Int point = 1; /* Value of the scalar attribute */ </p>
+  <p class="FM__BodyCellCode">&nbsp;</p>
+</td>
+</tr>
+  <tr style=" height : 100.00pt;">
+  <td style="width : 432.000pt; vertical-align : top;padding-left: 6.00pt; padding-top: 3.00pt; padding-right: 6.00pt; padding-bottom: 3.00pt;">
+  <p class="FM__BodyCellCode">/*</p>
+  <p class="FM__BodyCellCode">* Create scalar attribute.</p>
+  <p class="FM__BodyCellCode">*/</p>
+  <p class="FM__BodyCellCode"><a name="IX_H5S_SCALAR"></a><a name="IX_H5Screate_1"></a>aid2 = H5Screate(H5S_SCALAR);</p>
+  <p class="FM__BodyCellCode"><a name="IX_H5T_NATIVE_INT_6"></a><a name="IX_H5Acreate_1"></a>attr2 = H5Acreate(dataset, &quot;Integer attribute&quot;, H5T_NATIVE_INT, </p>
+  <p class="FM__BodyCellCodeIndent">aid2, H5P_DEFAULT, H5P_DEFAULT);</p>
+  <p class="FM__BodyCellCode">&nbsp;</p>
+</td>
+</tr>
+  <tr style=" height : 74.00pt;">
+  <td style="width : 432.000pt; vertical-align : top;padding-left: 6.00pt; padding-top: 3.00pt; padding-right: 6.00pt; padding-bottom: 3.00pt;">
+  <p class="FM__BodyCellCode">/*</p>
+  <p class="FM__BodyCellCode">* Write scalar attribute.</p>
+  <p class="FM__BodyCellCode">*/</p>
+  <p class="FM__BodyCellCode"><a name="IX_H5Awrite_1"></a>ret = H5Awrite(attr2, H5T_NATIVE_INT, &amp;point); </p>
+  <p class="FM__BodyCellCode">&nbsp;</p>
+</td>
+</tr>
+  <tr style=" height : 126.00pt;">
+  <td style="width : 432.000pt; border-bottom-style: solid; border-bottom-width: 1px; border-bottom-color: #228a22; vertical-align : top;padding-left: 6.00pt; padding-top: 3.00pt; padding-right: 6.00pt; padding-bottom: 3.00pt;">
+  <p class="FM__BodyCellCode">/*</p>
+  <p class="FM__BodyCellCode">* Close attribute dataspace.</p>
+  <p class="FM__BodyCellCode">*/</p>
+  <p class="FM__BodyCellCode"><a name="IX_H5Sclose_1"></a>ret = H5Sclose(aid2); </p>
+  <p class="FM__BodyCellCode">&nbsp;</p>
+  <p class="FM__BodyCellCode">/*</p>
+  <p class="FM__BodyCellCode">* Close attribute.</p>
+  <p class="FM__BodyCellCode">*/</p>
+  <p class="FM__BodyCellCode"><a name="IX_H5Aclose_1"></a>ret = H5Aclose(attr2); </p>
+</td>
+</tr>
+ </table>
+</div>
+ <p class="FM__Body">&nbsp;</p>
+ <p class="FM__Body"><a name="IX_H5Aread"></a><a name="IX_H5Aopen_by_name"></a>To read a scalar attribute whose name and datatype are known, first open the attribute using <span class="FM_Code">H5Aop&#173;en_by_name</span>, and then use <span class="FM_Code">H5Aread</span>&#160;to get its value. For example, the code shown below reads a scalar attribute called <span class="FM_Code">Integer_attribute</span>&#160;whose datatype is a native integer and whose parent dataset has the identifier <span class="FM_Code">dataset</span>.</p>
+<div width="100%" align="center">
+ <table style=" border-spacing:0; padding-left:6.00pt; padding-top:6.00pt; padding-right:6.00pt; padding-bottom:6.00pt; float:aligncenter; margin-top:12.00pt; width:100%; max-width:432.00pt;" cellspacing="0">
+  <caption class="FM__CaptionCodeExample" align="bottom">Code Example 2-21. Read a known attribute</caption>
+  <tr style=" height : 139.00pt;">
+  <td style="width : 432.000pt; border-top-style: solid; border-top-width: 1px; border-top-color: #228a22; border-bottom-style: solid; border-bottom-width: 1px; border-bottom-color: #228a22; vertical-align : top;padding-left: 6.00pt; padding-top: 3.00pt; padding-right: 6.00pt; padding-bottom: 3.00pt;">
+  <p class="FM__BodyCellCode">/*</p>
+  <p class="FM__BodyCellCode">* Attach to the scalar attribute using attribute name, then </p>
+  <p class="FM__BodyCellCode">* read and display its value.</p>
+  <p class="FM__BodyCellCode">*/</p>
+  <p class="FM__BodyCellCode"><a name="IX_H5Aopen_by_name_1"></a>attr = H5Aopen_by_name(file_id, dataset_name, </p>
+  <p class="FM__BodyCellCodeIndent">&quot;Integer attribute&quot;, H5P_DEFAULT, H5P_DEFAULT);</p>
+  <p class="FM__BodyCellCode"><a name="IX_H5T_NATIVE_INT_7"></a><a name="IX_H5Aread_1"></a>ret = H5Aread(attr, H5T_NATIVE_INT, &amp;point_out);</p>
+  <p class="FM__BodyCellCodeIndent">printf(&quot;The value of the attribute \&quot;Integer attribute\&quot; </p>
+  <p class="FM__BodyCellCodeIndent">is %d \n&quot;, point_out); </p>
+  <p class="FM__BodyCellCode"><a name="IX_H5Aclose_2"></a>ret = H5Aclose(attr);</p>
+</td>
+</tr>
+ </table>
+</div>
+ <p class="FM__Body">&nbsp;</p>
+ <p class="FM__Body"><a name="IX_H5Aread_2"></a><a name="IX_H5Aopen_by_idx"></a>To read an attribute whose characteristics are not known, go through these steps. First, query the file to obtain information about the attribute such as its name, datatype, rank, and dimensions, and then read the attribute. The following code opens an attribute by its index value using <span class="FM_Code">H5Aopen_by_idx</span>, and then it reads in information about the datatype with <span class="FM_Code">H5Aread</span>.</p>
+<div width="100%" align="center">
+ <table style=" border-spacing:0; padding-left:6.00pt; padding-top:6.00pt; padding-right:6.00pt; padding-bottom:6.00pt; float:aligncenter; margin-top:12.00pt; width:100%; max-width:432.00pt;" cellspacing="0">
+  <caption class="FM__CaptionCodeExample" align="bottom">Code Example 2-22. Read an unknown attribute</caption>
+  <tr style=" height : 152.00pt;">
+  <td style="width : 432.000pt; border-top-style: solid; border-top-width: 1px; border-top-color: #228a22; border-bottom-style: solid; border-bottom-width: 1px; border-bottom-color: #228a22; vertical-align : top;padding-left: 6.00pt; padding-top: 3.00pt; padding-right: 6.00pt; padding-bottom: 3.00pt;">
+  <p class="FM__BodyCellCode">/*</p>
+  <p class="FM__BodyCellCode">* Attach to the string attribute using its index, then read and </p>
+  <p class="FM__BodyCellCode">* display the value.</p>
+  <p class="FM__BodyCellCode">*/</p>
+  <p class="FM__BodyCellCode"><a name="IX_H5Aopen_by_idx_1"></a>attr = H5Aopen_by_idx(file_id, dataset_name, index_type, </p>
+  <p class="FM__BodyCellCodeIndent">iter_order, 2, H5P_DEFAULT, H5P_DEFAULT);</p>
+  <p class="FM__BodyCellCode"><a name="IX_H5Tcopy_1"></a>atype = H5Tcopy(H5T_C_S1);</p>
+  <p class="FM__BodyCellCodeIndent"><a name="IX_H5Tset_size"></a>H5Tset_size(atype, 4);</p>
+  <p class="FM__BodyCellCode"><a name="IX_H5Aread_3"></a>ret = H5Aread(attr, atype, string_out);</p>
+  <p class="FM__BodyCellCode">printf(&quot;The value of the attribute with the index 2 is %s \n&quot;, </p>
+  <p class="FM__BodyCellCodeIndent">string_out);</p>
+</td>
+</tr>
+ </table>
+</div>
+ <p class="FM__Body">&nbsp;</p>
+ <p class="FM__Body"><a name="IX_H5Aiterate"></a>In practice, if the characteristics of attributes are not known, the code involved in accessing and process&#173;ing the attribute can be quite complex. For this reason, HDF5 includes a function called <span class="FM_Code">H5Aiterate</span>. This function applies a user-supplied function to each of a set of attributes. The user-supplied function can contain the code that interprets, accesses, and processes each attribute.</p>
+ <p class="FM__Heading_Level2"><a name="TOC_2_2_The_Data_Transfer"></a>2.2. The Data Transfe<a name="XREF_IOPipeline"></a>r Pipeline</p>
+ <p class="FM__Body">The HDF5 Library implements data transfers between different storage locations. At the lowest levels, the HDF5 Library reads and writes blocks of bytes to and from storage using calls to the virtual file layer (VFL) drivers. In addition to this, the HDF5 Library manages caches of metadata and a data I/O pipeline. The data I/O pipeline applies compression to data blocks, transforms data elements, and implements selections.</p>
+ <p class="FM__Body">A substantial portion of the HDF5 Library’s work is in transferring data from one environment or media to another. This most often involves a transfer between system memory and a storage medium. Data trans&#173;fers are affected by compression, encryption, machine-dependent differences in numerical representa&#173;tion, and other features. So, the bit-by-bit arrangement of a given dataset is often substantially different in the two environments.</p>
+ <p class="FM__Body">Consider the representation on disk of a compressed and encrypted little-endian array as compared to the same array after it has been read from disk, decrypted, decompressed, and loaded into memory on a big-endian system. HDF5 performs all of the operations necessary to make that transition during the I/O pro&#173;cess with many of the operations being handled by the VFL and the data transfer pipeline.</p>
+ <p class="FM__Body">The figure below provides a simplified view of a sample data transfer with four stages. Note that the mod&#173;ules are used only when needed. For example, if the data is not compressed, the compression stage is omitted.</p>
+<div width="100%" align="center">
+ <table style=" border-spacing:0; padding-left:2.00pt; padding-top:2.00pt; padding-right:2.00pt; padding-bottom:2.00pt; float:aligncenter; margin-top:12.00pt; width:100%; max-width:432.00pt;" cellspacing="0">
+  <caption class="FM__CaptionFigure" align="bottom">Figure 2-4. A data transfer from storage to memory</caption>
+  <tr style=" height : 241.78pt;">
+  <td style="width : 432.000pt; border-top-style: solid; border-top-width: 1px; border-top-color: #228a22; border-bottom-style: solid; border-bottom-width: 1px; border-bottom-color: #228a22; ">
+  <div align="center"><img alt="Pmodel_fig26.JPG" style=" margin-left:0.750pt; margin-top:0.750pt; margin-right:0.750pt; margin-bottom:0.750pt; width:100%; max-width:535px;" id="image7" src="Pmodel_fig26.JPG" />
+  </div>
+  <p class="FM__BodyFigureSmall">&nbsp;</p>
+  <p class="FM__BodyFigureSmall">&nbsp;</p>
+</td>
+</tr>
+ </table>
+</div>
+ <p class="FM__Body">&nbsp;</p>
+ <p class="FM__Body">For a given I/O request, different combinations of actions may be performed by the pipeline. The library automatically sets up the pipeline and passes data through the processing steps. For example, for a <span class="FM_EI_EmphasisItalic">read</span>&#160;request (from disk to memory), the library must determine which logical blocks contain the requested data elements and fetch each block into the library’s cache. If the data needs to be decompressed, then the compression algorithm is applied to the block after it is read from disk. If the data is a selection, the selected elements are extracted from the data block after it is decompressed. If the data needs to be transformed (for example, byte swapped), then the data elements are transformed after decompression and selection.</p>
+ <p class="FM__Body">While an application must sometimes set up some elements of the pipeline, use of the pipeline is nor&#173;mally transparent to the user program. The library determines what must be done based on the metadata for the file, the object, and the specific request. An example of when an application might be required to set up some elements in the pipeline is if the application used a custom error-checking algorithm. </p>
+ <p class="FM__Body">In some cases, it is necessary to pass parameters to and from modules in the pipeline or among other parts of the library that are not directly called through the programming API. This is accomplished through the use of dataset transfer and data access property lists. </p>
+ <p class="FM__Body"><a name="IX_H5Pset_filter"></a><a name="IX_H5Zregister"></a>The VFL provides an interface whereby user applications can add custom modules to the data transfer pipeline. For example, a custom compression algorithm can be used with the HDF5 Library by linking an appropriate module into the pipeline through the VFL. This requires creating an appropriate wrapper for the compression module and registering it with the library with <span class="FM_Code">H5Zregister</span>. The algorithm can then be applied to a dataset with an <span class="FM_Code">H5Pset_filter</span>&#160;call which will add the algorithm to the selected dataset’s transfer property list.</p>
+ <p class="FM__Body">&nbsp;</p>
+</body>
+</html>

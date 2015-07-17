@@ -4,6 +4,14 @@ var gbGenerateForSP = 0;
 gRootRelPath = ".";
 
 addRhLoadCompleteEvent(initSearchFieldSubmit);
+
+rh.model.subscribe(rh.consts('KEY_SEARCH_TERM'), function (searchTerm) {
+	searchTerm = searchTerm || '';
+	var searchBoxes = document.querySelectorAll(".wSearchField");
+    for (i = searchBoxes.length-1; i > -1; i--) { 
+		searchBoxes[i].value = searchTerm; 
+	}
+});
 	
 function searchHelp(e, searchBoxId, cshmode)
 {
@@ -13,13 +21,18 @@ function searchHelp(e, searchBoxId, cshmode)
 		{
 			if(gbGenerateForSP || (e.type == 'submit' && cshmode == CSHMODE))
 				preventEvent(e);
+			e.target.blur();
 		}
 			
 		var searchBox = document.getElementById(searchBoxId);
 		var placeholderText = searchBox.getAttribute(DATAPH);
-		if(searchBox == null || searchBox == 'undefined' || trimString(searchBox.value) == "" || (trimString(searchBox.value)==placeholderText && gbIE55 &&!gbIE10))
+		if(searchBox == null || searchBox == 'undefined' || trimString(searchBox.value) == "" || (trimString(searchBox.value)==placeholderText && gbIE55 &&!gbIE10)) {
 			return;
-		document.location = gRootRelPath + "/" + gSearchPageFilePath + "?" + RHSEARCHSTR + "=" + encodeURIComponent(searchBox.value);
+		}
+		
+		rh.model.publish(rh.consts('KEY_SEARCH_TERM'), searchBox.value);
+		rh.model.publish(rh.consts('EVT_SEARCH_TERM'), true, {sync: true});
+		return false;
 	}
 }
 function initSearchFieldSubmit()

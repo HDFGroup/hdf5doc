@@ -31,6 +31,9 @@ function callbackDoShowHideCSHModeCookie(showHideMode)
 {		
 	if(showHideMode == "")
 		showHideMode = NONCSHMODE;
+	
+	publishCSHMode(showHideMode);
+
 	var len = gShowHideTagsList.length;
 	for(var i=0; i<len; i++)
 	{
@@ -38,6 +41,13 @@ function callbackDoShowHideCSHModeCookie(showHideMode)
 		var elemsList = document.getElementsByTagName(tagName);
 		showHideElems(elemsList, showHideMode);
 	}
+}
+
+function publishCSHMode(showHideMode) {
+	if (showHideMode === CSHMODE)
+		rh.model.publish(rh.consts('KEY_CSH_MODE'), true);
+	else
+		rh.model.publish(rh.consts('KEY_CSH_MODE'), false);
 }
 
 function showHideElems(elemsList, showHideMode)

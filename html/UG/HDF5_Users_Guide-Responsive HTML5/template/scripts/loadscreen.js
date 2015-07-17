@@ -8,7 +8,13 @@ function redirectToScreenURL()
 }
 function loadScreenData(relPath, flowType, data)
 {
-	var scrFolder = gScreenRelPathMap[relPath];
+	var scrFolder = undefined 
+	
+	if (gScreenRelPathMap[relPath]) 
+	{ 
+		scrFolder = gScreenRelPathMap[relPath].folder; 
+	}
+	
 	if(scrFolder != undefined)
 	{
 		returnScreenDataCall(flowType, relPath, scrFolder, data);
@@ -47,25 +53,15 @@ function loadScreens(flowType, relPath, data)
 function callbackScreenDataLoaded(xmlDoc, callBackObj)
 {
 	var screenObj = getDeviceMatchingScreen(xmlDoc);
-	if(callBackObj.flowType == SCR_INIT)
-	{
-		if(screenObj != null)
-		{
-			szDocumentLocationToRedirect = screenObj.defaultURL;
-			var paramStr = getUrlParamString();
-			window.location = szDocumentLocationToRedirect + paramStr;
-		}
-		else
-			return;
-	}
+
 	if(screenObj != null)
-		gScreenRelPathMap[callBackObj.relPath] = screenObj.folder;
+		gScreenRelPathMap[callBackObj.relPath] = { folder: screenObj.folder, defaultURL: screenObj.defaultURL };
 	else
-		gScreenRelPathMap[callBackObj.relPath] = null;
+		gScreenRelPathMap[callBackObj.relPath] = { folder: null, defaultURL: null };
 	
-	returnScreenDataCall(callBackObj.flowType, callBackObj.relPath, gScreenRelPathMap[callBackObj.relPath], callBackObj.data);
-	
+	returnScreenDataCall(callBackObj.flowType, callBackObj.relPath, gScreenRelPathMap[callBackObj.relPath].folder, callBackObj.data);	
 }
+	
 function returnScreenDataCall(flowType, relPath, scrFolder, data)
 {
 	if(flowType == SCR_CHILD_TOC)
@@ -139,7 +135,7 @@ function getDeviceMatchingScreen(xmlDoc, isDefault)
 	var currentWidth = screen.width;
 	var currentHeight = screen.height;
 	var szCurrentBrowserAgentString = ""+navigator.userAgent;
-	var screenObj = new screenObject();
+
 	var screensXmlNode = xmlDoc.getElementsByTagName(SCREENSNODE)[0];	
 	var len = screensXmlNode.childNodes.length;
 	var screenArray = new Array();

@@ -1,5 +1,4 @@
 var gTopicId = "";
-gDocumentURL = "";
 function DDList(rootRelPath, dataFolder, rootFile, commonRootRelPath)
 {
 	this.errorMsg = "";
@@ -446,7 +445,7 @@ function DDList(rootRelPath, dataFolder, rootFile, commonRootRelPath)
 			return;
 		if(this.isRoot())
 		{
-			this.urlId = getUrlParameter(TOCID, gDocumentURL);
+			this.urlId = getUrlParameter(TOCID, document.location.href);
 			if(this.urlId == '')
 			{
 				if(gTopicId != null && gTopicId != 'undefined' && gTopicId != '')

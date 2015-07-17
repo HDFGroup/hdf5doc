@@ -37,7 +37,6 @@ LOADINGSTRING = "Loading...";
 initTocPage();
 function initTocPage()
 {
-	gDocumentURL = document.location.href;
 	addRhLoadCompleteEvent(loadToc);
 }
 function loadToc()

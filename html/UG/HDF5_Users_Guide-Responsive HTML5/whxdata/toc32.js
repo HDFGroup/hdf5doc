@@ -1,0 +1,1 @@
+gXMLBuffer ="<?xml version=\"1.0\" encoding=\"utf-8\" ?><data  src=\"toc31.js\"  name=\"8.1. Programming Model for Attributes\" url=\"HDF5_Users_Guide/Attributes/HDF5_Attributes.htm#TOC_8_1_Programming_Modelbc-1\"><item name=\"8.1.1. To Open and Read or Write an Existing Attribute\" url=\"HDF5_Users_Guide/Attributes/HDF5_Attributes.htm#TOC_8_1_1_To_Open_and_Readbc-2\" /></data>";

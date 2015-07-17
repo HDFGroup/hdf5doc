@@ -10,7 +10,6 @@ LOADINGSTRING = "Loading...";
 initIdxPage();
 function initIdxPage()
 {
-	gDocumentURL = document.location.href;
 	addRhLoadCompleteEvent(loadIdx);
 }
 var gIdxTree = null;

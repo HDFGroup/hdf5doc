@@ -1,5 +1,4 @@
 var	gTopicId = "";
-gDocumentURL = "";
 function Tree(rootRelPath, dataFolder, rootFile, commonRootRelPath)
 {
 	this.errorMsg = "";
@@ -77,8 +76,7 @@ function Tree(rootRelPath, dataFolder, rootFile, commonRootRelPath)
 	this.idParts = null;
 	this.idPartsNextIndex = 0;
 	this.nextNodeIdToBeSynced = null;
-	this.isSyncDone = false;
-	this.syncDataLoaded = false;
+	this.subscribed = false;
 	
 	this.loadingIconClass = "loadingicon";
 	this.loadingIconHtml = "";
@@ -86,7 +84,12 @@ function Tree(rootRelPath, dataFolder, rootFile, commonRootRelPath)
 	this.loadingText = "";
 	this.isSyncingRoot = true;
 	
+	this.NODELOADED = 1;
+	this.NODELOADING = 2;
+	
 	this.loadStack = new MhStack();
+	
+	this.nonavigation = false;
 
 	Tree.prototype.init = function()
 	{
@@ -136,6 +139,7 @@ function Tree(rootRelPath, dataFolder, rootFile, commonRootRelPath)
 			var xmlNode = dataXmlNode.childNodes[i];
 			var name = xmlNode.getAttribute(NAME);
 			var url = xmlNode.getAttribute(URL);
+			var target = xmlNode.getAttribute(TARGET);
 			if(url != null && url != 'undefined' && xmlNode.tagName != URLNODE && !_isRemoteUrl(url))
 				url = rootRelPath + "/" + url;
 				
@@ -146,19 +150,19 @@ function Tree(rootRelPath, dataFolder, rootFile, commonRootRelPath)
 				objContext.bookCount = bookCount;
 				objContext.pageCount = pageCount;
 				var src = xmlNode.getAttribute(SRC);
-				this.insertTreeItem(parentHtmlNode, name, url, bookCount, pageCount, projOrderStr, ITEMTYPEBOOKCLOSED, src, origRootRelPath, origCommonRootRelPath);
+				this.insertTreeItem(parentHtmlNode, name, url, target, bookCount, pageCount, projOrderStr, ITEMTYPEBOOKCLOSED, src, origRootRelPath, origCommonRootRelPath);
 			}
 			else if(xmlNode.tagName == PAGENODE)
 			{
 				pageCount++;
 				objContext.pageCount = pageCount;
-				this.insertTreeItem(parentHtmlNode, name, url, bookCount, pageCount, projOrderStr, ITEMTYPEPAGE);
+				this.insertTreeItem(parentHtmlNode, name, url, target, bookCount, pageCount, projOrderStr, ITEMTYPEPAGE);
 			}
 			else if(xmlNode.tagName == URLNODE)
 			{
 				pageCount++;
 				objContext.pageCount = pageCount;
-				this.insertTreeItem(parentHtmlNode, name, url, bookCount, pageCount, projOrderStr, ITEMTYPEURL);
+				this.insertTreeItem(parentHtmlNode, name, url, target, bookCount, pageCount, projOrderStr, ITEMTYPEURL);
 			}
 			else if(xmlNode.tagName == PROJNODE)
 			{
@@ -198,25 +202,27 @@ function Tree(rootRelPath, dataFolder, rootFile, commonRootRelPath)
 			{
 				var treeNode = this.getTreeNodeFromHtmlNode(parentHtmlNode);
 				this.toggleBookNode(treeNode);
-				this.isSyncingRoot = false;
 			}
 			this.removeLoadingMsg(parentHtmlNode);
 			if(this.syncTree == true)
 			{
-				if(this.isSyncDone == false)
-				{
-					if(this.syncDataLoaded == false)
-					{
-						this.syncDataLoaded = true;
-						loadParentDataForSyncing(gCommonRootRelPath, SCR_PARENT_TOCSYNC);
-					}
-					else
-						this.sync("", "");
+				if(this.subscribed == false)
+				{	
+				  rh.model.subscribe(rh.consts('KEY_TOPIC_ID'), (function(data) {
+						window.gTopicId = data.topicID;
+						window.gTocChildOrder = data.childOrder;
+						window.gTocChildPrefixStr = data.childPrefix;
+						if (this.nonavigation == false)
+							syncToc(window.gTocChildPrefixStr, window.gTocChildOrder);
+					}).bind(this));
+					this.subscribed = true;
 				}
+				else if (this.nonavigation == false)
+					syncToc(gTocChildPrefixStr, gTocChildOrder);
 			}
 		}
 	}
-	Tree.prototype.insertTreeItem = function(parentHtmlNode, name, url, bookCount, pageCount, projOrderStr, itemType, src, rootRelPath, commonRootRelPath)
+	Tree.prototype.insertTreeItem = function(parentHtmlNode, name, url, target, bookCount, pageCount, projOrderStr, itemType, src, rootRelPath, commonRootRelPath)
 	{
 		var treeNode = document.createElement("div");
 		treeNode.setAttribute('class', TREEITEMCLASS);
@@ -263,15 +269,16 @@ function Tree(rootRelPath, dataFolder, rootFile, commonRootRelPath)
 		}
 		else if(ITEMTYPEURL == itemType)
 		{
+			treeNode.setAttribute('id', parentId + dot + bookCount + PAGEDELIM + pageCount + projOrderStr);
 			classNormal = this.urlClass;
 			classHover = this.urlClassHover;
 			classClick = this.urlClassClick;	
 			html = this.urlHtml;
 		}
 		parentHtmlNode.appendChild(treeNode);
-		this.insertChildHtmlNode(treeNode, name, itemType, html, classNormal, classHover, classClick, url);
+		this.insertChildHtmlNode(treeNode, name, itemType, html, classNormal, classHover, classClick, url, target);
 	}
-	Tree.prototype.insertChildHtmlNode = function(treeNode, name, itemType, html, classNormal, classHover, classClick, url)
+	Tree.prototype.insertChildHtmlNode = function(treeNode, name, itemType, html, classNormal, classHover, classClick, url, target)
 	{
 		var bAddAnchor = false;
 		if(url != null && url != "")
@@ -289,6 +296,21 @@ function Tree(rootRelPath, dataFolder, rootFile, commonRootRelPath)
 			var anchorNode = document.createElement("a");
 			anchorNode.className = NOLINKANCHORCLASS;
 			anchorNode.appendChild(htmlNode);
+			// Immediately select the clicked item.
+			anchorNode.addEventListener("click", function(event) {
+				if (!event.defaultPrevented)
+				{
+					var tN = this.getTreeNodeFromHtmlNode(event.currentTarget); 
+					if (tN != null) {
+						if(this.isBookClosedTreeNode(treeNode))
+							this.expandTreeNode(treeNode);
+						else if (this.selectedTreeNode == tN)
+							this.collapseTreeNode(treeNode);
+						this.setSelectedTreeNode(tN);
+						gTopicId = tN.getAttribute("id");
+					}
+				}
+			}.bind(this));
 			treeNode.insertBefore(anchorNode, treeNode.firstChild);
 		}
 		else
@@ -306,11 +328,19 @@ function Tree(rootRelPath, dataFolder, rootFile, commonRootRelPath)
 				var absUrl = _getFullPath(curPath, url);
 				if(absUrl == document.location.href)
 					this.addBookEventsToNode(htmlNode, itemType);
-				else
+				else {
 					anchorNode.setAttribute("href", url);
+					if (target != null) {
+						anchorNode.setAttribute("target", target);
 			}
-			else
+				}
+			}
+			else {
 				anchorNode.setAttribute("href", url);
+				if (target != null) {
+					anchorNode.setAttribute("target", target);
+				}
+			}
 		}
 		else
 			this.addBookEventsToNode(htmlNode, itemType);
@@ -363,7 +393,7 @@ function Tree(rootRelPath, dataFolder, rootFile, commonRootRelPath)
 		if(parentId != null && parentId != '')
 		{
 			var rootIdLen = this.rootId.length;
-			parentId = parentId.substring(rootIdLen);
+			parentId = encodeURIComponent(parentId.substring(rootIdLen));
 				
 			var urlid = "";
 			if(url.indexOf("?") != -1)
@@ -440,6 +470,7 @@ function Tree(rootRelPath, dataFolder, rootFile, commonRootRelPath)
 
 		var name = curBookHtmlNode.getAttribute("title");
 		var url = treeNode.getAttribute(DATAURL);
+		var target = treeNode.getAttribute(TARGET);
 		var hover = false;
 		if(treeNode == this.hoveredTreeNode)
 			hover = true;
@@ -447,7 +478,7 @@ function Tree(rootRelPath, dataFolder, rootFile, commonRootRelPath)
 			treeNode.removeChild(curBookHtmlNode);
 		else
 			treeNode.removeChild(curBookHtmlNode.parentNode);
-		this.insertChildHtmlNode(treeNode, name, itemType, bookHtml, classNormal, classHover, classClick, url);
+		this.insertChildHtmlNode(treeNode, name, itemType, bookHtml, classNormal, classHover, classClick, url, target);
 		if(treeNode == this.selectedTreeNode)
 			this.updateSelectedIcon(treeNode);
 		var bookHtmlNode = this.getHtmlNodeFromTreeNode(treeNode);
@@ -462,9 +493,13 @@ function Tree(rootRelPath, dataFolder, rootFile, commonRootRelPath)
 		}
 		if(this.isBookNodeLoaded(treeNode))
 		{
+			if (this.isBookClosedTreeNode(treeNode))  {
 			this.toggleBookNode(treeNode);
+  }
 			var bookChildsNode = treeNode.lastChild;
 			bookChildsNode.style.display = "block";
+			
+			return this.NODELOADED;
 		}
 		else
 		{
@@ -486,6 +521,8 @@ function Tree(rootRelPath, dataFolder, rootFile, commonRootRelPath)
 			objContext.rootRelPath = rootRelPath;
 			objContext.commonRootRelPath = commonRootRelPath;
 			xmlJsReader.loadFile(rootRelPath + "/" + this.dataFolder + "/" + src, callbackCreateTree, objContext);
+			
+			return this.NODELOADING;
 		}
 	}
 	Tree.prototype.collapseTreeNode = function(treeNode)
@@ -496,46 +533,58 @@ function Tree(rootRelPath, dataFolder, rootFile, commonRootRelPath)
 	}
 	Tree.prototype.sync = function(childPrefix, childOrder)
 	{
-		if(this.isSyncDone == true)
-			return;
 		if(childPrefix != "")
 			childPrefix += ".";
 		if(this.isSyncingRoot)
 		{
-			this.isSyncingRoot = false;
-			this.urlId = getUrlParameter(TOCID, gDocumentURL);
+			this.urlId = getUrlParameter(TOCID, document.location.href);
 			if(this.urlId == '')
 			{
 				if(gTopicId != null && gTopicId != 'undefined' && gTopicId != '')
 				{
-					var dataId = this.rootId;
 					gTopicId = gTopicId.split(BOOKDELIM).join(childOrder + BOOKDELIM);
-					this.urlId = dataId + childPrefix + gTopicId + childOrder;
+					this.urlId = this.rootId + childPrefix + gTopicId + childOrder;
 				}
 				else
-				{
-					this.isSyncDone = true;
 					return;
 				}
-			}
 			else
 				this.urlId = this.rootId + this.urlId;
 			this.idParts = this.urlId.split(BOOKDELIM);
 			this.nextNodeIdToBeSynced = this.idParts[this.idPartsNextIndex];
 		}
 		var treeNode = this.getTreeNodeById(this.nextNodeIdToBeSynced);
+		if (treeNode != undefined)
+		{
 		++this.idPartsNextIndex;
 		if(this.idPartsNextIndex < this.idParts.length)
 		{
-			this.expandTreeNode(treeNode);
-			this.nextNodeIdToBeSynced = this.nextNodeIdToBeSynced + BOOKDELIM + this.idParts[this.idPartsNextIndex];
+				this.nextNodeIdToBeSynced = this.nextNodeIdToBeSynced + BOOKDELIM + this.idParts[this.idPartsNextIndex];
+				this.isSyncingRoot = false;
+				if (this.expandTreeNode(treeNode) == this.NODELOADED)
+				{
+					// Recurse if this book node is already loaded.
+					// Otherwise we'll get a callback when the data is available.
+				this.sync("", "");
 		}
+			}
 		else
 		{
-			this.isSyncDone = true;
-			this.setSelectedTreeNode(treeNode);
-			if(this.isBookClosedTreeNode(treeNode))
-				this.expandTreeNode(treeNode);
+			this.idPartsNextIndex = 0;
+			this.isSyncingRoot = true;
+			if (treeNode != this.selectedTreeNode)
+			{
+				this.scrollTreeNodeIntoView(treeNode);
+				this.setSelectedTreeNode(treeNode);
+				if(this.isBookClosedTreeNode(treeNode))
+					this.expandTreeNode(treeNode);
+			}
+		}
+	}
+		else
+		{
+			this.idPartsNextIndex = 0;
+			this.isSyncingRoot = true;
 		}
 	}
 	Tree.prototype.pressKey = function(e)
@@ -863,16 +912,39 @@ function Tree(rootRelPath, dataFolder, rootFile, commonRootRelPath)
 	{
 		if(treeNode == null)
 			return;
-		var nodeClass = "";
+		if(this.selectedTreeNode === treeNode)
+			return;
+		
+		var nodeClass = "",
+			prevSelectedNode = this.selectedTreeNode;
+			
 		if(this.isBookClosedTreeNode(treeNode))
 			nodeClass = this.closedBookClassSelected + " " + UNSELECTABLECLASS;
 		else if(this.isBookOpenTreeNode(treeNode))
 			nodeClass = this.openBookClassSelected + " " + UNSELECTABLECLASS;	
 		else
 			nodeClass = this.pageClassSelected + " " + UNSELECTABLECLASS;
-		var htmlNode = this.getHtmlNodeFromTreeNode(treeNode);
-		htmlNode.className = nodeClass;
 		
+		// Add new classes to new node.
+		var selectedHtmlNode = this.getHtmlNodeFromTreeNode(treeNode);
+		selectedHtmlNode.className = nodeClass;
+		
+		this.selectedTreeNode = treeNode;
+		this.hoveredTreeNode = treeNode;
+		
+		// Unselect the previous node.
+		if (this.selectedTreeNode !== prevSelectedNode) {
+			this.unselectTreeNode(prevSelectedNode);
+		}
+		
+		this.updateSelectedIcon(treeNode);
+	}
+	
+	Tree.prototype.scrollTreeNodeIntoView = function(treeNode)
+	{
+		if(treeNode == null)
+			return;
+			
 		// Hack to ensure scrollintoview() does not screw up the show hide button on the navigation bar.
 		var scroll = true;
 		var showHideButtons = document.getElementsByClassName("closebutton");
@@ -880,18 +952,57 @@ function Tree(rootRelPath, dataFolder, rootFile, commonRootRelPath)
 		{
 			scroll = false;
 			var showHideButton = showHideButtons[0];
-			if (showHideButton.getAttribute("class").indexOf("buttonClosed") == -1)
+			if (showHideButton != null && showHideButton.getAttribute("class").indexOf("buttonClosed") == -1)
 				scroll = true;
 		}
 		// Hack
 		
-		if (scroll)
-			htmlNode.scrollIntoView();
+		if (scroll && this.selectedTreeNode !== treeNode) {
+			this.getHtmlNodeFromTreeNode(treeNode).scrollIntoView();
+		}
+	}
+	Tree.prototype.unselectTreeNode = function(treeNode)
+	{
+		var htmlNode = this.getHtmlNodeFromTreeNode(treeNode);
+		var classNormal, classHover, classClick;
 		
-		this.selectedTreeNode = treeNode;
-		this.hoveredTreeNode = treeNode;
-		
-		this.updateSelectedIcon(treeNode);
+		if (htmlNode != null)
+		{
+			var itemType = this.getNodeItemType(htmlNode);
+
+			if (itemType == ITEMTYPEBOOKOPEN) {
+				classNormal = this.openBookClass;
+				classHover = this.openBookClassHover;
+				classClick = this.openBookClassClick;
+				
+				rh.$.removeClass(htmlNode, this.openBookClassSelected);
+			}
+			else if (itemType == ITEMTYPEBOOKCLOSED) {
+				classNormal = this.closedBookClass;
+				classHover = this.closedBookClassHover;
+				classClick = this.closedBookClassClick;
+				
+				rh.$.removeClass(htmlNode, this.closedBookClassSelected);
+			}
+			else if (itemType == ITEMTYPEPAGE) {
+				classNormal = this.pageClass;
+				classHover = this.pageClassHover;
+				classClick = this.pageClassClick;
+				
+				rh.$.removeClass(htmlNode, this.pageClassSelected);
+			}
+			else if (itemType == ITEMTYPEURL) {
+				classNormal = this.urlClass;
+				classHover = this.urlClassHover;
+				classClick = this.urlClassClick;
+				
+				rh.$.removeClass(htmlNode, this.urlClassSelected);
+			}
+			
+			rh.$.addClass(htmlNode, classNormal);
+			this.hoverOutNode(htmlNode, classNormal);
+			this.addEventsToNode(htmlNode, classNormal, classHover, classClick, "");
+		}
 	}
 	Tree.prototype.hoverNode = function(htmlNode, hoverClass)
 	{
@@ -1071,6 +1182,10 @@ function callbackCreateTree(xmlDoc, arg) //Cannot use binding as IE9 does not su
 function onNodeExpand(e, htmlNode)
 {
 	var evt = e || window.event; // IE compatibility
+	
+	if (evt.defaultPrevented)
+		return;
+
 	if(evt.preventDefault)
 	{
 		evt.preventDefault();  
@@ -1087,7 +1202,10 @@ function onNodeExpand(e, htmlNode)
 		treeNode = gTree.getTreeNodeFromIconHtmlNode(htmlNode);
 	
 	if(treeNode)
+	{
+		this.nonavigation = true;
 		gTree.expandTreeNode(treeNode);
+	}
 }
 function onNodeCollapse(e, htmlNode)
 {
@@ -1124,6 +1242,7 @@ function loadProjData(childRootRelPath, childCommonRootRelPath, objContext)
 }
 function syncToc(prefix, childOrder)
 {
+	gTree.nonavigation = false;
 	gTree.sync(prefix, childOrder);
 }
 function treeContext(bkCount, pgCount, parentHtmlNode, projOrderStr, childProjOrder)

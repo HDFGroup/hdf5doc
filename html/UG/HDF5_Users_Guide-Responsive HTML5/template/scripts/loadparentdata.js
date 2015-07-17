@@ -4,6 +4,7 @@ gbLoadingParentData = false;
 gbParentDataLoaded = false;
 gTocChildPrefixStr = "";
 gTocChildOrder = "";
+gFlowTypeArrParentData = new Array;
 
 function parentDataCallbackObj()
 {
@@ -24,7 +25,6 @@ function initAndLoadParentData(path, flowType)
 		return;
 	}
 	gbLoadingParentData = true;
-	gFlowTypeArrParentData = new Array;
 	gFlowTypeArrParentData[0] = flowType;
 	gFinalRootRelPath = "";
 	gFinalCommonRootRelPath = "";

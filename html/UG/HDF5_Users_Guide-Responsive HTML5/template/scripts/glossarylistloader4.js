@@ -11,7 +11,6 @@ LOADINGSTRING = "Loading...";
 initGloPage();
 function initGloPage()
 {
-	gDocumentURL = document.location.href;
 	addRhLoadCompleteEvent(loadGlo);
 }
 var gGloList = null;

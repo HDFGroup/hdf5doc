@@ -84,7 +84,8 @@ function onToggleHighlightSearch()
 function onMaxPageCountChange(maxVal)
 {
 	g_nMaxResult = maxVal;
-	if(gSearchString != "")
+	
+	if(rh.model.get(rh.consts('KEY_SEARCHED_TERM')))
 		onClickPage(null, 1);
 	saveSetting(RHSEARCHCOUNT, maxVal, true);
 }
@@ -98,7 +99,7 @@ function updateNavigationPagesBar(nCurPage, nNumPages)
 	if(pageListBarDiv == null || pageListBarDiv == 'undefined'){
 		return;
 	}
-	if(nNumPages == 1) {
+	if(nNumPages <= 1) {
 		pageListBarDiv.innerHTML = '';
 		return;
 	}	

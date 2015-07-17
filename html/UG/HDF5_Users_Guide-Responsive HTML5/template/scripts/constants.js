@@ -21,6 +21,7 @@ var YCOORD = "y";
 var WIDTH = "width";
 var HEIGHT = "height";
 var OPTIONS = "options";
+var RHHIGHLIGHT = "rhhl";
 
 var REF = "ref";
 var MASTERPROJECT = "MasterProject";
@@ -62,9 +63,6 @@ var RHWINDOW = "rhwnd";
 var RHCSHMODE = "rhcsh";
 var RHNEWWINDOW = "rhnewwnd";
 var RHANDSEARCH = "rhandsearch";
-var RHSEARCHSTR = "rhsearch";
-var RHSYNSTR	= "rhsyns";
-var RHHIGHLIGHT = "rhhl";
 var RHSEARCHCOUNT = "rhsearchcount";
 var RHHIGHLIGHTTEXTCOLOR = "rhhltxtcol";
 var RHHIGHLIGHTBGCOLOR = "rhhlbgcol";
@@ -82,6 +80,7 @@ var WINSCROLLBARS=0x20;	/*need scrollbars?*/
 var NAME = "name";
 var URL = "url";
 var SRC = "src";
+var TARGET = "target";
 var CHILDNAME = "childname";
 
 
@@ -114,7 +113,6 @@ var DATAPH = "data-placeholder";
 var BOOKDELIM = ".";
 var PAGEDELIM = "_";
 var TABBUTTONID = "rhtabbuttonid";
-var TOCID = "rhtocid";
 
 var ITEMTYPEBOOKCLOSED	= 0;
 var ITEMTYPEBOOKOPEN	= 1;
@@ -166,3 +164,11 @@ var LINK_URL_MACRO = "{%LINK_URL%}";
 var SEARCH_SUMMARY_MACRO = "{%SEARCH_SUMMARY%}";
 var SEARCH_URL_MACRO = "{%SEARCH_URL%}";
 var ICON_MACRO = "{%ICON%}";
+
+// Keys used in URL
+var TOPIC_KEY			= "t";
+var UIMODE_KEY			= "ux";
+var RHSEARCHSTR 		= "rhsearch";
+var RHSYNSTR			= "rhsyns";
+var RHHIGHLIGHTTERM		= "rhhlterm";
+var TOCID 				= "rhtocid";

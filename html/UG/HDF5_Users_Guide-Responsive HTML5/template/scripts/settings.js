@@ -116,14 +116,22 @@ function getCookie(name)
 	{
 		var namePos, valueStartPos, valueEndPos;
 		var rawCookie = document.cookie;
-		namePos = rawCookie.indexOf(name);
-		var equalPos = namePos + name.length;
-		if ((namePos != -1) && (rawCookie.charAt(equalPos) == '='))
-		{
-			valueStartPos = namePos + name.length + 1;
-			valueEndPos = rawCookie.indexOf(delimiter,valueStartPos);
-			if (valueEndPos == -1) valueEndPos = rawCookie.length;
-				val = rawCookie.substring(valueStartPos,valueEndPos);
+		while(rawCookie.length > 0) {
+			namePos = rawCookie.indexOf(name);
+			if(namePos == -1) {
+				break;
+			}
+			
+			var equalPos = namePos + name.length;
+			if(rawCookie.charAt(equalPos) == '=')
+			{
+				valueStartPos = equalPos + 1;
+				valueEndPos = rawCookie.indexOf(delimiter, valueStartPos);
+				if (valueEndPos == -1) valueEndPos = rawCookie.length;
+				val = rawCookie.substring(valueStartPos, valueEndPos);
+				break;
+			}
+			rawCookie = rawCookie.substring(equalPos);
 		}
 	}
 	

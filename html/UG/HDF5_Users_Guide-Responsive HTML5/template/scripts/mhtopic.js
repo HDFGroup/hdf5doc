@@ -1,5 +1,5 @@
 
-var gTopicElemId = "rh_default_topic_placeholder_id";
+var gTopicElemId = "{{MSM_PH_DATA.TOPIC_PH_ID}}";
 var gsPPath="";
 var gaPaths=new Array();
 var gaAvenues=new Array();
@@ -49,10 +49,71 @@ var	EST_TERM		= 1;
 var	EST_PHRASE		= 2;
 var	EST_STEM		= 3;
 
-initTopicLoad();
-function initTopicLoad()
+//Code for breadcrumb variable check for bookmark
+(function() {
+	gbBreadCrumb 	= 0;
+	var strDocumentUrl = document.location.hash;
+	var n = strDocumentUrl.toLowerCase().indexOf("bc-");
+	if(n != -1)
+	{
+		document.location.hash = strDocumentUrl.substring(0, n);
+		var bc = strDocumentUrl.substring(n+3);
+		gbBreadCrumb = bc;
+	}
+})();
+
+// Initialize
+rh.util.addEventListener(document, 'DOMContentLoaded', verifyEnvironment);
+
+function verifyEnvironment() {
+	if (window.self === window.top) {
+		// Loaded without a parent.
+		addRhLoadCompleteEvent(rh._.redirectToLayout);
+	}
+	else {
+		addRhLoadCompleteEvent(initializeTopic);
+	}
+	loadScreens(SCR_NONE, gCommonRootRelPath);
+}
+
+function initializeTopic() {
+	publishTopicData();
+	applyHighlight();
+	loadParentDataForSyncing(gCommonRootRelPath, SCR_PARENT_TOCSYNC);
+}
+
+function publishTopicData()
 {
-	addRhLoadCompleteEvent(applyHighlight);
+	// Active topic URL
+	rh.model.publish(rh.consts('KEY_TOPIC_URL'), document.location.href);
+	
+	// Active topic title
+	rh.model.publish(rh.consts('KEY_TOPIC_TITLE'), document.title);
+	
+	// Active topic's browse sequence map
+	var brsPrevNodes = document.querySelectorAll('meta[name=brsprev]');
+	var brsNextNodes = document.querySelectorAll('meta[name=brsnext]');
+	var brsPrevLinks = new Array();
+	var brsNextLinks = new Array();
+	var hostFolder = _isHTTPUrl(document.location.href) ? document.location.protocol + '//' + gHost +  gHostPath : gHostPath;
+	
+	if (brsPrevNodes != undefined)
+	{
+		for (i = 0; i < brsPrevNodes.length; i++)
+			brsPrevLinks[brsPrevLinks.length] = rh.util.traverseByPath(document.location.href, gCommonRootRelPath) + brsPrevNodes[i].getAttribute('value');
+	}
+	if (brsNextNodes != undefined)
+	{
+		for (i = 0; i < brsNextNodes.length; i++)
+			brsNextLinks[brsNextLinks.length] = rh.util.traverseByPath(document.location.href, gCommonRootRelPath) + brsNextNodes[i].getAttribute('value');
+	}
+	
+	rh.model.publish(rh.consts('KEY_TOPIC_BRSMAP'), { p: brsPrevLinks, n: brsNextLinks });
+}
+
+function syncToc(tocChildPrefixStr, tocChildOrder)
+{
+	rh.model.publish(rh.consts('KEY_TOPIC_ID'), {topicID: gTopicId, childPrefix: gTocChildPrefixStr, childOrder: gTocChildOrder});
 }
 
 /////////highlight Search Routines /////////
@@ -497,7 +558,7 @@ function callbackHighlightBgColorRead(bgColor)
 }
 function StartHighLightSearch()
 {
-	var strTerms = GetSearchTextFromURL();	
+	var strTerms = GetHighlightTextFromURL();
 	var arrSyns = GetSynonymsFromURL();
 	
 	findSearchTerms(strTerms, false);

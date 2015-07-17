@@ -29,16 +29,32 @@ var g_nMaxPages = 3 ;
 var g_sQuestion='';
 var g_bServerResult=false;
 
-var gSearchString="";
-
 var gSearchDataFolderName =  "whxdata";
 var gFtsFileName = "whfts.xml";
 var gbANDSearch = 0;
 var gstrSyn = "";
 
+var gbSearchInitialized = false;
+
+function initializeSearch() {
+	var searchText = GetSearchTextFromURL(),
+		searchedText = rh.model.get(rh.consts('KEY_SEARCHED_TERM'));
+	
+	gbSearchInitialized = true;
+	initSearchPage();
+	
+	if (rh.util.isUsefulString(searchText) && searchText != searchedText) {
+		rh.model.publish(rh.consts('KEY_SEARCH_TERM'), searchText);
+		doSearch();
+	}
+}
 
 function doSearch()
 {
+	var searchText = rh.model.get(rh.consts('KEY_SEARCH_TERM'));
+	if(searchText) {
+		rh.model.publish(rh.consts('KEY_SEARCHED_TERM'), searchText, {sync: true});
+	}
 	initSearchPage();
 	readSetting(RHANDSEARCH, callbackAndSearchFlagRead);
 }
@@ -49,8 +65,7 @@ function callbackAndSearchFlagRead(andFlag)
 		gbANDSearch = 1;
 	else if(andFlag = FALSESTR)
 		gbANDSearch = 0;
-	gSearchString = GetSearchTextFromURL();
-	if(gSearchString != "")
+	if(rh.model.get(rh.consts('KEY_SEARCHED_TERM')))
 	{
 		displaySearchProgressBar(0);
 		loadFts_context();
@@ -2819,7 +2834,7 @@ function ftsContextLoaded(ftsProjDirArr)
 				  registListener, this );
 	context.resume();
 	
-	goOdinHunter.strQuery = gSearchString;
+	goOdinHunter.strQuery = rh.model.get(rh.consts('KEY_SEARCHED_TERM'));
 	Query();
 }
 
@@ -2868,7 +2883,7 @@ function displayTopics( a_QueryResult )
 {
 	var sHTML = "";
 	var sLine = "";
-	var szSearchStrings= gSearchString;
+	var szSearchStrings= rh.model.get(rh.consts('KEY_SEARCHED_TERM'));
 	var sHighlight = "CLRF=" + gsHLColorFront +
 					 ",CLRB=" + gsHLColorBackground + ",HL=";
 	
@@ -2879,7 +2894,7 @@ function displayTopics( a_QueryResult )
 	if ( a_QueryResult != null )
 	{
 	
-		var strParams = "?" + RHSEARCHSTR + "=" + encodeURIComponent( szSearchStrings ) + "&" + RHSYNSTR + "=" + encodeURIComponent(gstrSyn);
+		var strParams = "?" + RHHIGHLIGHTTERM + "=" + encodeURIComponent( szSearchStrings ) + "&" + RHSYNSTR + "=" + encodeURIComponent(gstrSyn);
 
 		if(a_QueryResult.aTopics.length > 0)
 			setResultsStringHTML(a_QueryResult.aTopics.length, _textToHtml_nonbsp(szSearchStrings));
@@ -2931,7 +2946,7 @@ function displayTopics( a_QueryResult )
 }
 
 function scrollContentDiv(scrollTop) {
-  var elem = document.getElementById('rh_scrollable_content');
+  var elem = document.getElementById('searchresults');
   if(elem) {
     elem.scrollTop = scrollTop;
   }
@@ -2969,6 +2984,7 @@ function displayErrorMsg(msg)
 {
 	changeResultView("");
 	updatePrevNextButtons(0, 0);
+	updateNavigationPagesBar(0, 0);
 	displayMsg(msg);
 }
 function updateResultView()
@@ -3017,7 +3033,7 @@ if (!window.gbTesting )
 {
 	if ( window.gbWhUtil && window.gbWhLang && window.gbWhVer )
 	{
-		addRhLoadCompleteEvent(doSearch);
+		addRhLoadCompleteEvent(initializeSearch);
 		gbWhFHost=true;
 	}
 	else

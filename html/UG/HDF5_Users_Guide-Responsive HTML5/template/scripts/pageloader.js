@@ -1,7 +1,6 @@
 initPage();
 function initPage()
 {
-	gDocumentURL = document.location.href;
 	if( window.addEventListener )
 	{
 		window.addEventListener('load', onPageLoad, false);
