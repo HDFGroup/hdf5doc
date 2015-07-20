@@ -1,0 +1,210 @@
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Introduction
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%\section{Introduction}
+
+\frame{
+  \frametitle{Introduction}
+  \begin{itemize}
+    \item HDF5 Chunking is used for
+  \begin{itemize}
+    \item Compression
+    \item I/O optimization
+    \item \textbf{Extending datasets} efficiently
+  \end{itemize}
+  \end{itemize}
+
+  \begin{itemize}
+    \item Chunks must be indexed so that data can be retrieved efficiently
+    \item Map of coordinates associated to chunk elements
+  \end{itemize}
+}
+
+\frame{
+  \frametitle{Chunk Indexing}
+  \begin{itemize}
+    \item Currently uses B-tree structure
+    \item Insertion/lookup in $O(\log_b{n})$, where $n$ is the number of nodes and $b$ the order of the tree
+    \item Record in B-tree stores
+    \begin{itemize}
+      \item Coordinates of the chunk in the dataset's dataspace.
+      \item The size of the chunk, in bytes.
+      \item The address of the chunk in the file.
+      \item Additional metadata.
+    \end{itemize}
+  \end{itemize}
+}
+
+\frame{
+  \frametitle{B-Tree Issues}
+  \begin{itemize}
+    \item Extending dataset $=$ dataset dimension only increased at upper bound
+  \end{itemize}
+  \begin{center}
+    \resizebox{\linewidth}{!}{
+       \input{pics/btree1}
+    }
+  \end{center}
+}
+
+\frame{
+  \frametitle{B-Tree Issues}
+  \begin{itemize}
+    \item B-tree v2 fixes re-balancing issue
+    \item More optimizations \textit{tweaks} but same complexity
+    \item B-tree not ideal for dataset extended in single dimension
+    \begin{itemize}
+      \item Use extensible array instead
+    \end{itemize}
+  \end{itemize}
+}
+
+
+\frame{
+  \frametitle{Extensible Array}
+  \begin{itemize}
+    \item Insertion/removal/lookup in $O(1)$
+  \end{itemize}
+  \begin{center}
+    \resizebox{\linewidth}{!}{
+       \input{pics/ea}
+    }
+  \end{center}
+}
+
+\frame{
+  \frametitle{Hash Table}
+  \begin{itemize}
+    \item Chunk present in cache are retrieved from cache hash table
+    \item Each entry hashed based on the chunk index (varies according to dataset
+    dimension size)
+    \item Extending dataset means
+    \begin{itemize}
+      \item Recalculation of every hash value \yellowemph{EVERY TIME}
+    \end{itemize}
+  \end{itemize}
+}
+
+\frame{
+  \frametitle{Hashing Chunks Coordinates}
+  \begin{center}
+    \resizebox{\linewidth}{!}{
+       \input{pics/scaled}
+    }
+  \end{center}
+}
+
+\frame{
+  \frametitle{Chunk Indexing Performance}
+\begin{columns}[c] % the "c" option specifies center vertical alignment
+\column{.5\textwidth}
+\begin{itemize}
+\item Before
+\end{itemize}
+\resizebox{\linewidth}{!}{
+\uncover<2->{
+\begin{tabular}{lrr} \toprule
+Indexing Method &
+Time (\si{\second}) \\
+\midrule
+\textit{Along the X-direction} \\
+EA & $149.82$\tikzmark{t1x1} \\
+BT1 & $156.15$\tikzmark{t1x2} \\
+BT2 & $166.56$\tikzmark{t1x3} \\
+\midrule
+\textit{Along the Y-direction} \\
+EA & $150.08$\tikzmark{t1y1} \\
+BT1 & $163.82$\tikzmark{t1y2} \\
+BT2 & $167.91$\tikzmark{t1y3} \\
+\midrule
+\textit{Along the XY-direction} \\
+EA & $-$ \\
+BT1 & $104.08$\tikzmark{t1xy1} \\
+BT2 & $114.39$\tikzmark{t1xy2} \\
+\bottomrule
+\end{tabular}
+}
+\uncover<3->{
+\tablearrowright{t1x2}{t1x1}{$\simeq -4\%$}{}
+\tablearrowleft{t1x2}{t1x3}{$\simeq +7\%$}{}
+\tablearrowright{t1y2}{t1y1}{$\simeq -8\%$}{}
+\tablearrowleft{t1y2}{t1y3}{$\simeq +2\%$}{}
+\tablearrowleft{t1xy1}{t1xy2}{$\simeq +10\%$}{}
+}
+}
+\column{.5\textwidth}
+\uncover<4->{
+\begin{itemize}
+\item After
+\end{itemize}
+}
+\resizebox{\linewidth}{!}{
+\uncover<5->{
+\begin{tabular}{lr} \toprule
+Indexing Method &
+Time (\si{\second}) \\
+\midrule
+\textit{Along the X-direction} \\
+EA & $32.10$\tikzmark{x1}\\
+BT1 & $36.63$\tikzmark{x2} \\
+BT2 & $35.39$\tikzmark{x3} \\
+\midrule
+\textit{Along the Y-direction} \\
+EA & $32.2$\tikzmark{y1} \\
+BT1 & $39.01$\tikzmark{y2} \\
+BT2 & $34.90$\tikzmark{y3} \\
+\midrule
+\textit{Along the XY-direction} \\
+EA & $-$ \\
+BT1 & $36.11$\tikzmark{xy1} \\
+BT2 & $35.29$\tikzmark{xy2} \\
+\bottomrule
+\end{tabular}
+}
+\uncover<6->{
+\tablearrowright{x2}{x1}{$\simeq -12.4\%$}{}
+\tablearrowleft{x2}{x3}{$\simeq -3.4\%$}{fill=paperblue!30}
+\tablearrowright{y2}{y1}{$\simeq -17.5\%$}{}
+\tablearrowleft{y2}{y3}{$\simeq -10.5\%$}{fill=paperblue!30}
+\tablearrowleft{xy1}{xy2}{$\simeq -2.3\%$}{fill=paperblue!30}
+}
+}
+\end{columns}
+}
+
+\frame{
+  \frametitle{Chunk Indexing Performance}
+  \begin{center}
+    \resizebox{\linewidth}{!}{
+       \input{plots/chunk_perf}
+    }
+  \end{center}
+}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Conclusion and Perspectives
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%\section{Conclusion and Perspectives}
+
+\frame{
+  \frametitle{Conclusion}
+  \begin{itemize}
+    \item Obviously better performance \smiley
+    \item Paper available for more details
+    \begin{itemize}
+      \item \url{http://svn.hdfgroup.org/hdf5doc/trunk/WhitePapers/revise_chunks/paper.pdf}
+    \end{itemize}
+    \item Future work
+    \begin{itemize}
+      \item Universal B-trees
+      \item Other structures
+      \item Optimize lookup of entries frequently accessed with Huffman coding
+    \end{itemize}
+  \end{itemize}
+}
+
+\begin{frame}[t]
+\frametitle{Questions}
+\end{frame}
+

@@ -4,14 +4,14 @@
 
 The HDF5 library~\cite{Folk2011}\cite{Folk1999} provides users with a high degree of flexibility for data
 management---users may define and organize data into different groups and
-datasets and build an hierarchical tree of data. Datasets may be contiguously 
+datasets and build a hierarchical tree of data. Datasets may be contiguously 
 mapped from the application memory to a file, or stored in more complex 
-patterns to ease further access and analysis of the data. One option that
-is commonly used is to create and define a dataset as \textit{extendable},
-in order to easily append new values to it.
+patterns to ease further access and analysis of the data. One
+commonly used option is to define and create a dataset as \textit{extendable},
+which allows new values to be appended to it.
 An HDF5 dataset is extendable when the maximum dimension sizes of its 
 dataspace are greater than the current dimension sizes, with the maximum dimension 
-size being specified as \textit{fixed} size or \textit{unlimited} size.
+size being specified as either \textit{fixed} size or \textit{unlimited} size.
 
 When defining an extendable dataset, the HDF5 library requires the dataset
 to be partitioned into fixed-size multi-dimensional chunks---this operation, 
@@ -19,9 +19,9 @@ illustrated in figure~\ref{fig:hdf5_dataset}, is called \textit{chunking}.
 Chunking makes it possible to extend datasets efficiently without having to
 reorganize contiguous storage excessively. To retrieve elements in the
 datasets that are stored in chunked form, the chunk containing those
-elements must be located and accessed. Several structures can be used
-to achieve that and the locations of chunks for a dataset have originally 
-been stored in a B-tree data structure. This structure maps the index of the chunk to 
+elements must be located and accessed. Several data structures can be used
+to achieve that and the locations of chunks for a dataset are currently 
+stored in a B-tree data structure. This structure maps the index of the chunk to 
 the file offset where the chunk's elements are stored. However, depending
 on the use case and in particular for extendable datasets, it presents some
 drawbacks, which are addressed in this paper.
@@ -69,7 +69,7 @@ is created.}
 
 Chunking is a technique used in the HDF5 library in various cases:
 to optimize I/O to disk~\cite{Howison2010}, to compress data~\cite{Folk2011},
-to extend datasets.
+and to efficiently extend datasets.
 To retrieve elements in the datasets that are stored in chunked form, the
 chunk containing those elements must be located and accessed.
 The HDF5 library's default data structure for indexing chunks is based on
@@ -79,7 +79,7 @@ file offset where the chunk's elements are stored.
 \subsection{B-Trees}
 
 B-trees are generally used for indexing data blocks
-and are one of the main components of file systems~\cite{Comer1979}~\cite{Folk1992}. 
+and are one of the main components of many file systems~\cite{Comer1979}\cite{Folk1992}. 
 Insertion of a new entry and lookup is realized in $O(\log_b{n})$, where $n$ is the
 number of nodes and $b$ the order of the tree.
 In the case of HDF5 datasets and in the original B-tree structure, referred to
@@ -119,9 +119,10 @@ Some additional modifications have also been made to the BT2 to improve performa
 \item
 When appending to a dataset, the library will insert a new record to the
 B-tree. To determine that the record to be inserted is not in the tree,
-the library traverses the corresponding tree nodes and compares the records 
+a naive implementation traverses the corresponding tree nodes and compares the records 
 in each node before the insertion.
-To accelerate the search, the maximum and minimum records in the tree are 
+To accelerate the search, because entries are frequently added at the upper bound,
+the maximum and minimum records in the tree are 
 determined and stored in memory. The library can then quickly 
 determine that the new record to be inserted is not in the tree if it is 
 greater than the maximum record or less than the minimum record.
@@ -165,7 +166,7 @@ In our case and for indexing chunks in HDF5 datasets, the array elements in the
 data blocks are pointers to the chunks on disk.
 To conceptually group the data blocks that the index block points to,
 the extensible array defines \textit{super blocks}.
-Super blocks are not actually constructs in the data structure, but
+Super blocks can be seen as \textit{indirect blocks} in the data structure and,
 as mentioned in~\cite{Brodnik1999}, help to show the pattern of
 changes to the data blocks: first the size of the data block doubles, then the 
 number of data blocks of that size doubles, then the size doubles again, then the 
@@ -287,8 +288,10 @@ dataspace, which has one unlimited dimension:
 \begin{lstlisting}
 curr[0] = 0;
 curr[1] = 1;
-max[0] = H5S_UNLIMITED;
-max[1] = 1;
+max[0] = H5S_UNLIMITED; /* or 1 if append
+                         * in Y direction */
+max[1] = 1; /* or H5S_UNLIMITED if append
+             * in Y direction */
 sid = H5Screate_simple(2, curr, max);
 \end{lstlisting}
 }
@@ -317,8 +320,7 @@ Append operations are done along the X and/or Y directions.
 \subsection{Preliminary Results}
 
 First, measures are realized on the library before optimization.
-The quantify tool is used to collect the time in seconds spent in the library
-code from the test runs. The result listed in table~\ref{tab:result1} indicates
+The result listed in table~\ref{tab:result1} indicates
 that the EA indexing method performs better than BT1, while the BT2 indexing
 method performs worse than BT1. Note also that the library takes a fair amount
 of time for all three indexing methods.
@@ -394,7 +396,7 @@ BT2 & $35.29$\tikzmark{xy2} \\
 As one can see in figure~\ref{fig:chunk_perf}, for significant numbers of chunks,
 the BT2 and EA indexing methods perform better than BT1. EA shows good scalability
 and a much better performance than BT1/BT2 as the number of chunks increases.
-BT2 generally shows better performance than BT1 (it is also worth noting than
+BT2 generally shows better performance than BT1 (it is also worth noting that
 even if this is not shown in this result, the amount of space taken by BT2
 is reduced). Overall these results confirm the optimization made within the
 library and were what we expected given the complexity of the methods used.
@@ -413,21 +415,43 @@ version 2 shows improved results compared to BT1.}
 
 Nimako et al.~\cite{Nimako2012} consider another data structure for indexing
 chunks, the $O_{2}$-Tree, which performs query operations (searches) in
-$O(\log_{2}{n})$ time, where $n$ is the number of internal nodes. They
+$O(\log_{2}{n})$ time, where $n$ is the number of internal nodes. They also
 mention that the conventional arrays and HDF5 incur the cost
 of reorganizing already allocated array elements.
 Based on these results and the new optimization made, it would be
 interesting to make a new comparison. The $O_{2}$-Tree may perform
 better than a B-Tree data structure but the re-sizable array data structure
-will still perform better in the 1-unlimited dimension case, as its complexity
-is in $O(1)$.
+will still perform better in the single unlimited dimension case, as its
+complexity is in $O(1)$.
 
-%[Other related work?]
-%Sub array I/O from ADIOS etc / chunking from other libraries
-%Tell what was done for chunking in the past etc
+The universal B-tree~\cite{Bayer1997}, which is designed for multidimensional
+data, should also be another alternative to consider. The UB-tree is balanced
+and has all the guaranteed performance characteristics of B-trees, i.e.
+it requires linear space for storage and logarithmic time for insertion, lookup,
+removal of elements. In addition the UB-tree has the fundamental property that
+it preserves clustering of objects with respect to Cartesian distance.
+Therefore, the UB-tree shows its main strengths for multidimensional data.
+It also has very high potential for parallel processing, which makes it a very
+good candidate for further experimentation within the HDF5 library.
 
 \section{Conclusion and Future Work}
 \label{sec:conclusion}
+
+The various enhancements made to the chunk indexing methods show good performance
+and whereas there is no gain in complexity with the \textit{B-Tree version 2},
+performance and space utilization have been significantly improved. For datasets that are
+extended in a single dimension, the extensible array offers a very good
+improvement compared to the standard B-tree, since elements can be accessed
+in constant time.
+
+One component that is not taken into account in this work is the frequency
+of access of the elements. We should consider this in future work. An idea
+could be to make the \textit{B-Tree version 2} dynamically adjustable by using
+methods such as the Huffman coding~\cite{Huffman1952} already used for data
+compression, and which can represent the frequency of appearance of elements.
+Adding this component could benefit applications that frequently access specific
+regions of chunked data and further reduce the overhead introduced by the chunk
+indexing method.
 
 %\section*{Acknowledgments}
 %The work presented in this paper was supported by ???

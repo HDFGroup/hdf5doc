@@ -1,0 +1,106 @@
+\tikzstyle{trans} = [>=stealth, thick, text centered, font=\small]
+\tikzstyle{computBox} = [draw=black, thick, inner sep=4pt, inner ysep=4pt,
+  rectangle, rounded corners]
+
+\newcommand{\drawcuboid}[5]{% width, height, depth, scale, color
+\begin{scope}[scale=#4]
+\coordinate (O) at (0,0,0);
+\coordinate (A) at (0,#2,0);
+\coordinate (B) at (0,#2,#3);
+\coordinate (C) at (0,0,#3);
+\coordinate (D) at (#1,0,0);
+\coordinate (E) at (#1,#2,0);
+\coordinate (F) at (#1,#2,#3);
+\coordinate (G) at (#1,0,#3);
+
+\draw[fill=#5] (O) -- (C) -- (G) -- (D) -- cycle;% Bottom Face
+\draw[fill=#5] (O) -- (A) -- (E) -- (D) -- cycle;% Back Face
+\draw[fill=#5] (O) -- (A) -- (B) -- (C) -- cycle;% Left Face
+\draw[fill=#5] (D) -- (E) -- (F) -- (G) -- cycle;% Right Face
+\draw[fill=#5] (C) -- (B) -- (F) -- (G) -- cycle;% Front Face
+\draw[fill=#5] (A) -- (B) -- (F) -- (E) -- cycle;% Top Face
+
+\draw[dashed] (O) -- (D);
+\draw[dashed] (O) -- (C);
+\draw[dashed] (O) -- (A);
+
+\coordinate[left=6pt of A] (A1);
+\coordinate[left=6pt of B] (B1);
+\coordinate[left=6pt of C] (C1);
+\coordinate[below=4pt of C] (C2);
+\coordinate[below=4pt of G] (G1);
+\draw[<->,trans] (C2) -- node [font=\small,below] {#1} (G1);
+\draw[<->,trans] (C1) -- node [font=\small,left] {#2} (B1);
+\draw[<->,trans] (A1) -- node [font=\small,above left] {#3} (B1);
+
+\end{scope}
+}
+
+%\DeclarePairedDelimiter\ceil{\lceil}{\rceil}
+
+\begin{tikzpicture}
+
+\uncover<1->{
+\node (cubes) {
+\begin{minipage}{0.52\textwidth}
+\begin{tikzpicture}
+% Origin axes
+\draw[->,draw=paperblue,thick] (0,0,0) -- (3.2,0,0);
+\draw[->,draw=paperblue,thick] (0,0,0) -- (0,3.8,0);
+\draw[->,draw=paperblue,thick] (0,0,0) -- (0,0,4);
+\node[font=\small\itshape] at (3.4,0,0) {x};
+\node[font=\small\itshape] at (0,4,0) {y};
+\node[font=\small\itshape] at (0,0,4.4) {z};
+
+% Cubes
+\drawcuboid{60}{75}{75}{0.04}{white}
+\drawcuboid{10}{25}{25}{0.04}{paperblue!20}
+\end{tikzpicture}
+\end{minipage}
+};
+}
+
+% Hash value computation
+\uncover<3->{
+\node [computBox, font=\footnotesize, text width=100pt, right=50pt of cubes] (scaled) {
+  \begin{minipage}{\textwidth}
+  {
+\textbf{Scaled coordinates:}\\
+\begin{math}
+   X/x = 60/10 = 6\\
+   Y/y = 75/25 = 3\\
+   Z/z = 75/25 = 3
+\end{math}
+
+\smallskip
+\textbf{Number of bits to\\ represent coordinates:}\\
+\begin{math}
+   \lceil \log_2(X/x) \rceil = 3\\
+   \lceil \log_2(Y/y) \rceil = 2\\
+   \lceil \log_2(Z/z) \rceil = 2
+\end{math}
+  }
+  \end{minipage}
+};
+}
+
+\uncover<4->{
+\node [right=of scaled,rectangle split,rectangle split horizontal,
+  rectangle split parts=2,draw, minimum height=15pt,text centered,anchor=center,font=\small] (zhash) {0 \nodepart{two} 0};
+\node [right=14pt of zhash,rectangle split,rectangle split horizontal,
+  rectangle split parts=2,draw, minimum height=15pt,text centered,anchor=center,font=\small] (yhash) {0 \nodepart{two} 0};
+\node [right=20pt of yhash,rectangle split,rectangle split horizontal,
+  rectangle split parts=3,draw, minimum height=15pt,text centered,anchor=center,font=\small] (xhash) {0 \nodepart{two} 0 \nodepart{three} 0};
+\node [below=2pt of xhash] {$x$};
+\node [below=2pt of yhash] {$y$};
+\node [below=2pt of zhash] {$z$};
+}
+
+\uncover<2->{
+\draw[very thick, ->] (cubes) -- node[above, text width=4cm, align=center, font=\small\bfseries]
+    {Hash-value} ($ (scaled.west) - (0.5,0) $);
+}
+
+\end{tikzpicture}
+
+
