@@ -72,7 +72,7 @@
 %% ========================================================================
 
 %% Base class
-\LoadClass[10pt]{scrartcl}
+\LoadClass[11pt]{scrartcl}
 
 % Use English by default
 \RequirePackage[english]{babel}
