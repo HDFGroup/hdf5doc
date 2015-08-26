@@ -1,0 +1,176 @@
+
+
+<!--
+  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+  * Copyright by The HDF Group.                                               *
+  * Copyright by the Board of Trustees of the University of Illinois.         *
+  * All rights reserved.                                                      *
+  *                                                                           *
+  * This file is part of HDF5.  The full HDF5 copyright notice, including     *
+  * terms governing use, modification, and redistribution, is contained in    *
+  * the files COPYING and Copyright.html.  COPYING can be found at the root   *
+  * of the source code distribution tree; Copyright.html can be found at the  *
+  * root level of an installed copy of the electronic HDF5 document set and   *
+  * is linked from the top-level documents page.  It can also be found at     *
+  * http://hdfgroup.org/HDF5/doc/Copyright.html.  If you do not have          *
+  * access to either file, you may request a copy from help@hdfgroup.org.     *
+  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+ -->
+
+
+<!-- NEW PAGE -->
+<!-- HEADER RIGHT "H5PLset_loading_state" -->
+<hr>
+<dl>
+
+  <dt><div align=right><font color=999999 size=-1><i>
+      Augustast modified: 26 August 2015
+      </i></font></div>
+
+  <dt><strong>Name:</strong> <a name="Plugin-SetLoadingState">H5PLset_loading_state</a>
+  <dt><strong>Signature:</strong>
+    <dd><em>herr_t</em> <code>H5PLset_loading_state</code>(
+            <em>int</em> <code>plugin_flags</code>
+    )
+
+  <p />
+  <dt><strong>Purpose:</strong>
+    <dd>Control the loading of dynamic plugins.
+
+  <p />
+  <dt><strong>Motivation:</strong>
+    <dd>The loading of external dynamic plugins can be controlled 
+        during runtime with an environment variable, 
+        <code>HDF5_PLUGIN_PRELOAD</code>. 
+        The environment variable can control the loading of dynamic filters 
+        at runtime, but it will disable it for all running programs that 
+        access that variable using the library. 
+        <p>
+        <code>H5PLset_loading_state</code> controls the 
+        loading of external dynamic plugins during program execution.
+
+  <p />
+  <dt><strong>Description:</strong>
+    <dd><code>H5PLset_loading_state</code> uses one argument 
+        to enable or disable individual plugins. 
+        <p />
+        The <code>plugin_flags</code> parameter is an encoded integer 
+        in which each bit controls a specific plugin or class of plugins.
+        Bit positions allocated to date are listed in the 
+        &ldquo;Plugin Type/Bit Position&rdquo; table below. 
+        <p />
+        A plugin bit set to <code>0</code> (zero) prevents the use of
+        the dynamic plugin corresponding to that bit position. 
+        A plugin bit set to <code>1</code> (one) allows the use of 
+        that dynamic plugin.
+        <p />
+        All dynamic plugins can be enabled by setting <code>plugin_flags</code> 
+        to a negative value. 
+        A value of <code>0</code> (zero) will disable all dynamic plugins.
+        <p />
+        <code>H5PLset_loading_state</code> inspects the 
+        <code>HDF5_PLUGIN_PRELOAD</code> environment variable every time 
+        it is called.  If the environment variable is set to the special 
+        <code>::</code> string, all dynamic plugins will be disabled. 
+ 
+  <p />
+  <dt><strong>Note:</strong>
+    <dd>The classes of plugins subject to programmatic control are
+        specified in the <code>H5PL_type_t</code> <small>ENUM</small>.
+        Since only dynamically loaded filter plugins are currently 
+        subject to programmatic control, only one plugin type is 
+        defined:
+        <table>
+          <tr valign="top" align="left">
+            <th><code>&nbsp;&nbsp;&nbsp;&nbsp;</code></th>
+            <th>Plugin Type</th>
+            <th>Bit Position</th>
+            </tr>
+          <tr valign="top" align="left">
+            <td>&nbsp;</td>
+            <td><code>H5PL_TYPE_FILTER&nbsp;&nbsp;&nbsp;&nbsp;</code></td>
+            <td><code>0</code>
+            </tr>
+        </table> 
+        Additional values may be added to the <code>H5PL_type_t</code> 
+        <small>ENUM</small> as programmatic control is implemented for 
+        other plugin types. 
+
+  <p />
+  <dt><strong>Parameters:</strong>
+    <dd><table>
+      <tr>
+        <td valign="top"><em>int</em>&nbsp;<code>plugin_flags</code>&nbsp;&nbsp;&nbsp;&nbsp;
+        </td>
+        <td valign="top">IN: The list of dynamic plugin types to enable or disable.
+            <br>
+            A plugin bit set to <code>0</code> (zero) 
+            prevents use of that dynamic plugin.
+            <br>
+            A plugin bit set to <code>1</code> (one) 
+            enables use of that dynamic plugin.
+            <p />
+	    Setting <code>plugin_flags</code> to a negative value
+            enables all dynamic plugins. 
+            <br>
+	    Setting <code>plugin_flags</code> to <code>0</code> (zero)
+            disables all dynamic plugins.
+
+        </td></tr>
+    </table>
+
+  <p />
+  <dt><strong>Returns:</strong>
+    <dd>Returns a non-negative value if successful;
+        otherwise returns a negative value.
+
+  <p />
+  <dt><strong>Example Usage:</strong>
+    <dd><pre>
+/* Disable plugin X: Requires user to negate the state 
+ * with a 0 in bit position X and AND it with the result 
+ * from an H5PLget_loading_state call. */
+
+H5PLget_loading_state(&curr_setting);
+int new_setting = curr_setting & ~H5PL_FILTER_PLUGIN ;
+H5PLset_loading_state (new_setting);
+    </pre>
+    </dd>
+
+  <p />
+  <dt><strong>Fortran90 Interface:</strong> <!-- h5pset_loading_state_f -->
+    <dd>None.
+
+  <p />
+  <dt><strong>See Also:</strong>
+    <dd>
+<!--    <a href="#Plugin-SetLoadingState"><code>H5PLset_loading_state</code></a>
+        <p />
+-->
+        <a href="#Plugin-GetLoadingState"><code>H5PLget_loading_state</code></a>
+        <p />
+        &ldquo;<a 
+        href="../Advanced/DynamicallyLoadedFilters/HDF5DynamicallyLoadedFilters.pdf">HDF5
+        Dynamically Loaded Filters</a>&rdquo;
+        <p />
+        &ldquo;<a 
+        href="../Advanced/DynamicallyLoadedFilters/HDF5_Dynamic_Plugin_Programatic_Control(Preliminary).pdf">Programmatic 
+        Control of Dynamic Plugins</a>&rdquo; 
+        <i>(Draft)</i>
+
+  <p />
+  <dt><strong>History:</strong>
+    <dd><table width="90%">
+        <tr>
+          <td valign="top" align="left" width="10%">
+            <strong>Release</strong>&nbsp;&nbsp;&nbsp;&nbsp;</td>
+          <td valign="top" align="left">
+            <strong>C</strong></td></tr>
+        <tr>
+          <td valign="top">1.8.15</td>
+          <td valign="top">
+            Function introduced in this release.</td></tr>
+    </table>
+</dl>
+
+
