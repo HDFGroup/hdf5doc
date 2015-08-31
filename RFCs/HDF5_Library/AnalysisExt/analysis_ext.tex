@@ -242,44 +242,47 @@ $Combination \land Combination$ & $None$ \\
 
 \section{View Objects}
 Applying a query to an HDF5 container creates an HDF5 view. HDF5 view
-objects are run-time, in-memory objects (i.e., not stored in a container)
-\add[JS]{but which can be persisted}, that
+objects are run-time, in-memory objects (i.e., not stored in a container
+\add[JS]{but which can be persisted}), that
 consist of read-only references \add[JS]{to attributes, objects and data regions}
 into the contents of the HDF5 container that the query was applied to.
 \add[JS]{The view object can be therefore seen as a virtual container. It is
 defined as an anonymous HDF5 group, which consists of three predefined datasets that
-contain attribute, object and region references. A new view is created by the
+contain attribute, object and region references, and stored in-memory, i.e., using
+the existing core driver. A new view is created by the
 following routine, which applies a query to an HDF5 container, group hierarchy,
 or individual object and returns the object ID of the newly created group:}
 {\lstsetc
 \begin{lstlisting}
-hid_t H5Qapply(hid_t loc_id, hid_t query_id, hid_t vcpl_id, unsigned *result);
+hid_t H5Qapply(hid_t loc_id, hid_t query_id, unsigned *result, hid_t vcpl_id);
 \end{lstlisting}
 }
 
-\add[JS]{As mentioned, the created view may also need to be persisted. For
+\add[JS]{As mentioned, the created view may also need to be persisted and this
+can be done by calling \textit{H5Ocopy()} to copy the group (stored in a virtual
+container) to a persistent container. For
 coherency, a time stamp may be attached to it so that its states has a meaning
 compared to the state of the container that the query was applied to (as the
 container may have been modified in the meantime). It may also be useful in
 that case to define different states to the view (\textit{dead} or
 \textit{live}) so that the user knows whether the view is current or not.}
 
-To further ease the retrieval of the results from the view and for convenience,
-an API specific to the view object may be defined:
+%To further ease the retrieval of the results from the view and for convenience,
+%an API specific to the view object may be defined:
 
-\note[JS]{Which ones do we really need???}
-{\lstsetc
-\begin{lstlisting}
-herr_t H5Vget_location(hid_t view_id, hid_t *loc_id);
-herr_t H5Vget_query(hid_t view_id, hid_t *query_id);
-herr_t H5Vget_counts(hid_t view_id, hsize_t *attr_count, hsize_t *obj_count,
-  hsize_t *elem_region_count);
-herr_t H5Vget_attrs(hid_t view_id, hsize_t start, hsize_t count, hid_t attr_id[]);
-herr_t H5Vget_objs(hid_t view_id, hsize_t start, hsize_t count, hid_t obj_id[]);
-herr_t H5Vget_elem_regions(hid_t view_id, hsize_t start, hsize_t count,
-  hid_t dataset_id[], hid_t dataspace_id[]);
-\end{lstlisting}
-}
+%\note[JS]{Which ones do we really need???}
+%{\lstsetc
+%\begin{lstlisting}
+%herr_t H5Vget_location(hid_t view_id, hid_t *loc_id);
+%herr_t H5Vget_query(hid_t view_id, hid_t *query_id);
+%herr_t H5Vget_counts(hid_t view_id, hsize_t *attr_count, hsize_t *obj_count,
+%  hsize_t *elem_region_count);
+%herr_t H5Vget_attrs(hid_t view_id, hsize_t start, hsize_t count, hid_t attr_id[]);
+%herr_t H5Vget_objs(hid_t view_id, hsize_t start, hsize_t count, hid_t obj_id[]);
+%herr_t H5Vget_elem_regions(hid_t view_id, hsize_t start, hsize_t count,
+%  hid_t dataset_id[], hid_t dataspace_id[]);
+%\end{lstlisting}
+%}
 
 \remove[JS]{View objects are created with \texttt{H5Vcreate}, which applies a query to an
 HDF5 container, group hierarchy, or individual object and produces the view
