@@ -1,6 +1,6 @@
 <html>
 <head><title>
-HDF5/H5L API Specification
+HDF5/H5PL API Specification
 </title>
 <link href="../ed_styles/RMelect.css" rel="stylesheet" type="text/css">
 </head>
@@ -26,7 +26,6 @@ HDF5/H5L API Specification
  -->
 <!-- #EndLibraryItem --><!-- HEADER RIGHT " " -->
 
-
 <!-- #BeginLibraryItem "/ed_libs/NavBar_RM.lbi" -->
 <hr>
 <center>
@@ -42,7 +41,8 @@ HDF5/H5L API Specification
 <td valign=top align=right>
 In the 
 <a href="RM_H5Front.html">HDF5 Reference Manual</a>&nbsp;
-<font size="-1"><br>
+<font size=-1>
+<br>
 <a href="../HL/RM_H5DS.html">H5DS</a>&nbsp;&nbsp;
 <a href="../HL/RM_H5IM.html">H5IM</a>&nbsp;&nbsp;
 <a href="../HL/RM_H5LT.html">H5LT</a>&nbsp;&nbsp;
@@ -73,175 +73,129 @@ In the
 <a href="APICompatMacros.html">Compatibility Macros</a>&nbsp;
 <br>
 <a href="CollectiveCalls.html">Collective Calls in Parallel</a>&nbsp;
-</font>
 <!--
 <br>
 <i><font size=-1>(Printable <a href="http://hdfgroup.org/HDF5/doc/PSandPDF/HDF5_RefManual.PDF">PDF</a> of this Reference Manual)</font></i>&nbsp;
 -->
-
+</font>
 </td></tr>
 </table>
 </center>
 <hr>
 <!-- #EndLibraryItem --><center>
-<h1>H5L: Link Interface</h1>
+<h1>H5PL: Plugin Interface</h1>
 </center>
 
-<h2>Link API Functions</h2>
+<h2>Plugin API Functions</h2>
 
-The Link interface, H5L, functions create and manipulate links
-in an HDF5 group.
-This interface includes functions that enable the creation and use of 
-user-defined link classes.
+The Plugin interface provides for programmatic control of
+dynamically loaded plugins.
+<!--
+<br>
+In the following lists, italic type indicates a configurable macro.
+-->
+
 <p>
 <strong>The C Interfaces:</strong>
 
-<table border=0>
-<tr><td valign=top>
+<table border=0 width=80%>
+<tr><td valign=top width=40%>
 <ul>
-    <li><a href="#Link-CreateHard">H5Lcreate_hard</a>
-    <li><a href="#Link-CreateSoft">H5Lcreate_soft</a>
-    <li><a href="#Link-CreateExternal">H5Lcreate_external</a>
-    <li><a href="#Link-Exists">H5Lexists</a> 
-    <li><a href="#Link-Move">H5Lmove</a>
-    <li><a href="#Link-Copy">H5Lcopy</a>
-    <li><a href="#Link-Delete">H5Ldelete</a> 
+    <li><a href="#Plugin-SetLoadingState">H5PLset_loading_state</a>
+    <li><a href="#Plugin-GetLoadingState">H5PLget_loading_state</a>
 </ul>
-</td><td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
-<td valign=top> 
+</td>
+<!--
+<td valign=top width=40%>
 <ul>
-    <li><a href="#Link-GetInfo">H5Lget_info</a>
-    <li><a href="#Link-GetVal">H5Lget_val</a>
-    <li><a href="#Link-UnpackELinkVal">H5Lunpack_elink_val</a>
-    <br>&nbsp;
-    <li><a href="#Link-CreateUD">H5Lcreate_ud</a>
-    <li><a href="#Link-Register">H5Lregister</a> 
-    <li><a href="#Link-Unregister">H5Lunregister</a> 
-    <li><a href="#Link-IsRegistered">H5Lis_registered</a> 
+    <li><i><a href="#Plugin-WhatEver">H5PLwhat_ever2</a></i>
+    <li><a href="#Plugin-WhatEver">H5PLwhat_ever3</a>&nbsp;*
 </ul>
-</td><td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td><td valign=top>
+</td><td valign=top width=20%>
 <ul>
-    <li><a href="#Link-Iterate">H5Literate</a>
-    <li><a href="#Link-IterateByName">H5Literate_by_name</a>
-    <li><a href="#Link-Visit">H5Lvisit</a>
-    <li><a href="#Link-VisitByName">H5Lvisit_by_name</a>
-    <li><a href="#Link-GetInfoByIdx">H5Lget_info_by_idx</a>
-    <li><a href="#Link-GetNameByIdx">H5Lget_name_by_idx</a>
-    <li><a href="#Link-GetValByIdx">H5Lget_val_by_idx</a>
-    <li><a href="#Link-DeleteByIdx">H5Ldelete_by_idx</a>
+    <li><i><a href="#Plugin-WhatEver">H5PLwhat_ever4</a></i>
+    <li><a href="#Plugin-WhatEver">H5PLwhat_ever5</a>&nbsp;*
 </ul>
+</td>
+-->
+</tr>
+<!--
+<tr><td align=right colspan=5>
+    *&nbsp;<i>Use of this function is deprecated in Release 1.xx.xx.</i>
 </td></tr>
+-->
 </table>
 
+<p>
+
+<!--
 <i>Alphabetical Listing</i>
 
-
-
-<table border="0">
+<table border="0" width=80%>
   <tr>
     <td valign="top">
-      <ul>
-        <li><a href="#Link-Copy">H5Lcopy</a>
-        <li><a href="#Link-CreateExternal">H5Lcreate_external</a>
-        <li><a href="#Link-CreateHard">H5Lcreate_hard</a>
-        <li><a href="#Link-CreateSoft">H5Lcreate_soft</a>
-        <li><a href="#Link-CreateUD">H5Lcreate_ud</a>
-        <li><a href="#Link-Delete">H5Ldelete</a> 
-        <li><a href="#Link-DeleteByIdx">H5Ldelete_by_idx</a>
-        <li><a href="#Link-Exists">H5Lexists</a> 
-      </ul>     
+	<ul>
+      <li><a href="#Plugin-SetLoadingState">H5PLset_loading_state</a>
+      <li><a href="#Plugin-GetLoadingState">H5PLget_loading_state</a>
+	</ul>      
+    </td>
+    
+    <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
+
+    <td valign="top">
+	<ul>
+      &nbsp;
+	</ul>
     </td>
     
     <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
     
     <td valign="top">
-      <ul>
-        <li><a href="#Link-GetInfo">H5Lget_info</a>
-        <li><a href="#Link-GetInfoByIdx">H5Lget_info_by_idx</a>
-        <li><a href="#Link-GetNameByIdx">H5Lget_name_by_idx</a>
-        <li><a href="#Link-GetVal">H5Lget_val</a>
-        <li><a href="#Link-GetValByIdx">H5Lget_val_by_idx</a>
-        <li><a href="#Link-IsRegistered">H5Lis_registered</a> 
-        <li><a href="#Link-Iterate">H5Literate</a>
-        <li><a href="#Link-IterateByName">H5Literate_by_name</a>
-      </ul>
-    </td>
-    
-    <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
-    
-    <td valign="top">
-      <ul>
-        <li><a href="#Link-Move">H5Lmove</a>
-        <li><a href="#Link-Register">H5Lregister</a> 
-        <li><a href="#Link-UnpackELinkVal">H5Lunpack_elink_val</a>
-        <li><a href="#Link-Unregister">H5Lunregister</a> 
-        <li><a href="#Link-Visit">H5Lvisit</a>
-        <li><a href="#Link-VisitByName">H5Lvisit_by_name</a>
-      </ul>
+	<ul>
+      &nbsp;
+	</ul>
     </td>
   </tr>
 </table>
 
 <br>
+-->
+
+<!--
 <strong>The Fortran Interface:</strong>
 <br>
 In general, each Fortran subroutine performs exactly the same task 
 as the corresponding C function.  
 <br>
-<table border="0">
-  <tr>
-    <td valign="top">
-      <ul>
-        <li><a href="#Link-Copy">h5lcopy_f</a>
-        <li><a href="#Link-CreateExternal">h5lcreate_external_f</a>
-        <li><a href="#Link-CreateHard">h5lcreate_hard_f</a>
-        <li><a href="#Link-CreateSoft">h5lcreate_soft_f</a> 
-        <!-- <li><a href="#Link-CreateUD">h5lcreate_ud_f</a> -->
-      </ul>     
-    </td>
-    
-    <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
-    
-    <td valign="top">
-      <ul>
-        <li><a href="#Link-Delete">h5ldelete_f</a>
-        <li><a href="#Link-DeleteByIdx">h5ldelete_by_idx_f</a>
-        <li><a href="#Link-Exists">h5lexists_f</a> 
-        <li><a href="#Link-GetInfo">h5lget_info_f</a>
-        <li><a href="#Link-GetInfoByIdx">h5lget_info_by_idx_f</a>
-      </ul>
-    </td>
-    
-    <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
-    
-    <td valign="top">
-      <ul>
-        <li><a href="#Link-GetNameByIdx">h5lget_name_by_idx_f</a>
-        <!-- <li><a href="#Link-GetVal">h5lget_val_f</a> -->
-        <!-- <li><a href="#Link-GetValByIdx">h5lget_val_by_idx_f</a> -->
-        <li><a href="#Link-IsRegistered">h5lis_registered_f</a> 
-        <li><a href="#Link-Iterate">h5literate_f</a>
-        <li><a href="#Link-IterateByName">h5literate_by_name_f</a> 
-        <li><a href="#Link-Move">h5lmove_f</a>
-        <!-- <li><a href="#Link-Register">h5lregister_f</a> -->
-        <!-- <li><a href="#Link-UnpackELinkVal">h5lunpack_elink_val_f</a> -->
-        <!-- <li><a href="#Link-Unregister">h5lunregister_f</a>  -->
-        <!-- <li><a href="#Link-Visit">h5lvisit_f</a> -->
-        <!-- <li><a href="#Link-VisitByName">h5lvisit_by_name_f</a> -->
-      </ul>
-    </td>
-  </tr>
+
+<table border=0 width=80%>
+<tr><td valign=top width=40%>
+<ul>
+    <li><a href="#Plugin-SetLoadingState">h5plset_loading_state_f</a>
+    <li><a href="#Plugin-GetLoadingState">h5plget_loading_state_f</a>
+</ul>
+</td>
+<td valign=top width=40%>
+<ul>
+    <li><a href="#Plugin-WhatEver2">h5plwhat_ever2_f</a>
+    <li><a href="#Plugin-WhatEver3">h5plwhat_ever3_f</a>
+</ul>
+</td><td valign=top width=20%>
+<ul>
+
+    <li><a href="#Plugin-WhatEver4">h5plwhat_ever4_f</a>
+    <li><a href="#Plugin-WhatEver5">h5plwhat_ever5_f</a>
+
+</ul>
+</td></tr>
 </table>
+-->
+
 
 <p>
-
-<p>
-
 
 <!-- NEW PAGE -->
 <!-- HEADER RIGHT " " -->
-
-
 
 <!--  ---  ---  ---  ---  ---  ---  ---  ---  ---  ---  ---  -->
 <!--       Include special topic files                       -->
@@ -252,28 +206,8 @@ as the corresponding C function.
 <!--       Include function files                            -->
 <!--  ---  ---  ---  ---  ---  ---  ---  ---  ---  ---  ---  -->
 
-<?php include("H5L/H5Lcopy.htm"); ?>
-<?php include("H5L/H5Lcreate_external.htm"); ?>
-<?php include("H5L/H5Lcreate_hard.htm"); ?>
-<?php include("H5L/H5Lcreate_soft.htm"); ?>
-<?php include("H5L/H5Lcreate_ud.htm"); ?>
-<?php include("H5L/H5Lexists.htm"); ?>
-<?php include("H5L/H5Lget_info.htm"); ?>
-<?php include("H5L/H5Lget_info_by_idx.htm"); ?>
-<?php include("H5L/H5Lget_name_by_idx.htm"); ?>
-<?php include("H5L/H5Lget_val.htm"); ?>
-<?php include("H5L/H5Lget_val_by_idx.htm"); ?>
-<?php include("H5L/H5Lis_registered.htm"); ?>
-<?php include("H5L/H5Literate.htm"); ?>
-<?php include("H5L/H5Literate_by_name.htm"); ?>
-<?php include("H5L/H5Lmove.htm"); ?>
-<?php include("H5L/H5Lregister.htm"); ?>
-<?php include("H5L/H5Ldelete.htm"); ?>
-<?php include("H5L/H5Ldelete_by_idx.htm"); ?>
-<?php include("H5L/H5Lunpack_elink_val.htm"); ?>
-<?php include("H5L/H5Lunregister.htm"); ?>
-<?php include("H5L/H5Lvisit.htm"); ?>
-<?php include("H5L/H5Lvisit_by_name.htm"); ?>
+<?php include("H5PL/H5PLget_loading_state.htm"); ?>
+<?php include("H5PL/H5PLset_loading_state.htm"); ?>
 
 
 <!-- HEADER RIGHT " " -->
@@ -292,7 +226,8 @@ as the corresponding C function.
 <td valign=top align=right>
 In the 
 <a href="RM_H5Front.html">HDF5 Reference Manual</a>&nbsp;
-<font size="-1"><br>
+<font size=-1>
+<br>
 <a href="../HL/RM_H5DS.html">H5DS</a>&nbsp;&nbsp;
 <a href="../HL/RM_H5IM.html">H5IM</a>&nbsp;&nbsp;
 <a href="../HL/RM_H5LT.html">H5LT</a>&nbsp;&nbsp;
@@ -323,28 +258,25 @@ In the
 <a href="APICompatMacros.html">Compatibility Macros</a>&nbsp;
 <br>
 <a href="CollectiveCalls.html">Collective Calls in Parallel</a>&nbsp;
-</font>
 <!--
 <br>
 <i><font size=-1>(Printable <a href="http://hdfgroup.org/HDF5/doc/PSandPDF/HDF5_RefManual.PDF">PDF</a> of this Reference Manual)</font></i>&nbsp;
 -->
-
+</font>
 </td></tr>
 </table>
 </center>
 <hr>
 <!-- #EndLibraryItem -->
 
-<?php include("../ed_libs/Footer2.htm"); ?>
+<?php include("../ed_libs/Footer-THGonly2.htm"); ?>
 
 <SCRIPT LANGUAGE="JAVASCRIPT">
 <!--
-document.writeln("Last modified: 26 September 2014");
+document.writeln("Last modified: 27 August 2015");
 -->
-</SCRIPT>
+</SCRIPT> 
 
-
- 
 </body>
 </html>
 
