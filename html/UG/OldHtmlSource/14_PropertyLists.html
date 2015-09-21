@@ -1,0 +1,2828 @@
+<!doctype HTML public "-//W3C//DTD HTML 4.0 Frameset//EN">
+<html>
+<head>
+<title>Chapter 10: Properties and Property Lists in HDF5</title>
+
+<!--(Meta)==========================================================-->
+
+
+<!--(Links)=========================================================-->
+
+<!--( Begin styles definition )=====================================-->
+<link href="ed_styles/NewUGelect.css" rel="stylesheet" type="text/css">
+<!--( End styles definition )=======================================-->
+
+</head>
+
+<body>
+
+<!-- CONTENT STARTS AT LINE 162 -->
+
+
+<!-- #BeginLibraryItem "/ed_libs/styles_UG.lbi" -->
+<!--
+  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+  * Copyright by The HDF Group.                                               *
+  * Copyright by the Board of Trustees of the University of Illinois.         *
+  * All rights reserved.                                                      *
+  *                                                                           *
+  * This file is part of HDF5.  The full HDF5 copyright notice, including     *
+  * terms governing use, modification, and redistribution, is contained in    *
+  * the files COPYING and Copyright.html.  COPYING can be found at the root   *
+  * of the source code distribution tree; Copyright.html can be found at the  *
+  * root level of an installed copy of the electronic HDF5 document set and   *
+  * is linked from the top-level documents page.  It can also be found at     *
+  * http://www.hdfgroup.org/HDF5/doc/Copyright.html.  If you do not have      *
+  * access to either file, you may request a copy from help@hdfgroup.org.     *
+  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+ -->
+<!-- #EndLibraryItem --><!-- HEADER LEFT "HDF5 User's Guide" -->
+<!-- HEADER RIGHT "Property Lists in HDF5" -->
+
+<!--( TOC )=========================================================-->
+<!--<SCRIPT language="JavaScript">                                  -->
+<!--
+document.writeln ('\
+<table x-use-null-cells\
+                align="right"\
+		width="240"\
+		cellspacing="0"\
+		class="tocTable">\
+  <tr valign="top"> \
+    <td class="tocTableHeaderCell" colspan="2"> \
+        <span class="TableHead">Chapter Contents</span></td>\
+  </tr>\
+-->
+<!-- Table Version 3 --><!--\-->
+<!--
+  <tr valign="top"> \
+    <td class="tocTableContentCell2"> \
+      <a href="#Intro">1.</a></td>\
+    <td class="tocTableContentCell3">\
+	  <a href="#Intro">Introduction</a></td> \
+  </tr>\
+  <tr valign="top"> \
+    <td class="tocTableContentCell2"> \
+      <a href="#ProgModel">2.</a></td>\
+    <td class="tocTableContentCell3">\
+	  <a href="#ProgModel">Programming Model</a></td>\
+  </tr>\
+  <tr valign="top"> \
+    <td class="tocTableContentCell2"> \
+      <a href="#H5Dump">3.</a></td>\
+    <td class="tocTableContentCell3">\
+	  <a href="#H5Dump">Using <code>h5dump</code></a></td> \
+  </tr>\
+  <tr valign="top"> \
+    <td class="tocTableContentCell2"> \
+      <a href="#FunctionSumms">4.</a></td>\
+    <td class="tocTableContentCell3">\
+	  <a href="#FunctionSumms">File Function Summaries</a></td>\
+  </tr>\
+  <tr valign="top"> \
+    <td class="tocTableContentCell2"> \
+      <a href="#CrOpen">5.</a></td>\
+    <td class="tocTableContentCell3">\
+	  <a href="#CrOpen">Create or Open a File</a></td> \
+  </tr>\
+  <tr valign="top"> \
+    <td class="tocTableContentCell2"> \
+      <a href="#Close">6.</a></td>\
+    <td class="tocTableContentCell3">\
+	  <a href="#Close">Close a File</a></td>\
+  </tr>\
+  <tr valign="top"> \
+    <td class="tocTableContentCell2"> \
+      <a href="#PLists">7.</a></td>\
+    <td class="tocTableContentCell3">\
+	  <a href="#PLists">File Property Lists</a>\
+\
+<br />\
+&nbsp;&nbsp;&nbsp;\
+Creating a list\
+\
+<br />\
+&nbsp;&nbsp;&nbsp;\
+Creation properties\
+\
+<br />\
+&nbsp;&nbsp;&nbsp;\
+Access properties\
+\
+	  </td>\
+  </tr>\
+  <tr valign="top"> \
+    <td class="tocTableContentCell2"> \
+      <a href="#Drivers">8.</a></td>\
+    <td class="tocTableContentCell3">\
+	  <a href="#Drivers">Storage Layouts and Drivers</a>\
+\
+<br />\
+&nbsp;&nbsp;&nbsp;\
+<span class="smallcaps">SEC2</span>, \
+<span class="smallcaps">STDIO</span>,\
+<br />\
+&nbsp;&nbsp;&nbsp;\
+<span class="smallcaps">FAMILY</span>, \
+<span class="smallcaps">MULTI</span>,\
+<br />\
+&nbsp;&nbsp;&nbsp;\
+<span class="smallcaps">SPLIT</span>, \
+<span class="smallcaps">MPI</span>, \
+<span class="smallcaps">CORE</span>,\
+<br />\
+&nbsp;&nbsp;&nbsp;\
+--><!--<span class=code>STREAM</span>, --><!--\
+<span class="smallcaps">LOG</span>\
+\
+	  </td>\
+  </tr>\
+\
+  <tr valign="top"> \
+    <td class="tocTableContentCell"> \
+-->
+<!-- editingComment -- "tocTableContentCell" and "tocTableContentCell4" \
+--><!--\-->
+<!-- are the table-closing cell class.\
+    <td class="tocTableContentCell2"> \
+--><!--\
+      <a href="#Examples">9.</a></td>\
+    <td class="tocTableContentCell4">\
+	  <a href="#Examples">Code Examples</a>\
+  </td></tr>\
+</table>\
+')
+-->
+<!-- </SCRIPT> -->
+<!--(End TOC)=======================================================-->
+
+<!-- editingComment
+-->
+
+
+<div align="center">
+<a name="TOP">
+<h2>Chapter 10<br /><font size="7">Properties and Property Lists 
+    in HDF5</font></h2>
+</a>
+</div>
+
+
+<!-- ??????? REDACTED FOR REVIEW &/OR PUBLICATION ???????
+
+<font color="red">
+<i>
+
+<h3>10.0. Background</h3>
+<p>
+This document will answer the following questions:
+<ul>
+    <li>What should new users know about property lists?</li>
+    <li>Is there a key idea?</li>
+    <li>What are the principles of property lists so to speak?</li>
+    <li>What would help new users get started?</li>
+    <li>What might help them use property lists fully and effectively?</li>
+</ul>
+
+</i>
+</font>
+
+??????? END REDACTION ??????? ??????? -->
+
+
+
+<a name="Intro">
+<h3>10.1. Introduction</h3>
+</a>
+
+    <p>
+    HDF5 properties and property lists make it possible to shape or modify
+    an HDF5 file, group, dataset, attribute, committed datatype, 
+    or even an I/O stream, in a number of ways.
+    For example, you can do any of the following:
+    <ul>
+        <li>Customize the storage layout of a file to suit
+            a project or task.</li>
+        <li>Create a chunked dataset.</li>
+        <li>Apply compression or filters to raw data.</li>
+        <li>Use either ASCII or UTF-8 character encodings.</li>
+        <li>Create missing groups on the fly.</li>
+        <li>Switch between serial and parallel I/O.</li>
+        <li>Create consistency within a single file or 
+            across an international project.</li>
+    </ul>
+    Some properties enable an HDF5 application 
+    to take advantage of the capabilities of a specific computing environment 
+    while others make a file more compact;
+    some speed the reading or writing of data 
+    while others enable more record-keeping at a per-object level.
+    HDF5 offers nearly one hundred specific properties that can be used
+    in literally thousands of combinations to maximize the usability
+    of HDF5-stored data.
+
+    <br />&nbsp;
+    </p>
+    <p>
+
+<!-- ??????? REDACTED FOR REVIEW &/OR PUBLICATION ???????
+     ??????? Restart on Introduction           ???????
+
+    HDF5 properties and property lists make it possible to shape or modify
+    an HDF5 file, group, or object, or even an I/O stream, in a number of ways.
+    Consider the case of an HDF5 dataset, which has creation, access, and 
+    transfer properties.
+    <pre>
+    New dataset 
+        Size, growth rate & pattern, etc
+        ==> Creation property requirements
+        Acc
+    </pre>
+
+    </p>
+    <p>&nbsp;
+    </p>
+    <p>
+
+??????? END REDACTION ?????????????? -->
+
+    At the most basic level,
+    
+    <a name="PListEcosystem">&nbsp;</a>
+
+    <table border="0" cellspacing="10" align="right"><tr><td>
+    <table border="0" cellspacing="0">
+        <tr valign="top"> 
+            <td align="center">
+            <hr color="green" size="3"/>
+            <img src="Images/PropListEcosystem.png" width="150" 
+                 alt="Graphic illustration of HDF5&rsquo;s property environment">
+            </td>
+            </tr>
+        <tr><td><hr color="green" size="1" /></td></tr>
+        <tr valign="top">
+            <td align="left" width="200">
+            <b>Figure 1.&nbsp;
+               The HDF5 property environment</b>
+            <hr color="green" size="3"/></td>
+            </tr>
+    </table>
+    </td></tr></table>
+
+    a property list is a collection of properties, 
+    represented by name/value pairs that can be
+    passed to various HDF5 functions, usually modifying default settings.  
+    A property list inherits a set of properties and values from 
+    a property list class. 
+    But that statement hardly provides a complete picture; 
+    in the rest of this section and in the next section, 
+    &ldquo;Property List Classes, Property Lists, and Properties&rdquo;,
+    we will discuss these things in much more detail.
+    After reading that material, the reader should have a reasonably 
+    complete understanding of how properties and property lists can 
+    be used in HDF5 applications.
+
+    <br />&nbsp;  
+    </p>
+    <p>
+
+    The remaining sections in this chapter discuss the following topics:
+    </p>
+
+    <ul>
+        <li>What are properties, property lists, 
+            and property list classes?</li>
+        <li>Property list programming model</li>
+	<li>Generic property functions</li>
+	<li>Summary listings of property list functions</li>
+	<li>Additional resources</li>
+    </ul>
+    </p>
+
+    <p>
+    The discussions and function listings in this chapter focus on
+    general property operations, 
+    object and link properties, 
+    and related functions.  
+    </p>
+    <p>
+    File, group, dataset, datatype, and attribute properties 
+    are discussed in the chapters devoted to those features,
+<!--
+    are discussed in the chapters devoted to those features;
+    generic property operations are an advanced feature and are 
+    beyond the scope of this guide.
+    </p>
+    <p>
+    Property lists and property list functions that apply only to 
+    specific types of HDF5 objects are generally listed and discussed 
+    in the chapter discussing those objects, 
+-->
+    where that information will be most convenient to users.
+    For example, the <a href="10_Datasets.html">Datasets</a> chapter 
+    discusses dataset creation property lists and functions, 
+    dataset access property lists and functions, and 
+    dataset transfer property lists and functions. 
+    This chapter does not duplicate those discussions.
+    </p>
+    <p>
+    Generic property operations are an advanced feature and are 
+    beyond the scope of this guide.
+    </p>
+    <p>
+    This chapter assumes an understanding of the following chapters
+    of this <cite>HDF5 User&rsquo;s Guide</cite>:
+    <ul>
+        <li><a href="UG_frame03DataModel.html" 
+            target="_TOP">HDF5 Data Model and File Structure</a>
+        <li><a href="UG_frame04ProgModel.html" 
+            target="_TOP">HDF5 Library and Programming Model</a>
+    </ul>
+
+
+    </p>
+
+
+<a name="PListHierarchy">
+<h3 class="pagebefore">10.2. Property List Classes, Property Lists, 
+    and Properties
+    </h3>
+</a>
+
+    </p>
+    <p>
+    HDF5 property lists and the property list interface 
+    (<a href="../RM/RM_H5P.html">H5P</a>) provide a mechanism for
+    storing characteristics of objects in an HDF5 file and economically 
+    passing them around in an HDF5 application.  
+    In this capacity, property lists significantly reduce the burden of 
+    additional function parameters throughout the HDF5 API.
+    Another advantage of  property lists is that features can often 
+    be added to HDF5 by adding only property list functions to the API; 
+    this is particularly true when all other requirements of the feature 
+    can be accomplished internally to the library.
+    </p>
+    <p>
+    For instance, a file creation operation needs to know several
+    things about a file, such as the size of the user-block 
+    or the sizes of various file data structures.  
+    Bundling this information as a property list simplifies the 
+    interface by reducing the number of parameters to the function
+    <code>H5Fcreate</code>.
+    </p>
+    <p>
+    As illustrated in <a href="#PListEcosystem">the figure above</a>, 
+    the HDF5 property environment is a three-level hierarchy: 
+    <ul>
+        <li>Property list classes</li>
+        <li>Property lists</li>
+        <li>Properties</li>
+    </ul>
+    </p>
+    <p>
+    The following subsections discuss property list classes, property lists, 
+    and properties in more detail.
+    
+
+<a name="PListClassesTable">&nbsp;</a>
+    </p>
+<a name="PListClasses">
+<h4 class="pagebefore">10.2.1. Property List Classes</h4>
+</a>
+
+    A <i>property list class</i> defines the roles that property lists 
+    of that class can play.
+    Each class includes all properties that are valid for that class with
+    each property set to its default value.
+    HDF5 offers a property lists class for each of the following situations.
+    <p />
+
+    <table border="0">
+    <tr><th>&nbsp;</th>
+        <th colspan="4" align="left">Table 1: 
+            Property list classes in HDF5</th></tr>
+    <tr><td>&nbsp;</td>
+        <td colspan="4"><hr color="green" size="3" /></td></tr>
+    <tr align="left" valign="bottom">
+        <th>&nbsp;</th>
+        <th colspan="2">Property List Class
+            <hr color="green" size="1" />
+            </th>
+        <th><code>&nbsp;&nbsp;&nbsp;</code></th>
+        <th>For further discussion
+            <hr color="green" size="1" />
+            </th>
+        </tr>
+    <tr align="left" valign="top">
+        <td width="5%">&nbsp;</td>
+        <td>File creation (<small>FCPL</small>)</td>
+        <td><code>H5P_FILE_CREATE</code>&nbsp;</td>
+        <td>&nbsp;</td>
+        <td width="50%" rowspan="2"><font size=-1>
+            See various sections of
+            &ldquo;<a href="UG_frame08TheFile.html" target="_TOP">The 
+            HDF5 File</a>&rdquo; chapter.
+            </font>
+            </td>
+        </tr>
+    <tr align="left" valign="top">
+        <td>&nbsp;</td>
+        <td>File access (<small>FAPL</small>)</td>
+        <td><code>H5P_FILE_ACCESS</code>&nbsp;</td>
+        <td>&nbsp;</td>
+        </tr>
+    <tr align="left" valign="top">
+        <td>&nbsp;</td>
+        <td>File mount (<small>FMPL</small>)</td>
+        <td><code>H5P_FILE_MOUNT</code>&nbsp;</td>
+        <td>&nbsp;</td>
+        <td><font size=-1>
+        Used only as <code>H5P_DEFAULT</code>
+        (see <a href="#H5P_FILE_MOUNT">footnote 1</a>). 
+        </font>
+        </td>
+        </tr>
+    <tr><td>&nbsp;</td>
+        <td colspan="2"><hr color="green" size="1" /></td>
+        <td>&nbsp;</td>
+        <td colspan="1"><hr color="green" size="1" /></td></tr>
+    <tr align="left" valign="top">
+        <td>&nbsp;</td>
+        <td>Object creation (<small>OCPL</small>)</td>
+        <td><code>H5P_OBJECT_CREATE</code>&nbsp;</td>
+        <td>&nbsp;</td>
+        <td rowspan="2"><font size=-1>
+            See table of 
+            <a href="#ObjectPropFunctions">object property functions</a> 
+            below.
+            </font>
+            </td>
+        </tr>
+    <tr align="left" valign="top">
+        <td>&nbsp;</td>
+        <td>Object copy (<small>OCPYPL</small>)</td>
+        <td><code>H5P_OBJECT_COPY</code>&nbsp;</td>
+        <td>&nbsp;</td>
+        </tr>
+    <tr><td>&nbsp;</td>
+        <td colspan="2"><hr color="green" size="1" /></td>
+        <td>&nbsp;</td>
+        <td colspan="1"><hr color="green" size="1" /></td></tr>
+    <tr align="left" valign="top">
+        <td>&nbsp;</td>
+        <td>Group creation (<small>GCPL</small>)</td>
+        <td><code>H5P_GROUP_CREATE</code>&nbsp;</td>
+        <td>&nbsp;</td>
+        <td rowspan="2"><font size="-1">
+            See &ldquo;Programming Model&rdquo; section of
+            &ldquo;<a href="UG_frame09Groups.html" target="_TOP">HDF5 
+            Groups</a>&rdquo; chapter.
+            </font>
+            </td>
+        </tr>
+    <tr align="left" valign="top">
+        <td>&nbsp;</td>
+        <td>Group access (<small>GAPL</small>)</td>
+        <td><code>H5P_GROUP_ACCESS</code>&nbsp;</td>
+        <td>&nbsp;</td>
+        </tr>
+    <tr><td>&nbsp;</td>
+        <td colspan="2"><hr color="green" size="1" /></td>
+        <td>&nbsp;</td>
+        <td colspan="1"><hr color="green" size="1" /></td></tr>
+    <tr align="left" valign="top">
+        <td>&nbsp;</td>
+        <td>Link creation (<small>LCPL</small>)</td>
+        <td><code>H5P_LINK_CREATE</code>&nbsp;</td>
+        <td>&nbsp;</td>
+        <td rowspan="2"><font size=-1>
+            See examples in 
+            &ldquo;<a href="#ProgModel">Programming Model</a>&rdquo;
+            section in this chapter and the table of 
+            <a href="#LinkCreationTable">link creation property functions</a> 
+            below.
+            </font>
+            </td>
+        </tr>
+    <tr align="left" valign="top">
+        <td>&nbsp;</td>
+        <td>Link access (<small>LAPL</small>)</td>
+        <td><code>H5P_LINK_ACCESS</code>&nbsp;</td>
+        <td>&nbsp;</td>
+        </tr>
+    <tr><td>&nbsp;</td>
+        <td colspan="2"><hr color="green" size="1" /></td>
+        <td>&nbsp;</td>
+        <td colspan="1"><hr color="green" size="1" /></td></tr>
+    <tr align="left" valign="top">
+        <td>&nbsp;</td>
+        <td>Dataset creation (<small>DCPL</small>)</td>
+        <td><code>H5P_DATASET_CREATE</code>&nbsp;</td>
+        <td>&nbsp;</td>
+        <td rowspan="3"><font size=-1>
+            See &ldquo;Programming Model&rdquo; section of
+            &ldquo;<a href="UG_frame10Datasets.html" target="_TOP">HDF5 
+            Datasets</a>&rdquo; chapter.
+            </font>
+            </td>
+        </tr>
+    <tr align="left" valign="top">
+        <td>&nbsp;</td>
+        <td>Dataset access (<small>DAPL</small>)</td>
+        <td><code>H5P_DATASET_ACCESS</code>&nbsp;</td>
+        <td>&nbsp;</td>
+        </tr>
+    <tr align="left" valign="top">
+        <td>&nbsp;</td>
+        <td>Dataset transfer (<small>DXPL</small>)</td>
+        <td><code>H5P_DATASET_XFER</code>&nbsp;</td>
+        <td>&nbsp;</td>
+        </tr>
+    <tr><td>&nbsp;</td>
+        <td colspan="2"><hr color="green" size="1" /></td>
+        <td>&nbsp;</td>
+        <td colspan="1"><hr color="green" size="1" /></td></tr>
+    <tr align="left" valign="top">
+        <td>&nbsp;</td>
+        <td>Datatype creation (<small>TCPL</small>)</td>
+        <td><code>H5P_DATATYPE_CREATE</code>&nbsp;</td>
+        <td>&nbsp;</td>
+        <td rowspan="2"><font size=-1>
+            See various sections of
+            &ldquo;<a href="UG_frame11Datatypes.html" target="_TOP">HDF5 
+            Datatypes</a>&rdquo; chapter.
+            </font>
+            </td>
+        </tr>
+    <tr align="left" valign="top">
+        <td>&nbsp;</td>
+        <td>Datatype access (<small>TAPL</small>)</td>
+        <td><code>H5P_DATATYPE_ACCESS</code>&nbsp;</td>
+        <td>&nbsp;</td>
+        </tr>
+    <tr><td>&nbsp;</td>
+        <td colspan="2"><hr color="green" size="1" /></td>
+        <td>&nbsp;</td>
+        <td colspan="1"><hr color="green" size="1" /></td></tr>
+    <tr align="left" valign="top">
+        <td>&nbsp;</td>
+        <td>String creation (<small>STRCPL</small>)</td>
+        <td><code>H5P_STRING_CREATE</code>&nbsp;</td>
+        <td>&nbsp;</td>
+        <td><font size=-1>
+            See &ldquo;Programming Model&rdquo; sections of
+            &ldquo;<a href="UG_frame10Datasets.html" target="_TOP">HDF5 
+            Datasets</a>&rdquo;
+            and
+            &ldquo;<a href="UG_frame11Datatypes.html" target="_TOP">HDF5 
+            Datatypes</a>&rdquo; chapters.
+            </font>
+            </td>
+        </tr>
+    <tr><td>&nbsp;</td>
+        <td colspan="2"><hr color="green" size="1" /></td>
+        <td>&nbsp;</td>
+        <td colspan="1"><hr color="green" size="1" /></td></tr>
+    <tr align="left" valign="top">
+        <td>&nbsp;</td>
+        <td>Attribute&nbsp;creation&nbsp;(<small>ACPL</small>)<code>&nbsp;&nbsp;</code></td>
+        <td><code>H5P_ATTRIBUTE_CREATE</code>&nbsp;</td>
+        <td>&nbsp;</td>
+        <td><font size=-1>
+            See &ldquo;Working with Attributes&rdquo; 
+            (or &ldquo;Attribute Usage&rdquo;) section of
+            &ldquo;<a href="UG_frame13Attributes.html" target="_TOP">HDF5 
+            Attributes</a>&rdquo; chapter.
+            </font>
+            </td>
+        </tr>
+
+<!-- ???????                                                        ??????? -->
+<!-- DISCUSSION OF H5P_ROOT will not be included in the chapter.            -->
+<!-- Yes, it's the root of the property list structure, but there's not     -->
+<!-- much (maybe nothing?) interesting that the user can do with it.        -->
+<!--                                                                        -->
+<!-- Also note that the root of this structure was originally H5P_NO_CLASS; -->
+<!-- when that was changed to H5P_ROOT, code was added to set               -->
+<!-- H5P_NO_CLASS = H5P_ROOT solely to maintain backward compatibility.     -->
+<!--                                                                        -->
+<!-- To clean up the public interface, Quincey may move H5P_ROOT out of     -->
+<!-- H5Ppublic.h.                                                           -->
+<!-- ???????                                                        ??????? -->
+<!--
+
+
+    <tr align="left" valign="top">
+        <td>&nbsp;</td>
+        <td>No property list class</td>
+        <td><code>H5P_ROOT</code>&nbsp;</td>
+        <td>&nbsp;</td>
+        <td>Represents the root of the property list class hierarchy.</td>
+        </tr>
+-->
+    <tr><td>&nbsp;</td>
+        <td colspan="4"><hr color="green" size="1" /></td></tr>
+    <tr><td>&nbsp;</td>
+        <td colspan="4">
+        <font size="-1">
+        The abbreviations to the right of each property list class name 
+        in this table are widely used in both HDF5 programmer documentation 
+        and HDF5 source code.  
+        For example, 
+        FCPL is file creation property list,
+        OCPL is object creation property list,
+        OCPYPL is object copy property list, and
+        STRCPL is string creation property list.
+        These abbreviations may appear in either uppercase or lowercase.
+        </font>
+        <hr color="green" size="3" />
+        </td></tr>
+    </table>
+
+
+    <p>
+    The &ldquo;HDF5 property list class inheritance hierarchy&rdquo;
+    figure, immediately following, illustrates the 
+    inheritance hierarchy of HDF5&rsquo;s property list classes.
+    Properties are defined at the root of the HDF5 property environment
+    (&ldquo;Property List Class Root&rdquo; in the figure below).
+    Property list classes then inherit properties from that root,
+    either directly or indirectly through a parent class. 
+    In every case, a property list class inherits only the properties 
+    relevant to its role. 
+    For example, the object creation property list class (OCPL) 
+    inherits all properties that are relevant to the creation of 
+    any object while the group creation property list class (GCPL) 
+    inherits only those properties that are relevant to group creation.
+    </p>
+    <p>
+   
+    <table width="90%" cellspacing="0" align="center" border="0">
+        <tr valign="top"> 
+            <td align="center">
+            <hr color="green" size="3"/>
+            <img src="Images/PropListClassInheritance.png" width="100%" 
+                 alt="Graphic illustration of property list class 
+                 inheritance hierarchy">
+            </td>
+            </tr>
+        <tr><td><hr color="green" size="1" /></td></tr>
+        <tr valign="top">
+            <td align="left">
+            <b>Figure 2. HDF5 property list class inheritance hierarchy</b>
+            <font size="-1">
+            <br />
+            Property list classes displayed above in <u>black</u> are 
+            directly accessible through the programming interface;
+            the root of the property environment and the STRCPL and OCPL 
+            property list classes, in <font color="888888"><u>gray</u></font> 
+            above, are not user-accessible.
+            <br />
+            The red <i>empty set</i> symbol (<font color="red">&empty;</font>)
+            indicates that the file mount property list class 
+            (<small>FMPL</small>) is an empty class; 
+            that is, it has no settable properties 
+            (see <a href="#H5P_FILE_MOUNT">footnote 1</a>). 
+            <br />
+            Abbreviations used in this figure are defined in the preceding
+            table, &ldquo;Property list classes in HDF5&rdquo;. 
+            </font>&nbsp;
+            <hr color="green" size="3"/>
+            </td>
+            </tr>
+    </table>
+
+<!-- ??????? REDACTED as "certainly out of place"        ??????? -->
+<!-- ???????          and "probably repetitious".        ??????? 
+    </p>
+    <p>
+    To illustrate the inheritance diagrammed above, 
+    consider the following example: 
+    Before creating an HDF5 dataset, you will need to determine the 
+    creation properties the dataset must have.  
+    That is, you must establish the dataset&rsquo;s dataset creation
+    property list (DCPL).
+    This DCPL will be derived from the dataset creation property list class
+    and will inherit all of the appropriate properties, each set to a
+    default value.
+    If necessary, you may then change any of those default values 
+    in the new DCPL with the appropriate H5P calls; 
+    <code>H5Pset_layout</code> and <code>H5Pset_chunk</code> calls, 
+    for example, would set up dataset chunking.
+    You can then use the newly-created and modified DCPL to create 
+    any dataset that has the same creation property requirements.
+    </p>
+    <p>
+    Code examples appear in later sections of this chapter
+    and in other chapters where properties and property lists are
+    discussed in the context of specific objects.
+    For example, properties and property lists relevant to datasets are 
+    discussed in the &ldquo;Programming Model&rdquo; section 
+    of the &ldquo;<a href="UG_frame10Datasets.html" target="_TOP">HDF5 
+    Datasets</a>&rdquo; chapter
+    in this <cite>HDF5 User&rsquo;s Guide</cite>.
+     ??????? END REDACTION                               ??????? -->
+
+<!-- ??????? REDACTED FOR REVIEW &/OR PUBLICATION          ???????
+     ??????? AS BEING REDUNDANT IN THE CURRENT DISCUSSION. ???????
+     ??????? THEY MAY, HOWEVER, BE USEFUL ELSEWHERE.       ???????
+<font color="AAAAAA">
+    </p>
+    <p>
+    A dataset creation property list is used when a dataset is created
+    and may govern features of the dataset or how it is to be created.
+    For example, if a dataset is to be chunked, 
+    chunking (<code>H5Pset_layout</code>) and 
+    chunk size (<code>H5Pset_chunk</code>)
+    must be set in the dataset creation property list used to create 
+    the dataset.
+    </p>
+    <p>
+    Creation properties are permanent and <i>immutable</i>; 
+    they cannot be changed during the life of the dataset.
+    </p>
+    <p>
+    A dataset access property list governs access to the dataset.
+    For example, a user may wish to tune the chunk cache to optimize
+    the use of the system on which an analysis is to be run.
+    This optimization might be different on every system.
+    Chunk cache optimization parameters are set in the 
+    dataset access property list with <code>H5Pset_chache</code>.
+    </p>
+    <p>
+    Access properties are <i>transient</i> and can be changed.
+    In fact, applications do not generally have any knowledge
+    of access properties used in the past.
+</font>
+
+??????? ??????? -->
+    </p>
+
+<a name="PropertyLists">
+<h4 class="pagebefore">10.2.2. Property Lists</h4>
+</a>
+
+    A <i>property list</i> is a collection of related properties 
+    that are used together in specific circumstances.  
+    A new property list created from a property list class inherits 
+    the properties of the property list class 
+    and each property&rsquo;s default value.  
+    A fresh dataset creation property list, for example, includes 
+    all of the HDF5 properties relevant to the creation of a new dataset.  
+    </p>
+    <p>
+    Property lists are implemented as containers holding a collection of 
+    name/value pairs.  
+    Each pair specifies a property name and a value for the property.
+    A property list usually contains information for one to many properties.
+    </p>
+    <p>
+    HDF5&rsquo;s default property values are designed to be 
+    reasonable for general use cases. Therefore, an application can 
+    often use a property list without modification.
+    On the other hand, adjusting property list settings is a routine action
+    and there are many reasons for an application to do so.
+    </p>
+    <p>
+    A new property list may either be derived from a property list class
+    or copied from an existing property list.
+    When a property list is created from a property list class, 
+    it contains all the properties that are relevant to the class,
+    with each property set to its default value.
+    A new property list created by copying an existing property list
+    will contain the same properties and property values as the 
+    original property list.
+    In either case, the property values can be changed as needed through 
+    the HDF5 API.
+    </p>
+    <p>
+    Property lists can be freely reused to create consistency.
+    For example, a single set of file, group, and dataset 
+    creation property lists might be created at the beginning of a 
+    project and used to create hundreds, thousands, even millions, of
+    consistent files, file structures, and datasets over the 
+    project&rsquo;s life.
+    When such consistency is important to a project, this is an
+    economical means of providing it.
+
+<!-- ??????? REDACTED                                    ??????? -->
+<!-- ??????? as the statement seems not to be useful.    ??????? 
+    </p>
+    <p>
+    Note that the HDF5 property list functions generate fully populated 
+    property lists and that additional properties are rarely added 
+    by an application.
+    If customized properties and property lists are required by an
+    application or project, they can be created through the use HDF5&rsquo;s
+    <a href="#GenericPLists">generic property</a> functionality.
+     ??????? END REDACTION                               ??????? -->
+
+    </p>
+
+
+<a name="Properties">
+<h4 class="pagebefore">10.2.3. Properties</h4>
+</a>
+
+    A <i>property</i> is the basic element of the property list hierarchy.
+    HDF5 offers nearly one hundred properties controlling things ranging 
+    from file access rights,  
+    to the storage layout of a dataset, 
+    through optimizing the use of a parallel computing environment.
+    </p>
+    <p>
+    Further examples include the following:</p>
+
+    <table border="0">
+    <tr valign="bottom" align="left">
+        <th><code>&nbsp;&nbsp;&nbsp;&nbsp;</code></th>
+        <th>Purpose</td>
+        <th><code>&nbsp;&nbsp;</code></th>
+        <th>Examples</th>
+        <th><code>&nbsp;&nbsp;</code></th>
+        <th>Property List</th>
+        </tr>
+    <tr valign="top">
+        <td>&nbsp;</td>
+        <td>Specify the driver to be used to open a file</td>
+        <td>&nbsp;</td>
+        <td>A <small>POSIX</small> driver or an MPI IO driver</td>
+        <td>&nbsp;</td>
+        <td>FAPL</td>
+        </tr>
+    <tr valign="top">
+        <td>&nbsp;</td>
+        <td>Specify filters to be applied to a dataset</td>
+        <td>&nbsp;</td>
+        <td>Gzip compression or checksum evaluation</td>
+        <td>&nbsp;</td>
+        <td>DCPL</td>
+        </tr>
+    <tr valign="top">
+        <td>&nbsp;</td>
+        <td>Specify whether to record key times associated with an 
+            object</td>
+        <td>&nbsp;</td>
+        <td>Creation time and/or last-modified time</td>
+        <td>&nbsp;</td>
+        <td>OCPL</td>
+        </tr>
+    <tr valign="top">
+        <td>&nbsp;</td>
+        <td>Specify the access mode for a file opened via an external 
+            link</td>
+        <td>&nbsp;</td>
+        <td>Read-only or read-write</td>
+        <td>&nbsp;</td>
+        <td>LAPL</td>
+        </tr>
+    </table>
+
+    </p>
+    <p>
+    Each property is initialized with a default value.
+    For each property, there are one or more dedicated <code>H5Pset_*</code> 
+    calls that can be used to change that value.
+    </p>
+    <p>
+
+    <b><i>Creation, access, and transfer properties:</i></b>
+    <br>
+    Properties fall into one of several major categories: 
+    creation properties, access properties, and transfer properties.
+    </p>
+    <p>
+    <i>Creation properties</i> control <i>permanent</i> object 
+    characteristics.  These characteristics must be established when an 
+    object is created, cannot change through the life of the object
+    (they are <i>immutable</i>), and the property setting usually has a
+    permanent presence in the file. 
+    
+    </p>
+    <p>
+    Examples of creation properties include:
+    <ul>
+        <li>Whether a dataset is stored in a compact, contiguous,
+            or chunked layout
+            </p>
+            <p>
+            The default for this dataset creation property 
+            (<code>H5Pset_layout</code>) is that a dataset is stored 
+            in a contiguous block.
+            This works well for datasets with a known size limit that will 
+            fit easily in system memory.
+            </p>
+            <p>
+            A chunked layout is important if a dataset is to be compressed, 
+            to enable extending the dataset&rsquo;s size,
+            or to enable caching during I/O.
+            </p>
+            <p>
+            A compact layout is suitable only for very small datasets 
+            because the raw data is stored in the object header.
+<!--
+            Some datasets, when analyzed later in their lifetime,
+            will be accessed by means of hyperslabs or subsetting; 
+            such datasets will often enable better performance if they 
+            are stored in a chunked layout so that the entire dataset
+            does not have to be read into memory every time it is accessed.
+            Many HDF5 datasets are either sparse or very large (or both)
+            and application performance will benefit from compression.
+            All of these datasets must be stored in a chunked layout.
+            (Such chunks can also be optimized to facilitate anticipated
+            access patterns.)
+<font color="red">
+<p>
+Things you can do with chunked but not contiguous datasets:
+<br>
+-- Compression and other filters
+<br>
+-- Caching
+<br>
+-- Extension (very limited, and non-existent behind the curtain, for contiguous;
+             unlimited for chunked)
+</font>
+-->
+            </li>
+        <li>Creation of intermediate groups when adding an object 
+            to an HDF5 file
+            </p>
+            <p>
+            This link creation property 
+           (<code>H5Pset_create_intermediate_group</code>)
+            enables an application to add an object in a file without 
+            having to know that the group or group hierarchy containing 
+            that object already exists. 
+            With this property set, HDF5 automatically creates missing groups.
+            If this property is not set, an application must verify that each
+            group in the path exists, and create those that do not,
+            before creating the new object; if any group is missing, 
+            the create operation will fail.
+
+<!-- ??????? REDACTED                                    ??????? -->
+<!-- ??????? as not necessarily helpful                  ??????? 
+<!-- ??????? and potentially confusing.                  ??????? 
+            </p>
+            <p>
+            Note that this property is an exception to the general rule.
+            It is a creation property not because it is immutable
+            but because it is used only in the creation process.
+     ??????? END REDACTION                               ??????? -->
+
+            </li>
+        <li>Whether an HDF5 file is a single file
+            or a set of tightly related files that form a virtual HDF5 file
+            </p>
+            <p>
+            Certain file creation properties enable the application 
+            to select one of several file layouts. 
+            Examples of the available layouts include
+            a standard <small>POSIX</small>-compliant layout 
+            (<code>H5Pset_fapl_sec2</code>),
+            a family of files (<code>H5Pset_fapl_family</code>), 
+            and a split file layout that separates raw data and metadata 
+            into separate files (<code>H5Pset_fapl_split</code>).
+            These and other file layout options are discussed in the 
+            &ldquo;Storage Layouts and Drivers&rdquo; section of the
+            &ldquo;<a href="UG_frame08TheFile.html" target="_top">HDF5
+            File</a>&rdquo; chapter of this <cite>HDF5 User&rsquo;s 
+            Guide</cite>.
+            </li>
+        <li>To enable error detection when creating a dataset
+            <p>
+            In settings where data integrity is vulnerable,
+            it may be desirable to set checksumming when datasets are created
+            (<code>H5Pset_fletcher32</code>). A subsequent application will 
+            then have a means to verify data integrity when reading the 
+            dataset. 
+            </li>
+    </ul>
+
+    </p>
+    <p>
+    <i>Access properties</i> control <i>transient</i> object characteristics.
+    These characteristics may change with the circumstances under which an 
+    object is accessed.
+    </p>
+    <p>
+    Examples of access properties include:
+    <ul>
+        <li>The driver used to open a file
+            <p>
+            For example, a file might be created with the MPI I/O driver
+            (<code>H5Pset_fapl_mpio</code>) during high-speed 
+            data acquisition in a parallel computing environment.
+            The same file might later be analyzed in a serial computing 
+            environment with I/O access handled through the serial 
+            POSIX driver (<code>H5Pset_fapl_sec2</code>).
+            </li>
+        <li>Optimization settings in specialized environments
+            <p>
+            Optimizations differ across computing environments and
+            according to the needs of the task being performed,
+            so are transient by nature.
+            </li>
+    </ul>
+
+    </p>
+    <p>
+    <i>Transfer properties</i> apply only to datasets and 
+    control <i>transient</i> aspects of data I/O. 
+    These characteristics may change with the circumstances under which 
+    data is accessed.
+    </p>
+    <p>
+    Examples of dataset trasfer properties include:
+    <ul>
+        <li>To enable error detection when reading a dataset
+            <p>
+            If checksumming has been set on a dataset
+            (with <code>H5Pset_fletcher32</code>, 
+            in the dataset creation prpertiy list), 
+            an application reading that dataset can choose whether
+            check for data integrity (<code>H5Pset_edc_check</code>).
+            </li>
+        <li>Various properties to optimize chunked data I/O on
+            parallel computing systems
+            <p>
+            HDF5 provides several properties for tuning I/O of 
+            chunked datasets in a parallel computing environment
+            (<code>H5Pset_dxpl_mpio_chunk_opt</code>,
+            <code>H5Pset_dxpl_mpio_chunk_opt_num</code>, 
+            <code>H5Pset_dxpl_mpio_chunk_opt_ratio</code>, and
+            <code>H5Pget_mpio_actual_chunk_opt_mode</code>).
+            <p>
+            Optimal settings differ 
+            due to the characteristics of a computing environment 
+            and due to an application&rsquo;s data access patterns;
+            even when working with the same file, these settings might 
+            change for every application and every platform.
+            </li>
+    </ul>
+
+    </p>
+    <p>
+
+<!-- ??????? REDACTED FOR REVIEW & PUBLICATION                  ???????
+     ??????? Questions for QK:                                  ???????
+     ???????     Only 2 DAPL calls? (1 get, 1 set)              ???????
+     ???????     All others are labelled DXPL.                  ???????
+     ???????     Yet opaque to me why there are both types.     ???????
+
+    <i>Dataset transfer properties:</i>
+
+<font color="red">
+<i>
+Similar discussion of DXPLs.
+</i>
+</font>
+    </p>
+    <p>
+
+??????? END REDACTION ??????? ??????? -->
+
+
+
+
+<!-- NEW PAGE -->
+<a name="ProgModel">
+<h3 class="pagebefore">10.3. Programming Model</h3>
+</a>
+    <p>
+    The programming model for HDF5 property lists is actually quite simple:
+    <ol>
+        <li>Create a property list.</li>
+        <li>Modify the property list, if required.</li>
+        <li>Use the property list.</li>
+        <li>Close the property list.</li>
+    </ol>
+    There are nuances, of course, but that is the basic process.
+    </p>
+    <p>
+    In some cases, you will not have to define property lists at all.  
+    If the default property settings are sufficient for your application, 
+    you can tell HDF5 to use the default property list.
+    </p>
+    <p>
+    The following sections 
+    first discuss the use of default property lists,
+    then each step of the programming model, 
+    and finally a few less frequently used property list operations.
+
+
+
+
+<!-- ??????? REDACTED FOR REVIEW &/OR PUBLICATION ???????
+     ??????? Restart on Introduction              ???????
+
+
+  <p>
+  This section describes the programming model for 
+  creating, populating, and using HDF5 property lists.
+  </p>
+    
+  <h4>10.3.1. Creating a New Property List</h4>
+
+  <p>
+  The programming model for creating, populating, and using 
+  a new HDF5 property list can be summarized as follows:
+
+  <ul>
+	<li>Create the property list</li>
+	<li>Populate the property list with the required properties</li>
+	<li>Use the property list when creating or accessing
+            the relevant kinds of objects
+            </li>
+  </ul>
+
+  </p>
+  <p>
+  Consider the simple case of creating _ _ _
+  See the example below.</p>
+
+
+
+
+<font color="red">
+<i>
+<p>
+<u>From notes:</u>
+<ul>
+<li>How do property lists work?</li>
+<li>How are property lists used? Include sample code. 
+    Diagrams can also be included.</li>
+<li>How are property lists configured? How are they set up? 
+    How are they changed?</li>
+<li>When can a property list be changed and when is it immutable?</li>
+<li>Which property lists are recorded in the file and which are transient?</li>
+<li>What property lists are available, and what does each do? 
+    See the “Available Property Lists” section below for more information.</li>
+<li>What are the most used property lists? </li>
+<li>What property lists seem to make the most difference when they are used?</li>
+</ul>
+</i>
+</font>
+
+    
+  <h4>10.3.2. Adding Properties to a  Property List</h4>
+
+    
+  <h4>10.3.3. Using Property Lists</h4>
+
+
+??????? END REDACTION ??????? ??????? -->
+
+</i>
+
+<a name="UsingH5P_DEFAULT">
+<h4 class="pagebefore">10.3.1. Using Default Property Lists</h4>
+</a>
+
+    Default property lists can simplify many routine HDF5 tasks because
+    you do not always have to create every property list you use.
+    </p>
+    <p>
+    An application that would be well-served by HDF5&rsquo;s default
+    property settings can use the default property lists simply by
+    substituting the value <code>H5P_DEFAULT</code> 
+    for a property list identifier.  HDF5 will then apply the 
+    default property list for the appropriate property list class.
+    </p>
+    <p>
+    For example, the function <code>H5Dcreate2</code> calls for 
+    a link creation property list,
+    a dataset creation property list, and 
+    a dataset access property list.
+    If the default properties are suitable for a dataset, 
+    this call can be made as
+
+    <dir>
+    <dl>
+      <dt><code>dset_id = H5Dcreate2( <i>loc_id</i>, <i>name</i>, <i>dtype_id</i>, <i>space_id</i></code>;
+          </dt>
+      <dt><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+          H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT );
+</code>
+          </dt>
+    </dl>
+    </dir>
+    
+    HDF5 will then apply the default link creation, dataset creation, 
+    and dataset access property lists correctly.
+    </p>
+    <p>
+    Of course, you would not want to do this without considering where 
+    it is appropriate, as there may be unforeseen consequences.
+    Consider, for example, the use of chunked datasets.  
+    Optimal chunking is quite dependent on the makeup of the dataset 
+    and the most common access patterns, both of which must be 
+    taken into account in setting up the size and shape of chunks.  
+    </p>
+
+
+<a name="BasicProgModSteps">
+<h4 class="pagebefore">10.3.2. Basic Steps of the Programming Model</h4>
+</a>
+
+    The steps of the property list programming model are described 
+    in the sub-sections below.
+
+<a name="CreatePList">
+<h5 class="pagebefore">10.3.2.1. Create a Property List</h5>
+</a>
+
+    A new property list can be created either as an instance of
+    a property list class or by copying an existing property list.
+    Consider the following examples.
+    A new dataset creation property list is first created 
+    &ldquo;from scratch&rdquo; with <code>H5Pcreate</code>.
+    A second dataset creation property list is then created
+    by copying the first one with <code>H5Pcopy</code>.
+    
+    <dir>
+    <dl>
+      <dt><code>dcplA_id = H5Pcreate (H5P_DATASET_CREATE)</code>;
+          <br />&nbsp;
+          </dt>
+          <dd>
+          The new dataset creation property list is created as an instance 
+	  of the property list class <code>H5P_DATASET_CREATE</code>.
+          <p>
+          The new dataset creation  property list&rsquo;s identifier
+          is returned in <code>dcplA_id</code> and the 
+          property list is initialized with default dataset creation 
+          property values.
+          <p>
+          A list of valid  classes appears above in 
+          &ldquo;<a href="#PListClassesTable">Table 1: Property List Classes 
+          in HDF5</a>&rdquo;.
+          </dd>
+      <dt><code>dcplB_id = H5Pcopy (dcplA_id)</code>;
+          <br />&nbsp;
+          </dt>
+          <dd>
+          A new dataset creation property list, <code>dcplB_id</code>, 
+          is created as a copy of <code>dcplA_id</code> and is 
+          initialized with dataset creation property values currently 
+          in <code>dcplA_id</code>.
+          </dd>
+    </dl>
+    </dir>
+    At this point, <code>dcplA_id</code> and <code>dcplB_id</code>
+    are identical; they will both contain any modified property values 
+    that were changed in <code>dcplA_id</code> before <code>dcplB_id</code> 
+    was created.  They may, however, diverge as additional property values 
+    are reset in each.
+
+    </p>
+    <p>
+    While we are creating property lists, let&rsquo;s 
+    create a link creation property list;  
+    we will need this property list when the new dataset 
+    is linked into the file below:
+    <dir>
+    <dl>
+      <dt><code>lcplAB_id = H5Pcreate (H5P_LINK_CREATE)</code>;
+          </dt>
+    </dl>
+    </dir>
+    </p>
+
+<a name="ChangeProperty">
+<h5 class="pagebefore">10.3.2.2. Change Property Values</h5>
+</a>
+
+    This section describes how to set property values.
+    </p>
+    <p>
+    Later in this section, the dataset creation property lists
+    <code>dcplA_id</code> and <code>dcplB_id</code> created in the 
+    section above will be used respectively to create 
+    chunked and contiguous datasets.
+    To set this up, we must set the layout property in each property list.
+    The following example sets 
+    <code>dcplA_id</code> for chunked datasets and
+    <code>dcplB_id</code> for contiguous datasets:
+
+    <dir>
+    <dl>
+      <dt><code>error = H5Pset_layout (dcplA_id, H5D_CHUNKED)</code>;
+          </dt>
+      <dt><code>error = H5Pset_layout (dcplB_id, H5D_CONTIGUOUS)</code>;
+          </dt>
+    </dl>
+    </dir>
+    
+    <p>
+    Since <code>dcplA_id</code> specifies a chunked layout, 
+    we must also set the number of dimensions and the size of the chunks.  
+    The example below specifies that datasets created with 
+    <code>dcplA_id</code> will be 3-dimensional and 
+    that the chunk size will be 100 in each dimension:
+    <dir>
+    <dl>
+      <dt><code>error = H5Pset_chunk (dcplA_id, 3, [100,100,100])</code>;
+          </dt>
+    </dl>
+    </dir>
+
+    </p>
+    <p>
+    These datasets will be created with UTF-8 encoded names.
+    To accomplish that, the following example sets the character encoding 
+    property in the link creation property list to create link names
+    with UTF-8 encoding:
+    <dir>
+    <dl>
+      <dt><code>error = H5Pset_char_encoding (lcplAB_id, H5T_CSET_UTF8)</code>;
+          </dt>
+    </dl>
+    </dir>
+    <code>dcplA_id</code> can now be used to create chunked datasets 
+    and <code>dcplB_id</code> to create contiguous datasets. 
+    And with the use of <code>lcplAB_id</code>, they will be created
+    with UTF-8 encoded names.
+
+
+<a name="UsePropertyList">
+<h5 class="pagebefore">10.3.2.3. Use the Property List</h5>
+</a>
+
+    Once the required property lists have been created, they can be used 
+    to control various HDF5 processes.
+    For illustration, consider dataset creation.
+    </p>
+    <p>
+    Assume that the datatype <code>dtypeAB</code> and the 
+    dataspaces <code>dspaceA</code> and <code>dspaceB</code>
+    have been defined 
+    and that the location identifier <code>locAB_id</code> specifies
+    the group <code>AB</code> in the current HDF5 file.
+    We have already created the required link creation and dataset creation 
+    property lists.  For the sake of illustration, we assume that the
+    default dataset access property list meets our application requirements.
+    The following calls would create the datasets <code>dsetA</code>
+    and <code>dsetB</code> in the group <code>AB</code>.
+    The raw data in <code>dsetA</code> will be contiguous 
+    while <code>dsetB</code> raw data will be chunked; 
+    both datasets will have UTF-8 encoded link names:
+<pre>
+    dsetA_id = H5Dcreate2( locAB_id, dsetA, dtypeAB, dspaceA_id, 
+                        lcplAB_id, dcplA_id, H5P_DEFAULT );
+    dsetB_id = H5Dcreate2( locAB_id, dsetB, dtypeAB, dspaceB_id, 
+                        lcplAB_id, dcplB_id, H5P_DEFAULT ); 
+</pre>
+
+
+
+<a name="ClosePList">
+<h5 class="pagebefore">10.3.2.4. Close the Property List</h5>
+</a>
+
+    Generally, creating or opening anything in an HDF5 file 
+    results in an HDF5 identifier.  These identifiers are of 
+    HDF5 type <code>hid_t</code> and include things like
+    file identifiers, often expressed as <code><i>file_id</i></code>;
+    dataset identifiers, <code><i>dset_id</i></code>; and
+    property list identifiers, <code><i>plist_id</i></code>.
+    To reduce the risk of memory leaks, all of these identifiers must 
+    be closed once they are no longer needed.
+    </p>
+    <p>
+    Property list identifiers are no exception to this rule,
+    and <code>H5Pclose</code> is used for this purpose.
+    The calls immediately following would close the 
+    property lists created and used in the examples above.
+    <dir>
+    <dl>
+      <dt><code>error = H5Pclose (dcplA_id)</code>;
+          </dt>
+      <dt><code>error = H5Pclose (dcplB_id)</code>;
+          </dt>
+      <dt><code>error = H5Pclose (lcplAB_id)</code>;
+          </dt>
+    </dl>
+    </dir>
+    </p>
+
+
+<a name="AdditionalPListOps">
+<h4 class="pagebefore">10.3.3. Additional Property List Operations</h4>
+</a>
+
+    A few property list operations fall outside of the programming model 
+    described above.  This section describes those operations.
+
+<a name="QueryPListClass">
+<h5 class="pagebefore">10.3.3.1. Query the Class of an Existing 
+    Property List</h5>
+</a>
+
+    Occasionally an application will have a property list
+    but not know the corresponding property list class.
+    A call such as in the following example will retrieve
+    the unknown class of a known property list:
+    
+    <dir>
+    <dl>
+      <dt><code><em>PList_Class</em> = H5Pget_class (dcplA_id)</code>;
+          </dt>
+    </dl>
+    </dir>
+    Upon this function&rsquo;s return, <code><em>PList_Class</em></code>
+    will contain the value <code>H5P_DATASET_CREATE</code>
+    indicating that <code>dcplA_id</code> is a dataset creation property list.
+
+
+<a name="GetCreationPValues">
+<h5 class="pagebefore">10.3.3.2. Determine Current Creation Property List 
+    Settings in an Existing Object</h5>
+</a>
+
+    After a file has been created, another application may work on the file
+    without knowing how the creation properties for the file were set up.
+    Retrieving these property values is often unnecessary; HDF5 can
+    read the data and knows how to deal with any properties it encounters.
+    </p>
+    <p>
+    But sometimes an application must do something that requires knowing 
+    the creation property settings.  HDF5 makes the acquisition of this
+    information fairly straight-forward;
+    for each property setting call, <code>H5Pset_*</code>,
+    there is a corresponding <code>H5Pget_*</code> call
+    to retrieve the property&rsquo;s current setting.
+    </p>
+    <p>
+    Consider the following examples which illustrate the determination of
+    dataset layout and chunking settings:
+    
+    <dir>
+    <dl>
+        <dt>The application must first identify the creation property list
+            with the appropriate <i>get creation property list</i> call.
+            There is one such call for each kind of object.</dt>
+            </p>
+        <dd><code>H5Dget_create_plist</code> will return a property list
+            identifier for the creation property list that was used 
+            to create the dataset. Call it <code>DCPL1_id</code>.</dd>
+            </p>
+        <dt><code>H5Pset_layout</code> sets a dataset&rsquo;s layout to be
+            compact, contiguous, or chunked.</dt>
+            </p>
+        <dd><code>H5Pget_layout</code> called with <code>DCPL1_id</code> 
+            will return the dataset&rsquo;s layout, either
+            <code>H5D_COMPACT</code>, <code>H5D_CONTIGUOUS</code>, 
+            or <code>H5D_CHUNKED</code>.</dd>
+            </p>
+        <dt><code>H5Pset_chunk</code> sets the rank of a dataset, 
+            that is the number of dimensions it will have, 
+            and the maximum size of each dimension.</dt>
+            </p>
+        <dd><code>H5Pget_chunk</code>, also called with <code>DCPL1_id</code>,
+            will return the rank of the dataset
+            and the maximum size of each dimension.</dd>
+            </p>
+    </dl>
+    </dir>
+    If a creation property value has not been explicitly set,
+    these <code>H5Pget_</code> calls will return the property&rsquo;s 
+    default value.
+    
+<!-- ??????? REDACTED FOR REVIEW &/OR PUBLICATION       ???????
+     ??????? REMOVE H5Piterate DISCUSSION; GENERIC PROP ???????
+     ??????? FUNCTIONS BEYOND SCOPE                     ??????? 
+    </p>
+    <p>
+    A more comprehensive approach is to perform a 
+    systematic analysis of the properties in a property list.
+    This approach could be based on <code>H5Piterate</code>, which
+    enables an application discover all the properties in a property list 
+    (or all the property lists in a property list class).
+    The application can then assess each property (or property list)
+    that is of interest.  Further discussion of this function 
+    is beyond the current scope of this document.
+??????? END REDACTION ??????? ??????? -->
+    </p>
+
+
+
+<a name="GetAccessPValues">
+<h5 class="pagebefore">10.3.3.3. Determine Access Property Settings</h5>
+</a>
+
+     Access property settings are quite different from creation properties.
+     Since access property settings are not retained in an HDF5 file
+     or object, there is normally no knowledge of the settings that 
+     were used in the past.
+     On the other hand, since access properties do not affect 
+     characteristics of the file or object, this is not normally an issue.
+     (See <a href="#APL,CPLexceptions">footnote 2</a> for exceptions.) 
+     </p>
+     <p>
+     One circumstance under which an application might need
+     to determine access property settings might be when a file or object
+     is already open but the application does not know the property list 
+     settings.
+     In that case, the application can use the appropriate 
+     <i>get access property list</i> call to retrieve a property list
+     identifier.  For example, if the dataset <code>dsetA</code>
+     from the earlier examples is still open, the following call 
+     would return an identifier for the dataset access property list
+     in use:
+<pre>
+    dsetA_dacpl_id = H5Dget_access_plist( dsetA_id ); 
+</pre>
+    The application could then use the returned property list identifier
+    to analyze the property settings.
+
+<!-- ??????? REDACTED FOR REVIEW & PUBLICATION                    ???????
+
+<font color="red">
+<i>
+</p>
+<p>
+Before putting more time into this subsection,
+under what circumstance might an application need to do this?
+If never or exceedingly rare, this can be dropped.
+</p>
+</i>
+</font>
+
+??????? END REDACTION ??????? ??????? -->
+
+
+<!-- ??????? REDACTED FOR REVIEW &/OR PUBLICATION ???????
+     ??????? This is a 1.10 feature.              ???????
+    
+<a name="EncodeDecodePList">
+<h5 class="pagebefore">10.3.3.4. Encode and Decode Property Lists</h5>
+</a>
+
+<font color="red">
+<i>
+
+A discussion of property list encoding and decoding,
+<code>H5Pencode</code> and <code>H5Pdecode</code>, 
+will be added when these functions appear in a public release,
+anticipated to be HDF5 Release 1.10.
+    </p>
+
+</i>
+</font>
+
+??????? END REDACTION ??????? ??????? -->
+     
+  
+
+<!-- ??????? REDACTED FOR REVIEW &/OR PUBLICATION ???????
+
+<a name="GeneralPListOps">
+<h3 class="pagebefore">10.4. General Property List Operations</h3>
+</a>
+
+    In many ways, property lists are handled much like objects in HDF5.
+    Property lists can be created and modified,
+    and information for many creation properties is retained in the file.
+    On the other hand, while access properties can be created, changed 
+    as needed, and discarded, access property information is not generally 
+    retained in the file or object.
+    <sup size="-1"><a href="#APL,CPLexceptions">1</a></sup>
+    </p>
+    <p>
+    The following sections provide general instructions for creating
+    and using property lists.
+    </p>
+
+
+<a name="CharEncoding">
+<h4 class="pagebefore">10.4.1. Set Object and Attribute Name 
+    Character Encoding</h4>
+</a>
+
+    Object and attribute names can be created with either ASCII or UTF-8 
+    character encoding. 
+    The relevant HDF5 property functions are:
+    <dir>
+    <dl>
+        <dt><code>H5Pset_char_encoding</code></dt>
+        <dt><code>H5Pget_char_encoding</code></dt>
+    </dl>
+    </dir>
+    </p>
+    <p>
+    ASCII and UTF-8 encodings and the use of these functions are discussed 
+    in the &ldquo;Object and Attribute Names&rdquo; section of
+    &ldquo;<a href="../Advanced/UsingUnicode/index.html">Using UTF-8 Encoding 
+    in HDF5 Applications</a>&rdquo;.
+
+??????? END REDACTION ??????? ??????? -->
+
+
+<!-- ??????? REDACTED FOR REVIEW &/OR PUBLICATION ???????
+     ??????? Section isn't quite right.           ???????
+     ???????                                      ???????
+     ??????? Is there an actual OCPL?             ???????
+     ??????? Is is it always a DCPL or GCPL?      ???????
+     ???????       and possibly TCPL?             ???????
+ 
+
+<a name="Object+LinkOps">
+<h3 class="pagebefore">10.4. Object Properties and Property Lists</h5>
+</a>
+
+    The HDF5 <i>object creation properties</i> govern certain aspects of 
+    object creation and can be used with several types of objects.
+    Object creation properties include setting the recording of times
+    associated with a file (<code>H5Pset_obj_track_times</code>)
+    and setting the tracking of attribute creation order and indexing
+    an object&rsquo;s attributes on that creation order
+    (<code>H5Pset_attr_creation_order</code>).
+    </p>
+    <p>
+    Object creation properties are set in an object creation property list,
+    often represented by <code><i>ocpl_id</i></code>), 
+    and can be used in any create or open call that accepts an
+    object creation property list.
+    </p>
+    <p>
+    <i>Object copy properties</i> govern aspects of copying objects 
+    and, like object creation properties, can be used with several types 
+    of objects.
+    Object copying properties include setting various aspects of copying
+    an object (<code>H5Pset_copy_object</code>) and 
+    managing the duplication of copied committed datatypes 
+    (<code>H5Padd_merge_committed_dtype_path</code> and
+    <code>H5Pfree_merge_committed_dtype_paths</code>)
+    to ensure that committed datatypes used commonly by several data objects 
+    before a copy operation remain shared after the copy operation.
+    whether to copy recursively when copying a group.
+    </p>
+    <p>
+    Object copy properties are set in an object copy property list,
+    often represented by <code><i>ocpypl_id</i></code>), and
+    can be used in any call that accepts an object copy property list.
+    </p>
+
+??????? END REDACTION ??????? ??????? -->
+
+
+<a name="GenericPLists">
+<h3 class="pagebefore">10.4. Generic Properties Interface and 
+    User-defined Properties</h3>
+</a>
+
+    HDF5&rsquo;s generic property interface provides tools for 
+    managing the entire property hierarchy and for the creation 
+    and management of user-defined property lists and properties.
+    This interface also makes it possible for an application or a 
+    driver to create, modify, and manage custom properties, 
+    property lists, and property list classes. 
+    A comprehensive list of functions for this interface appears under 
+    &ldquo;<a href="../RM/RM_H5P.html#GenericPropFuncs" target="_TOP">Generic 
+    Property Operations (Advanced)</a>&rdquo; in the 
+    &ldquo;<a href="../RM/RM_H5P.html" target="_TOP">H5P: Property List 
+    Interface</a>&rdquo; section of the 
+    <a href="../RM/RM_H5Front.html" target="_TOP"><cite>HDF5 Reference 
+    Manual</cite></a>.
+    <p>
+    </p>
+    Further discussion of HDF5&rsquo;s generic property interface
+    and user-defined properties and property lists 
+    is beyond the scope of this document.
+
+
+<!-- ??????? REDACTED FOR REVIEW &/OR PUBLICATION       ???????
+     ??????? BEGIN MORE SERIOUS Generic Properties TEXT ???????
+     ??????? But it's beyond scope for this version     ???????
+
+
+    <p>
+    </p>
+    Property names beginning with &lsquo;<code>H5</code>&rsquo; 
+    are reserved for HDF5 Library use and should not be used for
+    user-defined properties.
+    </p>
+    <p>
+    HDF5&rsquo;s generic property functions provide a general foundation
+    for managing the entire property hierarchy.
+    The generic property functions enable an application or a driver to 
+    create, modify, and manage custom properties, property lists, 
+    and property list classes.
+    In fact, the HDF5 Library itself uses private versions of these 
+    functions to some extent when initializing the basic properties, 
+    property lists, and property list classes described elsewhere. 
+    </p>
+    <p>
+    Applications and drivers (the virtual file layer (VFL) and 
+    datatype conversion, for example) can use the generic property
+    functions to create properties that control features they add 
+    in an HDF5 environment. 
+    The ability of a driver to create properties when installed at 
+    run-time enables new features to be easily created and controlled 
+    while localizing changes to the code being added or modified.
+    This facilitates software maintainence and the evolution of 
+    both the application or driver's properties and HDF5&rsquo;s 
+    properties ecosystem. 
+    </p>
+    <p>
+    The generic property functions also enable users to create and set 
+    properties which are temporary in nature and do not need to be stored 
+    longer than the application is active. This would allow users to 
+    set and query application-specific properties during an 
+    application&rsquo;s execution without impacting another application 
+    or leaving unnecessary &ldquo;residue&rdquo; in the file.
+    </p>
+
+<a name="UsingGenericPLists">
+<h4 class="pagebefore">10.541. Using Generic Property List Functions</h4>
+</a>
+
+    Generic property functions can be used to do anything that
+    the more the focussed property list functions do.  For example, 
+    functionality of the function <code>H5Pset_fapl_mpio</code> 
+    could be completely implemented with generic function calls.  
+    Of course, these tasks can be more simply performed with the 
+    existing functions.
+    </p>
+    <p>
+    The value of the generic property functions comes into play 
+    when an application requires a property not included with HDF5.
+    For exmaple, 
+
+<font color="red">
+<i>
+&lt; example needed &gt;
+</i>
+</font>.
+
+    </p>
+    <p>
+    A new property list class can be derived from an existing class 
+    by calling <code>H5Pcreate_class</code> with the 
+    <em><code>parent_class</code></em> parameter set to the existing class
+    that the new class is to inherit from.
+    Properties that differentiate the new class can then be added and set
+    with <code>H5Pregister</code> and, if necessary, <code>H5Pset</code>.
+    </p>
+    <p>
+    If the new property list class is unlike any existing class and 
+    is being created from scratch, the new class is created with 
+    <code>H5Pcreate_class</code> with the 
+    <em><code>parent_class</code></em> parameter set to <code>NULLL</code>.
+    At this point, an <i>empty</i> property list class exists.
+    The new empty property list class can then be populated with 
+    a set of properties using <code>H5Pregister</code> and, 
+    if necessary, <code>H5Pset</code>.
+
+<font color="red">
+<i>
+&lt; Correct?  &gt;
+</i>
+</font>
+
+    </p>
+    <p>
+    Additional new property list classes can be derived from 
+    any existing property list class, including a new <i>empty</i>
+    property list class, other user-derived property list classes,
+    or a property list class defined by the HDF5 Library. 
+    User-derived property list classes which are derived from the 
+    HDF5 Library-defined classes may be passed to HDF5 functions 
+    that expect library-defined property lists and the functions 
+    will traverse the inherited classes to find the correct class to 
+    retrieve information.
+    </p>
+    <p>
+    New properties can be added to a property list class with 
+    <code>H5Pregister</code>.
+    The property will become a permanent part of the property list 
+    and will be present in new property lists subsequently created 
+    with that class.
+    Registered properties can have default values for 
+    each new property list created for that class.
+    </p>
+    <p>
+    New properties can be added to a property list with 
+    <code>H5Pinsert</code>.
+    Such a property can be temporary and will no longer exist once the 
+    application quits.
+    Properties inserted into a property list will not affect 
+    property lists created with the parent property list class.
+
+<font color="red">
+<i>
+<br>
+&lt; Can inserted properties be temporary such that they 
+will no longer exist once the application quits?  
+This was proposed in the design, but was it implemented that way? &gt;
+</i>
+</font>
+
+    </p>
+    <p>
+    Property names beginning with '<code>H5</code>' are reserved 
+    for HDF5 Library use and should not be used by third-party 
+    applications or libraries.
+    </p>
+    <p>
+    The names and sizes of property values for each property 
+    are local to each property list; changing them in a 
+    property list class does not affect existing property lists.
+    </p>
+    <p>
+    A comprehensive list of generic property functions appears
+    below in the &ldquo;<a href="#GenericPropFunctions">generic 
+    property functions</a>&rdquo; table.
+
+
+<font color="red">
+<i>
+    </p>
+    <p>
+This section will continue with discussions of 
+selected generic property functions to give the user 
+a better sense of how they can be used.
+</i>
+</font>
+
+<br>
+??????? END "beyond scope" Generic Properties discussion ??????? ??????? 
+??????? END REDACTION                                    ??????? ??????? -->
+    </p>
+
+
+
+
+
+<!-- ??????? REDACTED FOR REVIEW &/OR PUBLICATION     ???????
+     ??????? MASK UNUSED TEMPLATES                    ???????
+
+<a name="CodeSnip">
+<h3 class="pagebefore">10.6. Code Snippets</h3>
+</a>
+
+<font color="red">
+<i>
+This section simply provides templates; none of the text is apropos.
+</i>
+</font>
+
+<p>
+Consider the the short example below and the longer one immediately following.
+</p>
+
+
+
+<table width="600" cellspacing="0" align="center">
+    <tr valign="top"> 
+        <td align="left">
+        <hr color="green" size="3"/>
+    <pre>
+  file_id = H5Fcreate ("SampleFile.h5", H5F_ACC_EXCL,
+      H5P_DEFAULT, H5P_DEFAULT)</pre></td>
+        </tr>
+    <tr><td><hr color="green" size="1" /></td></tr>
+    <tr valign="top">
+        <td align="left">
+        <b>Example 1. Creating an HDF5 file using property list defaults</b>
+        <hr color="green" size="3"/></td>
+        </tr>
+</table>
+<br />
+
+<p>
+And the more complex case.
+<p>
+In this more complex case, 
+we define file creation and access property lists (though we do not 
+assign any properties), specify that <code>H5Fcreate</code> should 
+fail if <code>SampleFile.h5</code> already exists, and create a 
+new file named <code>SampleFile.h5</code>. The example does not 
+specify a driver, so the default driver, 
+<code>H5FD_SEC2</code>, will be used.</p>
+
+
+
+<table width="600" cellspacing="0" align="center">
+    <tr valign="top"> 
+        <td align="left">
+        <hr color="green" size="3"/>
+    <pre>
+  fcplist_id = H5Pcreate (H5P_FILE_CREATE)
+    &lt;...<em>set desired file creation properties</em>...&gt;
+  faplist_id = H5Pcreate (H5P_FILE_ACCESS)
+    &lt;...<em>set desired file access properties</em>...&gt;
+  file_id = H5Fcreate ("SampleFile.h5", H5F_ACC_EXCL, fcplist_id, faplist_id)</pre></td>
+        </tr>
+    <tr><td><hr color="green" size="1" /></td></tr>
+    <tr valign="top">
+        <td align="left">
+        <b>Example 2. Creating an HDF5 file using property lists</b>
+        <hr color="green" size="3"/></td>
+        </tr>
+     <tr valign="top" align="left">
+     <td>
+     <font size="-1">
+     Notes: 
+     <br>
+     A root group is automatically created in a file when the file 
+     is first created.
+     <br>
+     File property lists, once defined, can be reused when another 
+     file is created within the same application.
+     </font>
+     </td>
+     </tr>
+</table>
+<br />
+
+<dir>
+    <p>Notes: 
+    <br>A root group is automatically created in a file when the file 
+    is first created.
+    <br>File property lists, once defined, can be reused when another 
+    file is created within the same application.
+    </p>
+</dir>
+
+??????? END UNUSED TEMPLATES MASK ???????
+??????? END REDACTION             ??????? -->
+
+
+<!-- NEW PAGE -->
+<a name="FunctionSumms">
+<h3 class="pagebefore">10.5. Property List Function Summaries</h3>
+</a>
+
+    <p>
+    General property functions, 
+    generic property functions and macros, 
+    property functions that are used with multiple types of objects,
+    and object and link property functions
+    are listed below.
+    </p>
+    <p>
+    Property list functions that apply to a specific type of object
+    are listed in the chapter that discusses that object.
+    For example, the Datasets chapter has two property list function listings: 
+    one for dataset creation property list functions and
+    one for dataset access property list functions. 
+    As has been stated, this chapter is not intended to describe 
+    every property list function.
+    </p>
+
+   
+    <table width="600" cellspacing="0" align="center" cellpadding="0">
+    <tr valign="bottom" align="left">
+        <th colspan="3" valign="bottom">
+        Function Listing 1. General property list functions (H5P)
+        </th>
+        </tr>
+    <tr><td colspan="3"><hr color="green" size="3" /></td></tr>
+    <tr valign="top" align="left"> 
+        <th>
+        C Function<br />Fortran&nbsp;Subroutine&nbsp;&nbsp;&nbsp;&nbsp;
+        </th>
+        <th>&nbsp;</th>
+        <th>
+        Purpose</th>
+        </tr>
+    <tr><td colspan="3"><hr color="green" size="1" /></td></tr>
+    <tr valign="top">
+        <td>
+        <code>H5Pcreate</code>
+        <br />
+        <code>h5pcreate_f&nbsp;&nbsp;&nbsp;</code>
+        </td>
+        <td>&nbsp;</td>
+        <td>
+        Creates a new property list as an instance of a specified 
+        parent property list class.
+        </td>
+        </tr>
+    <tr><td colspan="3"><hr color="green" size="1" /></td></tr>
+    <tr valign="top">
+        <td>
+        <code>H5Pcopy</code>
+        <br />
+        <code>h5pcopy_f</code>
+        </td>
+        <td>&nbsp;</td>
+        <td>
+        Creates a new property list by copying the specified 
+        existing property list.
+        </td>
+        </tr>
+    <tr><td colspan="3"><hr color="green" size="1" /></td></tr>
+    <tr valign="top">
+        <td>
+        <code>H5Pget_class</code>
+        <br />
+        <code>h5pget_class_f</code>
+        </td>
+        <td>&nbsp;</td>
+        <td>
+        Retrieves the parent property list class of the specified 
+        property list.
+        </td>
+        </tr>
+    <tr><td colspan="3"><hr color="green" size="1" /></td></tr>
+    <tr valign="top">
+        <td>
+        <code>H5Pclose</code>
+        <br />
+        <code>h5pclose_f</code>
+        </td>
+        <td>&nbsp;</td>
+        <td>
+        Closes the specified property list.
+        </td>
+        </tr>
+    <tr><td colspan="3"><hr color="green" size="3" /></td></tr>
+    </table>
+    </p>
+    <p>
+
+
+    <a name="ObjectPropFunctions">
+    Object property functions can be used with several kinds of objects.
+    </a>
+
+
+    </p>
+    <p>
+   
+    <table width="600" cellspacing="0" align="center" cellpadding="0">
+    <tr valign="bottom">
+        <th colspan="3" align="left" valign="bottom">
+        Function Listing 2. Object property functions (H5P)
+        </th>
+        </tr>
+    <tr><td colspan="3"><hr color="green" size="3" /></td></tr>
+    <tr valign="top"> 
+        <th align="left">
+        C&nbsp;Function
+        <br />
+        Fortran&nbsp;Subroutine&nbsp;&nbsp;&nbsp;&nbsp;</b>
+        </th>
+        <th>&nbsp;</th>
+        <th align="left">
+        Purpose</td>
+        </tr>
+    <tr><td colspan="3"><hr color="green" size="1" /></td></tr>
+    <tr><th colspan="3" align="left">
+        Object Creation Properties
+        </th></tr>
+    <tr><td colspan="3"><hr color="green" size="1" /></td></tr>
+    <tr valign="top">
+        <td>
+        <code>H5Pget_attr_creation_order</code>
+        <br />
+        <code>h5pget_attr_creation_order_f</code>
+        </td>
+        <td>&nbsp;</td>
+        <td>
+        Retrieves tracking and indexing settings for attribute creation order. 
+        </td>
+        </tr>
+    <tr><td colspan="3"><hr color="green" size="1" /></td></tr>
+    <tr valign="top">
+        <td>
+        <code>H5Pget_attr_phase_change</code>
+        <br />
+        <code>h5pget_attr_phase_change_f</code>
+        </td>
+        <td>&nbsp;</td>
+        <td>
+        Retrieves attribute storage phase change thresholds.
+        </td>
+        </tr>
+    <tr><td colspan="3"><hr color="green" size="1" /></td></tr>
+    <tr valign="top">
+        <td>
+        <code>H5Pget_obj_track_times</code>
+        <br />
+        <code>h5pget_obj_track_times_f</code>
+        </td>
+        <td>&nbsp;</td>
+        <td>
+        Determines whether times associated with an object are being recorded.
+        </td>
+        </tr>
+    <tr><td colspan="3"><hr color="green" size="1" /></td></tr>
+    <tr valign="top">
+        <td>
+        <code>H5Pset_attr_creation_order</code>
+        <br />
+        <code>h5pset_attr_creation_order_f</code>
+        </td>
+        <td>&nbsp;</td>
+        <td>
+        Sets tracking and indexing of attribute creation order.
+        </td>
+        </tr>
+    <tr><td colspan="3"><hr color="green" size="1" /></td></tr>
+    <tr valign="top">
+        <td>
+        <code>H5Pset_attr_phase_change</code>
+        <br />
+        <code>h5pset_attr_phase_change_f</code>
+        </td>
+        <td>&nbsp;</td>
+        <td>
+        Sets attribute storage phase change thresholds.
+        </td>
+        </tr>
+    <tr><td colspan="3"><hr color="green" size="1" /></td></tr>
+    <tr valign="top">
+        <td>
+        <code>H5Pset_obj_track_times</code>
+        <br />
+        <code>h5pset_obj_track_times_f</code>
+        </td>
+        <td>&nbsp;</td>
+        <td>
+        Sets the recording of times associated with an object.
+        </td>
+        </tr>
+    <tr><td colspan="3"><hr color="green" size="1" /></td></tr>
+    <tr><th colspan="3" align="left">
+        Object Copy Properties
+        </th></tr>
+    <tr><td colspan="3"><hr color="green" size="1" /></td></tr>
+    <tr valign="top">
+        <td>
+        <code>H5Padd_merge_committed_dtype_path</code>
+        <br />
+        <code>(none)</code>
+        </td>
+        <td>&nbsp;</td>
+        <td>
+        Adds a path to the list of paths that will be searched in 
+        the destination file for a matching committed datatype.
+        </td>
+        </tr>
+    <tr><td colspan="3"><hr color="green" size="1" /></td></tr>
+    <tr valign="top">
+        <td>
+        <code>H5Pfree_merge_committed_dtype_paths&nbsp;&nbsp;&nbsp;</code>
+        <br />
+        <code>(none)</code>
+        </td>
+        <td>&nbsp;</td>
+        <td>
+        Clears the list of paths stored in an object copy property list. 
+        </td>
+        </tr>
+    <tr><td colspan="3"><hr color="green" size="1" /></td></tr>
+    <tr valign="top">
+        <td>
+        <code>H5Pget_copy_object</code>
+        <br />
+        <code>h5pget_copy_object_f</code>
+        </td>
+        <td>&nbsp;</td>
+        <td>
+        Retrieves the properties to be used when an object is copied.
+        </td>
+        </tr>
+    <tr><td colspan="3"><hr color="green" size="1" /></td></tr>
+    <tr valign="top">
+        <td>
+        <code>H5Pget_mcdt_search_cb</code>
+        <br />
+        <code>(none)</code>
+        </td>
+        <td>&nbsp;</td>
+        <td>
+        Retrieves the callback function from the 
+        specified object copy property list.
+        </td>
+        </tr>
+    <tr><td colspan="3"><hr color="green" size="1" /></td></tr>
+    <tr valign="top">
+        <td>
+        <code>H5Pset_copy_object</code>
+        <br />
+        <code>h5pset_copy_object_f</code>
+        </td>
+        <td>&nbsp;</td>
+        <td>
+        Sets the properties to be used when an object is copied.
+        </td>
+        </tr>
+    <tr><td colspan="3"><hr color="green" size="1" /></td></tr>
+    <tr valign="top">
+        <td>
+        <code>H5Pset_mcdt_search_cb</code>
+        <br />
+        <code>(none)</code>
+        </td>
+        <td>&nbsp;</td>
+        <td>
+        Sets the callback function that H5Ocopy will invoke 
+        before searching the entire destination file 
+        for a matching committed datatype.
+        </td>
+        </tr>
+    <tr><td colspan="3"><hr color="green" size="3" /></td></tr>
+    </table>
+    </p>
+    <p>
+
+
+    <a name="LinkCreationTable">
+    The following table lists link creation properties.</a>
+    Since the creation of a link is almost always a step in the 
+    creation of an object, these properties may also be set in 
+    group creation property lists, 
+    dataset creation property lists, 
+    datatype creation property lists, 
+    and the more generic object creation property lists. 
+    Some are also applicable to the attribute creation property lists.
+    <a name="WidelyUsedProps">&nbsp;</a>
+    <a name="LinkCreateProps">&nbsp;</a>
+    </p>
+    <p>
+
+    <table width="600" cellspacing="0" align="center" cellpadding="0">
+    <tr valign="bottom">
+        <th colspan="3" align="left" valign="bottom">
+        Function Listing 3. Link creation property functions (H5P)
+        </th>
+        </tr>
+    <tr valign="bottom">
+        <td colspan="3" align="left" valign="bottom">
+        <font size="-1"><i>
+        These properties can be used with any of the indicated 
+        property lists.
+        </i></font>
+        </th>
+        </tr>
+    <tr><td colspan="3"><hr color="green" size="3" /></td></tr>
+    <tr valign="top" align="left"> 
+        <th>
+        C&nbsp;Function
+           <br />
+           Fortran&nbsp;Subroutine&nbsp;&nbsp;&nbsp;&nbsp;
+        </th>
+        <th>&nbsp;</th>
+        <th>
+        Purpose</th>
+        </tr>
+    <tr><td colspan="3"><hr color="green" size="1" /></td></tr>
+    <tr valign="top">
+        <td>
+        <code>H5Pget_char_encoding</code>
+        <br />
+        <code>h5pget_char_encoding_f&nbsp;&nbsp;&nbsp;</code>
+        </td>
+        <td>&nbsp;</td>
+        <td>
+        Queries the character encoding used to encode link or attribute names. 
+        <br>
+        <font size="-1"><i>
+        Any link, object, dataset, datatype, group, or attribute 
+        creation property list
+        </i></font>
+        </td>
+        </tr>
+    <tr><td colspan="3"><hr color="green" size="1" /></td></tr>
+    <tr valign="top">
+        <td>
+        <code>H5Pset_char_encoding</code>
+        <br />
+        <code>h5pset_char_encoding_f&nbsp;&nbsp;&nbsp;</code>
+        </td>
+        <td>&nbsp;</td>
+        <td>
+        Sets the character encoding used to encode link and attribute names. 
+        <br>
+        <font size="-1"><i>
+        Any link, object, dataset, datatype, group, or attribute 
+        creation property list
+        </i></font>
+        </td>
+        </tr>
+    <tr><td colspan="3"><hr color="green" size="1" /></td></tr>
+    <tr valign="top">
+        <td>
+        <code>H5Pget_create_intermediate_group</code>
+        <br />
+        <code>h5pget_create_intermediate_group_f&nbsp;&nbsp;&nbsp;</code>
+        </td>
+        <td>&nbsp;</td>
+        <td>
+        Queries setting for creation of intermediate groups.
+        <br>
+        <font size="-1"><i>
+        Link creation property list, which in turn can be used in the
+        create call for any dataset, datatype, or group 
+        </i></font>
+        </td>
+        </tr>
+    <tr><td colspan="3"><hr color="green" size="1" /></td></tr>
+    <tr valign="top">
+        <td>
+        <code>H5Pset_create_intermediate_group</code>
+        <br />
+        <code>h5pset_create_intermediate_group_f&nbsp;&nbsp;&nbsp;</code>
+        </td>
+        <td>&nbsp;</td>
+        <td>
+        Specifies whether to create intermediate groups 
+        when they do not already exist.
+        <br>
+        <font size="-1"><i>
+        Link creation property list, which in turn can be used in the
+        create call for any dataset, datatype, or group 
+        </i></font>
+        </td>
+        </tr>
+    <tr><td colspan="3"><hr color="green" size="3" /></td></tr>
+    </table>
+    </p>
+    <p>
+
+
+<!-- ??????? GENERIC PROPERTY OPERATIONS TABLE REMOVED FROM UG ??????? -->
+<!-- ??????? Property Lists CHAPTER (UG/14_PropertyLists.html) ??????? -->
+<!-- ??????? AND CORRESPONDING TEXT REDUCED IN FAVOR OF        ??????? -->
+<!-- ??????? EVENTUAL (AND AS YET UNSCUEDULED) DOCUMENT        ??????? -->
+<!-- ??????? SEPARATELY DOCUMENTING GENERIC PROPERTY OPS.      ??????? -->
+<!-- ??????? THIS WILL PROBABLY BE AN "ADVANCED TOPIC".        ??????? -->
+<!-- ???????                                   9 July 2014     ??????? -->
+
+<!-- ??????? SEE hdf5doc/trunk/sandbox/GenericProperties/.     ??????? 
+
+    Generic property functions allow an application to create 
+    properties, property lists, and property list classes 
+    beyond those provided by HDF5.
+    Beyond this function listing and the 
+    <a href="#GenericPLists">generic and user-defined properties</a>
+    section above, discussions of HDF5&rsquo;s generic property interface
+    and user-defined properties and property lists are beyond 
+    the current scope of this document.
+
+    <a name="GenericPropFunctions">&nbsp;</a>
+
+    </p>
+    <p>
+   
+    <table width="600" cellspacing="0" align="center" cellpadding="0">
+    <tr valign="bottom">
+        <th colspan="3" align="left" valign="bottom">
+        Function Listing 4. Generic property functions (H5P)
+        </th>
+        </tr>
+    <tr><td colspan="3"><hr color="green" size="3" /></td></tr>
+    <tr valign="top" align="left" valign="top"> 
+        <th>
+        C&nbsp;Function&nbsp;or&nbsp;Macro
+           <br />
+           Fortran&nbsp;Subroutine&nbsp;&nbsp;&nbsp;&nbsp;
+        </th>
+        <th>&nbsp;</th>
+        <th>
+        Purpose</th>
+        </tr>
+    <tr><td colspan="3"><hr color="green" size="1" /></td></tr>
+    <tr valign="top">
+        <td>
+        <code>H5Pclose_class</code>
+        <br />
+        <code>h5pclose_class_f</code>
+        </td>
+        <td>&nbsp;</td>
+        <td>
+        Closes an existing property list class.
+        </td>
+        </tr>
+    <tr><td colspan="3"><hr color="green" size="1" /></td></tr>
+    <tr valign="top">
+        <td>
+        <code>H5Pcopy_prop</code>
+        <br />
+        <code>h5pcopy_prop_f</code>
+        </td>
+        <td>&nbsp;</td>
+        <td>
+        Copies a property from one property list or property list class 
+        to another.
+        </td>
+        </tr>
+    <tr><td colspan="3"><hr color="green" size="1" /></td></tr>
+    <tr valign="top">
+        <td>
+        <code>H5Pcreate_class</code>
+        <br />
+        <code>h5pcreate_class_f</code>
+        </td>
+        <td>&nbsp;</td>
+        <td>
+        Creates a new property list class.
+        </td>
+        </tr>
+    <tr><td colspan="3"><hr color="green" size="1" /></td></tr>
+    <tr valign="top">
+        <td>
+        <code>H5Pequal</code>
+        <br />
+        <code>h5pequal_f</code>
+        </td>
+        <td>&nbsp;</td>
+        <td>
+        Compares two property lists or property list classes for equality. 
+        </td>
+        </tr>
+    <tr><td colspan="3"><hr color="green" size="1" /></td></tr>
+    <tr valign="top">
+        <td>
+        <code>H5Pexist</code>
+        <br />
+        <code>h5pexist_f</code>
+        </td>
+        <td>&nbsp;</td>
+        <td>
+        Queries whether a property name exists in a property list 
+        or property list class.
+        </td>
+        </tr>
+    <tr><td colspan="3"><hr color="green" size="1" /></td></tr>
+    <tr valign="top">
+        <td>
+        <code>H5Pget</code>
+        <br />
+        <code>h5pget_f</code>
+        </td>
+        <td>&nbsp;</td>
+        <td>
+        Queries the value of a property. 
+        </td>
+        </tr>
+    <tr><td colspan="3"><hr color="green" size="1" /></td></tr>
+    <tr valign="top">
+        <td>
+        <code>H5Pget_class_name</code>
+        <br />
+        <code>h5pget_class_name_f</code>
+        </td>
+        <td>&nbsp;</td>
+        <td>
+        Retrieves the name of a property list class.
+        </td>
+        </tr>
+    <tr><td colspan="3"><hr color="green" size="1" /></td></tr>
+    <tr valign="top">
+        <td>
+        <code>H5Pget_class_parent</code>
+        <br />
+        <code>h5pget_class_parent_f&nbsp;&nbsp;&nbsp;</code>
+        </td>
+        <td>&nbsp;</td>
+        <td>
+        Retrieves the parent class of a property list class.
+        </td>
+        </tr>
+    <tr><td colspan="3"><hr color="green" size="1" /></td></tr>
+    <tr valign="top">
+        <td>
+        <code>H5Pget_nprops</code>
+        <br />
+        <code>h5pget_nprops_f</code>
+        </td>
+        <td>&nbsp;</td>
+        <td>
+        Queries the number of properties in a property list or 
+        property list class. 
+        </td>
+        </tr>
+    <tr><td colspan="3"><hr color="green" size="1" /></td></tr>
+    <tr valign="top">
+        <td>
+        <code>H5Pget_size</code>
+        <br />
+        <code>h5pget_size_f</code>
+        </td>
+        <td>&nbsp;</td>
+        <td>
+        Queries the size of a property value in bytes. 
+        </td>
+        </tr>
+    <tr><td colspan="3"><hr color="green" size="1" /></td></tr>
+    <tr valign="top">
+        <td>
+        <code>H5Pinsert</code>
+        <br />
+        <code>h5pinsert_f</code>
+        </td>
+        <td>&nbsp;</td>
+        <td>
+        Registers a temporary property with a property list.
+        </td>
+        </tr>
+    <tr><td colspan="3"><hr color="green" size="1" /></td></tr>
+    <tr valign="top">
+        <td>
+        <code>H5Pisa_class</code>
+        <br />
+        <code>h5pisa_class_f</code>
+        </td>
+        <td>&nbsp;</td>
+        <td>
+        Determines whether a property list is a member of a class.
+        </td>
+        </tr>
+    <tr><td colspan="3"><hr color="green" size="1" /></td></tr>
+    <tr valign="top">
+        <td>
+        <code>H5Piterate</code>
+        <br />
+        <code>h5piterate_f</code>
+        </td>
+        <td>&nbsp;</td>
+        <td>
+        Iterates over the properties in a property list or
+        property list class.
+        </td>
+        </tr>
+    <tr><td colspan="3"><hr color="green" size="1" /></td></tr>
+    <tr valign="top">
+        <td>
+        <code>H5Pregister</code>
+        <br />
+        <code>h5pregister_f</code>
+        </td>
+        <td>&nbsp;</td>
+        <td>
+        Registers a permanent property with a property list class.
+        </td>
+        </tr>
+    <tr><td colspan="3"><hr color="green" size="1" /></td></tr>
+    <tr valign="top">
+        <td>
+        <code>H5Premove</code>
+        <br />
+        <code>h5premove_f</code>
+        </td>
+        <td>&nbsp;</td>
+        <td>
+        Removes a property from a property list. 
+        </td>
+        </tr>
+    <tr><td colspan="3"><hr color="green" size="1" /></td></tr>
+    <tr valign="top">
+        <td>
+        <code>H5Pset</code>
+        <br />
+        <code>h5pset_f</code>
+        </td>
+        <td>&nbsp;</td>
+        <td>
+        Sets a property list value.
+        </td>
+        </tr>
+    <tr><td colspan="3"><hr color="green" size="1" /></td></tr>
+    <tr valign="top">
+        <td>
+        <code>H5Punregister</code>
+        <br />
+        <code>h5punregister_f</code>
+        </td>
+        <td>&nbsp;</td>
+        <td>
+        Removes a property from a property list class. 
+        </td>
+        </tr>
+    <tr><td colspan="3"><hr color="green" size="3" /></td></tr>
+    </table>
+    </p>
+
+-->
+<!-- ??????? END OF REMOVED GENERIC PROPERTY OPERATIONS TABLE. ??????? -->
+
+
+<a name="AddlPListResources">
+<h3 class="pagebefore">10.6. Additional Property List Resources</h3>
+</a>
+
+    Property lists are ubiquitous in an HDF5 environment and are therefore 
+    discussed in many places in HDF5 documentation.
+    The following sections and listings in the
+    <a href="UG_frame.html"><cite>HDF5 User&rsquo;s Guide</cite></a> 
+    are of particular interest: 
+    <dir>
+    <dl>
+    <dt>In the &ldquo;<a href="UG_frame03DataModel.html" target="_top">HDF5
+        Data Model and File Structure</a>&rdquo; chapter, 
+        see the &ldquo;Property List&rdquo; section.
+            <br />&nbsp;
+    <dt>In the &ldquo;<a href="UG_frame08TheFile.html" target="_top">HDF5
+        File</a>&rdquo; chapter, see the following sections and listings:
+        <dd>File Creation and File Access Properties
+        <dd>File Property Lists and its sub-sections
+        <dd>Example with the File Creation Property List
+        <dd>Example with File Access Property List
+        <dd>File creation property list functions
+        <dd>File access property list functions
+        <dd>File driver functions
+            <br />&nbsp;
+    <dt>In the &ldquo;<a href="UG_frame13Attributes.html" target="_top">HDF5
+        Attributes</a>&rdquo; chapter, see the &ldquo;Attribute creation 
+        property list functions&rdquo; listing.
+            <br />&nbsp;
+    <dt>In the &ldquo;<a href="UG_frame09Groups.html" target="_top">HDF5
+        Groups</a>&rdquo; chapter, see the &ldquo;Group creation 
+        property list functions&rdquo; listing.
+            <br />&nbsp;
+    <dt>Property lists are discussed throughout the 
+            &ldquo;<a href="UG_frame10Datasets.html" 
+            target="_top">HDF5 Datasets</a>&rdquo; chapter.
+    </dl>
+    </dir>
+    </p>
+    <p>
+
+    All property list functions are described in the
+    &ldquo;<a href="../RM/RM_H5P.html">H5P: Property List 
+    Interface</a>&rdquo; section of the 
+    <a href="../RM/RM_H5Front.html"><cite>HDF5 Reference Manual</cite></a>.
+    The function index at the top of the page provides a categorized listing 
+    grouped by property list class.  Those classes are listed below:
+    <ul>
+        <ul>
+            <li>File creation properties
+            <li>File access properties
+            <li>Group creation properties
+            <li>Dataset creation properties
+            <li>Dataset access properties
+            <li>Dataset transfer properties
+            <li>Link creation properties
+            <li>Link access properties
+            <li>Object creation properties
+            <li>Object copy properties
+            <li>String creation property
+                <br />&nbsp;
+        </ul>
+        <li>Additional categories not related to the class structure 
+            are as follows:
+        <ul>
+            <li>General property list operations
+            <li>Generic property list functions
+        </ul>
+        The general property functions can be used with any property list;
+        the generic property functions constitute an advanced feature.
+    </ul>
+    </p>
+    <p>
+
+    The in-memory file image feature of HDF5 uses property lists 
+    in a manner that differs substantially from their use elsewhere in HDF5.
+    Those who plan to use in-memory file images must study &ldquo;<a href=
+    "../Advanced/FileImageOperations/HDF5FileImageOperations.pdf">File 
+    Image Operations</a>&rdquo; (PDF) in the
+    <a href="../Advanced.html"><cite>Advanced Topics in HDF5</cite></a>
+    collection. 
+    </ul>
+    </p>
+
+
+<hr>
+
+<a name="Footnotes">
+<h3 class="pagebefore">Footnotes</h3>
+</a>
+
+    <a name="H5P_FILE_MOUNT">
+    <dl>
+    <dt>1. File mount properties
+        </dt></a>
+        <dd>While the file mount property list class 
+            <code>H5P_FILE_MOUNT</code> is a valid HDF5 property list class,
+            no file mount properties are defined by the HDF5 Library.
+            References to a file mount property list should always be
+            expressed as <code>H5P_DEFAULT</code>, meaning the 
+            default file mount property list.
+    </dl>
+
+    </p>
+    <p>
+
+    <a name="APL,CPLexceptions">
+    <dl>
+    <dt>2. Access and creation property exceptions
+        </dt></a>  
+        <dd>There are a small number of exceptions to the rule that 
+            creation properties are always retained in a file or object and 
+            access properties are never retained.
+            </p>
+            <p>
+            The following properties are file access properties
+            but they are not transient; 
+            they have permanent and different effects on a file. 
+            They could be validly classified as file creation properties 
+            as they must be set at creation time to properly create the file.
+            But they are access properties because they must also be set 
+            when a file is reopened to properly access the file.
+            <table>
+            <tr align="left" valign="top">
+                <th><code>&nbsp;&nbsp;&nbsp;&nbsp;</code></th>
+                <th>Property</th>
+                <th><code>&nbsp;&nbsp;</code></th>
+                <th>Related function</th>
+                </tr>
+            <tr align="left" valign="top">
+                <td><code>&nbsp;&nbsp;&nbsp;&nbsp;</code></td>
+                <td>Family file driver</td>
+                <td><code>&nbsp;</code></td>
+                <td><code>H5Pset_fapl_family</code></td>
+                </tr>
+            <tr align="left" valign="top">
+                <td><code>&nbsp;&nbsp;&nbsp;&nbsp;</code></td>
+                <td>Split file driver</td>
+                <td><code>&nbsp;</code></td>
+                <td><code>H5Pset_fapl_split</code></td>
+                </tr>
+            <tr align="left" valign="top">
+                <td><code>&nbsp;&nbsp;&nbsp;&nbsp;</code></td>
+                <td>Core file driver</td>
+                <td><code>&nbsp;</code>
+                </p>
+                <p>
+                </td>
+                <td><code>H5Pset_fapl_core</code></td>
+                </tr>
+
+            <tr align="left" valign="top">
+                <td colspan="4">
+                    The following is a link creation property, but
+                    it is not relevant after an object has been created
+                    and is not retained in the file or object.
+            <tr align="left" valign="top">
+                <th><code>&nbsp;&nbsp;&nbsp;&nbsp;</code></th>
+                <th>Property</th>
+                <th><code>&nbsp;</code></th>
+                <th>Related function</th>
+                </tr>
+            <tr align="left" valign="top">
+                <td><code>&nbsp;&nbsp;&nbsp;&nbsp;</code></td>
+                <td>Create missing intermediate groups</td>
+                <td><code>&nbsp;</code></td>
+                <td><code>H5Pset_create_intermediate_groups</code></td>
+                </tr>
+            </table>
+    </dl>
+
+
+
+<!-- ??????? REDACTED FOR REVIEW &/OR PUBLICATION        ???????
+     ??????? NOT RELEVANT TO THE USER PUBLICATION        ???????
+<p>
+<u>Additional writing resources:</u>
+</p>
+<p>
+The <code>Topic-7.7-File Image Operations.pptx</code> file has a section titled &ldquo;Digression: Property Lists&rdquo; that includes slides 8-9. This might be a resource for the property lists chapter in the UG. 
+<br>
+This PowerPoint file is located in <code>C:\1 MEE\Working\hdf5_trunk\projects\PSI\Day 2</code>.
+
+<font color="red">
+<br>
+<i>
+This info is incorporated.
+</i>
+</font>
+
+</p>
+<p>
+See slide 48 of <code>Topic-6-HDF-Parallel.pptx</code> in <code>C:\1 MEE\Working\hdf5_trunk\projects\PSI\</code>Day 1. Parallel HDF5 programming model. 
+<br>
+Comment on slide: "HDF5 uses access template object (property list) to control the file access mechanism."
+
+<font color="red">
+<br>
+<i>
+May be useful if a Parallel I/O example is included.
+</i>
+</font>
+</p>
+
+??????? END REDACTION ??????? ??????? -->
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<br /><br />
+</body>
+</html>
