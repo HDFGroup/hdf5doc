@@ -64,14 +64,15 @@ gTopicId = "9";
 <script type="text/javascript" src="../../ehlpdhtm.js"></script>
 
  <p class="FM__Heading_Level1">9. <a name="XREF_ErrorHandlingChapter"></a>HDF5 Error Handling</p>
+ <p class="FM__Heading_Level2"><a name="TOC_9_1_Introduction"></a>9.1. Introduction</p>
  <p class="FM__Body">The HDF5 Library provides an error reporting mechanism for both the library itself and for user application programs. It can trace errors through function stack and error information like file name, function name, line number, and error description.</p>
  <p class="FM__Body"><a href="#XREF_BasicErrorHandling">&quot;Basic Error Handling Operations&quot;</a>&#160;discusses the basic error concepts such as error stack, error record, and error message and describes the related API functions. These concepts and func&#173;tions are sufficient for application programs to trace errors inside the HDF5 Library.</p>
  <p class="FM__Body"><a href="#XREF_AdvancedErrorHandling">&quot;Advanced Error Handling Operations&quot;</a>&#160;talks about the advanced concepts of error class and error stack handle and talks about the related functions. With these concepts and functions, an application library or program using the HDF5 Library can have its own error report blended with HDF5’s error report.</p>
  <p class="FM__Body"><a name="IX_H5Eset_auto"></a><a name="IX_H5Eget_auto"></a><a name="IX_H5Eclear"></a><a name="IX_H5Ewalk"></a><a name="IX_H5Eprint"></a><a name="IX_H5Epush"></a>Starting with Release 1.8, we have a new set of Error Handling API functions. For the purpose of backward compatibility with version 1.6 and before, we still keep the old API functions, <span class="FM_Code">H5Epush</span>, <span class="FM_Code">H5Eprint</span>, <span class="FM_Code">H5Ewalk</span>, <span class="FM_Code">H5Eclear</span>, <span class="FM_Code">H5Eget_auto</span>, <span class="FM_Code">H5Eset_auto</span>. These functions do not have the error stack as parameter. The library allows them to operate on the default error stack. Users do not have to change their code to catch up with the new Error API but are encouraged to do so.</p>
  <p class="FM__Body">The old API is similar to functionality discussed in <a href="#XREF_BasicErrorHandling">&quot;Basic Error Handling Operations&quot;</a>. The functionality discussed in <a href="#XREF_AdvancedErrorHandling">&quot;Advanced Error Handling Operations&quot;</a>, the ability of allowing applications to add their own error records, is the new design for the Error Handling API.</p>
- <p class="FM__Heading_Level2"><a name="TOC_9_1_Programming_Model"></a>9.1. Programming Model for Error Handlin<a name="XREF_ProgrammingModelErrorHand"></a>g</p>
+ <p class="FM__Heading_Level2"><a name="TOC_9_2_Programming_Model"></a>9.2. Programming Model for Error Handlin<a name="XREF_ProgrammingModelErrorHand"></a>g</p>
  <p class="FM__Body">This section is under construction.</p>
- <p class="FM__Heading_Level2"><a name="TOC_9_2_Error_Handling_H5E"></a>9.2. Error Handlin<a name="XREF_ErrorHandling"></a>g (H5E) Function Summaries</p>
+ <p class="FM__Heading_Level2"><a name="TOC_9_3_Error_Handling_H5E"></a>9.3. Error Handlin<a name="XREF_ErrorHandling"></a>g (H5E) Function Summaries</p>
  <p class="FM__Body">Functions that can be used to handle errors (H5E functions) are listed below. </p>
 <div width="100%" align="center">
  <table style=" border-spacing:0; padding-left:6.00pt; padding-top:6.00pt; padding-right:6.00pt; padding-bottom:6.00pt; float:aligncenter; margin-bottom:12.00pt; width:100%; max-width:432.00pt;" cellspacing="0">
@@ -259,9 +260,9 @@ gTopicId = "9";
  </table>
 </div>
  <p class="FM__Body">&nbsp;</p>
- <p class="FM__Heading_Level2"><a name="TOC_9_3_Basic_Error_Handling"></a>9.3. Basic Error Handlin<a name="XREF_BasicErrorHandling"></a>g Operations</p>
+ <p class="FM__Heading_Level2"><a name="TOC_9_4_Basic_Error_Handling"></a>9.4. Basic Error Handlin<a name="XREF_BasicErrorHandling"></a>g Operations</p>
  <p class="FM__Body"><a name="IX_error_stack"></a>Let us first try to understand the error stack. An <span class="FM_EI_EmphasisItalic">error stack</span>&#160;is a collection of error records. &#160;&#160;Error records can be pushed onto or popped off the error stack. By default, when an error occurs deep within the HDF5 Library, an error record is pushed onto an error stack and that function returns a failure indication. Its caller detects the failure, pushes another record onto the stack, and returns a failure indication. This con&#173;tinues until the API function called by the application returns a failure indication. The next API function being called will reset the error stack. All HDF5 Library error records belong to the same error class. <a href="#XREF_AdvancedErrorHandling">For more information, see &quot;Advanced Error Handling Operations.&quot;</a></p>
- <p class="FM__Heading_Level3"><a name="TOC_9_3_1_Error_Stack_and"></a>9.3.1. Error Stack and Error Message</p>
+ <p class="FM__Heading_Level3"><a name="TOC_9_4_1_Error_Stack_and"></a>9.4.1. Error Stack and Error Message</p>
  <p class="FM__Body"><a name="IX_H5E_DEFAULT"></a>In normal circumstances, an error causes the stack to be printed on the standard error stream automati&#173;cally. This automatic error stack is the library’s default stack. For all the functions in this section, whenever an error stack ID is needed as a parameter, <span class="FM_Code">H5E_DEFAULT</span>&#160;can be used to indicate the library’s default stack. The first error record of the error stack, number <span class="FM_Code">#000</span>, is produced by the API function itself and is usually sufficient to indicate to the application what went wrong.</p>
  <p class="FM__Heading_SubSection">Example: An Error Report</p>
  <p class="FM__Body"><a name="IX_H5Tclose_12"></a>If an application calls <span class="FM_Code">H5Tclose</span>&#160;on a predefined datatype, then the message in the example below is printed on the standard error stream. This is a simple error that has only one component, the API func&#173;tion; other errors may have many components.</p>
@@ -280,7 +281,7 @@ gTopicId = "9";
 </div>
  <p class="FM__Body">&nbsp;</p>
  <p class="FM__Body"><a name="IX_minor_message"></a><a name="IX_major_message"></a><a name="IX_error_record"></a>In the example above, we can see that an <span class="FM_EI_EmphasisItalic">error record</span>&#160;has a major message and a minor message. A <span class="FM_EI_EmphasisItalic">major message</span>&#160;generally indicates where the error happens. The location can be a dataset or a dataspace, for example. A <span class="FM_EI_EmphasisItalic">minor message</span>&#160;explains further details of the error. An example is “unable to open file”. Another specific detail about the error can be found at the end of the first line of each error record. This <span class="FM_EI_EmphasisItalic">error description</span>&#160;is usually added by the library designer to tell what exactly goes wrong. In the example above, the “predefined datatype” is an error description. </p>
- <p class="FM__Heading_Level3"><a name="TOC_9_3_2_Print_and_Clear_an"></a>9.3.2. Print and Clear an Error Stack</p>
+ <p class="FM__Heading_Level3"><a name="TOC_9_4_2_Print_and_Clear_an"></a>9.4.2. Print and Clear an Error Stack</p>
  <p class="FM__Body"><a name="IX_H5Eset_auto_2"></a><a name="IX_H5Eprint_3"></a><a name="IX_H5Eclear_stack_1"></a><a name="IX_H5Eprint_2"></a>Besides the automatic error report, the error stack can also be printed and cleared by the functions <span class="FM_Code">H5Eprint()</span>&#160;and <span class="FM_Code">H5Eclear_stack()</span>. If an application wishes to make explicit calls to <span class="FM_Code">H5Eprint()</span>&#160;to print the error stack, the automatic printing should be turned off to prevent error messages from being displayed twice (see <span class="FM_Code">H5Eset_auto()</span>&#160;below). </p>
  <p class="FM__Body"><span class="FM_EH_EmphasisHeavy">To print an error stack</span>:</p>
  <p class="FM__BodyCodeIndent"><a name="IX_H5Eprint_4"></a><span class="FM_CodeItalic">herr_t</span>&#160;H5Eprint(<span class="FM_CodeItalic">hid_t</span>&#160;error_stack, <span class="FM_CodeItalic">FILE *</span> stream)</p>
@@ -289,7 +290,7 @@ gTopicId = "9";
  <p class="FM__Body" style="font-weight : bold;"><span class="FM_EH_EmphasisHeavy">To clear an error stack:</span></p>
  <p class="FM__BodyCodeIndent"><a name="IX_H5Eclear_stack_2"></a><span class="FM_CodeItalic">herr_t</span>&#160;H5Eclear_stack(<span class="FM_CodeItalic">hid_t</span> error_stack)</p>
  <p class="FM__Body"><a name="IX_H5Eprint_5"></a><a name="IX_H5Eclear_stack_3"></a>The <span class="FM_Code">H5Eclear_stack</span>&#160;function shown above clears the error stack specified by <span class="FM_Code">error_stack</span>. <span class="FM_Code">H5E_DE&#173;FAULT</span>&#160;can be passed in to clear the current error stack. The current stack is also cleared whenever an API function is called; there are certain exceptions to this rule such as <span class="FM_Code">H5Eprint()</span>. </p>
- <p class="FM__Heading_Level3"><a name="TOC_9_3_3_Mute_Error_Stack"></a>9.3.3. Mute Error Stack</p>
+ <p class="FM__Heading_Level3"><a name="TOC_9_4_3_Mute_Error_Stack"></a>9.4.3. Mute Error Stack</p>
  <p class="FM__Body"><a name="IX_H5Eset_auto_3"></a><a name="IX_H5Eprint_6"></a>Sometimes an application calls a function for the sake of its return value, fully expecting the function to fail; sometimes the application wants to call <span class="FM_Code">H5Eprint()</span> explicitly. In these situations, it would be mis&#173;leading if an error message were still automatically printed. Using the <span class="FM_Code">H5Eset_auto()</span> function can con&#173;trol the automatic printing of error messages.</p>
  <p class="FM__Body"><span class="FM_EH_EmphasisHeavy">To enable or disable automatic printing of errors:</span>&#160;</p>
  <p class="FM__BodyCellCodeIndent"><a name="IX_H5Eset_auto_4"></a><span class="FM_CodeItalic">herr_t</span>&#160;H5Eset_auto(<span class="FM_CodeItalic">hid_t</span>&#160;error_stack, <span class="FM_CodeItalic">H5E_auto_t</span>&#160;func, </p>
@@ -348,7 +349,7 @@ gTopicId = "9";
  </table>
 </div>
  <p class="FM__Body">&nbsp;</p>
- <p class="FM__Heading_Level3"><a name="TOC_9_3_4_Customized"></a>9.3.4. Customized Printing of an Error Stack</p>
+ <p class="FM__Heading_Level3"><a name="TOC_9_4_4_Customized"></a>9.4.4. Customized Printing of an Error Stack</p>
  <p class="FM__Body"><a name="IX_H5Eprint_8"></a>Applications are allowed to define an automatic error traversal function other than the default <span class="FM_Code">H5Eprint()</span>. For instance, one can define a function that prints a simple, one-line error message to the standard error stream and then exits. The first example below defines a such a function. The second exam&#173;ple below installs the function as the error handler.</p>
 <div width="100%" align="center">
  <table style=" border-spacing:0; padding-left:6.00pt; padding-top:6.00pt; padding-right:6.00pt; padding-bottom:6.00pt; float:aligncenter; margin-top:12.00pt; width:100%; max-width:432.00pt;" cellspacing="0">
@@ -376,12 +377,12 @@ gTopicId = "9";
  </table>
 </div>
  <p class="FM__Body">&nbsp;</p>
- <p class="FM__Heading_Level3"><a name="TOC_9_3_5_Walk_through_the"></a>9.3.5. Walk through the Error Stack</p>
+ <p class="FM__Heading_Level3"><a name="TOC_9_4_5_Walk_through_the"></a>9.4.5. Walk through the Error Stack</p>
  <p class="FM__Body"><a name="IX_H5Ewalk_3"></a><a name="IX_H5Ewalk_2"></a><a name="IX_H5Eprint_9"></a>The <span class="FM_Code">H5Eprint()</span>&#160;function is actually just a wrapper around the more complex <span class="FM_Code">H5Ewalk()</span>&#160;function which traverses an error stack and calls a user-defined function for each member of the stack. The exam&#173;ple below shows how <span class="FM_Code">H5Ewalk</span> is used.</p>
  <p class="FM__BodyCellCodeIndent"><a name="IX_H5Ewalk_4"></a><span class="FM_CodeItalic">herr_t</span>&#160;H5Ewalk(<span class="FM_CodeItalic">hid_t</span>&#160;err_stack, <span class="FM_CodeItalic">H5E_direction_t</span>&#160;direction, </p>
  <p class="FM__BodyCellCodeIndent"><a name="IX_H5E_walk_t"></a><span class="FM_CodeItalic"><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span>H5E_walk_t</span>&#160;func, <span class="FM_CodeItalic">void</span> *client_data)</p>
  <p class="FM__Body"><a name="IX_H5E_WALK_DOWNWARD"></a><a name="IX_H5E_WALK_UPWARD"></a>The error stack <span class="FM_Code">err_stack</span>&#160;is traversed and <span class="FM_Code">func</span>&#160;is called for each member of the stack. Its arguments are an integer sequence number beginning at zero (regardless of <span class="FM_Code">direction</span>) and the <span class="FM_Code">client_data</span>&#160;pointer. If <span class="FM_Code">direction</span>&#160;is <span class="FM_Code">H5E_WALK_UPWARD</span>, then traversal begins at the inner-most function that detected the error and concludes with the API function. Use <span class="FM_Code">H5E_WALK_DOWNWARD</span>&#160;for the opposite order.</p>
- <p class="FM__Heading_Level3"><a name="TOC_9_3_6_Traverse_an_Error"></a>9.3.6. Traverse an Error Stack with a Callback Function</p>
+ <p class="FM__Heading_Level3"><a name="TOC_9_4_6_Traverse_an_Error"></a>9.4.6. Traverse an Error Stack with a Callback Function</p>
  <p class="FM__Body"><a name="IX_H5Ewalk_5"></a>An error stack traversal callback function takes three arguments: <span class="FM_Code">n</span>&#160;is a sequence number beginning at zero for each traversal, <span class="FM_Code">eptr</span>&#160;is a pointer to an error stack member, and <span class="FM_Code">client_data</span>&#160;is the same pointer used in the example above passed to <span class="FM_Code">H5Ewalk()</span>. See the example below.</p>
  <p class="FM__BodyCellCodeIndent"><a name="IX_H5E_walk_t_1"></a>typedef <span class="FM_CodeItalic">herr_t</span> (*H5E_walk_t)(<span class="FM_CodeItalic">unsigned</span>&#160;n, <span class="FM_CodeItalic">H5E_error2_t</span>&#160;*eptr, </p>
  <p class="FM__BodyCellCodeIndent"><span class="FM_CodeItalic"><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span>void</span> *client_data)</p>
@@ -465,7 +466,7 @@ gTopicId = "9";
  <p class="FM__Body">If a C routine that takes a function pointer as an argument is called from within C++ code, the C routine should be returned from normally. </p>
  <p class="FM__Body"><a name="IX_H5Ewalk2"></a><a name="IX_H5Tconvert_2"></a><a name="IX_H5Pset_type_conv_cb_3"></a><a name="IX_H5Pset_elink_cb"></a>Examples of this kind of routine include callbacks such as <span class="FM_Code">H5Pset_elink_cb</span>&#160;and <span class="FM_Code">H5Pset_type_con&#173;v_cb</span>&#160;and functions such as <span class="FM_Code">H5Tconvert</span>&#160;and <span class="FM_Code">H5Ewalk2</span>.</p>
  <p class="FM__Body">Exiting the routine in its normal fashion allows the HDF5 C Library to clean up its work properly. In other words, if the C++ application jumps out of the routine back to the C++ “catch” statement, the library is not given the opportunity to close any temporary data structures that were set up when the routine was called. The C++ application should save some state as the routine is started so that any problem that occurs might be diagnosed.</p>
- <p class="FM__Heading_Level2"><a name="TOC_9_4_Advanced_Error"></a>9.4. Advanced Error Handlin<a name="XREF_AdvancedErrorHandling"></a>g Operations</p>
+ <p class="FM__Heading_Level2"><a name="TOC_9_5_Advanced_Error"></a>9.5. Advanced Error Handlin<a name="XREF_AdvancedErrorHandling"></a>g Operations</p>
  <p class="FM__Body">The section above, see <a href="#XREF_BasicErrorHandling">&quot;Basic Error Handling Operations&quot;</a>, discusses the basic error handling operations of the library. In that section, all the error records on the error stack are from the library itself. In this section, we are going to introduce the operations that allow an application program to push its own error records onto the error stack once it declares an error class of its own through the HDF5 Error API. </p>
  <p class="FM__Heading_SubSection">Example: An Error Report</p>
  <p class="FM__Body">An error report shows both the library’s error record and the application’s error records. See the example below.</p>
@@ -567,7 +568,7 @@ gTopicId = "9";
  </table>
 </div>
  <p class="FM__Body">&nbsp;</p>
- <p class="FM__Heading_Level3"><a name="TOC_9_4_1_More_Error_API"></a>9.4.1. More Error API Functions</p>
+ <p class="FM__Heading_Level3"><a name="TOC_9_5_1_More_Error_API"></a>9.5.1. More Error API Functions</p>
  <p class="FM__Body">The Error API has functions that can be used to register or unregister an error class, to create or close error messages, and to query an error class or error message. These functions are illustrated below.</p>
  <p class="FM__Body" style="font-weight : bold;"><span class="FM_EH_EmphasisHeavy">To register an error class:</span></p>
  <p class="FM__BodyCellCodeIndent"><a name="IX_H5Eregister_class_1"></a><span class="FM_CodeItalic">hid_t</span>&#160;H5Eregister_class(<span class="FM_CodeItalic">const char*</span>&#160;cls_name, <span class="FM_CodeItalic">const char*</span>&#160;lib_name, </p>
@@ -631,7 +632,7 @@ gTopicId = "9";
  </table>
 </div>
  <p class="FM__Body">&nbsp;</p>
- <p class="FM__Heading_Level3"><a name="TOC_9_4_2_Pushing_an"></a>9.4.2. Pushing an Application Error Message onto Error Stack</p>
+ <p class="FM__Heading_Level3"><a name="TOC_9_5_2_Pushing_an"></a>9.5.2. Pushing an Application Error Message onto Error Stack</p>
  <p class="FM__Body">An application can push error records onto or pop error records off of the error stack just as the library does internally. An error stack can be registered, and an object handle can be returned to the application so that the application can manipulate a registered error stack.</p>
  <p class="FM__Body" style="font-weight : bold;"><span class="FM_EH_EmphasisHeavy">To register the current stack:</span></p>
  <p class="FM__BodyCodeIndent"><a name="IX_H5Eget_current_stack_1"></a><span class="FM_CodeItalic">hid_t</span>&#160;H5Eget_current_stack(void)</p>

@@ -64,6 +64,7 @@ gTopicId = "4";
 <script type="text/javascript" src="../../ehlpdhtm.js"></script>
 
  <p class="FM__Heading_Level1">4. <a name="XREF_GroupsChapter"></a>HDF5 Groups</p>
+ <p class="FM__Heading_Level2"><a name="TOC_4_1_Introduction"></a>4.1. Introduction</p>
  <p class="FM__Body">As suggested by the name Hierarchical Data Format, an HDF5 file is hierarchically structured. The HDF5 group and link objects implement this hierarchy. </p>
  <p class="FM__Body">In the simple and most common case, the file structure is a tree structure; in the general case, the file structure may be a directed graph with a designated entry point. The tree structure is very similar to the file system structures employed on UNIX systems, directories and files, and on Apple Macintosh and Mic&#173;rosoft Windows systems, folders and files. HDF5 groups are analogous to the directories and folders; HDF5 datasets are analogous to the files.</p>
  <p class="FM__Body">The one <span class="FM_EH_EmphasisHeavy">very important difference</span>&#160;between the HDF5 file structure and the above-mentioned file system analogs is that HDF5 groups are linked as a directed graph, allowing circular references; the file systems are strictly hierarchical, allowing no circular references. The figures below illustrate the range of possibili&#173;ties.</p>
@@ -118,8 +119,8 @@ gTopicId = "4";
  <p class="FM__ListBullets_Level1">•<span style='word-spacing:normal; font:6.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>Retrieving information about objects in a group</p>
  <p class="FM__ListBullets_Level1">•<span style='word-spacing:normal; font:6.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>Discovery of the structure of an HDF5 file and the contained objects</p>
  <p class="FM__ListBullets_Level1">•<span style='word-spacing:normal; font:6.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>Examples of file structures</p>
- <p class="FM__Heading_Level2"><a name="TOC_4_1_Description_of_the"></a>4.1. Description of the Grou<a name="XREF_DGroupObj"></a>p Object</p>
- <p class="FM__Heading_Level3"><a name="TOC_4_1_1_The_Group_Object"></a>4.1.1. The Group Object</p>
+ <p class="FM__Heading_Level2"><a name="TOC_4_2_Description_of_the"></a>4.2. Description of the Grou<a name="XREF_DGroupObj"></a>p Object</p>
+ <p class="FM__Heading_Level3"><a name="TOC_4_2_1_The_Group_Object"></a>4.2.1. The Group Object</p>
  <p class="FM__Body">Abstractly, an HDF5 group contains zero or more objects and every object must be a member of at least one group. The root group, the sole exception, may not belong to any group.</p>
 <div width="100%" align="center">
  <table style=" border-spacing:0; padding-left:2.00pt; padding-top:2.00pt; padding-right:2.00pt; padding-bottom:2.00pt; float:aligncenter; margin-top:12.00pt; width:100%; max-width:396.00pt;" cellspacing="0">
@@ -172,7 +173,7 @@ gTopicId = "4";
  <p class="FM__ListBullets_Level1"><a name="IX_H5Fcreate_9"></a>•<span style='word-spacing:normal; font:6.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>The root group is automatically created when the HDF5 file is created (<span class="FM_Code">H5Fcreate</span>).</p>
  <p class="FM__ListBullets_Level1">•<span style='word-spacing:normal; font:6.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>The root group has no parent, but by convention has a reference count of 1.</p>
  <p class="FM__ListBullets_Level1">•<span style='word-spacing:normal; font:6.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>The root group cannot be deleted (in other words, unlinked)!</p>
- <p class="FM__Heading_Level3"><a name="TOC_4_1_2_The_Hierarchy_of"></a>4.1.2. The Hierarchy of Data Objects</p>
+ <p class="FM__Heading_Level3"><a name="TOC_4_2_2_The_Hierarchy_of"></a>4.2.2. The Hierarchy of Data Objects</p>
  <p class="FM__Body">An HDF5 file is organized as a rooted, directed graph using HDF5 group objects. The named data objects are the nodes of the graph, and the links are the directed arcs. Each arc of the graph has a name, with the special name <span class="FM_Code">/</span>&#160;reserved for the root group. New objects are created and then inserted into the graph with a link operation that is automatically executed by the library; existing objects are inserted into the graph with a link operation explicitly called by the user, which creates a named link from a group to the object. </p>
  <p class="FM__Body">An object can be the target of more than one link.</p>
  <p class="FM__Body">The names on the links must be unique within each group, but there may be many links with the same name in different groups. These are unambiguous, because some ancestor must have a different name, or else they are the same object. The graph is navigated with path names, analogous to Unix file systems. <a href="#XREF_PathNames">For more information, see &quot;HDF5 Path Names.&quot;</a>An object can be opened with a full path starting at the root group, or with a relative path and a starting point. That starting point is always a group, though it may be the current working group, another specified group, or the root group of the file. Note that all paths are relative to a single HDF5 file. In this sense, an HDF5 file is analogous to a single UNIX file system.<a name="FNB_3"></a><a href="#FNH_3"><sup>1</sup></a>&#160;</p>
@@ -181,7 +182,7 @@ gTopicId = "4";
  <p class="FM__Body">Deleting a link to an object does not necessarily delete the object. The object remains available as long as there is at least one link to it. After all links to an object are deleted, it can no longer be opened, and the storage may be reclaimed.</p>
  <p class="FM__Body">It is also important to realize that the linking mechanism can be used to construct very complex graphs of objects. For example, it is possible for object to be shared between several groups and even to have more than one name in the same group. It is also possible for a group to be a member of itself, or to create other <span class="FM_EI_EmphasisItalic">cycles</span>&#160;in the graph, such as in the case where a child group is linked to one of its ancestors. </p>
  <p class="FM__Body"><a name="IX_hard_link"></a><a name="IX_soft_links"></a>HDF5 also has <span class="FM_EI_EmphasisItalic">soft links</span>&#160;similar to UNIX soft links. A <span class="FM_EI_EmphasisItalic">soft link</span>&#160;is an object that has a name and a path name for the target object. The soft link can be followed to open the target of the link just like a regular or <span class="FM_EI_EmphasisItalic">hard</span>&#160;link. The differences are that the hard link cannot be created if the target object does not exist and it always points to the same object. A soft link can be created with any path name, whether or not the object exists; it may or may not, therefore, be possible to follow a soft link. Furthermore, a soft link’s target object may be changed.</p>
- <p class="FM__Heading_Level3"><a name="TOC_4_1_3_HDF5_Path_Names"></a>4.1.3. HDF5 Pat<a name="XREF_PathNames"></a>h Names</p>
+ <p class="FM__Heading_Level3"><a name="TOC_4_2_3_HDF5_Path_Names"></a>4.2.3. HDF5 Pat<a name="XREF_PathNames"></a>h Names</p>
  <p class="FM__Body">The structure of the HDF5 file constitutes the name space for the objects in the file. A path name is a string of components separated by slashes (<span class="FM_Code">/</span>). Each component is the name of a hard or soft link which points to an object in the file. The slash not only separates the components, but indicates their hierarchical relation&#173;ship; the component indicated by the link name following a slash is a always a member of the component indicated by the link name preceding that slash.</p>
  <p class="FM__Body">The first component in the path name may be any of the following:</p>
  <p class="FM__ListBullets_Level1">•<span style='word-spacing:normal; font:6.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>The special character dot (<span class="FM_Code">.</span>, a period), indicating the current group </p>
@@ -229,7 +230,7 @@ gTopicId = "4";
  </table>
 </div>
  <p class="FM__Body">&nbsp;</p>
- <p class="FM__Heading_Level3"><a name="TOC_4_1_4_Group"></a>4.1.4. Group Implementatio<a name="XREF_GroupStyles"></a>ns in HDF5</p>
+ <p class="FM__Heading_Level3"><a name="TOC_4_2_4_Group"></a>4.2.4. Group Implementatio<a name="XREF_GroupStyles"></a>ns in HDF5</p>
  <p class="FM__Body">The original HDF5 group implementation provided a single indexed structure for link storage. A new group implementation, in HDF5 Release 1.8.0, enables more efficient compact storage for very small groups, improved link indexing for large groups, and other advanced features.</p>
  <p class="FM__ListBullets_Level1">•<span style='word-spacing:normal; font:6.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>The <span class="FM_EI_EmphasisItalic">original indexed</span>&#160;format remains the default. Links are stored in a B-tree in the group’s local heap.</p>
  <p class="FM__ListBullets_Level1">•<span style='word-spacing:normal; font:6.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>Groups created in the new <span class="FM_EI_EmphasisItalic">compact-or-indexed</span>&#160;format, the implementation introduced with Release 1.8.0, can be tuned for performance, switching between the compact and indexed for&#173;mats at thresholds set in the user application.</p>
@@ -246,7 +247,7 @@ gTopicId = "4";
  <p class="FM__ListBullets_Level1">•<span style='word-spacing:normal; font:6.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>A link named with a string composed of non-ASCII characters is inserted into the group.</p>
  <p class="FM__Body"><a name="IX_H5Pset_link_phase_change"></a>The compact-or-indexed format offers performance improvements that will be most notable at the extremes (for example, in groups with zero members and in groups with tens of thousands of members). But measurable differences may sometimes appear at a threshold as low as eight group members. Since these performance thresholds and criteria differ from application to application, tunable settings are pro&#173;vided to govern the switch between the compact and indexed formats (see <span class="FM_LT_LinkTextCode"><a href="http://www.hdfgroup.org/HDF5/doc/RM/RM_H5P.html#Property-SetLinkPhaseChange">H5Pset_link_phase_change</a></span>). Optimal thresholds will depend on the application and the operating environment.</p>
  <p class="FM__Body">Future versions of HDF5 will retain the ability to create, read, write, and manipulate all groups stored in either the original indexed format or the compact-or-indexed format.</p>
- <p class="FM__Heading_Level2"><a name="TOC_4_2_Using_h5dump"></a>4.2. Usin<a name="XREF_H5Dump"></a>g h5dump</p>
+ <p class="FM__Heading_Level2"><a name="TOC_4_3_Using_h5dump"></a>4.3. Usin<a name="XREF_H5Dump"></a>g h5dump</p>
  <p class="FM__Body"><a name="IX_h5dump"></a>You can use <span class="FM_Code">h5dump</span>, the command-line utility distributed with HDF5, to examine a file for purposes either of determining where to create an object within an HDF5 file or to verify that you have created an object in the intended place.</p>
  <p class="FM__Body"><a name="IX_h5dump_1"></a>In the case of the new group created later in this chapter, the following <span class="FM_Code">h5dump</span>&#160;command will display the contents of <span class="FM_Code">FileA.h5</span>:</p>
  <p class="FM__BodyCodeIndent">h5dump FileA.h5 </p>
@@ -262,7 +263,7 @@ gTopicId = "4";
  <p class="FM__BodyCellCodeIndent">}</p>
  <p class="FM__Body"><a name="IX_h5dump_2"></a><span class="FM_Code">h5dump</span> is described on the “<span class="FM_LT_LinkText"><a href="http://www.hdfgroup.org/HDF5/doc/RM/Tools.html">HDF5 Tools</a></span>” page of the <span class="FM_EI_EmphasisItalic">HDF5 Reference Manual</span>.</p>
  <p class="FM__Body">The HDF5 DDL grammar is described in the document <span class="FM_LT_LinkText"><a href="http://www.hdfgroup.org/HDF5/doc/ddl.html">DDL in BNF for HDF5</a></span>.</p>
- <p class="FM__Heading_Level2"><a name="TOC_4_3_Group_Function"></a>4.3. Group Function Summ<a name="XREF_GroupFuncSums"></a>aries</p>
+ <p class="FM__Heading_Level2"><a name="TOC_4_4_Group_Function"></a>4.4. Group Function Summ<a name="XREF_GroupFuncSums"></a>aries</p>
  <p class="FM__Body">Functions that can be used with groups (H5G functions) and property list functions that can used with groups (H5P functions) are listed below. A number of group functions have been deprecated. Most of these have become link (H5L) or object (H5O) functions. These replacement functions are also listed below.</p>
 <div width="100%" align="center">
  <table style=" border-spacing:0; padding-left:6.00pt; padding-top:6.00pt; padding-right:6.00pt; padding-bottom:6.00pt; float:aligncenter; margin-bottom:12.00pt; width:100%; max-width:432.00pt;" cellspacing="0">
@@ -789,7 +790,7 @@ gTopicId = "4";
  </table>
 </div>
  <p class="FM__Body">&nbsp;</p>
- <p class="FM__Heading_Level2"><a name="TOC_4_4_Programming_Model"></a>4.4. Programming Mode<a name="XREF_ProgrammingModelGroups"></a>l for Groups</p>
+ <p class="FM__Heading_Level2"><a name="TOC_4_5_Programming_Model"></a>4.5. Programming Mode<a name="XREF_ProgrammingModelGroups"></a>l for Groups</p>
  <p class="FM__Body">The programming model for working with groups is as follows:</p>
  <p class="FM__ListNumbered1_Level1">1.<span style='word-spacing:normal; font:6.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>Create a new group or open an existing one.</p>
  <p class="FM__ListNumbered_Level1">2.<span style='word-spacing:normal; font:6.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>Perform the desired operations on the group.</p>
@@ -801,7 +802,7 @@ gTopicId = "4";
  <p class="FM__ListBullets_Level2">•<span style='word-spacing:normal; font:6.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>Iterate across group members.</p>
  <p class="FM__ListBullets_Level2">•<span style='word-spacing:normal; font:6.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>Manipulate links.</p>
  <p class="FM__ListNumbered_Level1">3.<span style='word-spacing:normal; font:6.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>Terminate access to the group (Close the group).</p>
- <p class="FM__Heading_Level3"><a name="TOC_4_4_1_Creating_a_Group"></a>4.4.1. Creating a Gr<a name="XREF_ModelCreateGroup"></a>oup</p>
+ <p class="FM__Heading_Level3"><a name="TOC_4_5_1_Creating_a_Group"></a>4.5.1. Creating a Gr<a name="XREF_ModelCreateGroup"></a>oup</p>
  <p class="FM__Body"><a name="IX_H5Gcreate_6"></a>To create a group, use <span class="FM_Code">H5Gcreate</span>, specifying the location and the path of the new group. The location is the identifier of the file or the group in a file with respect to which the new group is to be identified. The path is a string that provides wither an absolute path or a relative path to the new group. <a href="#XREF_PathNames">For more information, see &quot;HDF5 Path Names.&quot;</a>A path that begins with a slash (<span class="FM_Code">/</span>) is an absolute path indicat&#173;ing that it locates the new group from the root group of the HDF5 file. A path that begins with any other character is a relative path. When the location is a file, a relative path is a path from that file’s root group; when the location is a group, a relative path is a path from that group.</p>
  <p class="FM__Body">The sample code in the example below creates three groups. The group <span class="FM_Code">Data</span> is created in the root direc&#173;tory; two groups are then created in <span class="FM_Code">/Data</span>, one with absolute path, the other with a relative path.</p>
 <div width="100%" align="center">
@@ -824,7 +825,7 @@ gTopicId = "4";
 </div>
  <p class="FM__Body">&nbsp;</p>
  <p class="FM__Body"><a name="IX_H5Gcreate_8"></a>The third <span class="FM_Code">H5Gcreate</span>&#160;parameter optionally specifies how much file space to reserve to store the names that will appear in this group. If a non-positive value is supplied, a default size is chosen. </p>
- <p class="FM__Heading_Level3"><a name="TOC_4_4_2_Opening_a_Group"></a>4.4.2. Opening a Group and Accessing an Object in that Group</p>
+ <p class="FM__Heading_Level3"><a name="TOC_4_5_2_Opening_a_Group"></a>4.5.2. Opening a Group and Accessing an Object in that Group</p>
  <p class="FM__Body">Though it is not always necessary, it is often useful to explicitly open a group when working with objects in that group. Using the file created in the example above, the example below illustrates the use of a previ&#173;ously-acquired file identifier and a path relative to that file to open the group <span class="FM_Code">Data</span>.</p>
  <p class="FM__Body">Any object in a group can be also accessed by its absolute or relative path. To open an object using a rela&#173;tive path, an application must first open the group or file on which that relative path is based. To open an object using an absolute path, the application can use any location identifier in the same file as the target object; the file identifier is commonly used, but object identifier for any object in that file will work. Both of these approaches are illustrated in the example below. </p>
  <p class="FM__Body">Using the file created in the examples above, the example below provides sample code illustrating the use of both relative and absolute paths to access an HDF5 data object. The first sequence (two function calls) uses a previously-acquired file identifier to open the group <span class="FM_Code">Data</span>, and then uses the returned group iden&#173;tifier and a relative path to open the dataset <span class="FM_Code">CData</span>. The second approach (one function call) uses the same previously-acquired file identifier and an absolute path to open the same dataset. </p>
@@ -842,7 +843,7 @@ gTopicId = "4";
  </table>
 </div>
  <p class="FM__Body">&nbsp;</p>
- <p class="FM__Heading_Level3"><a name="TOC_4_4_3_Creating_a_Dataset"></a>4.4.3. Creating a Dataset in a Specific Group</p>
+ <p class="FM__Heading_Level3"><a name="TOC_4_5_3_Creating_a_Dataset"></a>4.5.3. Creating a Dataset in a Specific Group</p>
  <p class="FM__Body">Any dataset must be created in a particular group. As with groups, a dataset may be created in a particular group by specifying its absolute path or a relative path. The example below illustrates both approaches to creating a dataset in the group <span class="FM_Code">/Data</span>.</p>
 <div width="100%" align="center">
  <table style=" border-spacing:0; padding-left:6.00pt; padding-top:6.00pt; padding-right:6.00pt; padding-bottom:6.00pt; float:aligncenter; margin-top:12.00pt; width:100%; max-width:432.00pt;" cellspacing="0">
@@ -861,7 +862,7 @@ gTopicId = "4";
  </table>
 </div>
  <p class="FM__Body">&nbsp;</p>
- <p class="FM__Heading_Level3"><a name="TOC_4_4_4_Closing_a_Group"></a>4.4.4. Closing a Group</p>
+ <p class="FM__Heading_Level3"><a name="TOC_4_5_4_Closing_a_Group"></a>4.5.4. Closing a Group</p>
  <p class="FM__Body"><a name="IX_H5Gclose_2"></a>To ensure the integrity of HDF5 objects and to release system resources, an application should always call the appropriate close function when it is through working with an HDF5 object. In the case of groups, <span class="FM_Code">H5Gclose</span> ends access to the group and releases any resources the HDF5 Library has maintained in sup&#173;port of that access, including the group identifier.</p>
  <p class="FM__Body"><a name="IX_H5Gclose_3"></a>As illustrated in the example below, all that is required for an <span class="FM_Code">H5Gclose</span>&#160;call is the group identifier acquired when the group was opened; there are no relative versus absolute path considerations.</p>
 <div width="100%" align="center">
@@ -877,7 +878,7 @@ gTopicId = "4";
 </div>
  <p class="FM__Body">&nbsp;</p>
  <p class="FM__Body">A non-negative return value indicates that the group was successfully closed and the resources released; a negative return value indicates that the attempt to close the group or release resources failed.</p>
- <p class="FM__Heading_Level3"><a name="TOC_4_4_5_Creating_Links"></a>4.4.5. Creating Links</p>
+ <p class="FM__Heading_Level3"><a name="TOC_4_5_5_Creating_Links"></a>4.5.5. Creating Links</p>
  <p class="FM__Body">As previously mentioned, every object is created in a specific group. Once created, an object can be made a member of additional groups by means of links created with one of the <span class="FM_Code">H5Lcreate_*</span> functions.</p>
  <p class="FM__Body"><a name="IX_H5Ldelete_1"></a><a name="IX_link"></a>A <span class="FM_EH_EmphasisHeavy">link</span> is, in effect, a path by which the target object can be accessed; it therefore has a name which func&#173;tions as a single path component. A link can be removed with an <span class="FM_Code">H5Ldelete</span>&#160;call, effectively removing the target object from the group that contained the link (assuming, of course, that the removed link was the only link to the target object in the group). </p>
  <p class="FM__Heading_SubSection">Hard Links</p>
@@ -968,13 +969,13 @@ gTopicId = "4";
  <p class="FM__Body"><a name="IX_H5Lmove_3"></a>Using <span class="FM_Code">H5Lmove</span>, <span class="FM_Code">top_group</span> is renamed to be a member of<span class="FM_Code">group2</span>. At this point, since <span class="FM_Code">top_group</span>&#160;was the only route from the root group to <span class="FM_Code">group1</span>, there is no longer a path by which one can access <span class="FM_Code">group1</span>, <span class="FM_Code">group2</span>, or any member datasets. And since <span class="FM_Code">top_group</span>&#160;is now a member of <span class="FM_Code">group2</span>, <span class="FM_Code">top_group</span>&#160;itself and any member datasets have thereby also become inaccessible.</p>
  <p class="FM__Heading_SubSection">Mounting a File</p>
  <p class="FM__Body"><a name="IX_H5Fmount_3"></a><a name="IX_H5Fmount_2"></a>An external link is a permanent connection between two files. A temporary connection can be set up with the <span class="FM_Code">H5Fmount</span>&#160;function. <a href="../TheFile/The_HDF5_File.htm#XREF_TheFileChapter">For more information, see &quot;The HDF5 File.&quot;</a>For more information, see the<span class="FM_LT_LinkTextCode"><a href="http://www.hdfgroup.org/HDF5/doc/RM/RM_H5F.html#File-Mount">&#160;H5Fmount</a></span>&#160;function in the <span class="FM_LT_LinkText"><a href="http://www.hdfgroup.org/HDF5/doc/RM/RM_H5Front.html">HDF5 Reference Manual</a></span>.</p>
- <p class="FM__Heading_Level3"><a name="TOC_4_4_6_Discovering"></a>4.4.6. Discovering Information abo<a name="XREF_DiscoverInfo"></a>ut Objects</p>
+ <p class="FM__Heading_Level3"><a name="TOC_4_5_6_Discovering"></a>4.5.6. Discovering Information abo<a name="XREF_DiscoverInfo"></a>ut Objects</p>
  <p class="FM__Body"><a name="IX_H5O_info_t"></a><a name="IX_H5L_info_t"></a><a name="IX_H5Oget_info_5"></a><a name="IX_H5Lget_info_1"></a>There is often a need to retrieve information about a particular object. The <span class="FM_Code">H5Lget_info</span>&#160;and <span class="FM_Code">H5Oget_info</span>&#160;functions fill this niche by returning a description of the object or link in an <span class="FM_Code">H5L_info_t</span>&#160;or <span class="FM_Code">H5O_info_t</span> structure.</p>
- <p class="FM__Heading_Level3"><a name="TOC_4_4_7_Discovering"></a>4.4.7. Discovering Objects i<a name="XREF_DiscoverGrObjs"></a>n a Group</p>
+ <p class="FM__Heading_Level3"><a name="TOC_4_5_7_Discovering"></a>4.5.7. Discovering Objects i<a name="XREF_DiscoverGrObjs"></a>n a Group</p>
  <p class="FM__Body"><a name="IX_H5Lvisit_3"></a><a name="IX_H5Ovisit_3"></a><a name="IX_H5Literate_3"></a><a name="IX_H5Lvisit_2"></a><a name="IX_H5Ovisit_2"></a><a name="IX_H5Literate_2"></a>To examine all the objects or links in a group, use the <span class="FM_Code">H5Literate</span>&#160;or <span class="FM_Code">H5Ovisit</span>&#160;functions to examine the objects, and use the <span class="FM_Code">H5Lvisit</span>&#160;function to examine the links. <span class="FM_Code">H5Literate</span>&#160;is useful both with a single group and in an iterative process that examines an entire file or section of a file (such as the contents of a group or the contents of all the groups that are members of that group) and acts on objects as they are encountered. <span class="FM_Code">H5Ovisit</span>&#160;recursively visits all objects accessible from a specified object. <span class="FM_Code">H5Lvisit</span> recur&#173;sively visits all the links starting from a specified group. </p>
- <p class="FM__Heading_Level3"><a name="TOC_4_4_8_Discovering_All_of"></a>4.4.8. Discovering All of t<a name="XREF_DiscoverAll"></a>he Objects in the File</p>
+ <p class="FM__Heading_Level3"><a name="TOC_4_5_8_Discovering_All_of"></a>4.5.8. Discovering All of t<a name="XREF_DiscoverAll"></a>he Objects in the File</p>
  <p class="FM__Body">The structure of an HDF5 file is <span class="FM_EH_EmphasisHeavy">self-describing</span>, meaning that an application can navigate an HDF5 file to discover and understand all the objects it contains. This is an iterative process wherein the structure is tra&#173;versed as a graph, starting at one node and recursively visiting linked nodes. To explore the entire file, the traversal should start at the root group.</p>
- <p class="FM__Heading_Level2"><a name="TOC_4_5_Examples_of_File"></a>4.5. Examples o<a name="XREF_Examples"></a>f File Structures</p>
+ <p class="FM__Heading_Level2"><a name="TOC_4_6_Examples_of_File"></a>4.6. Examples o<a name="XREF_Examples"></a>f File Structures</p>
  <p class="FM__Body">This section presents several samples of HDF5 file structures.</p>
 <div width="100%" align="center">
  <table style=" border-spacing:0; padding-left:2.00pt; padding-top:2.00pt; padding-right:2.00pt; padding-bottom:2.00pt; float:aligncenter; margin-top:12.00pt; width:100%; max-width:432.00pt;" cellspacing="0">
