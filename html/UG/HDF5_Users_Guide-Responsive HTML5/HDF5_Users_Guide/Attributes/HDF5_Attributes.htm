@@ -1,0 +1,639 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+
+ <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+ <title>HDF5 Attributes</title>
+
+ <meta content="How to fly your personal spaceship" name="search-keywords" />
+ <meta name="generator" content="Adobe FrameMaker 12" />
+ <meta name="Originator" content="ImportMif" />
+ <meta name="OriginalFile" content="C:\Users\evan\1 MEE\Working\hdf5_1_8\html\UG\FmSource\Attributes.fm" />
+ <link rel="stylesheet" href="Attributes.css" type="text/css" />
+
+
+<script type="text/javascript" language="JavaScript">
+//<![CDATA[
+function reDo() {
+  if (innerWidth != origWidth || innerHeight != origHeight)
+     location.reload();
+}
+if ((parseInt(navigator.appVersion) == 4) && (navigator.appName == "Netscape")) {
+	origWidth = innerWidth;
+	origHeight = innerHeight;
+	onresize = reDo;
+}
+onerror = null; 
+//]]>
+</script>
+<style type="text/css">
+<!--
+div.WebHelpPopupMenu { position:absolute;
+left:0px;
+top:0px;
+z-index:4;
+visibility:hidden; }
+p.WebHelpNavBar { text-align:right; }
+-->
+</style>
+
+<script type="text/javascript" src="../../template/scripts/rh.min.js"></script>
+<script type="text/javascript" src="../../template/scripts/common.min.js"></script>
+<script type="text/javascript" src="../../template/scripts/topic.min.js"></script>
+<script type="text/javascript" src="../../template/scripts/constants.js"></script>
+<script type="text/javascript" src="../../template/scripts/utils.js"></script>
+<script type="text/javascript" src="../../template/scripts/mhutils.js"></script>
+<script type="text/javascript" src="../../template/scripts/mhlang.js"></script>
+<script type="text/javascript" src="../../template/scripts/mhver.js"></script>
+<script type="text/javascript" src="../../template/scripts/settings.js"></script>
+<script type="text/javascript" src="../../template/scripts/XmlJsReader.js"></script>
+<script type="text/javascript" src="../../template/scripts/loadparentdata.js"></script>
+<script type="text/javascript" src="../../template/scripts/loadscreen.js"></script>
+<script type="text/javascript" src="../../template/scripts/loadprojdata.js"></script>
+<script type="text/javascript" src="../../template/scripts/mhtopic.js"></script>
+<script type="text/javascript" >
+gRootRelPath = "../..";
+gCommonRootRelPath = "../..";
+gTopicId = "8";
+</script>
+ <meta name="brsprev" value="HDF5_Users_Guide/Dataspaces/HDF5_Dataspaces_and_Partial_I_O.htm">
+ <meta name="brsnext" value="HDF5_Users_Guide/ErrorHandling/HDF5_Error_Handling.htm">
+</head>
+
+<body>
+<script type="text/javascript" src="../../ehlpdhtm.js"></script>
+
+ <p class="FM__Heading_Level1">8. <a name="XREF_AttributesChapter"></a>HDF5 Attributes</p>
+ <p class="FM__Heading_Level2"><a name="TOC_8_1_Introduction"></a>8.1. Introduction</p>
+ <p class="FM__Body"><a name="IX_primary_data_object"></a>An HDF5 <span class="FM_EH_EmphasisHeavy">attribute</span>&#160;is a small metadata object describing the nature and/or intended usage of a <span class="FM_EH_EmphasisHeavy">primary data object</span>. A primary data object may be a dataset, group, or committed datatype.</p>
+ <p class="FM__Body">Attributes are assumed to be very small as data objects go, so storing them as standard HDF5 datasets would be quite inefficient. HDF5 attributes are therefore managed through a special attributes interface, H5A, which is designed to easily attach attributes to primary data objects as small datasets containing metadata information and to minimize storage requirements.</p>
+ <p class="FM__Body">Consider, as examples of the simplest case, a set of laboratory readings taken under known temperature and pressure conditions of 18.0 degrees Celsius and 0.5 atmospheres, respectively. The temperature and pressure stored as attributes of the dataset could be described as the following name/value pairs:</p>
+ <p class="FM__BodyCellCodeIndent">temp=18.0</p>
+ <p class="FM__BodyCellCodeIndent">pressure=0.5</p>
+ <p class="FM__Body">While HDF5 attributes are not standard HDF5 datasets, they have much in common:</p>
+ <p class="FM__ListBullets_Level1">•<span style='word-spacing:normal; font:6.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>An attribute has a user-defined dataspace and the included metadata has a user-assigned data&#173;type</p>
+ <p class="FM__ListBullets_Level1">•<span style='word-spacing:normal; font:6.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>Metadata can be of any valid HDF5 datatype</p>
+ <p class="FM__ListBullets_Level1">•<span style='word-spacing:normal; font:6.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>Attributes are addressed by name</p>
+ <p class="FM__Body">But there are some very important differences:</p>
+ <p class="FM__ListBullets_Level1">•<span style='word-spacing:normal; font:6.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>There is no provision for special storage such as compression or chunking</p>
+ <p class="FM__ListBullets_Level1">•<span style='word-spacing:normal; font:6.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>There is no partial I/O or sub-setting capability for attribute data</p>
+ <p class="FM__ListBullets_Level1">•<span style='word-spacing:normal; font:6.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>Attributes cannot be shared</p>
+ <p class="FM__ListBullets_Level1">•<span style='word-spacing:normal; font:6.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>Attributes cannot have attributes</p>
+ <p class="FM__ListBullets_Level1">•<span style='word-spacing:normal; font:6.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>Being small, an attribute is stored in the object header of the object it describes and is thus attached directly to that object</p>
+ <p class="FM__Body">The “Special Issues” section describes how to handle attributes that are large in size and how to handle large numbers of attributes. <a href="#XREF_Specissues">For more information, see &quot;Special Issues.&quot;</a></p>
+ <p class="FM__Body">This chapter discusses or lists the following:</p>
+ <p class="FM__ListBullets_Level1">•<span style='word-spacing:normal; font:6.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>The HDF5 attributes programming model</p>
+ <p class="FM__ListBullets_Level1">•<span style='word-spacing:normal; font:6.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>H5A function summaries</p>
+ <p class="FM__ListBullets_Level1">•<span style='word-spacing:normal; font:6.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>Working with HDF5 attributes</p>
+ <p class="FM__ListBullets_Level2">•<span style='word-spacing:normal; font:6.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>The structure of an attribute</p>
+ <p class="FM__ListBullets_Level2">•<span style='word-spacing:normal; font:6.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>Creating, writing, and reading attributes</p>
+ <p class="FM__ListBullets_Level2">•<span style='word-spacing:normal; font:6.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>Accessing attributes by name or index</p>
+ <p class="FM__ListBullets_Level2">•<span style='word-spacing:normal; font:6.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>Obtaining information regarding an object’s attributes </p>
+ <p class="FM__ListBullets_Level2">•<span style='word-spacing:normal; font:6.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>Iterating across an object’s attributes </p>
+ <p class="FM__ListBullets_Level2">•<span style='word-spacing:normal; font:6.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>Deleting an attribute </p>
+ <p class="FM__ListBullets_Level2">•<span style='word-spacing:normal; font:6.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>Closing attributes </p>
+ <p class="FM__ListBullets_Level1">•<span style='word-spacing:normal; font:6.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>Special issues regarding attributes</p>
+ <p class="FM__Body">In the following discussions, attributes are generally attached to datasets. Attributes attached to other pri&#173;mary data objects such as groups or committed datatypes are handled in exactly the same manner.</p>
+ <p class="FM__Heading_Level2"><a name="TOC_8_2_Programming_Model"></a>8.2. Pr<a name="XREF_Model"></a>ogramming Model for Attribut<a name="XREF_ProgrammingModelForAttrib"></a>es</p>
+ <p class="FM__Body">The figure below shows the UML model for an HDF5 attribute and its associated dataspace and datatype.</p>
+<div width="100%" align="center">
+ <table style=" border-spacing:0; padding-left:2.00pt; padding-top:2.00pt; padding-right:2.00pt; padding-bottom:2.00pt; float:aligncenter; margin-top:12.00pt; width:100%; max-width:270.00pt;" cellspacing="0">
+  <caption class="FM__CaptionFigure1" x-list-start="1" align="bottom">Figure 8-1. The UML model for an HDF5 attribute</caption>
+  <tr style=" height : 169.99pt;">
+  <td style="width : 270.000pt; border-top-style: solid; border-top-width: 1px; border-top-color: #228a22; border-bottom-style: solid; border-bottom-width: 1px; border-bottom-color: #228a22; ">
+  <div align="center"><img alt="UML_Attribute.jpg" style=" margin-left:0.750pt; margin-top:0.750pt; margin-right:0.750pt; margin-bottom:0.750pt; width:100%; max-width:202px;" id="image0" src="UML_Attribute.jpg" />
+  </div>
+  <p class="FM__BodyFigureSmall">&nbsp;</p>
+  <p class="FM__BodyFigureSmall">&nbsp;</p>
+</td>
+</tr>
+ </table>
+</div>
+ <p class="FM__Body">&nbsp;</p>
+ <p class="FM__Body">Creating an attribute is similar to creating a dataset. To create an attribute, the application must specify the object to which the attribute is attached, the datatype and dataspace of the attribute data, and the attribute creation property list. </p>
+ <p class="FM__Body">The following steps are required to create and write an HDF5 attribute:</p>
+ <p class="FM__ListNumbered1_Level1">1.<span style='word-spacing:normal; font:6.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>Obtain the object identifier for the attribute’s primary data object</p>
+ <p class="FM__ListNumbered_Level1">2.<span style='word-spacing:normal; font:6.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>Define the characteristics of the attribute and specify the attribute creation property list</p>
+ <p class="FM__ListBullets_Level2">•<span style='word-spacing:normal; font:6.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>Define the datatype</p>
+ <p class="FM__ListBullets_Level2">•<span style='word-spacing:normal; font:6.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>Define the dataspace</p>
+ <p class="FM__ListBullets_Level2">•<span style='word-spacing:normal; font:6.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>Specify the attribute creation property list</p>
+ <p class="FM__ListNumbered_Level1">3.<span style='word-spacing:normal; font:6.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>Create the attribute</p>
+ <p class="FM__ListNumbered_Level1">4.<span style='word-spacing:normal; font:6.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>Write the attribute data (optional)</p>
+ <p class="FM__ListNumbered_Level1">5.<span style='word-spacing:normal; font:6.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>Close the attribute (and datatype, dataspace, and attribute creation property list, if necessary)</p>
+ <p class="FM__ListNumbered_Level1">6.<span style='word-spacing:normal; font:6.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>Close the primary data object (if appropriate)</p>
+ <p class="FM__Heading_Level3"><a name="TOC_8_2_1_To_Open_and_Read"></a>8.2.1. To Open and Read or Write an Existing Attribute</p>
+ <p class="FM__Body">The following steps are required to open and read/write an existing attribute. Since HDF5 attributes allow no partial I/O, you need specify only the attribute and the attribute’s memory datatype to read it:</p>
+ <p class="FM__ListNumbered1_Level1">1.<span style='word-spacing:normal; font:6.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>Obtain the object identifier for the attribute’s primary data object</p>
+ <p class="FM__ListNumbered_Level1">2.<span style='word-spacing:normal; font:6.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>Obtain the attribute’s name or index</p>
+ <p class="FM__ListNumbered_Level1">3.<span style='word-spacing:normal; font:6.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>Open the attribute</p>
+ <p class="FM__ListBullets_Level2">•<span style='word-spacing:normal; font:6.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>Get attribute dataspace and datatype (optional)</p>
+ <p class="FM__ListNumbered_Level1">4.<span style='word-spacing:normal; font:6.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>Specify the attribute’s memory type</p>
+ <p class="FM__ListNumbered_Level1">5.<span style='word-spacing:normal; font:6.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>Read and/or write the attribute data</p>
+ <p class="FM__ListNumbered_Level1">6.<span style='word-spacing:normal; font:6.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>Close the attribute</p>
+ <p class="FM__ListNumbered_Level1">7.<span style='word-spacing:normal; font:6.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>Close the primary data object (if appropriate)</p>
+ <p class="FM__Heading_Level2"><a name="TOC_8_3_Attribute_H5A"></a>8.3. Attr<a name="XREF_Functions"></a>ibute (H5A) Function Summaries</p>
+ <p class="FM__Body">Functions that can be used with attributes (H5A functions) and functions that can be used with property lists (H5P functions) are listed below.</p>
+<div width="100%" align="center">
+ <table style=" border-spacing:0; padding-left:6.00pt; padding-top:6.00pt; padding-right:6.00pt; padding-bottom:6.00pt; float:aligncenter; margin-bottom:12.00pt; width:100%; max-width:432.00pt;" cellspacing="0">
+  <caption class="FM__CaptionFunctionListing1" x-list-start="1">Function Listing 8-1. Attribute functions (H5A)</caption>
+  <tr style=" height : 36.00pt;">
+  <th style="width : 216.000pt; border-top-style: solid; border-top-width: 1px; border-top-color: #228a22; border-bottom-style: solid; border-bottom-width: 1px; border-bottom-color: #228a22; vertical-align : top;padding-left: 6.00pt; padding-top: 3.00pt; padding-right: 6.00pt; padding-bottom: 3.00pt;">
+  <p class="FM__Heading_Cell">C Function</p>
+  <p class="FM__Heading_Cell">Fortran Subroutine</p>
+</th>
+  <th style="width : 216.000pt; border-top-style: solid; border-top-width: 1px; border-top-color: #228a22; border-bottom-style: solid; border-bottom-width: 1px; border-bottom-color: #228a22; vertical-align : top;padding-left: 6.00pt; padding-top: 3.00pt; padding-right: 6.00pt; padding-bottom: 3.00pt;">
+  <p class="FM__Heading_Cell"> Purpose</p>
+</th>
+</tr>
+  <tr style=" height : 62.00pt;">
+  <td style="width : 216.000pt; border-bottom-style: solid; border-bottom-width: 1px; border-bottom-color: #228a22; vertical-align : top;padding-left: 6.00pt; padding-top: 3.00pt; padding-right: 6.00pt; padding-bottom: 3.00pt;">
+  <p class="FM__BodyCellCode"><a name="IX_H5Acreate_6"></a>H5Acreate </p>
+  <p class="FM__BodyCellCode"><a name="IX_h5acreate_f"></a>h5acreate_f</p>
+</td>
+  <td style="width : 216.000pt; border-bottom-style: solid; border-bottom-width: 1px; border-bottom-color: #228a22; vertical-align : top;padding-left: 6.00pt; padding-top: 3.00pt; padding-right: 6.00pt; padding-bottom: 3.00pt;">
+  <p class="FM__BodyCell">Creates a dataset as an attribute of another group, dataset, or committed datatype. The C function is a macro: see “<span class="FM_LT_LinkText"><a href="http://www.hdfgroup.org/HDF5/doc/RM/APICompatMacros.html">API Compatibility Macros in HDF5</a></span>.”</p>
+</td>
+</tr>
+  <tr style=" height : 36.00pt;">
+  <td style="width : 216.000pt; border-bottom-style: solid; border-bottom-width: 1px; border-bottom-color: #228a22; vertical-align : top;padding-left: 6.00pt; padding-top: 3.00pt; padding-right: 6.00pt; padding-bottom: 3.00pt;">
+  <p class="FM__BodyCellCode"><a name="IX_H5Acreate_by_name"></a>H5Acreate_by_name</p>
+  <p class="FM__BodyCellCode"><a name="IX_h5acreate_by_name_f"></a>h5acreate_by_name_f</p>
+</td>
+  <td style="width : 216.000pt; border-bottom-style: solid; border-bottom-width: 1px; border-bottom-color: #228a22; vertical-align : top;padding-left: 6.00pt; padding-top: 3.00pt; padding-right: 6.00pt; padding-bottom: 3.00pt;">
+  <p class="FM__BodyCell">Creates an attribute attached to a specified object. </p>
+</td>
+</tr>
+  <tr style=" height : 36.00pt;">
+  <td style="width : 216.000pt; border-bottom-style: solid; border-bottom-width: 1px; border-bottom-color: #228a22; vertical-align : top;padding-left: 6.00pt; padding-top: 3.00pt; padding-right: 6.00pt; padding-bottom: 3.00pt;">
+  <p class="FM__BodyCellCode"><a name="IX_H5Aexists"></a>H5Aexists</p>
+  <p class="FM__BodyCellCode"><a name="IX_h5aexists_f"></a>h5aexists_f</p>
+</td>
+  <td style="width : 216.000pt; border-bottom-style: solid; border-bottom-width: 1px; border-bottom-color: #228a22; vertical-align : top;padding-left: 6.00pt; padding-top: 3.00pt; padding-right: 6.00pt; padding-bottom: 3.00pt;">
+  <p class="FM__BodyCell">Determines whether an attribute with a given name exists on an object. </p>
+</td>
+</tr>
+  <tr style=" height : 36.00pt;">
+  <td style="width : 216.000pt; border-bottom-style: solid; border-bottom-width: 1px; border-bottom-color: #228a22; vertical-align : top;padding-left: 6.00pt; padding-top: 3.00pt; padding-right: 6.00pt; padding-bottom: 3.00pt;">
+  <p class="FM__BodyCellCode"><a name="IX_H5Aexists_by_name"></a>H5Aexists_by_name</p>
+  <p class="FM__BodyCellCode"><a name="IX_h5aexists_by_name_f"></a>h5aexists_by_name_f</p>
+</td>
+  <td style="width : 216.000pt; border-bottom-style: solid; border-bottom-width: 1px; border-bottom-color: #228a22; vertical-align : top;padding-left: 6.00pt; padding-top: 3.00pt; padding-right: 6.00pt; padding-bottom: 3.00pt;">
+  <p class="FM__BodyCell">Determines whether an attribute with a given name exists on an object. </p>
+</td>
+</tr>
+  <tr style=" height : 35.00pt;">
+  <td style="width : 216.000pt; border-bottom-style: solid; border-bottom-width: 1px; border-bottom-color: #228a22; vertical-align : top;padding-left: 6.00pt; padding-top: 3.00pt; padding-right: 6.00pt; padding-bottom: 3.00pt;">
+  <p class="FM__BodyCellCode"><a name="IX_H5Aclose_3"></a>H5Aclose</p>
+  <p class="FM__BodyCellCode"><a name="IX_h5aclose_f"></a>h5aclose_f</p>
+</td>
+  <td style="width : 216.000pt; border-bottom-style: solid; border-bottom-width: 1px; border-bottom-color: #228a22; vertical-align : top;padding-left: 6.00pt; padding-top: 3.00pt; padding-right: 6.00pt; padding-bottom: 3.00pt;">
+  <p class="FM__BodyCell">Closes the specified attribute.</p>
+</td>
+</tr>
+  <tr style=" height : 35.00pt;">
+  <td style="width : 216.000pt; border-bottom-style: solid; border-bottom-width: 1px; border-bottom-color: #228a22; vertical-align : top;padding-left: 6.00pt; padding-top: 3.00pt; padding-right: 6.00pt; padding-bottom: 3.00pt;">
+  <p class="FM__BodyCellCode"><a name="IX_H5Adelete_1"></a>H5Adelete</p>
+  <p class="FM__BodyCellCode"><a name="IX_h5adelete_f"></a>h5adelete_f</p>
+</td>
+  <td style="width : 216.000pt; border-bottom-style: solid; border-bottom-width: 1px; border-bottom-color: #228a22; vertical-align : top;padding-left: 6.00pt; padding-top: 3.00pt; padding-right: 6.00pt; padding-bottom: 3.00pt;">
+  <p class="FM__BodyCell">Deletes an attribute.</p>
+</td>
+</tr>
+  <tr style=" height : 36.00pt;">
+  <td style="width : 216.000pt; border-bottom-style: solid; border-bottom-width: 1px; border-bottom-color: #228a22; vertical-align : top;padding-left: 6.00pt; padding-top: 3.00pt; padding-right: 6.00pt; padding-bottom: 3.00pt;">
+  <p class="FM__BodyCellCode"><a name="IX_H5Adelete_by_idx"></a>H5Adelete_by_idx</p>
+  <p class="FM__BodyCellCode"><a name="IX_h5adelete_by_idx_f"></a>h5adelete_by_idx_f</p>
+</td>
+  <td style="width : 216.000pt; border-bottom-style: solid; border-bottom-width: 1px; border-bottom-color: #228a22; vertical-align : top;padding-left: 6.00pt; padding-top: 3.00pt; padding-right: 6.00pt; padding-bottom: 3.00pt;">
+  <p class="FM__BodyCell">Deletes an attribute from an object according to index order. </p>
+</td>
+</tr>
+  <tr style=" height : 36.00pt;">
+  <td style="width : 216.000pt; border-bottom-style: solid; border-bottom-width: 1px; border-bottom-color: #228a22; vertical-align : top;padding-left: 6.00pt; padding-top: 3.00pt; padding-right: 6.00pt; padding-bottom: 3.00pt;">
+  <p class="FM__BodyCellCode"><a name="IX_H5Adelete_by_name"></a>H5Adelete_by_name</p>
+  <p class="FM__BodyCellCode"><a name="IX_h5adelete_by_name_f"></a>h5adelete_by_name_f</p>
+</td>
+  <td style="width : 216.000pt; border-bottom-style: solid; border-bottom-width: 1px; border-bottom-color: #228a22; vertical-align : top;padding-left: 6.00pt; padding-top: 3.00pt; padding-right: 6.00pt; padding-bottom: 3.00pt;">
+  <p class="FM__BodyCell">Removes an attribute from a specified loca&#173;tion. </p>
+</td>
+</tr>
+  <tr style=" height : 36.00pt;">
+  <td style="width : 216.000pt; border-bottom-style: solid; border-bottom-width: 1px; border-bottom-color: #228a22; vertical-align : top;padding-left: 6.00pt; padding-top: 3.00pt; padding-right: 6.00pt; padding-bottom: 3.00pt;">
+  <p class="FM__BodyCellCode"><a name="IX_H5Aget_create_plist"></a>H5Aget_create_plist</p>
+  <p class="FM__BodyCellCode"><a name="IX_h5aget_create_plist_f"></a>h5aget_create_plist_f</p>
+</td>
+  <td style="width : 216.000pt; border-bottom-style: solid; border-bottom-width: 1px; border-bottom-color: #228a22; vertical-align : top;padding-left: 6.00pt; padding-top: 3.00pt; padding-right: 6.00pt; padding-bottom: 3.00pt;">
+  <p class="FM__BodyCell">Gets an attribute creation property list identi&#173;fier. </p>
+</td>
+</tr>
+  <tr style=" height : 36.00pt;">
+  <td style="width : 216.000pt; border-bottom-style: solid; border-bottom-width: 1px; border-bottom-color: #228a22; vertical-align : top;padding-left: 6.00pt; padding-top: 3.00pt; padding-right: 6.00pt; padding-bottom: 3.00pt;">
+  <p class="FM__BodyCellCode"><a name="IX_H5Aget_info"></a>H5Aget_info</p>
+  <p class="FM__BodyCellCode"><a name="IX_h5aget_info_f"></a>h5aget_info_f</p>
+</td>
+  <td style="width : 216.000pt; border-bottom-style: solid; border-bottom-width: 1px; border-bottom-color: #228a22; vertical-align : top;padding-left: 6.00pt; padding-top: 3.00pt; padding-right: 6.00pt; padding-bottom: 3.00pt;">
+  <p class="FM__BodyCell">Retrieves attribute information by attribute identifier. </p>
+</td>
+</tr>
+  <tr style=" height : 36.00pt;">
+  <td style="width : 216.000pt; border-bottom-style: solid; border-bottom-width: 1px; border-bottom-color: #228a22; vertical-align : top;padding-left: 6.00pt; padding-top: 3.00pt; padding-right: 6.00pt; padding-bottom: 3.00pt;">
+  <p class="FM__BodyCellCode"><a name="IX_H5Aget_info_by_idx"></a>H5Aget_info_by_idx</p>
+  <p class="FM__BodyCellCode"><a name="IX_h5aget_info_by_idx_f"></a>h5aget_info_by_idx_f</p>
+</td>
+  <td style="width : 216.000pt; border-bottom-style: solid; border-bottom-width: 1px; border-bottom-color: #228a22; vertical-align : top;padding-left: 6.00pt; padding-top: 3.00pt; padding-right: 6.00pt; padding-bottom: 3.00pt;">
+  <p class="FM__BodyCell">Retrieves attribute information by attribute index position. </p>
+</td>
+</tr>
+  <tr style=" height : 36.00pt;">
+  <td style="width : 216.000pt; border-bottom-style: solid; border-bottom-width: 1px; border-bottom-color: #228a22; vertical-align : top;padding-left: 6.00pt; padding-top: 3.00pt; padding-right: 6.00pt; padding-bottom: 3.00pt;">
+  <p class="FM__BodyCellCode"><a name="IX_H5Aget_info_by_name"></a>H5Aget_info_by_name</p>
+  <p class="FM__BodyCellCode"><a name="IX_h5aget_info_by_name_f"></a>h5aget_info_by_name_f</p>
+</td>
+  <td style="width : 216.000pt; border-bottom-style: solid; border-bottom-width: 1px; border-bottom-color: #228a22; vertical-align : top;padding-left: 6.00pt; padding-top: 3.00pt; padding-right: 6.00pt; padding-bottom: 3.00pt;">
+  <p class="FM__BodyCell">Retrieves attribute information by attribute name. </p>
+</td>
+</tr>
+  <tr style=" height : 35.00pt;">
+  <td style="width : 216.000pt; border-bottom-style: solid; border-bottom-width: 1px; border-bottom-color: #228a22; vertical-align : top;padding-left: 6.00pt; padding-top: 3.00pt; padding-right: 6.00pt; padding-bottom: 3.00pt;">
+  <p class="FM__BodyCellCode"><a name="IX_H5Aget_name"></a>H5Aget_name</p>
+  <p class="FM__BodyCellCode"><a name="IX_h5aget_name_f"></a>h5aget_name_f</p>
+</td>
+  <td style="width : 216.000pt; border-bottom-style: solid; border-bottom-width: 1px; border-bottom-color: #228a22; vertical-align : top;padding-left: 6.00pt; padding-top: 3.00pt; padding-right: 6.00pt; padding-bottom: 3.00pt;">
+  <p class="FM__BodyCell">Gets an attribute name.</p>
+</td>
+</tr>
+  <tr style=" height : 36.00pt;">
+  <td style="width : 216.000pt; border-bottom-style: solid; border-bottom-width: 1px; border-bottom-color: #228a22; vertical-align : top;padding-left: 6.00pt; padding-top: 3.00pt; padding-right: 6.00pt; padding-bottom: 3.00pt;">
+  <p class="FM__BodyCellCode"><a name="IX_H5Aget_name_by_idx"></a>H5Aget_name_by_idx</p>
+  <p class="FM__BodyCellCode"><a name="IX_h5aget_name_by_idx_f"></a>h5aget_name_by_idx_f</p>
+</td>
+  <td style="width : 216.000pt; border-bottom-style: solid; border-bottom-width: 1px; border-bottom-color: #228a22; vertical-align : top;padding-left: 6.00pt; padding-top: 3.00pt; padding-right: 6.00pt; padding-bottom: 3.00pt;">
+  <p class="FM__BodyCell">Gets an attribute name by attribute index position.</p>
+</td>
+</tr>
+  <tr style=" height : 35.00pt;">
+  <td style="width : 216.000pt; border-bottom-style: solid; border-bottom-width: 1px; border-bottom-color: #228a22; vertical-align : top;padding-left: 6.00pt; padding-top: 3.00pt; padding-right: 6.00pt; padding-bottom: 3.00pt;">
+  <p class="FM__BodyCellCode"><a name="IX_H5Aget_space"></a>H5Aget_space</p>
+  <p class="FM__BodyCellCode"><a name="IX_h5aget_space_f"></a>h5aget_space_f</p>
+</td>
+  <td style="width : 216.000pt; border-bottom-style: solid; border-bottom-width: 1px; border-bottom-color: #228a22; vertical-align : top;padding-left: 6.00pt; padding-top: 3.00pt; padding-right: 6.00pt; padding-bottom: 3.00pt;">
+  <p class="FM__BodyCell">Gets a copy of the dataspace for an attribute.</p>
+</td>
+</tr>
+  <tr style=" height : 36.00pt;">
+  <td style="width : 216.000pt; border-bottom-style: solid; border-bottom-width: 1px; border-bottom-color: #228a22; vertical-align : top;padding-left: 6.00pt; padding-top: 3.00pt; padding-right: 6.00pt; padding-bottom: 3.00pt;">
+  <p class="FM__BodyCellCode"><a name="IX_H5Aget_storage_size"></a>H5Aget_storage_size</p>
+  <p class="FM__BodyCellCode"><a name="IX_h5aget_storage_size_f"></a>h5aget_storage_size_f</p>
+</td>
+  <td style="width : 216.000pt; border-bottom-style: solid; border-bottom-width: 1px; border-bottom-color: #228a22; vertical-align : top;padding-left: 6.00pt; padding-top: 3.00pt; padding-right: 6.00pt; padding-bottom: 3.00pt;">
+  <p class="FM__BodyCell">Returns the amount of storage required for an attribute. </p>
+</td>
+</tr>
+  <tr style=" height : 35.00pt;">
+  <td style="width : 216.000pt; border-bottom-style: solid; border-bottom-width: 1px; border-bottom-color: #228a22; vertical-align : top;padding-left: 6.00pt; padding-top: 3.00pt; padding-right: 6.00pt; padding-bottom: 3.00pt;">
+  <p class="FM__BodyCellCode"><a name="IX_H5Aget_type_2"></a>H5Aget_type</p>
+  <p class="FM__BodyCellCode"><a name="IX_h5aget_type_f"></a>h5aget_type_f</p>
+</td>
+  <td style="width : 216.000pt; border-bottom-style: solid; border-bottom-width: 1px; border-bottom-color: #228a22; vertical-align : top;padding-left: 6.00pt; padding-top: 3.00pt; padding-right: 6.00pt; padding-bottom: 3.00pt;">
+  <p class="FM__BodyCell">Gets an attribute datatype.</p>
+</td>
+</tr>
+  <tr style=" height : 62.00pt;">
+  <td style="width : 216.000pt; border-bottom-style: solid; border-bottom-width: 1px; border-bottom-color: #228a22; vertical-align : top;padding-left: 6.00pt; padding-top: 3.00pt; padding-right: 6.00pt; padding-bottom: 3.00pt;">
+  <p class="FM__BodyCellCode"><a name="IX_H5Aiterate_2"></a>H5Aiterate</p>
+  <p class="FM__BodyCell">(no Fortran subroutine)</p>
+</td>
+  <td style="width : 216.000pt; border-bottom-style: solid; border-bottom-width: 1px; border-bottom-color: #228a22; vertical-align : top;padding-left: 6.00pt; padding-top: 3.00pt; padding-right: 6.00pt; padding-bottom: 3.00pt;">
+  <p class="FM__BodyCell">Calls a user’s function for each attribute attached to a data object. The C function is a macro: see “<span class="FM_LT_LinkText"><a href="http://www.hdfgroup.org/HDF5/doc/RM/APICompatMacros.html">API Compatibility Macros in HDF5</a></span>.”</p>
+</td>
+</tr>
+  <tr style=" height : 36.00pt;">
+  <td style="width : 216.000pt; border-bottom-style: solid; border-bottom-width: 1px; border-bottom-color: #228a22; vertical-align : top;padding-left: 6.00pt; padding-top: 3.00pt; padding-right: 6.00pt; padding-bottom: 3.00pt;">
+  <p class="FM__BodyCellCode"><a name="IX_H5Aiterate_by_name"></a>H5Aiterate_by_name</p>
+  <p class="FM__BodyCell">(no Fortran subroutine)</p>
+</td>
+  <td style="width : 216.000pt; border-bottom-style: solid; border-bottom-width: 1px; border-bottom-color: #228a22; vertical-align : top;padding-left: 6.00pt; padding-top: 3.00pt; padding-right: 6.00pt; padding-bottom: 3.00pt;">
+  <p class="FM__BodyCell">Calls user-defined function for each attribute on an object. </p>
+</td>
+</tr>
+  <tr style=" height : 36.00pt;">
+  <td style="width : 216.000pt; border-bottom-style: solid; border-bottom-width: 1px; border-bottom-color: #228a22; vertical-align : top;padding-left: 6.00pt; padding-top: 3.00pt; padding-right: 6.00pt; padding-bottom: 3.00pt;">
+  <p class="FM__BodyCellCode"><a name="IX_H5Aopen"></a>H5Aopen</p>
+  <p class="FM__BodyCellCode"><a name="IX_h5aopen_f"></a>h5aopen_f</p>
+</td>
+  <td style="width : 216.000pt; border-bottom-style: solid; border-bottom-width: 1px; border-bottom-color: #228a22; vertical-align : top;padding-left: 6.00pt; padding-top: 3.00pt; padding-right: 6.00pt; padding-bottom: 3.00pt;">
+  <p class="FM__BodyCell">Opens an attribute for an object specified by object identifier and attribute name. </p>
+</td>
+</tr>
+  <tr style=" height : 36.00pt;">
+  <td style="width : 216.000pt; border-bottom-style: solid; border-bottom-width: 1px; border-bottom-color: #228a22; vertical-align : top;padding-left: 6.00pt; padding-top: 3.00pt; padding-right: 6.00pt; padding-bottom: 3.00pt;">
+  <p class="FM__BodyCellCode"><a name="IX_H5Aopen_by_idx_2"></a>H5Aopen_by_idx</p>
+  <p class="FM__BodyCellCode"><a name="IX_h5aopen_by_idx_f"></a>h5aopen_by_idx_f</p>
+</td>
+  <td style="width : 216.000pt; border-bottom-style: solid; border-bottom-width: 1px; border-bottom-color: #228a22; vertical-align : top;padding-left: 6.00pt; padding-top: 3.00pt; padding-right: 6.00pt; padding-bottom: 3.00pt;">
+  <p class="FM__BodyCell">Opens an existing attribute that is attached to an object specified by location and name.</p>
+</td>
+</tr>
+  <tr style=" height : 36.00pt;">
+  <td style="width : 216.000pt; border-bottom-style: solid; border-bottom-width: 1px; border-bottom-color: #228a22; vertical-align : top;padding-left: 6.00pt; padding-top: 3.00pt; padding-right: 6.00pt; padding-bottom: 3.00pt;">
+  <p class="FM__BodyCellCode"><a name="IX_H5Aopen_by_name_2"></a>H5Aopen_by_name</p>
+  <p class="FM__BodyCellCode"><a name="IX_h5aopen_by_name_f"></a>h5aopen_by_name_f</p>
+</td>
+  <td style="width : 216.000pt; border-bottom-style: solid; border-bottom-width: 1px; border-bottom-color: #228a22; vertical-align : top;padding-left: 6.00pt; padding-top: 3.00pt; padding-right: 6.00pt; padding-bottom: 3.00pt;">
+  <p class="FM__BodyCell">Opens an attribute for an object by object name and attribute name. </p>
+</td>
+</tr>
+  <tr style=" height : 35.00pt;">
+  <td style="width : 216.000pt; border-bottom-style: solid; border-bottom-width: 1px; border-bottom-color: #228a22; vertical-align : top;padding-left: 6.00pt; padding-top: 3.00pt; padding-right: 6.00pt; padding-bottom: 3.00pt;">
+  <p class="FM__BodyCellCode"><a name="IX_H5Aread_5"></a>H5Aread</p>
+  <p class="FM__BodyCellCode"><a name="IX_h5aread_f"></a>h5aread_f</p>
+</td>
+  <td style="width : 216.000pt; border-bottom-style: solid; border-bottom-width: 1px; border-bottom-color: #228a22; vertical-align : top;padding-left: 6.00pt; padding-top: 3.00pt; padding-right: 6.00pt; padding-bottom: 3.00pt;">
+  <p class="FM__BodyCell">Reads an attribute.</p>
+</td>
+</tr>
+  <tr style=" height : 35.00pt;">
+  <td style="width : 216.000pt; border-bottom-style: solid; border-bottom-width: 1px; border-bottom-color: #228a22; vertical-align : top;padding-left: 6.00pt; padding-top: 3.00pt; padding-right: 6.00pt; padding-bottom: 3.00pt;">
+  <p class="FM__BodyCellCode"><a name="IX_H5Arename"></a>H5Arename</p>
+  <p class="FM__BodyCellCode"><a name="IX_h5arename_f"></a>h5arename_f</p>
+</td>
+  <td style="width : 216.000pt; border-bottom-style: solid; border-bottom-width: 1px; border-bottom-color: #228a22; vertical-align : top;padding-left: 6.00pt; padding-top: 3.00pt; padding-right: 6.00pt; padding-bottom: 3.00pt;">
+  <p class="FM__BodyCell">Renames an attribute. </p>
+</td>
+</tr>
+  <tr style=" height : 35.00pt;">
+  <td style="width : 216.000pt; border-bottom-style: solid; border-bottom-width: 1px; border-bottom-color: #228a22; vertical-align : top;padding-left: 6.00pt; padding-top: 3.00pt; padding-right: 6.00pt; padding-bottom: 3.00pt;">
+  <p class="FM__BodyCellCode"><a name="IX_H5Arename_by_name"></a>H5Arename_by_name</p>
+  <p class="FM__BodyCellCode"><a name="IX_h5arename_by_name_f"></a>h5arename_by_name_f</p>
+</td>
+  <td style="width : 216.000pt; border-bottom-style: solid; border-bottom-width: 1px; border-bottom-color: #228a22; vertical-align : top;padding-left: 6.00pt; padding-top: 3.00pt; padding-right: 6.00pt; padding-bottom: 3.00pt;">
+  <p class="FM__BodyCell">Renames an attribute. </p>
+</td>
+</tr>
+  <tr style=" height : 35.00pt;">
+  <td style="width : 216.000pt; border-bottom-style: solid; border-bottom-width: 1px; border-bottom-color: #228a22; vertical-align : top;padding-left: 6.00pt; padding-top: 3.00pt; padding-right: 6.00pt; padding-bottom: 3.00pt;">
+  <p class="FM__BodyCellCode"><a name="IX_H5Awrite_3"></a>H5Awrite</p>
+  <p class="FM__BodyCellCode"><a name="IX_H5awrite_f"></a>H5awrite_f</p>
+</td>
+  <td style="width : 216.000pt; border-bottom-style: solid; border-bottom-width: 1px; border-bottom-color: #228a22; vertical-align : top;padding-left: 6.00pt; padding-top: 3.00pt; padding-right: 6.00pt; padding-bottom: 3.00pt;">
+  <p class="FM__BodyCell">Writes an attribute.</p>
+</td>
+</tr>
+ </table>
+</div>
+<div width="100%" align="center">
+ <table style=" border-spacing:0; padding-left:6.00pt; padding-top:6.00pt; padding-right:6.00pt; padding-bottom:6.00pt; float:aligncenter; margin-bottom:12.00pt; width:100%; max-width:432.00pt;" cellspacing="0">
+  <caption class="FM__CaptionFunctionListing">Function Listing 8-2. Attribute creation property list functio<a name="XREF_AttributeCreationProperty"></a>ns (H5P)</caption>
+  <tr style=" height : 36.00pt;">
+  <th style="width : 216.000pt; border-top-style: solid; border-top-width: 1px; border-top-color: #228a22; border-bottom-style: solid; border-bottom-width: 1px; border-bottom-color: #228a22; vertical-align : top;padding-left: 6.00pt; padding-top: 3.00pt; padding-right: 6.00pt; padding-bottom: 3.00pt;">
+  <p class="FM__Heading_Cell">C Function</p>
+  <p class="FM__Heading_Cell">Fortran Subroutine</p>
+</th>
+  <th style="width : 216.000pt; border-top-style: solid; border-top-width: 1px; border-top-color: #228a22; border-bottom-style: solid; border-bottom-width: 1px; border-bottom-color: #228a22; vertical-align : top;padding-left: 6.00pt; padding-top: 3.00pt; padding-right: 6.00pt; padding-bottom: 3.00pt;">
+  <p class="FM__Heading_Cell"> Purpose</p>
+</th>
+</tr>
+  <tr style=" height : 49.00pt;">
+  <td style="width : 216.000pt; border-bottom-style: solid; border-bottom-width: 1px; border-bottom-color: #228a22; vertical-align : top;padding-left: 6.00pt; padding-top: 3.00pt; padding-right: 6.00pt; padding-bottom: 3.00pt;">
+  <p class="FM__BodyCellCode"><a name="IX_H5Pset_char_encoding_4"></a>H5Pset_char_encoding</p>
+  <p class="FM__BodyCellCode"><a name="IX_h5pset_char_encoding_f_3"></a>h5pset_char_encoding_f</p>
+</td>
+  <td style="width : 216.000pt; border-bottom-style: solid; border-bottom-width: 1px; border-bottom-color: #228a22; vertical-align : top;padding-left: 6.00pt; padding-top: 3.00pt; padding-right: 6.00pt; padding-bottom: 3.00pt;">
+  <p class="FM__BodyCell">Sets the character encoding used to encode a string. Use to set ASCII or UTF-8 character encoding for object names.</p>
+</td>
+</tr>
+  <tr style=" height : 36.00pt;">
+  <td style="width : 216.000pt; border-bottom-style: solid; border-bottom-width: 1px; border-bottom-color: #228a22; vertical-align : top;padding-left: 6.00pt; padding-top: 3.00pt; padding-right: 6.00pt; padding-bottom: 3.00pt;">
+  <p class="FM__BodyCellCode"><a name="IX_H5Pget_char_encoding_3"></a>H5Pget_char_encoding</p>
+  <p class="FM__BodyCellCode"><a name="IX_h5pget_char_encoding_f_3"></a>h5pget_char_encoding_f</p>
+</td>
+  <td style="width : 216.000pt; border-bottom-style: solid; border-bottom-width: 1px; border-bottom-color: #228a22; vertical-align : top;padding-left: 6.00pt; padding-top: 3.00pt; padding-right: 6.00pt; padding-bottom: 3.00pt;">
+  <p class="FM__BodyCell">Retrieves the character encoding used to cre&#173;ate a string. </p>
+</td>
+</tr>
+  <tr style=" height : 36.00pt;">
+  <td style="width : 216.000pt; border-bottom-style: solid; border-bottom-width: 1px; border-bottom-color: #228a22; vertical-align : top;padding-left: 6.00pt; padding-top: 3.00pt; padding-right: 6.00pt; padding-bottom: 3.00pt;">
+  <p class="FM__BodyCellCode"><a name="IX_H5Pget_attr_creation"></a>H5Pget_attr_creation_order</p>
+  <p class="FM__BodyCellCode"><a name="IX_h5pget_attr_creation_1"></a>h5pget_attr_creation_order_f</p>
+</td>
+  <td style="width : 216.000pt; border-bottom-style: solid; border-bottom-width: 1px; border-bottom-color: #228a22; vertical-align : top;padding-left: 6.00pt; padding-top: 3.00pt; padding-right: 6.00pt; padding-bottom: 3.00pt;">
+  <p class="FM__BodyCell">Retrieves tracking and indexing settings for attribute creation order. </p>
+</td>
+</tr>
+  <tr style=" height : 36.00pt;">
+  <td style="width : 216.000pt; border-bottom-style: solid; border-bottom-width: 1px; border-bottom-color: #228a22; vertical-align : top;padding-left: 6.00pt; padding-top: 3.00pt; padding-right: 6.00pt; padding-bottom: 3.00pt;">
+  <p class="FM__BodyCellCode"><a name="IX_H5Pget_attr_phase_change"></a>H5Pget_attr_phase_change</p>
+  <p class="FM__BodyCellCode"><a name="IX_h5pget_attr_phase_change_1"></a>h5pget_attr_phase_change_f</p>
+</td>
+  <td style="width : 216.000pt; border-bottom-style: solid; border-bottom-width: 1px; border-bottom-color: #228a22; vertical-align : top;padding-left: 6.00pt; padding-top: 3.00pt; padding-right: 6.00pt; padding-bottom: 3.00pt;">
+  <p class="FM__BodyCell">Retrieves attribute storage phase change thresholds. </p>
+</td>
+</tr>
+  <tr style=" height : 36.00pt;">
+  <td style="width : 216.000pt; border-bottom-style: solid; border-bottom-width: 1px; border-bottom-color: #228a22; vertical-align : top;padding-left: 6.00pt; padding-top: 3.00pt; padding-right: 6.00pt; padding-bottom: 3.00pt;">
+  <p class="FM__BodyCellCode"><a name="IX_H5Pset_attr_creation"></a>H5Pset_attr_creation_order</p>
+  <p class="FM__BodyCellCode"><a name="IX_h5pget_attr_creation_2"></a>h5pget_attr_creation_order_f</p>
+</td>
+  <td style="width : 216.000pt; border-bottom-style: solid; border-bottom-width: 1px; border-bottom-color: #228a22; vertical-align : top;padding-left: 6.00pt; padding-top: 3.00pt; padding-right: 6.00pt; padding-bottom: 3.00pt;">
+  <p class="FM__BodyCell">Sets tracking and indexing of attribute cre&#173;ation order. </p>
+</td>
+</tr>
+  <tr style=" height : 36.00pt;">
+  <td style="width : 216.000pt; border-bottom-style: solid; border-bottom-width: 1px; border-bottom-color: #228a22; vertical-align : top;padding-left: 6.00pt; padding-top: 3.00pt; padding-right: 6.00pt; padding-bottom: 3.00pt;">
+  <p class="FM__BodyCellCode"><a name="IX_H5Pset_attr_phase_change"></a>H5Pset_attr_phase_change</p>
+  <p class="FM__BodyCellCode"><a name="IX_h5pset_attr_phase_change_1"></a>h5pset_attr_phase_change_f</p>
+</td>
+  <td style="width : 216.000pt; border-bottom-style: solid; border-bottom-width: 1px; border-bottom-color: #228a22; vertical-align : top;padding-left: 6.00pt; padding-top: 3.00pt; padding-right: 6.00pt; padding-bottom: 3.00pt;">
+  <p class="FM__BodyCell">Sets attribute storage phase change thresh&#173;olds. </p>
+</td>
+</tr>
+ </table>
+</div>
+ <p class="FM__Body">&nbsp;</p>
+ <p class="FM__Heading_Level2"><a name="TOC_8_4_Working_with"></a>8.4. Work<a name="XREF_Working1"></a>ing with Attribute<a name="XREF_WorkingWithAttributes"></a>s</p>
+ <p class="FM__Heading_Level3"><a name="TOC_8_4_1_The_Structure_of"></a>8.4.1. The Structure of an Attribute</p>
+ <p class="FM__Body">An attribute has two parts: name and value(s).</p>
+ <p class="FM__Body">HDF5 attributes are sometimes discussed as name/value pairs in the form <span class="FM_Code">name=value</span>.</p>
+ <p class="FM__Body">An attribute’s name is a null-terminated ASCII or UTF-8 character string. Each attribute attached to an object has a unique name.</p>
+ <p class="FM__Body">The value portion of the attribute contains one or more data elements of the same datatype. </p>
+ <p class="FM__Body">HDF5 attributes have all the characteristics of HDF5 datasets except that there is no partial I/O capability. In other words, attributes can be written and read only in full with no sub-setting.</p>
+ <p class="FM__Heading_Level3"><a name="TOC_8_4_2_Creating_Writing"></a>8.4.2. Creating, Writing, and Reading Attributes</p>
+ <p class="FM__Body"><a name="IX_H5Aread_7"></a><a name="IX_H5Awrite_5"></a><a name="IX_H5Acreate_8"></a><a name="IX_H5Aread_6"></a><a name="IX_H5Awrite_4"></a><a name="IX_H5Acreate_7"></a>If attributes are used in an HDF5 file, these functions will be employed: <span class="FM_Code">H5Acreate</span>, <span class="FM_Code">H5Awrite</span>, and <span class="FM_Code">H5Aread</span>. <span class="FM_Code">H5Acreate</span>&#160;and <span class="FM_Code">H5Awrite</span>&#160;are used together to place the attribute in the file. If an attribute is to be used and is not currently in memory, <span class="FM_Code">H5Aread</span>&#160;generally comes into play usually in concert with one each of the <span class="FM_Code">H5Aget_*</span>&#160;and <span class="FM_Code">H5Aopen_*</span> functions.</p>
+ <p class="FM__Body"><span class="FM_EH_EmphasisHeavy">To create an attribute</span>, call <span class="FM_Code">H5Acreate</span>:</p>
+ <p class="FM__BodyCellCodeIndent">hid_t H5Acreate (hid_t <span class="FM_CodeItalic">loc_id</span>, const char *<span class="FM_CodeItalic">name</span>, </p>
+ <p class="FM__BodyCellCodeIndent"><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span>hid_t <span class="FM_CodeItalic">type_id</span>, hid_t <span class="FM_CodeItalic">space_id</span>, hid_t <span class="FM_CodeItalic">create_plist</span>, </p>
+ <p class="FM__BodyCellCodeIndent"><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span>hid_t <span class="FM_CodeItalic">access_plist</span>)</p>
+ <p class="FM__Body"><a name="IX_loc_id"></a><span class="FM_Code">loc_id</span>&#160;identifies the object (dataset, group, or committed datatype) to which the attribute is to be attached. <span class="FM_Code">name</span>, <span class="FM_Code">type_id</span>, <span class="FM_Code">space_id</span>, and <span class="FM_Code">create_plist</span>&#160;convey, respectively, the attribute’s name, datatype, dataspace, and attribute creation property list. The attribute’s name must be locally unique: it must be unique within the context of the object to which it is attached.</p>
+ <p class="FM__Body"><a name="IX_H5Awrite_6"></a><a name="IX_H5Acreate_9"></a><span class="FM_Code">H5Acreate</span>&#160;creates the attribute in memory. The attribute does not exist in the file until <span class="FM_Code">H5Awrite</span>&#160;writes it there.</p>
+ <p class="FM__Body"><a name="IX_H5Aread_8"></a><a name="IX_H5Awrite_7"></a><span class="FM_EH_EmphasisHeavy">To write or read an attribute</span>, call <span class="FM_Code">H5Awrite</span>&#160;or <span class="FM_Code">H5Aread</span>, respectively:</p>
+ <p class="FM__BodyCellCodeIndent">herr_t H5Awrite (hid_t <span class="FM_CodeItalic">attr_id</span>, hid_t <span class="FM_CodeItalic">mem_type_id</span>, </p>
+ <p class="FM__BodyCellCodeIndent"><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span>const void *<span class="FM_CodeItalic">buf</span>)</p>
+ <p class="FM__BodyCellCodeIndent">herr_t H5Aread (hid_t <span class="FM_CodeItalic">attr_id</span>, hid_t <span class="FM_CodeItalic">mem_type_id</span>, </p>
+ <p class="FM__BodyCellCodeIndent"><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span>void *<span class="FM_CodeItalic">buf</span>)</p>
+ <p class="FM__Body"><a name="IX_mem_type_id"></a><a name="IX_attr_id"></a><span class="FM_Code">attr_id</span>&#160;identifies the attribute while <span class="FM_Code">mem_type_id</span>&#160;identifies the in-memory datatype of the attribute data.</p>
+ <p class="FM__Body"><a name="IX_H5Aread_9"></a><a name="IX_H5Awrite_8"></a><span class="FM_Code">H5Awrite</span>&#160;writes the attribute data from the buffer <span class="FM_Code">buf</span>&#160;to the file. <span class="FM_Code">H5Aread</span>&#160;reads attribute data from the file into <span class="FM_Code">buf</span>.</p>
+ <p class="FM__Body">The HDF5 Library converts the metadata between the in-memory datatype, <span class="FM_Code">mem_type_id</span>, and the in-file datatype, defined when the attribute was created, without user intervention.</p>
+ <p class="FM__Heading_Level3"><a name="TOC_8_4_3_Accessing"></a>8.4.3. Accessing Attributes by Name or Index</p>
+ <p class="FM__Body">Attributes can be accessed by name or index value. The use of an index value makes it possible to iterate through all of the attributes associated with a given object. </p>
+ <p class="FM__Body"><a name="IX_H5Aget_name_1"></a><a name="IX_H5Aread_10"></a><a name="IX_H5Aopen_by_name_4"></a><a name="IX_H5Aopen_by_name_3"></a><span class="FM_EH_EmphasisHeavy">To access an attribute by its name</span>, use the <span class="FM_Code">H5Aopen_by_name</span>&#160;function. <span class="FM_Code">H5Aopen_by_name</span>&#160;returns an attribute identifier that can then be used by any function that must access an attribute such as <span class="FM_Code">H5Aread</span>.Use the function <span class="FM_Code">H5Aget_name</span> to determine an attribute’s name.</p>
+ <p class="FM__Body"><a name="IX_H5Aiterate_3"></a><a name="IX_H5Aopen_by_idx_4"></a><a name="IX_H5Oget_info_6"></a><a name="IX_H5Aopen_by_idx_3"></a><span class="FM_EH_EmphasisHeavy">To access an attribute by its index value</span>, use the <span class="FM_Code">H5Aopen_by_idx</span>&#160;function. To determine an attribute index value when it is not already known, use the <span class="FM_Code">H5Oget_info</span>&#160;function. <span class="FM_Code">H5Aopen_by_idx</span>&#160;is generally used in the course of opening several attributes for later access. Use <span class="FM_Code">H5Aiterate</span> if the intent is to per&#173;form the same operation on every attribute attached to an object.</p>
+ <p class="FM__Heading_Level3"><a name="TOC_8_4_4_Obtaining"></a>8.4.4. Obtaining Information Regarding an Object’s Attributes</p>
+ <p class="FM__Body">In the course of working with HDF5 attributes, one may need to obtain any of several pieces of informa&#173;tion:</p>
+ <p class="FM__ListBullets_Level1">•<span style='word-spacing:normal; font:6.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>An attribute name</p>
+ <p class="FM__ListBullets_Level1">•<span style='word-spacing:normal; font:6.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>The dataspace of an attribute </p>
+ <p class="FM__ListBullets_Level1">•<span style='word-spacing:normal; font:6.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>The datatype of an attribute </p>
+ <p class="FM__ListBullets_Level1">•<span style='word-spacing:normal; font:6.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>The number of attributes attached to an object</p>
+ <p class="FM__Body"><a name="IX_attr_id_1"></a><a name="IX_H5Aget_name_2"></a><span class="FM_EH_EmphasisHeavy">To obtain an attribute’s name</span>, call <span class="FM_Code">H5Aget_name</span>&#160;with an attribute identifier, <span class="FM_Code">attr_id</span>:</p>
+ <p class="FM__BodyCellCodeIndent">ssize_t H5Aget_name (hid_t <span class="FM_CodeItalic">attr_id</span>, size_t <span class="FM_CodeItalic">buf_size</span>, </p>
+ <p class="FM__BodyCellCodeIndent"><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span>char <span class="FM_CodeItalic">*buf</span>)</p>
+ <p class="FM__Body">As with other attribute functions, <span class="FM_Code">attr_id</span>&#160;identifies the attribute; <span class="FM_Code">buf_size</span> defines the size of the buf&#173;fer; and <span class="FM_Code">buf</span>&#160;is the buffer to which the attribute’s name will be read. </p>
+ <p class="FM__Body"><a name="IX_H5Aget_name_4"></a><a name="IX_H5Aget_name_3"></a>If the length of the attribute name, and hence the value required for <span class="FM_Code">buf_size</span>, is unknown, a first call to <span class="FM_Code">H5Aget_name</span>&#160;will return that size. If the value of <span class="FM_Code">buf_size</span>&#160;used in that first call is too small, the name will simply be truncated in <span class="FM_Code">buf</span>. A second <span class="FM_Code">H5Aget_name</span>&#160;call can then be used to retrieve the name in an appropriately-sized buffer.</p>
+ <p class="FM__Body"><a name="IX_H5Aget_type_3"></a><a name="IX_H5Aget_space_1"></a><span class="FM_EH_EmphasisHeavy">To determine the dataspace or datatype of an attribute</span>, call <span class="FM_Code">H5Aget_space</span>&#160;or <span class="FM_Code">H5Aget_type</span>, respec&#173;tively:</p>
+ <p class="FM__BodyCellCodeIndent">hid_t H5Aget_space (hid_t <span class="FM_CodeItalic">attr_id</span>)</p>
+ <p class="FM__BodyCellCodeIndent">&nbsp;</p>
+ <p class="FM__BodyCellCodeIndent">hid_t H5Aget_type (hid_t <span class="FM_CodeItalic">attr_id</span>)</p>
+ <p class="FM__Body"><a name="IX_attr_id_2"></a><a name="IX_H5Aget_space_2"></a><span class="FM_Code">H5Aget_space</span>&#160;returns the dataspace identifier for the attribute <span class="FM_Code">attr_id</span>.</p>
+ <p class="FM__Body"><a name="IX_H5Aget_type_4"></a><span class="FM_Code">H5Aget_type</span>&#160;returns the datatype identifier for the attribute <span class="FM_Code">attr_id</span>.</p>
+ <p class="FM__Body"><a name="IX_H5Oget_info_7"></a><span class="FM_EH_EmphasisHeavy">To determine the number of attributes attached to an object</span>, use the <span class="FM_Code">H5Oget_info</span> function. The func&#173;tion signature is below. </p>
+ <p class="FM__BodyCodeIndent">herr_t H5Oget_info( hid_t object_id, H5O_info_t *object_info &#160;) </p>
+ <p class="FM__Body"><a name="IX_object_id"></a><a name="IX_object_info"></a>The number of attributes will be returned in the <span class="FM_Code">object_info</span>&#160;buffer. This is generally the preferred first step in determining attribute index values. If the call returns <span class="FM_Code">N</span>, the attributes attached to the object <span class="FM_Code">object_id</span>&#160;have index values of <span class="FM_Code">0</span>&#160;through <span class="FM_Code">N-1</span>.</p>
+ <p class="FM__Heading_Level3"><a name="TOC_8_4_5_Iterating_across"></a>8.4.5. Iterating across an Object’s Attributes</p>
+ <p class="FM__Body">It is sometimes useful to be able to perform the identical operation across all of the attributes attached to an object. At the simplest level, you might just want to open each attribute. At a higher level, you might wish to perform a rather complex operation on each attribute as you iterate across the set.</p>
+ <p class="FM__Body"><a name="IX_H5Aiterate_4"></a><span class="FM_EH_EmphasisHeavy">To iterate an operation across the attributes attached to an object</span>, one must make a series of calls to <span class="FM_Code">H5Aiterate</span>:</p>
+ <p class="FM__BodyCellCodeIndent">herr_t H5Aiterate (hid_t <span class="FM_CodeItalic">obj_id</span>, H5_index_t <span class="FM_CodeItalic">index_type</span>, </p>
+ <p class="FM__BodyCellCodeIndent"><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span>H5_iter_order_t <span class="FM_CodeItalic">order</span>, hsize_t *<span class="FM_CodeItalic">n</span>, H5A_operator2_t <span class="FM_CodeItalic">op</span>, </p>
+ <p class="FM__BodyCellCodeIndent"><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span>void *<span class="FM_CodeItalic">op_data</span>)</p>
+ <p class="FM__Body"><a name="IX_loc_id_1"></a><a name="IX_H5Aiterate_5"></a><span class="FM_Code">H5Aiterate</span>&#160;successively marches across all of the attributes attached to the object specified in <span class="FM_Code">loc_id</span>, performing the operation(s) specified in <span class="FM_Code">op_func</span>&#160;with the data specified in <span class="FM_Code">op_data</span> on each attribute.</p>
+ <p class="FM__Body"><a name="IX_H5Aiterate_7"></a><a name="IX_H5Aiterate_6"></a>When <span class="FM_Code">H5Aiterate</span>&#160;is called, <span class="FM_Code">index</span>&#160;contains the index of the attribute to be accessed in this call. When <span class="FM_Code">H5Aiterate</span>&#160;returns, <span class="FM_Code">index</span>&#160;will contain the index of the next attribute. If the returned <span class="FM_Code">index</span>&#160;is the null pointer, then all attributes have been processed, and the iterative process is complete. </p>
+ <p class="FM__Body"><a name="IX_H5Aiterate_8"></a><a name="IX_H5A_operator_t"></a><span class="FM_Code">op_func</span>&#160;is a user-defined operation that adheres to the <span class="FM_Code">H5A_operator_t</span>&#160;prototype. This prototype and certain requirements imposed on the operator’s behavior are described in the <span class="FM_LT_LinkTextCode"><a href="http://www.hdfgroup.org/HDF5/doc/RM/RM_H5A.html#Annot-Iterate">H5Aiterate</a></span>&#160;entry in the <span class="FM_EI_EmphasisItalic">HDF5 Reference Manual</span>.</p>
+ <p class="FM__Body"><span class="FM_Code">op_data</span>&#160;is also user-defined to meet the requirements of <span class="FM_Code">op_func</span>. Beyond providing a parameter with which to pass this data, HDF5 provides no tools for its management and imposes no restrictions.</p>
+ <p class="FM__Heading_Level3"><a name="TOC_8_4_6_Deleting_an"></a>8.4.6. Deleting an Attribute</p>
+ <p class="FM__Body">Once an attribute has outlived its usefulness or is no longer appropriate, it may become necessary to delete it.</p>
+ <p class="FM__Body"><a name="IX_H5Adelete_2"></a><span class="FM_EH_EmphasisHeavy">To delete an attribute</span>, call <span class="FM_Code">H5Adelete</span>:</p>
+ <p class="FM__BodyCodeIndent">herr_t H5Adelete (hid_t <span class="FM_CodeItalic">loc_id</span>, const char *<span class="FM_CodeItalic">name</span>)</p>
+ <p class="FM__Body"><a name="IX_loc_id_2"></a><a name="IX_H5Adelete_3"></a><span class="FM_Code">H5Adelete</span>&#160;removes the attribute <span class="FM_Code">name</span>&#160;from the group, dataset, or committed datatype specified in <span class="FM_Code">loc_id</span>.</p>
+ <p class="FM__Body"><a name="IX_H5Adelete_4"></a><span class="FM_Code">H5Adelete</span>&#160;must not be called if there are any open attribute identifiers on the object <span class="FM_Code">loc_id</span>. Such a call can cause the internal attribute indexes to change; future writes to an open attribute would then pro&#173;duce unintended results.</p>
+ <p class="FM__Heading_Level3"><a name="TOC_8_4_7_Closing_an"></a>8.4.7. Closing an Attribute</p>
+ <p class="FM__Body"><a name="IX_H5close_2"></a>As is the case with all HDF5 objects, once access to an attribute it is no longer needed, that attribute must be closed. It is best practice to close it as soon as practicable; it is mandatory that it be closed prior to the <span class="FM_Code">H5close</span> call closing the HDF5 Library.</p>
+ <p class="FM__Body"><a name="IX_H5Aclose_4"></a><span class="FM_EH_EmphasisHeavy">To close an attribute</span>, call <span class="FM_Code">H5Aclose</span>:</p>
+ <p class="FM__BodyCodeIndent">herr_t H5Aclose (hid_t <span class="FM_CodeItalic">attr_id</span>)</p>
+ <p class="FM__Body"><a name="IX_H5Aclose_5"></a><span class="FM_Code">H5Aclose</span>&#160;closes the specified attribute by terminating access to its identifier, <span class="FM_Code">attr_id</span>.</p>
+ <p class="FM__Heading_Level2"><a name="TOC_8_5_Special_Issues"></a>8.5. Spec<a name="XREF_Specissues"></a>ial Issues</p>
+ <p class="FM__Body">Some special issues for attributes are discussed below.</p>
+ <p class="FM__Heading_SubSection">Large Numbers of Attributes Stored in Dense Attribute Storage</p>
+ <p class="FM__Body">The dense attribute storage scheme was added in version 1.8 so that datasets, groups, and committed datatypes that have large numbers of attributes could be processed more quickly.</p>
+ <p class="FM__Body">Attributes start out being stored in an object's header. This is known as compact storage. <a href="../Datasets/HDF5_Datasets.htm#XREF_StorageStrategies">For more information, see &quot;Storage Strategies.&quot;</a></p>
+ <p class="FM__Body"><a name="IX_H5Pset_attr_phase_change_2"></a>As the number of attributes grows, attribute-related performance slows. To improve performance, dense attribute storage can be initiated with the <span class="FM_LT_LinkTextCode"><a href="http://www.hdfgroup.org/HDF5/doc/RM/RM_H5P.html#Property-SetAttrPhaseChange">H5Pset_attr_phase_change</a></span>&#160;function. See the <span class="FM_EI_EmphasisItalic">HDF5 Refer&#173;ence Manual</span>&#160;for more information. </p>
+ <p class="FM__Body">When dense attribute storage is enabled, a threshold is defined for the number of attributes kept in com&#173;pact storage. When the number is exceeded, the library moves all of the attributes into dense storage at another location. The library handles the movement of attributes and the pointers between the locations automatically. If some of the attributes are deleted so that the number falls below the threshold, then the attributes are moved back to compact storage by the library.</p>
+ <p class="FM__Body">The improvements in performance from using dense attribute storage are the result of holding attributes in a heap and indexing the heap with a B-tree.</p>
+ <p class="FM__Body">Note that there are some disadvantages to using dense attribute storage. One is that this is a new feature. Datasets, groups, and committed datatypes that use dense storage cannot be read by applications built with earlier versions of the library. Another disadvantage is that attributes in dense storage cannot be compressed.</p>
+ <p class="FM__Heading_SubSection">Large Attributes Stored in Dense Attribute Storage</p>
+ <p class="FM__Body">We generally consider the maximum size of an attribute to be 64K bytes. The library has two ways of stor&#173;ing attributes larger than 64K bytes: in dense attribute storage or in a separate dataset. Using dense attri&#173;bute storage is described in this section, and storing in a separate dataset is described in the next section.</p>
+ <p class="FM__Body"><a name="IX_H5Pset_attr_phase_change_3"></a>To use dense attribute storage to store large attributes, set the number of attributes that will be stored in compact storage to 0 with the <span class="FM_Code">H5Pset_attr_phase_change</span>&#160;function. This will force all attributes to be put into dense attribute storage and will avoid the 64KB size limitation for a single attribute in compact attribute storage.</p>
+ <p class="FM__Body">The example code below illustrates how to create a large attribute that will be kept in dense storage.</p>
+<div width="100%" align="center">
+ <table style=" border-spacing:0; padding-left:6.00pt; padding-top:6.00pt; padding-right:6.00pt; padding-bottom:6.00pt; float:aligncenter; margin-top:12.00pt; width:100%; max-width:432.00pt;" cellspacing="0">
+  <caption class="FM__CaptionCodeExample1" x-list-start="1" align="bottom">Code Example 8-1. Create a large attribute in dense storage</caption>
+  <tr style=" height : 48.00pt;">
+  <td style="width : 432.000pt; border-top-style: solid; border-top-width: 1px; border-top-color: #228a22; vertical-align : top;padding-left: 6.00pt; padding-top: 3.00pt; padding-right: 6.00pt; padding-bottom: 3.00pt;">
+  <p class="FM__BodyCellCode">/*</p>
+  <p class="FM__BodyCellCode">* Test use of dense attribute</p>
+  <p class="FM__BodyCellCode">*/</p>
+</td>
+</tr>
+  <tr style=" height : 100.00pt;">
+  <td style="width : 432.000pt; vertical-align : top;padding-left: 6.00pt; padding-top: 3.00pt; padding-right: 6.00pt; padding-bottom: 3.00pt;">
+  <p class="FM__BodyCellCode">#define N 82000000</p>
+  <p class="FM__BodyCellCode">#include &quot;hdf5.h&quot;</p>
+  <p class="FM__BodyCellCode">#include &lt;stdio.h&gt;</p>
+  <p class="FM__BodyCellCode">#include &lt;stdlib.h&gt;</p>
+  <p class="FM__BodyCellCode">&nbsp;</p>
+  <p class="FM__BodyCellCode">int main(){</p>
+  <p class="FM__BodyCellCode">&nbsp;</p>
+</td>
+</tr>
+  <tr style=" height : 87.00pt;">
+  <td style="width : 432.000pt; vertical-align : top;padding-left: 6.00pt; padding-top: 3.00pt; padding-right: 6.00pt; padding-bottom: 3.00pt;">
+  <p class="FM__BodyCellCode">hid_t fid, gid, sid, aid, gpid, fpid;</p>
+  <p class="FM__BodyCellCode">hsize_t dims[] = {N};</p>
+  <p class="FM__BodyCellCode">double *buf;</p>
+  <p class="FM__BodyCellCode">int i;</p>
+  <p class="FM__BodyCellCode">herr_t status;</p>
+  <p class="FM__BodyCellCode">&nbsp;</p>
+</td>
+</tr>
+  <tr style=" height : 139.00pt;">
+  <td style="width : 432.000pt; vertical-align : top;padding-left: 6.00pt; padding-top: 3.00pt; padding-right: 6.00pt; padding-bottom: 3.00pt;">
+  <p class="FM__BodyCellCode">buf = (double *) malloc(sizeof(double) * N);</p>
+  <p class="FM__BodyCellCode">for (i=0; i &lt;N; i++) { buf[i] = -100.0; }</p>
+  <p class="FM__BodyCellCode"><a name="IX_H5P_FILE_ACCESS_5"></a><a name="IX_H5Pcreate_19"></a>fpid = H5Pcreate (H5P_FILE_ACCESS);</p>
+  <p class="FM__BodyCellCode"><a name="IX_H5F_LIBVER_LATEST_1"></a><a name="IX_H5Pset_libver_bounds_3"></a>status = H5Pset_libver_bounds (fpid, H5F_LIBVER_LATEST, </p>
+  <p class="FM__BodyCellCodeIndent">H5F_LIBVER_LATEST);</p>
+  <p class="FM__BodyCellCode"><a name="IX_H5F_ACC_TRUNC_10"></a><a name="IX_H5Fcreate_14"></a>fid = H5Fcreate(&quot;adense.h5&quot;, H5F_ACC_TRUNC, H5P_DEFAULT, </p>
+  <p class="FM__BodyCellCodeIndent">fpid);</p>
+  <p class="FM__BodyCellCode"><a name="IX_H5P_GROUP_CREATE"></a>gpid = H5Pcreate (H5P_GROUP_CREATE);</p>
+  <p class="FM__BodyCellCode"><a name="IX_H5Pset_attr_phase_change_4"></a>status = H5Pset_attr_phase_change (gpid, 0, 0);</p>
+  <p class="FM__BodyCellCode">&nbsp;</p>
+</td>
+</tr>
+  <tr style=" height : 113.00pt;">
+  <td style="width : 432.000pt; vertical-align : top;padding-left: 6.00pt; padding-top: 3.00pt; padding-right: 6.00pt; padding-bottom: 3.00pt;">
+  <p class="FM__BodyCellCode"><a name="IX_H5Gcreate_9"></a>gid = H5Gcreate(fid, &quot;testgrp&quot;, H5P_DEFAULT, gpid, </p>
+  <p class="FM__BodyCellCodeIndent">H5P_DEFAULT);</p>
+  <p class="FM__BodyCellCode"><a name="IX_H5Screate_simple_23"></a>sid = H5Screate_simple(1, dims, NULL);</p>
+  <p class="FM__BodyCellCode">&nbsp;</p>
+  <p class="FM__BodyCellCode"><a name="IX_H5Acreate_10"></a>aid = H5Acreate(gid, &quot;bar&quot;, H5T_NATIVE_DOUBLE, sid, </p>
+  <p class="FM__BodyCellCodeIndent">H5P_DEFAULT, H5P_DEFAULT);</p>
+  <p class="FM__BodyCellCode"><a name="IX_H5Awrite_9"></a>status = H5Awrite(aid, H5T_NATIVE_DOUBLE, buf);</p>
+  <p class="FM__BodyCellCode">&nbsp;</p>
+</td>
+</tr>
+  <tr style=" height : 126.00pt;">
+  <td style="width : 432.000pt; border-bottom-style: solid; border-bottom-width: 1px; border-bottom-color: #228a22; vertical-align : top;padding-left: 6.00pt; padding-top: 3.00pt; padding-right: 6.00pt; padding-bottom: 3.00pt;">
+  <p class="FM__BodyCellCode">/* If you remove these two lines, it doesn't crash */</p>
+  <p class="FM__BodyCellCode"><a name="IX_H5Aclose_6"></a>status = H5Aclose(aid);</p>
+  <p class="FM__BodyCellCode"><a name="IX_H5Pclose_5"></a>status = H5Pclose (gpid);</p>
+  <p class="FM__BodyCellCode">status = H5Pclose (fpid);</p>
+  <p class="FM__BodyCellCode"><a name="IX_H5Gclose_5"></a>status = H5Gclose(gid);</p>
+  <p class="FM__BodyCellCode"><a name="IX_H5Fclose_12"></a>status = H5Fclose (fid);</p>
+  <p class="FM__BodyCellCode">&nbsp;</p>
+  <p class="FM__BodyCellCode">return 0;</p>
+  <p class="FM__BodyCellCode">}</p>
+</td>
+</tr>
+ </table>
+</div>
+ <p class="FM__Body">&nbsp;</p>
+ <p class="FM__Heading_SubSection">Large Attributes Stored in a Separate Dataset</p>
+ <p class="FM__Body">In addition to dense attribute storage (see above), a large attribute can be stored in a separate dataset. In the figure below, <span class="FM_Code">DatasetA</span>&#160;holds an attribute that is too large for the object header in <span class="FM_Code">Dataset1</span>. By putting a pointer to <span class="FM_Code">DatasetA</span>&#160;as an attribute in <span class="FM_Code">Dataset1</span>, the attribute becomes available to those working with Dataset1. </p>
+ <p class="FM__Body">This way of handling large attributes can be used in situations where backward compatibility is important and where compression is important. Applications built with versions before 1.8.x can read large attri&#173;butes stored in separate datasets. Datasets can be compressed while attributes cannot. </p>
+<div width="100%" align="center">
+ <table style=" border-spacing:0; padding-left:2.00pt; padding-top:2.00pt; padding-right:2.00pt; padding-bottom:2.00pt; float:aligncenter; margin-top:12.00pt; width:100%; max-width:432.00pt;" cellspacing="0">
+  <caption class="FM__CaptionFigure" align="bottom">Figure 8-2. A large or shared HDF5 attribute and its associated dataset(s)</caption>
+  <tr style=" height : 245.02pt;">
+  <td style="width : 432.000pt; border-top-style: solid; border-top-width: 1px; border-top-color: #228a22; border-bottom-style: solid; border-bottom-width: 1px; border-bottom-color: #228a22; ">
+  <div align="center"><img alt="Shared_Attribute.jpg" style=" margin-left:0.750pt; margin-top:0.750pt; margin-right:0.750pt; margin-bottom:0.750pt; width:100%; max-width:202px;" id="image1" src="Shared_Attribute.jpg" />
+  </div>
+  <p class="FM__BodyFigureSmall">&nbsp;</p>
+  <p class="FM__BodyFigureSmall">&nbsp;</p>
+</td>
+</tr>
+ </table>
+</div>
+ <p class="FM__CaptionNote">Note: In the figure above, DatasetA is an attribute of Dataset1 that is too large to store in Dataset1's header. Data&#173;setA is associated with Dataset1 by means of an object reference pointer attached as an attribute to Dataset1. The attribute in DatasetA can be shared among multiple datasets by means of additional object reference pointers attached to additional datasets.</p>
+ <p class="FM__Heading_SubSection">Shared Attributes</p>
+ <p class="FM__Body">Attributes written and managed through the H5A interface cannot be shared. If shared attributes are required, they must be handled in the manner described above for large attributes and illustrated in the figure above.</p>
+ <p class="FM__Heading_SubSection">Attribute Names</p>
+ <p class="FM__Body">While any ASCII or UTF-8 character may be used in the name given to an attribute, it is usually wise to avoid the following kinds of characters:</p>
+ <p class="FM__ListBullets_Level1">•<span style='word-spacing:normal; font:6.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>Commonly used separators or delimiters such as slash, backslash, colon, and semi-colon (\, /, :, ;)</p>
+ <p class="FM__ListBullets_Level1">•<span style='word-spacing:normal; font:6.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>Escape characters</p>
+ <p class="FM__ListBullets_Level1">•<span style='word-spacing:normal; font:6.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>Wild cards such as asterisk and question mark (*, ?)</p>
+ <p class="FM__Body">NULL can be used within a name, but HDF5 names are terminated with a NULL: whatever comes after the NULL will be ignored by HDF5.</p>
+ <p class="FM__Body"><a name="IX_H5Pset_char_encoding_5"></a>The use of ASCII or UTF-8 characters is determined by the character encoding property. See <span class="FM_LT_LinkTextCode"><a href="http://www.hdfgroup.org/HDF5/doc/RM/RM_H5P.html#Property-SetCharEncoding">H5Pset_char_encoding</a></span>&#160;in the <span class="FM_EI_EmphasisItalic">HDF5 Reference Manual</span>.</p>
+ <p class="FM__Heading_SubSection">No Special I/O or Storage</p>
+ <p class="FM__Body">HDF5 attributes have all the characteristics of HDF5 datasets except the following:</p>
+ <p class="FM__ListBullets_Level1">•<span style='word-spacing:normal; font:6.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>Attributes are written and read only in full: there is no provision for partial I/O or sub-setting</p>
+ <p class="FM__ListBullets_Level1">•<span style='word-spacing:normal; font:6.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>No special storage capability is provided for attributes: there is no compression or chunking, and attributes are not extendable</p>
+ <p class="FM__Body">&nbsp;</p>
+</body>
+</html>

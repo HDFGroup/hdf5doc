@@ -1,0 +1,735 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+
+ <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+ <title>HDF5 Error Handling</title>
+
+ <meta content="How to fly your personal spaceship" name="search-keywords" />
+ <meta name="generator" content="Adobe FrameMaker 12" />
+ <meta name="Originator" content="ImportMif" />
+ <meta name="OriginalFile" content="C:\Users\evan\1 MEE\Working\hdf5_1_8\html\UG\FmSource\ErrorHandling.fm" />
+ <link rel="stylesheet" href="ErrorHandling.css" type="text/css" />
+
+
+<script type="text/javascript" language="JavaScript">
+//<![CDATA[
+function reDo() {
+  if (innerWidth != origWidth || innerHeight != origHeight)
+     location.reload();
+}
+if ((parseInt(navigator.appVersion) == 4) && (navigator.appName == "Netscape")) {
+	origWidth = innerWidth;
+	origHeight = innerHeight;
+	onresize = reDo;
+}
+onerror = null; 
+//]]>
+</script>
+<style type="text/css">
+<!--
+div.WebHelpPopupMenu { position:absolute;
+left:0px;
+top:0px;
+z-index:4;
+visibility:hidden; }
+p.WebHelpNavBar { text-align:right; }
+-->
+</style>
+
+<script type="text/javascript" src="../../template/scripts/rh.min.js"></script>
+<script type="text/javascript" src="../../template/scripts/common.min.js"></script>
+<script type="text/javascript" src="../../template/scripts/topic.min.js"></script>
+<script type="text/javascript" src="../../template/scripts/constants.js"></script>
+<script type="text/javascript" src="../../template/scripts/utils.js"></script>
+<script type="text/javascript" src="../../template/scripts/mhutils.js"></script>
+<script type="text/javascript" src="../../template/scripts/mhlang.js"></script>
+<script type="text/javascript" src="../../template/scripts/mhver.js"></script>
+<script type="text/javascript" src="../../template/scripts/settings.js"></script>
+<script type="text/javascript" src="../../template/scripts/XmlJsReader.js"></script>
+<script type="text/javascript" src="../../template/scripts/loadparentdata.js"></script>
+<script type="text/javascript" src="../../template/scripts/loadscreen.js"></script>
+<script type="text/javascript" src="../../template/scripts/loadprojdata.js"></script>
+<script type="text/javascript" src="../../template/scripts/mhtopic.js"></script>
+<script type="text/javascript" >
+gRootRelPath = "../..";
+gCommonRootRelPath = "../..";
+gTopicId = "9";
+</script>
+ <meta name="brsprev" value="HDF5_Users_Guide/Attributes/HDF5_Attributes.htm">
+ <meta name="brsnext" value="HDF5_Users_Guide/PropertyLists/Properties_and_Property_Lists_in_HDF5.htm">
+</head>
+
+<body>
+<script type="text/javascript" src="../../ehlpdhtm.js"></script>
+
+ <p class="FM__Heading_Level1">9. <a name="XREF_ErrorHandlingChapter"></a>HDF5 Error Handling</p>
+ <p class="FM__Heading_Level2"><a name="TOC_9_1_Introduction"></a>9.1. Introduction</p>
+ <p class="FM__Body">The HDF5 Library provides an error reporting mechanism for both the library itself and for user application programs. It can trace errors through function stack and error information like file name, function name, line number, and error description.</p>
+ <p class="FM__Body"><a href="#XREF_BasicErrorHandling">&quot;Basic Error Handling Operations&quot;</a>&#160;discusses the basic error concepts such as error stack, error record, and error message and describes the related API functions. These concepts and func&#173;tions are sufficient for application programs to trace errors inside the HDF5 Library.</p>
+ <p class="FM__Body"><a href="#XREF_AdvancedErrorHandling">&quot;Advanced Error Handling Operations&quot;</a>&#160;talks about the advanced concepts of error class and error stack handle and talks about the related functions. With these concepts and functions, an application library or program using the HDF5 Library can have its own error report blended with HDF5’s error report.</p>
+ <p class="FM__Body"><a name="IX_H5Eset_auto"></a><a name="IX_H5Eget_auto"></a><a name="IX_H5Eclear"></a><a name="IX_H5Ewalk"></a><a name="IX_H5Eprint"></a><a name="IX_H5Epush"></a>Starting with Release 1.8, we have a new set of Error Handling API functions. For the purpose of backward compatibility with version 1.6 and before, we still keep the old API functions, <span class="FM_Code">H5Epush</span>, <span class="FM_Code">H5Eprint</span>, <span class="FM_Code">H5Ewalk</span>, <span class="FM_Code">H5Eclear</span>, <span class="FM_Code">H5Eget_auto</span>, <span class="FM_Code">H5Eset_auto</span>. These functions do not have the error stack as parameter. The library allows them to operate on the default error stack. Users do not have to change their code to catch up with the new Error API but are encouraged to do so.</p>
+ <p class="FM__Body">The old API is similar to functionality discussed in <a href="#XREF_BasicErrorHandling">&quot;Basic Error Handling Operations&quot;</a>. The functionality discussed in <a href="#XREF_AdvancedErrorHandling">&quot;Advanced Error Handling Operations&quot;</a>, the ability of allowing applications to add their own error records, is the new design for the Error Handling API.</p>
+ <p class="FM__Heading_Level2"><a name="TOC_9_2_Programming_Model"></a>9.2. Programming Model for Error Handlin<a name="XREF_ProgrammingModelErrorHand"></a>g</p>
+ <p class="FM__Body">This section is under construction.</p>
+ <p class="FM__Heading_Level2"><a name="TOC_9_3_Error_Handling_H5E"></a>9.3. Error Handlin<a name="XREF_ErrorHandling"></a>g (H5E) Function Summaries</p>
+ <p class="FM__Body">Functions that can be used to handle errors (H5E functions) are listed below. </p>
+<div width="100%" align="center">
+ <table style=" border-spacing:0; padding-left:6.00pt; padding-top:6.00pt; padding-right:6.00pt; padding-bottom:6.00pt; float:aligncenter; margin-bottom:12.00pt; width:100%; max-width:432.00pt;" cellspacing="0">
+  <caption class="FM__CaptionFunctionListing1" x-list-start="1">Function Listing 9-1. Error handling functions (H5E)</caption>
+  <tr style=" height : 36.00pt;">
+  <th style="width : 216.000pt; border-top-style: solid; border-top-width: 1px; border-top-color: #228a22; border-bottom-style: solid; border-bottom-width: 1px; border-bottom-color: #228a22; vertical-align : top;padding-left: 6.00pt; padding-top: 3.00pt; padding-right: 6.00pt; padding-bottom: 3.00pt;">
+  <p class="FM__Heading_Cell">C Function</p>
+  <p class="FM__Heading_Cell">Fortran Subroutine</p>
+</th>
+  <th style="width : 216.000pt; border-top-style: solid; border-top-width: 1px; border-top-color: #228a22; border-bottom-style: solid; border-bottom-width: 1px; border-bottom-color: #228a22; vertical-align : top;padding-left: 6.00pt; padding-top: 3.00pt; padding-right: 6.00pt; padding-bottom: 3.00pt;">
+  <p class="FM__Heading_Cell"> Purpose</p>
+</th>
+</tr>
+  <tr style=" height : 36.00pt;">
+  <td style="width : 216.000pt; border-bottom-style: solid; border-bottom-width: 1px; border-bottom-color: #228a22; vertical-align : top;padding-left: 6.00pt; padding-top: 3.00pt; padding-right: 6.00pt; padding-bottom: 3.00pt;">
+  <p class="FM__BodyCellCode"><a name="IX_H5Eauto_is_v2"></a>H5Eauto_is_v2</p>
+  <p class="FM__BodyCell">(no Fortran subroutine)</p>
+</td>
+  <td style="width : 216.000pt; border-bottom-style: solid; border-bottom-width: 1px; border-bottom-color: #228a22; vertical-align : top;padding-left: 6.00pt; padding-top: 3.00pt; padding-right: 6.00pt; padding-bottom: 3.00pt;">
+  <p class="FM__BodyCell">Determines the type of error stack.</p>
+</td>
+</tr>
+  <tr style=" height : 49.00pt;">
+  <td style="width : 216.000pt; border-bottom-style: solid; border-bottom-width: 1px; border-bottom-color: #228a22; vertical-align : top;padding-left: 6.00pt; padding-top: 3.00pt; padding-right: 6.00pt; padding-bottom: 3.00pt;">
+  <p class="FM__BodyCellCode"><a name="IX_H5Eclear_1"></a>H5Eclear</p>
+  <p class="FM__BodyCellCode"><a name="IX_h5eclear_f"></a>h5eclear_f</p>
+</td>
+  <td style="width : 216.000pt; border-bottom-style: solid; border-bottom-width: 1px; border-bottom-color: #228a22; vertical-align : top;padding-left: 6.00pt; padding-top: 3.00pt; padding-right: 6.00pt; padding-bottom: 3.00pt;">
+  <p class="FM__BodyCell">Clears the error stack for the current thread. The C function is a macro: see “<span class="FM_LT_LinkText"><a href="http://www.hdfgroup.org/HDF5/doc/RM/APICompatMacros.html">API Compati&#173;bility Macros in HDF5</a></span>.”</p>
+</td>
+</tr>
+  <tr style=" height : 36.00pt;">
+  <td style="width : 216.000pt; border-bottom-style: solid; border-bottom-width: 1px; border-bottom-color: #228a22; vertical-align : top;padding-left: 6.00pt; padding-top: 3.00pt; padding-right: 6.00pt; padding-bottom: 3.00pt;">
+  <p class="FM__BodyCellCode"><a name="IX_H5Eclear_stack"></a>H5Eclear_stack</p>
+  <p class="FM__BodyCell">(no Fortran subroutine)</p>
+</td>
+  <td style="width : 216.000pt; border-bottom-style: solid; border-bottom-width: 1px; border-bottom-color: #228a22; vertical-align : top;padding-left: 6.00pt; padding-top: 3.00pt; padding-right: 6.00pt; padding-bottom: 3.00pt;">
+  <p class="FM__BodyCell">Clears the error stack for the current thread.</p>
+</td>
+</tr>
+  <tr style=" height : 36.00pt;">
+  <td style="width : 216.000pt; border-bottom-style: solid; border-bottom-width: 1px; border-bottom-color: #228a22; vertical-align : top;padding-left: 6.00pt; padding-top: 3.00pt; padding-right: 6.00pt; padding-bottom: 3.00pt;">
+  <p class="FM__BodyCellCode"><a name="IX_H5Eclose_msg"></a>H5Eclose_msg</p>
+  <p class="FM__BodyCell">(no Fortran subroutine)</p>
+</td>
+  <td style="width : 216.000pt; border-bottom-style: solid; border-bottom-width: 1px; border-bottom-color: #228a22; vertical-align : top;padding-left: 6.00pt; padding-top: 3.00pt; padding-right: 6.00pt; padding-bottom: 3.00pt;">
+  <p class="FM__BodyCell">Closes an error message identifier.</p>
+</td>
+</tr>
+  <tr style=" height : 36.00pt;">
+  <td style="width : 216.000pt; border-bottom-style: solid; border-bottom-width: 1px; border-bottom-color: #228a22; vertical-align : top;padding-left: 6.00pt; padding-top: 3.00pt; padding-right: 6.00pt; padding-bottom: 3.00pt;">
+  <p class="FM__BodyCellCode"><a name="IX_H5Eclose_stack"></a>H5Eclose_stack</p>
+  <p class="FM__BodyCell">(no Fortran subroutine)</p>
+</td>
+  <td style="width : 216.000pt; border-bottom-style: solid; border-bottom-width: 1px; border-bottom-color: #228a22; vertical-align : top;padding-left: 6.00pt; padding-top: 3.00pt; padding-right: 6.00pt; padding-bottom: 3.00pt;">
+  <p class="FM__BodyCell">Closes object handle for error stack.</p>
+</td>
+</tr>
+  <tr style=" height : 36.00pt;">
+  <td style="width : 216.000pt; border-bottom-style: solid; border-bottom-width: 1px; border-bottom-color: #228a22; vertical-align : top;padding-left: 6.00pt; padding-top: 3.00pt; padding-right: 6.00pt; padding-bottom: 3.00pt;">
+  <p class="FM__BodyCellCode"><a name="IX_H5Ecreate_msg"></a>H5Ecreate_msg</p>
+  <p class="FM__BodyCell">(no Fortran subroutine)</p>
+</td>
+  <td style="width : 216.000pt; border-bottom-style: solid; border-bottom-width: 1px; border-bottom-color: #228a22; vertical-align : top;padding-left: 6.00pt; padding-top: 3.00pt; padding-right: 6.00pt; padding-bottom: 3.00pt;">
+  <p class="FM__BodyCell">Add major error message to an error class.</p>
+</td>
+</tr>
+  <tr style=" height : 62.00pt;">
+  <td style="width : 216.000pt; border-bottom-style: solid; border-bottom-width: 1px; border-bottom-color: #228a22; vertical-align : top;padding-left: 6.00pt; padding-top: 3.00pt; padding-right: 6.00pt; padding-bottom: 3.00pt;">
+  <p class="FM__BodyCellCode"><a name="IX_H5Eget_auto_1"></a>H5Eget_auto</p>
+  <p class="FM__BodyCellCode"><a name="IX_h5eget_auto_f"></a>h5eget_auto_f</p>
+</td>
+  <td style="width : 216.000pt; border-bottom-style: solid; border-bottom-width: 1px; border-bottom-color: #228a22; vertical-align : top;padding-left: 6.00pt; padding-top: 3.00pt; padding-right: 6.00pt; padding-bottom: 3.00pt;">
+  <p class="FM__BodyCell">Returns the current settings for the automatic error stack traversal function and its data. The C function is a macro: see “<span class="FM_LT_LinkText"><a href="http://www.hdfgroup.org/HDF5/doc/RM/APICompatMacros.html">API Compatibility Macros in HDF5</a></span>.”</p>
+</td>
+</tr>
+  <tr style=" height : 36.00pt;">
+  <td style="width : 216.000pt; border-bottom-style: solid; border-bottom-width: 1px; border-bottom-color: #228a22; vertical-align : top;padding-left: 6.00pt; padding-top: 3.00pt; padding-right: 6.00pt; padding-bottom: 3.00pt;">
+  <p class="FM__BodyCellCode"><a name="IX_H5Eget_class_name"></a>H5Eget_class_name</p>
+  <p class="FM__BodyCell">(no Fortran subroutine)</p>
+</td>
+  <td style="width : 216.000pt; border-bottom-style: solid; border-bottom-width: 1px; border-bottom-color: #228a22; vertical-align : top;padding-left: 6.00pt; padding-top: 3.00pt; padding-right: 6.00pt; padding-bottom: 3.00pt;">
+  <p class="FM__BodyCell">Retrieves error class name.</p>
+</td>
+</tr>
+  <tr style=" height : 36.00pt;">
+  <td style="width : 216.000pt; border-bottom-style: solid; border-bottom-width: 1px; border-bottom-color: #228a22; vertical-align : top;padding-left: 6.00pt; padding-top: 3.00pt; padding-right: 6.00pt; padding-bottom: 3.00pt;">
+  <p class="FM__BodyCellCode"><a name="IX_H5Eget_current_stack"></a>H5Eget_current_stack</p>
+  <p class="FM__BodyCell">(no Fortran subroutine)</p>
+</td>
+  <td style="width : 216.000pt; border-bottom-style: solid; border-bottom-width: 1px; border-bottom-color: #228a22; vertical-align : top;padding-left: 6.00pt; padding-top: 3.00pt; padding-right: 6.00pt; padding-bottom: 3.00pt;">
+  <p class="FM__BodyCell">Registers the current error stack.</p>
+</td>
+</tr>
+  <tr style=" height : 36.00pt;">
+  <td style="width : 216.000pt; border-bottom-style: solid; border-bottom-width: 1px; border-bottom-color: #228a22; vertical-align : top;padding-left: 6.00pt; padding-top: 3.00pt; padding-right: 6.00pt; padding-bottom: 3.00pt;">
+  <p class="FM__BodyCellCode"><a name="IX_H5Eget_msg"></a>H5Eget_msg</p>
+  <p class="FM__BodyCell">(no Fortran subroutine)</p>
+</td>
+  <td style="width : 216.000pt; border-bottom-style: solid; border-bottom-width: 1px; border-bottom-color: #228a22; vertical-align : top;padding-left: 6.00pt; padding-top: 3.00pt; padding-right: 6.00pt; padding-bottom: 3.00pt;">
+  <p class="FM__BodyCell">Retrieves an error message.</p>
+</td>
+</tr>
+  <tr style=" height : 36.00pt;">
+  <td style="width : 216.000pt; border-bottom-style: solid; border-bottom-width: 1px; border-bottom-color: #228a22; vertical-align : top;padding-left: 6.00pt; padding-top: 3.00pt; padding-right: 6.00pt; padding-bottom: 3.00pt;">
+  <p class="FM__BodyCellCode"><a name="IX_H5Eget_num"></a>H5Eget_num</p>
+  <p class="FM__BodyCell">(no Fortran subroutine)</p>
+</td>
+  <td style="width : 216.000pt; border-bottom-style: solid; border-bottom-width: 1px; border-bottom-color: #228a22; vertical-align : top;padding-left: 6.00pt; padding-top: 3.00pt; padding-right: 6.00pt; padding-bottom: 3.00pt;">
+  <p class="FM__BodyCell">Retrieves the number of error messages in an error stack.</p>
+</td>
+</tr>
+  <tr style=" height : 36.00pt;">
+  <td style="width : 216.000pt; border-bottom-style: solid; border-bottom-width: 1px; border-bottom-color: #228a22; vertical-align : top;padding-left: 6.00pt; padding-top: 3.00pt; padding-right: 6.00pt; padding-bottom: 3.00pt;">
+  <p class="FM__BodyCellCode"><a name="IX_H5Epop"></a>H5Epop</p>
+  <p class="FM__BodyCell">(no Fortran subroutine)</p>
+</td>
+  <td style="width : 216.000pt; border-bottom-style: solid; border-bottom-width: 1px; border-bottom-color: #228a22; vertical-align : top;padding-left: 6.00pt; padding-top: 3.00pt; padding-right: 6.00pt; padding-bottom: 3.00pt;">
+  <p class="FM__BodyCell">Deletes specified number of error messages from the error stack.</p>
+</td>
+</tr>
+  <tr style=" height : 49.00pt;">
+  <td style="width : 216.000pt; border-bottom-style: solid; border-bottom-width: 1px; border-bottom-color: #228a22; vertical-align : top;padding-left: 6.00pt; padding-top: 3.00pt; padding-right: 6.00pt; padding-bottom: 3.00pt;">
+  <p class="FM__BodyCellCode"><a name="IX_H5Eprint_1"></a>H5Eprint</p>
+  <p class="FM__BodyCellCode"><a name="IX_h5eprint_f"></a>h5eprint_f</p>
+</td>
+  <td style="width : 216.000pt; border-bottom-style: solid; border-bottom-width: 1px; border-bottom-color: #228a22; vertical-align : top;padding-left: 6.00pt; padding-top: 3.00pt; padding-right: 6.00pt; padding-bottom: 3.00pt;">
+  <p class="FM__BodyCell">Prints the error stack in a default manner. The C function is a macro: see “<span class="FM_LT_LinkText"><a href="http://www.hdfgroup.org/HDF5/doc/RM/APICompatMacros.html">API Compatibility Macros in HDF5</a></span>.”</p>
+</td>
+</tr>
+  <tr style=" height : 49.00pt;">
+  <td style="width : 216.000pt; border-bottom-style: solid; border-bottom-width: 1px; border-bottom-color: #228a22; vertical-align : top;padding-left: 6.00pt; padding-top: 3.00pt; padding-right: 6.00pt; padding-bottom: 3.00pt;">
+  <p class="FM__BodyCellCode"><a name="IX_H5Epush_1"></a>H5Epush</p>
+  <p class="FM__BodyCell">(no Fortran subroutine)</p>
+</td>
+  <td style="width : 216.000pt; border-bottom-style: solid; border-bottom-width: 1px; border-bottom-color: #228a22; vertical-align : top;padding-left: 6.00pt; padding-top: 3.00pt; padding-right: 6.00pt; padding-bottom: 3.00pt;">
+  <p class="FM__BodyCell">Pushes new error record onto error stack. The C function is a macro: see “<span class="FM_LT_LinkText"><a href="http://www.hdfgroup.org/HDF5/doc/RM/APICompatMacros.html">API Compatibility Macros in HDF5</a></span>.”</p>
+</td>
+</tr>
+  <tr style=" height : 36.00pt;">
+  <td style="width : 216.000pt; border-bottom-style: solid; border-bottom-width: 1px; border-bottom-color: #228a22; vertical-align : top;padding-left: 6.00pt; padding-top: 3.00pt; padding-right: 6.00pt; padding-bottom: 3.00pt;">
+  <p class="FM__BodyCellCode"><a name="IX_H5Eregister_class"></a>H5Eregister_class</p>
+  <p class="FM__BodyCell">(no Fortran subroutine)</p>
+</td>
+  <td style="width : 216.000pt; border-bottom-style: solid; border-bottom-width: 1px; border-bottom-color: #228a22; vertical-align : top;padding-left: 6.00pt; padding-top: 3.00pt; padding-right: 6.00pt; padding-bottom: 3.00pt;">
+  <p class="FM__BodyCell">Registers a client library or application pro&#173;gram to the HDF5 error API.</p>
+</td>
+</tr>
+  <tr style=" height : 49.00pt;">
+  <td style="width : 216.000pt; border-bottom-style: solid; border-bottom-width: 1px; border-bottom-color: #228a22; vertical-align : top;padding-left: 6.00pt; padding-top: 3.00pt; padding-right: 6.00pt; padding-bottom: 3.00pt;">
+  <p class="FM__BodyCellCode"><a name="IX_H5Eset_auto_1"></a>H5Eset_auto</p>
+  <p class="FM__BodyCellCode"><a name="IX_h5eset_auto_f"></a>h5eset_auto_f</p>
+</td>
+  <td style="width : 216.000pt; border-bottom-style: solid; border-bottom-width: 1px; border-bottom-color: #228a22; vertical-align : top;padding-left: 6.00pt; padding-top: 3.00pt; padding-right: 6.00pt; padding-bottom: 3.00pt;">
+  <p class="FM__BodyCell">Turns automatic error printing on or off. The C function is a macro: see “<span class="FM_LT_LinkText"><a href="http://www.hdfgroup.org/HDF5/doc/RM/APICompatMacros.html">API Compatibility Macros in HDF5</a></span>.”</p>
+</td>
+</tr>
+  <tr style=" height : 36.00pt;">
+  <td style="width : 216.000pt; border-bottom-style: solid; border-bottom-width: 1px; border-bottom-color: #228a22; vertical-align : top;padding-left: 6.00pt; padding-top: 3.00pt; padding-right: 6.00pt; padding-bottom: 3.00pt;">
+  <p class="FM__BodyCellCode"><a name="IX_H5Eset_current_stack"></a>H5Eset_current_stack</p>
+  <p class="FM__BodyCell">(no Fortran subroutine)</p>
+</td>
+  <td style="width : 216.000pt; border-bottom-style: solid; border-bottom-width: 1px; border-bottom-color: #228a22; vertical-align : top;padding-left: 6.00pt; padding-top: 3.00pt; padding-right: 6.00pt; padding-bottom: 3.00pt;">
+  <p class="FM__BodyCell">Replaces the current error stack.</p>
+</td>
+</tr>
+  <tr style=" height : 36.00pt;">
+  <td style="width : 216.000pt; border-bottom-style: solid; border-bottom-width: 1px; border-bottom-color: #228a22; vertical-align : top;padding-left: 6.00pt; padding-top: 3.00pt; padding-right: 6.00pt; padding-bottom: 3.00pt;">
+  <p class="FM__BodyCellCode"><a name="IX_H5Eunregister_class"></a>H5Eunregister_class</p>
+  <p class="FM__BodyCell">(no Fortran subroutine)</p>
+</td>
+  <td style="width : 216.000pt; border-bottom-style: solid; border-bottom-width: 1px; border-bottom-color: #228a22; vertical-align : top;padding-left: 6.00pt; padding-top: 3.00pt; padding-right: 6.00pt; padding-bottom: 3.00pt;">
+  <p class="FM__BodyCell">Removes an error class.</p>
+</td>
+</tr>
+  <tr style=" height : 62.00pt;">
+  <td style="width : 216.000pt; border-bottom-style: solid; border-bottom-width: 1px; border-bottom-color: #228a22; vertical-align : top;padding-left: 6.00pt; padding-top: 3.00pt; padding-right: 6.00pt; padding-bottom: 3.00pt;">
+  <p class="FM__BodyCellCode"><a name="IX_H5Ewalk_1"></a>H5Ewalk</p>
+  <p class="FM__BodyCell">(no Fortran subroutine)</p>
+</td>
+  <td style="width : 216.000pt; border-bottom-style: solid; border-bottom-width: 1px; border-bottom-color: #228a22; vertical-align : top;padding-left: 6.00pt; padding-top: 3.00pt; padding-right: 6.00pt; padding-bottom: 3.00pt;">
+  <p class="FM__BodyCell">Walks the error stack for the current thread, calling a specified function. The C function is a macro: see “<span class="FM_LT_LinkText"><a href="http://www.hdfgroup.org/HDF5/doc/RM/APICompatMacros.html">API Compatibility Macros in HDF5</a></span>.”</p>
+</td>
+</tr>
+ </table>
+</div>
+ <p class="FM__Body">&nbsp;</p>
+ <p class="FM__Heading_Level2"><a name="TOC_9_4_Basic_Error_Handling"></a>9.4. Basic Error Handlin<a name="XREF_BasicErrorHandling"></a>g Operations</p>
+ <p class="FM__Body"><a name="IX_error_stack"></a>Let us first try to understand the error stack. An <span class="FM_EI_EmphasisItalic">error stack</span>&#160;is a collection of error records. &#160;&#160;Error records can be pushed onto or popped off the error stack. By default, when an error occurs deep within the HDF5 Library, an error record is pushed onto an error stack and that function returns a failure indication. Its caller detects the failure, pushes another record onto the stack, and returns a failure indication. This con&#173;tinues until the API function called by the application returns a failure indication. The next API function being called will reset the error stack. All HDF5 Library error records belong to the same error class. <a href="#XREF_AdvancedErrorHandling">For more information, see &quot;Advanced Error Handling Operations.&quot;</a></p>
+ <p class="FM__Heading_Level3"><a name="TOC_9_4_1_Error_Stack_and"></a>9.4.1. Error Stack and Error Message</p>
+ <p class="FM__Body"><a name="IX_H5E_DEFAULT"></a>In normal circumstances, an error causes the stack to be printed on the standard error stream automati&#173;cally. This automatic error stack is the library’s default stack. For all the functions in this section, whenever an error stack ID is needed as a parameter, <span class="FM_Code">H5E_DEFAULT</span>&#160;can be used to indicate the library’s default stack. The first error record of the error stack, number <span class="FM_Code">#000</span>, is produced by the API function itself and is usually sufficient to indicate to the application what went wrong.</p>
+ <p class="FM__Heading_SubSection">Example: An Error Report</p>
+ <p class="FM__Body"><a name="IX_H5Tclose_12"></a>If an application calls <span class="FM_Code">H5Tclose</span>&#160;on a predefined datatype, then the message in the example below is printed on the standard error stream. This is a simple error that has only one component, the API func&#173;tion; other errors may have many components.</p>
+<div width="100%" align="center">
+ <table style=" border-spacing:0; padding-left:6.00pt; padding-top:6.00pt; padding-right:6.00pt; padding-bottom:6.00pt; float:aligncenter; margin-top:12.00pt; width:100%; max-width:432.00pt;" cellspacing="0">
+  <caption class="FM__CaptionCodeExample1" x-list-start="1" align="bottom">Code Example 9-1. An error report</caption>
+  <tr style=" height : 61.00pt;">
+  <td style="width : 432.000pt; border-top-style: solid; border-top-width: 1px; border-top-color: #228a22; border-bottom-style: solid; border-bottom-width: 1px; border-bottom-color: #228a22; vertical-align : top;padding-left: 6.00pt; padding-top: 3.00pt; padding-right: 6.00pt; padding-bottom: 3.00pt;">
+  <p class="FM__BodyCellCode">HDF5-DIAG: Error detected in HDF5 (1.6.4) thread 0.</p>
+  <p class="FM__BodyCellCode"><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span>#000: H5T.c line 462 in H5Tclose(): predefined datatype</p>
+  <p class="FM__BodyCellCode"><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span>major: Function argument</p>
+  <p class="FM__BodyCellCode"><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span>minor: Bad value</p>
+</td>
+</tr>
+ </table>
+</div>
+ <p class="FM__Body">&nbsp;</p>
+ <p class="FM__Body"><a name="IX_minor_message"></a><a name="IX_major_message"></a><a name="IX_error_record"></a>In the example above, we can see that an <span class="FM_EI_EmphasisItalic">error record</span>&#160;has a major message and a minor message. A <span class="FM_EI_EmphasisItalic">major message</span>&#160;generally indicates where the error happens. The location can be a dataset or a dataspace, for example. A <span class="FM_EI_EmphasisItalic">minor message</span>&#160;explains further details of the error. An example is “unable to open file”. Another specific detail about the error can be found at the end of the first line of each error record. This <span class="FM_EI_EmphasisItalic">error description</span>&#160;is usually added by the library designer to tell what exactly goes wrong. In the example above, the “predefined datatype” is an error description. </p>
+ <p class="FM__Heading_Level3"><a name="TOC_9_4_2_Print_and_Clear_an"></a>9.4.2. Print and Clear an Error Stack</p>
+ <p class="FM__Body"><a name="IX_H5Eset_auto_2"></a><a name="IX_H5Eprint_3"></a><a name="IX_H5Eclear_stack_1"></a><a name="IX_H5Eprint_2"></a>Besides the automatic error report, the error stack can also be printed and cleared by the functions <span class="FM_Code">H5Eprint()</span>&#160;and <span class="FM_Code">H5Eclear_stack()</span>. If an application wishes to make explicit calls to <span class="FM_Code">H5Eprint()</span>&#160;to print the error stack, the automatic printing should be turned off to prevent error messages from being displayed twice (see <span class="FM_Code">H5Eset_auto()</span>&#160;below). </p>
+ <p class="FM__Body"><span class="FM_EH_EmphasisHeavy">To print an error stack</span>:</p>
+ <p class="FM__BodyCodeIndent"><a name="IX_H5Eprint_4"></a><span class="FM_CodeItalic">herr_t</span>&#160;H5Eprint(<span class="FM_CodeItalic">hid_t</span>&#160;error_stack, <span class="FM_CodeItalic">FILE *</span> stream)</p>
+ <p class="FM__Body">This function prints the error stack specified by <span class="FM_Code">error_stack</span>&#160;on the specified stream, <span class="FM_Code">stream</span>. If the error stack is empty, a one-line message will be printed. The following is an example of such a message. This message would be generated if the error was in the HDF5 Library. </p>
+ <p class="FM__BodyCodeIndent">HDF5-DIAG: Error detected in HDF5 Library version: 1.5.62 thread 0.</p>
+ <p class="FM__Body" style="font-weight : bold;"><span class="FM_EH_EmphasisHeavy">To clear an error stack:</span></p>
+ <p class="FM__BodyCodeIndent"><a name="IX_H5Eclear_stack_2"></a><span class="FM_CodeItalic">herr_t</span>&#160;H5Eclear_stack(<span class="FM_CodeItalic">hid_t</span> error_stack)</p>
+ <p class="FM__Body"><a name="IX_H5Eprint_5"></a><a name="IX_H5Eclear_stack_3"></a>The <span class="FM_Code">H5Eclear_stack</span>&#160;function shown above clears the error stack specified by <span class="FM_Code">error_stack</span>. <span class="FM_Code">H5E_DE&#173;FAULT</span>&#160;can be passed in to clear the current error stack. The current stack is also cleared whenever an API function is called; there are certain exceptions to this rule such as <span class="FM_Code">H5Eprint()</span>. </p>
+ <p class="FM__Heading_Level3"><a name="TOC_9_4_3_Mute_Error_Stack"></a>9.4.3. Mute Error Stack</p>
+ <p class="FM__Body"><a name="IX_H5Eset_auto_3"></a><a name="IX_H5Eprint_6"></a>Sometimes an application calls a function for the sake of its return value, fully expecting the function to fail; sometimes the application wants to call <span class="FM_Code">H5Eprint()</span> explicitly. In these situations, it would be mis&#173;leading if an error message were still automatically printed. Using the <span class="FM_Code">H5Eset_auto()</span> function can con&#173;trol the automatic printing of error messages.</p>
+ <p class="FM__Body"><span class="FM_EH_EmphasisHeavy">To enable or disable automatic printing of errors:</span>&#160;</p>
+ <p class="FM__BodyCellCodeIndent"><a name="IX_H5Eset_auto_4"></a><span class="FM_CodeItalic">herr_t</span>&#160;H5Eset_auto(<span class="FM_CodeItalic">hid_t</span>&#160;error_stack, <span class="FM_CodeItalic">H5E_auto_t</span>&#160;func, </p>
+ <p class="FM__BodyCellCodeIndent"><span class="FM_CodeItalic"><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span>void</span> *client_data)</p>
+ <p class="FM__Body"><a name="IX_H5Eprint_7"></a><a name="IX_H5Eset_auto_5"></a>The <span class="FM_Code">H5Eset_auto function</span>&#160;can be used to turns on or off the automatic printing of errors for the error stack specified by <span class="FM_Code">error_stack</span>. When turned on (non-null <span class="FM_Code">func</span>&#160;pointer), any API function which returns an error indication will first call <span class="FM_Code">func</span>, passing it <span class="FM_Code">client_data</span>&#160;as an argument. When the library is first initialized the auto printing function is set to <span class="FM_Code">H5Eprint()</span>&#160;(cast appropriately) and <span class="FM_Code">client_data</span>&#160;is the standard error stream pointer, <span class="FM_Code">stderr</span>.</p>
+ <p class="FM__Body" style="font-weight : bold;"><span class="FM_EH_EmphasisHeavy">To see the current settings:</span></p>
+ <p class="FM__BodyCellCodeIndent"><a name="IX_H5Eget_auto_2"></a><span class="FM_CodeItalic">herr_t</span>&#160;H5Eget_auto(<span class="FM_CodeItalic">hid_t</span>&#160;error_stack, <span class="FM_CodeItalic">H5E_auto_t</span>&#160;* func, </p>
+ <p class="FM__BodyCellCodeIndent"><span class="FM_CodeItalic"><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span>void</span> **client_data)</p>
+ <p class="FM__Body">The function above returns the current settings for the automatic error stack traversal function, <span class="FM_Code">func</span>, and its data, <span class="FM_Code">client_data</span>. If either or both of the arguments are null, then the value is not returned.</p>
+ <p class="FM__Heading_SubSection">Example: Error Control</p>
+ <p class="FM__Body">An application can temporarily turn off error messages while “probing” a function. See the example below.</p>
+<div width="100%" align="center">
+ <table style=" border-spacing:0; padding-left:6.00pt; padding-top:6.00pt; padding-right:6.00pt; padding-bottom:6.00pt; float:aligncenter; margin-top:12.00pt; width:100%; max-width:432.00pt;" cellspacing="0">
+  <caption class="FM__CaptionCodeExample" align="bottom">Code Example 9-2. Turn off error messages while probing a function</caption>
+  <tr style=" height : 87.00pt;">
+  <td style="width : 432.000pt; border-top-style: solid; border-top-width: 1px; border-top-color: #228a22; vertical-align : top;padding-left: 6.00pt; padding-top: 3.00pt; padding-right: 6.00pt; padding-bottom: 3.00pt;">
+  <p class="FM__BodyCellCode">/* Save old error handler */</p>
+  <p class="FM__BodyCellCode">H5E_auto2_t &#160;oldfunc;</p>
+  <p class="FM__BodyCellCode">void *old_client_data;</p>
+  <p class="FM__BodyCellCode">&nbsp;</p>
+  <p class="FM__BodyCellCode"><a name="IX_H5Eget_auto_3"></a>H5Eget_auto(error_stack, &amp;old_func, &amp;old_client_data);</p>
+  <p class="FM__BodyCellCode">&nbsp;</p>
+</td>
+</tr>
+  <tr style=" height : 113.00pt;">
+  <td style="width : 432.000pt; border-bottom-style: solid; border-bottom-width: 1px; border-bottom-color: #228a22; vertical-align : top;padding-left: 6.00pt; padding-top: 3.00pt; padding-right: 6.00pt; padding-bottom: 3.00pt;">
+  <p class="FM__BodyCellCode">/* Turn off error handling */</p>
+  <p class="FM__BodyCellCode"><a name="IX_H5Eset_auto_6"></a>H5Eset_auto(error_stack, NULL, NULL);</p>
+  <p class="FM__BodyCellCode">&nbsp;</p>
+  <p class="FM__BodyCellCode">/* Probe. Likely to fail, but that’s okay */</p>
+  <p class="FM__BodyCellCode"><a name="IX_H5Fopen_13"></a>status = H5Fopen (......);</p>
+  <p class="FM__BodyCellCode">&nbsp;</p>
+  <p class="FM__BodyCellCode">/* Restore previous error handler */</p>
+  <p class="FM__BodyCellCode">H5Eset_auto(error_stack, old_func, old_client_data);</p>
+</td>
+</tr>
+ </table>
+</div>
+ <p class="FM__Body">&nbsp;</p>
+ <p class="FM__Body">Or automatic printing can be disabled altogether and error messages can be explicitly printed.</p>
+<div width="100%" align="center">
+ <table style=" border-spacing:0; padding-left:6.00pt; padding-top:6.00pt; padding-right:6.00pt; padding-bottom:6.00pt; float:aligncenter; margin-top:12.00pt; width:100%; max-width:432.00pt;" cellspacing="0">
+  <caption class="FM__CaptionCodeExample" align="bottom">Code Example 9-3. Disable automatic printing and explicitly print error messages</caption>
+  <tr style=" height : 113.00pt;">
+  <td style="width : 432.000pt; border-top-style: solid; border-top-width: 1px; border-top-color: #228a22; border-bottom-style: solid; border-bottom-width: 1px; border-bottom-color: #228a22; vertical-align : top;padding-left: 6.00pt; padding-top: 3.00pt; padding-right: 6.00pt; padding-bottom: 3.00pt;">
+  <p class="FM__BodyCellCode">/* Turn off error handling permanently */</p>
+  <p class="FM__BodyCellCode">H5Eset_auto(error_stack, NULL, NULL);</p>
+  <p class="FM__BodyCellCode">&nbsp;</p>
+  <p class="FM__BodyCellCode">/* If failure, print error message */</p>
+  <p class="FM__BodyCellCode">if (H5Fopen (....)&lt;0) {</p>
+  <p class="FM__BodyCellCode"><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span>H5Eprint(H5E_DEFAULT, stderr);</p>
+  <p class="FM__BodyCellCode"><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span>exit (1);</p>
+  <p class="FM__BodyCellCode">}</p>
+</td>
+</tr>
+ </table>
+</div>
+ <p class="FM__Body">&nbsp;</p>
+ <p class="FM__Heading_Level3"><a name="TOC_9_4_4_Customized"></a>9.4.4. Customized Printing of an Error Stack</p>
+ <p class="FM__Body"><a name="IX_H5Eprint_8"></a>Applications are allowed to define an automatic error traversal function other than the default <span class="FM_Code">H5Eprint()</span>. For instance, one can define a function that prints a simple, one-line error message to the standard error stream and then exits. The first example below defines a such a function. The second exam&#173;ple below installs the function as the error handler.</p>
+<div width="100%" align="center">
+ <table style=" border-spacing:0; padding-left:6.00pt; padding-top:6.00pt; padding-right:6.00pt; padding-bottom:6.00pt; float:aligncenter; margin-top:12.00pt; width:100%; max-width:432.00pt;" cellspacing="0">
+  <caption class="FM__CaptionCodeExample" align="bottom">Code Example 9-4. Defining a function to print a simple error message</caption>
+  <tr style=" height : 87.00pt;">
+  <td style="width : 432.000pt; border-top-style: solid; border-top-width: 1px; border-top-color: #228a22; border-bottom-style: solid; border-bottom-width: 1px; border-bottom-color: #228a22; vertical-align : top;padding-left: 6.00pt; padding-top: 3.00pt; padding-right: 6.00pt; padding-bottom: 3.00pt;">
+  <p class="FM__BodyCellCode">herr_t</p>
+  <p class="FM__BodyCellCode">my_hdf5_error_handler(void *unused)</p>
+  <p class="FM__BodyCellCode">{</p>
+  <p class="FM__BodyCellCode"><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span>fprintf (stderr, “An HDF5 error was detected. Bye.\n”);</p>
+  <p class="FM__BodyCellCode"><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span>exit (1);</p>
+  <p class="FM__BodyCellCode">}</p>
+</td>
+</tr>
+ </table>
+</div>
+<div width="100%" align="center">
+ <table style=" border-spacing:0; padding-left:6.00pt; padding-top:6.00pt; padding-right:6.00pt; padding-bottom:6.00pt; float:aligncenter; margin-top:12.00pt; width:100%; max-width:432.00pt;" cellspacing="0">
+  <caption class="FM__CaptionCodeExample" align="bottom">Code Example 9-5. The user-defined error handler</caption>
+  <tr style=" height : 22.00pt;">
+  <td style="width : 432.000pt; border-top-style: solid; border-top-width: 1px; border-top-color: #228a22; border-bottom-style: solid; border-bottom-width: 1px; border-bottom-color: #228a22; vertical-align : top;padding-left: 6.00pt; padding-top: 3.00pt; padding-right: 6.00pt; padding-bottom: 3.00pt;">
+  <p class="FM__BodyCellCode"><a name="IX_H5Eset_auto_7"></a>H5Eset_auto(H5E_DEFAULT, my_hdf5_error_handler, NULL);</p>
+</td>
+</tr>
+ </table>
+</div>
+ <p class="FM__Body">&nbsp;</p>
+ <p class="FM__Heading_Level3"><a name="TOC_9_4_5_Walk_through_the"></a>9.4.5. Walk through the Error Stack</p>
+ <p class="FM__Body"><a name="IX_H5Ewalk_3"></a><a name="IX_H5Ewalk_2"></a><a name="IX_H5Eprint_9"></a>The <span class="FM_Code">H5Eprint()</span>&#160;function is actually just a wrapper around the more complex <span class="FM_Code">H5Ewalk()</span>&#160;function which traverses an error stack and calls a user-defined function for each member of the stack. The exam&#173;ple below shows how <span class="FM_Code">H5Ewalk</span> is used.</p>
+ <p class="FM__BodyCellCodeIndent"><a name="IX_H5Ewalk_4"></a><span class="FM_CodeItalic">herr_t</span>&#160;H5Ewalk(<span class="FM_CodeItalic">hid_t</span>&#160;err_stack, <span class="FM_CodeItalic">H5E_direction_t</span>&#160;direction, </p>
+ <p class="FM__BodyCellCodeIndent"><a name="IX_H5E_walk_t"></a><span class="FM_CodeItalic"><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span>H5E_walk_t</span>&#160;func, <span class="FM_CodeItalic">void</span> *client_data)</p>
+ <p class="FM__Body"><a name="IX_H5E_WALK_DOWNWARD"></a><a name="IX_H5E_WALK_UPWARD"></a>The error stack <span class="FM_Code">err_stack</span>&#160;is traversed and <span class="FM_Code">func</span>&#160;is called for each member of the stack. Its arguments are an integer sequence number beginning at zero (regardless of <span class="FM_Code">direction</span>) and the <span class="FM_Code">client_data</span>&#160;pointer. If <span class="FM_Code">direction</span>&#160;is <span class="FM_Code">H5E_WALK_UPWARD</span>, then traversal begins at the inner-most function that detected the error and concludes with the API function. Use <span class="FM_Code">H5E_WALK_DOWNWARD</span>&#160;for the opposite order.</p>
+ <p class="FM__Heading_Level3"><a name="TOC_9_4_6_Traverse_an_Error"></a>9.4.6. Traverse an Error Stack with a Callback Function</p>
+ <p class="FM__Body"><a name="IX_H5Ewalk_5"></a>An error stack traversal callback function takes three arguments: <span class="FM_Code">n</span>&#160;is a sequence number beginning at zero for each traversal, <span class="FM_Code">eptr</span>&#160;is a pointer to an error stack member, and <span class="FM_Code">client_data</span>&#160;is the same pointer used in the example above passed to <span class="FM_Code">H5Ewalk()</span>. See the example below.</p>
+ <p class="FM__BodyCellCodeIndent"><a name="IX_H5E_walk_t_1"></a>typedef <span class="FM_CodeItalic">herr_t</span> (*H5E_walk_t)(<span class="FM_CodeItalic">unsigned</span>&#160;n, <span class="FM_CodeItalic">H5E_error2_t</span>&#160;*eptr, </p>
+ <p class="FM__BodyCellCodeIndent"><span class="FM_CodeItalic"><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span>void</span> *client_data)</p>
+ <p class="FM__Body"><a name="IX_H5E_error2_t"></a>The <span class="FM_Code">H5E_error2_t</span> structure is shown below.</p>
+ <p class="FM__BodyCellCodeIndent">typedef struct {</p>
+ <p class="FM__BodyCellCodeIndent"><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span>hid_t cls_id;</p>
+ <p class="FM__BodyCellCodeIndent"><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span>hid_t maj_num;</p>
+ <p class="FM__BodyCellCodeIndent"><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span>hid_t min_num;</p>
+ <p class="FM__BodyCellCodeIndent"><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span>unsigned line;</p>
+ <p class="FM__BodyCellCodeIndent"><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span>const char *func_name;</p>
+ <p class="FM__BodyCellCodeIndent"><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span>const char *file_name;</p>
+ <p class="FM__BodyCellCodeIndent"><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span>const char *desc;</p>
+ <p class="FM__BodyCellCodeIndent"><a name="IX_H5E_error2_t_1"></a>} H5E_error2_t;</p>
+ <p class="FM__Body">The <span class="FM_Code">maj_num</span>&#160;and <span class="FM_Code">min_num</span>&#160;are major and minor error IDs, <span class="FM_Code">func_name</span>&#160;is the name of the function where the error was detected, <span class="FM_Code">file_name</span>&#160;and <span class="FM_Code">line</span>&#160;locate the error within the HDF5 Library source code, and <span class="FM_Code">desc</span> points to a description of the error.</p>
+ <p class="FM__Heading_SubSection">Example: Callback Function</p>
+ <p class="FM__Body">The following example shows a user-defined callback function.</p>
+<div width="100%" align="center">
+ <table style=" border-spacing:0; padding-left:6.00pt; padding-top:6.00pt; padding-right:6.00pt; padding-bottom:6.00pt; float:aligncenter; margin-top:12.00pt; width:100%; max-width:432.00pt;" cellspacing="0">
+  <caption class="FM__CaptionCodeExample" align="bottom">Code Example 9-6. A user-defined callback function</caption>
+  <tr style=" height : 74.00pt;">
+  <td style="width : 432.000pt; border-top-style: solid; border-top-width: 1px; border-top-color: #228a22; vertical-align : top;padding-left: 6.00pt; padding-top: 3.00pt; padding-right: 6.00pt; padding-bottom: 3.00pt;">
+  <p class="FM__BodyCellCode">#define MSG_SIZE &#160;&#160;&#160;&#160;&#160;&#160;64</p>
+  <p class="FM__BodyCellCode">&nbsp;</p>
+  <p class="FM__BodyCellCode">herr_t</p>
+  <p class="FM__BodyCellCode">custom_print_cb(unsigned n, const H5E_error2_t *err_desc, </p>
+  <p class="FM__BodyCellCodeIndent">void* client_data)</p>
+</td>
+</tr>
+  <tr style=" height : 87.00pt;">
+  <td style="width : 432.000pt; vertical-align : top;padding-left: 6.00pt; padding-top: 3.00pt; padding-right: 6.00pt; padding-bottom: 3.00pt;">
+  <p class="FM__BodyCellCode">{</p>
+  <p class="FM__BodyCellCode"><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span>FILE<span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span>*stream &#160;= (FILE *)client_data;</p>
+  <p class="FM__BodyCellCode"><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span>char<span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span>maj[MSG_SIZE];</p>
+  <p class="FM__BodyCellCode"><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span>char<span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span>min[MSG_SIZE];</p>
+  <p class="FM__BodyCellCode"><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span>char<span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span>cls[MSG_SIZE];</p>
+  <p class="FM__BodyCellCode"><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span>const int<span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span>indent = 4;</p>
+</td>
+</tr>
+  <tr style=" height : 139.00pt;">
+  <td style="width : 432.000pt; vertical-align : top;padding-left: 6.00pt; padding-top: 3.00pt; padding-right: 6.00pt; padding-bottom: 3.00pt;">
+  <p class="FM__BodyCellCode">&nbsp;</p>
+  <p class="FM__BodyCellCode"><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span>/* Get descriptions for the major and minor error </p>
+  <p class="FM__BodyCellCode"><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span>* numbers </p>
+  <p class="FM__BodyCellCode"><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span>*/</p>
+  <p class="FM__BodyCellCode"><a name="IX_H5Eget_class_name_1"></a><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span>if(H5Eget_class_name(err_desc-&gt;cls_id, cls, MSG_SIZE)&lt;0)</p>
+  <p class="FM__BodyCellCode"><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span>TEST_ERROR;</p>
+  <p class="FM__BodyCellCode">&nbsp;</p>
+  <p class="FM__BodyCellCode"><a name="IX_H5Eget_msg_1"></a><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span>if(H5Eget_msg(err_desc-&gt;maj_num, NULL, maj, MSG_SIZE)&lt;0)</p>
+  <p class="FM__BodyCellCode"><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span>TEST_ERROR;</p>
+  <p class="FM__BodyCellCode">&nbsp;</p>
+</td>
+</tr>
+  <tr style=" height : 100.00pt;">
+  <td style="width : 432.000pt; vertical-align : top;padding-left: 6.00pt; padding-top: 3.00pt; padding-right: 6.00pt; padding-bottom: 3.00pt;">
+  <p class="FM__BodyCellCode"><a name="IX_H5Eget_msg_2"></a><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span>if(H5Eget_msg(err_desc-&gt;min_num, NULL, min, MSG_SIZE)&lt;0)</p>
+  <p class="FM__BodyCellCode"><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span>TEST_ERROR;</p>
+  <p class="FM__BodyCellCode">&nbsp;</p>
+  <p class="FM__BodyCellCode"><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span>fprintf (stream, “%*serror #%03d: %s in %s(): </p>
+  <p class="FM__BodyCellCode"><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span>line %u\n”,</p>
+  <p class="FM__BodyCellCode"><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span>indent, “”, n, err_desc-&gt;file_name,</p>
+  <p class="FM__BodyCellCode"><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span>err_desc-&gt;func_name, err_desc-&gt;line);</p>
+</td>
+</tr>
+  <tr style=" height : 126.00pt;">
+  <td style="width : 432.000pt; border-bottom-style: solid; border-bottom-width: 1px; border-bottom-color: #228a22; vertical-align : top;padding-left: 6.00pt; padding-top: 3.00pt; padding-right: 6.00pt; padding-bottom: 3.00pt;">
+  <p class="FM__BodyCellCode"><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span>fprintf (stream, “%*sclass: %s\n”, indent*2, “”, cls);</p>
+  <p class="FM__BodyCellCode"><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span>fprintf (stream, “%*smajor: %s\n”, indent*2, “”, maj);</p>
+  <p class="FM__BodyCellCode"><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span>fprintf (stream, “%*sminor: %s\n”, indent*2, “”, min);</p>
+  <p class="FM__BodyCellCode">&nbsp;</p>
+  <p class="FM__BodyCellCode"><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span>return 0;</p>
+  <p class="FM__BodyCellCode">&nbsp;</p>
+  <p class="FM__BodyCellCode">error:</p>
+  <p class="FM__BodyCellCode"><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span>return -1;</p>
+  <p class="FM__BodyCellCode">}</p>
+</td>
+</tr>
+ </table>
+</div>
+ <p class="FM__Body">&nbsp;</p>
+ <p class="FM__Heading_SubSection">Programming Note for C++ Developers Using C Functions</p>
+ <p class="FM__Body">If a C routine that takes a function pointer as an argument is called from within C++ code, the C routine should be returned from normally. </p>
+ <p class="FM__Body"><a name="IX_H5Ewalk2"></a><a name="IX_H5Tconvert_2"></a><a name="IX_H5Pset_type_conv_cb_3"></a><a name="IX_H5Pset_elink_cb"></a>Examples of this kind of routine include callbacks such as <span class="FM_Code">H5Pset_elink_cb</span>&#160;and <span class="FM_Code">H5Pset_type_con&#173;v_cb</span>&#160;and functions such as <span class="FM_Code">H5Tconvert</span>&#160;and <span class="FM_Code">H5Ewalk2</span>.</p>
+ <p class="FM__Body">Exiting the routine in its normal fashion allows the HDF5 C Library to clean up its work properly. In other words, if the C++ application jumps out of the routine back to the C++ “catch” statement, the library is not given the opportunity to close any temporary data structures that were set up when the routine was called. The C++ application should save some state as the routine is started so that any problem that occurs might be diagnosed.</p>
+ <p class="FM__Heading_Level2"><a name="TOC_9_5_Advanced_Error"></a>9.5. Advanced Error Handlin<a name="XREF_AdvancedErrorHandling"></a>g Operations</p>
+ <p class="FM__Body">The section above, see <a href="#XREF_BasicErrorHandling">&quot;Basic Error Handling Operations&quot;</a>, discusses the basic error handling operations of the library. In that section, all the error records on the error stack are from the library itself. In this section, we are going to introduce the operations that allow an application program to push its own error records onto the error stack once it declares an error class of its own through the HDF5 Error API. </p>
+ <p class="FM__Heading_SubSection">Example: An Error Report</p>
+ <p class="FM__Body">An error report shows both the library’s error record and the application’s error records. See the example below.</p>
+<div width="100%" align="center">
+ <table style=" border-spacing:0; padding-left:6.00pt; padding-top:6.00pt; padding-right:6.00pt; padding-bottom:6.00pt; float:aligncenter; margin-top:12.00pt; width:100%; max-width:432.00pt;" cellspacing="0">
+  <caption class="FM__CaptionCodeExample" align="bottom">Code Example 9-7. An error report</caption>
+  <tr style=" height : 87.00pt;">
+  <td style="width : 432.000pt; border-top-style: solid; border-top-width: 1px; border-top-color: #228a22; vertical-align : top;padding-left: 6.00pt; padding-top: 3.00pt; padding-right: 6.00pt; padding-bottom: 3.00pt;">
+  <p class="FM__BodyCellCode">Error Test-DIAG: Error detected in Error Program (1.0) </p>
+  <p class="FM__BodyCellCode"><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span>thread 8192:</p>
+  <p class="FM__BodyCellCode"><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span>#000: ../../hdf5/test/error_test.c line 468 in main(): </p>
+  <p class="FM__BodyCellCode"><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span>Error test failed</p>
+  <p class="FM__BodyCellCode"><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span>major: Error in test</p>
+  <p class="FM__BodyCellCode"><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span>minor: Error in subroutine</p>
+</td>
+</tr>
+  <tr style=" height : 61.00pt;">
+  <td style="width : 432.000pt; vertical-align : top;padding-left: 6.00pt; padding-top: 3.00pt; padding-right: 6.00pt; padding-bottom: 3.00pt;">
+  <p class="FM__BodyCellCode"><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span>#001: ../../hdf5/test/error_test.c line 150 in </p>
+  <p class="FM__BodyCellCode"><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span>test_error(): H5Dwrite failed as supposed to</p>
+  <p class="FM__BodyCellCode"><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span>major: Error in IO</p>
+  <p class="FM__BodyCellCode"><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span>minor: Error in H5Dwrite</p>
+</td>
+</tr>
+  <tr style=" height : 74.00pt;">
+  <td style="width : 432.000pt; border-bottom-style: solid; border-bottom-width: 1px; border-bottom-color: #228a22; vertical-align : top;padding-left: 6.00pt; padding-top: 3.00pt; padding-right: 6.00pt; padding-bottom: 3.00pt;">
+  <p class="FM__BodyCellCode">HDF5-DIAG: Error detected in HDF5 (1.7.5) thread 8192:</p>
+  <p class="FM__BodyCellCode"><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span>#002: ../../hdf5/src/H5Dio.c line 420 in H5Dwrite(): </p>
+  <p class="FM__BodyCellCode"><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span>not a dataset</p>
+  <p class="FM__BodyCellCode"><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span>major: Invalid arguments to routine</p>
+  <p class="FM__BodyCellCode"><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span>minor: Inappropriate type</p>
+</td>
+</tr>
+ </table>
+</div>
+ <p class="FM__Body">&nbsp;</p>
+ <p class="FM__Body">In the line above error record <span class="FM_Code">#002</span>&#160;in the example above, the starting phrase is <span class="FM_Code">HDF5</span>. This is the error class name of the HDF5 Library. All of the library’s error messages (major and minor) are in this default error class. The <span class="FM_Code">Error Test</span>&#160;in the beginning of the line above error record <span class="FM_Code">#000</span>&#160;is the name of the application’s error class. The first two error records, <span class="FM_Code">#000</span>&#160;and <span class="FM_Code">#001</span>, are from application’s error class.</p>
+ <p class="FM__Body">By definition, an error class is a group of major and minor error messages for a library (the HDF5 Library or an application library built on top of the HDF5 Library) or an application program. The error class can be registered for a library or program through the HDF5 Error API. Major and minor messages can be defined in an error class. An application will have object handles for the error class and for major and minor mes&#173;sages for further operation. See the example below.</p>
+<div width="100%" align="center">
+ <table style=" border-spacing:0; padding-left:6.00pt; padding-top:6.00pt; padding-right:6.00pt; padding-bottom:6.00pt; float:aligncenter; margin-top:12.00pt; width:100%; max-width:432.00pt;" cellspacing="0">
+  <caption class="FM__CaptionCodeExample" align="bottom">Code Example 9-8. Defining an error class</caption>
+  <tr style=" height : 87.00pt;">
+  <td style="width : 432.000pt; border-top-style: solid; border-top-width: 1px; border-top-color: #228a22; vertical-align : top;padding-left: 6.00pt; padding-top: 3.00pt; padding-right: 6.00pt; padding-bottom: 3.00pt;">
+  <p class="FM__BodyCellCode">#define MSG_SIZE &#160;&#160;&#160;&#160;&#160;&#160;64</p>
+  <p class="FM__BodyCellCode">&nbsp;</p>
+  <p class="FM__BodyCellCode">herr_t</p>
+  <p class="FM__BodyCellCode">custom_print_cb(unsigned n, const H5E_error2_t *err_desc, </p>
+  <p class="FM__BodyCellCodeIndent">void* client_data)</p>
+  <p class="FM__BodyCellCode">{</p>
+</td>
+</tr>
+  <tr style=" height : 87.00pt;">
+  <td style="width : 432.000pt; vertical-align : top;padding-left: 6.00pt; padding-top: 3.00pt; padding-right: 6.00pt; padding-bottom: 3.00pt;">
+  <p class="FM__BodyCellCode"><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span>FILE<span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span>*stream &#160;= (FILE *)client_data;</p>
+  <p class="FM__BodyCellCode"><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span>char<span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span>maj[MSG_SIZE];</p>
+  <p class="FM__BodyCellCode"><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span>char<span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span>min[MSG_SIZE];</p>
+  <p class="FM__BodyCellCode"><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span>char<span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span>cls[MSG_SIZE];</p>
+  <p class="FM__BodyCellCode"><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span>const int<span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span>indent = 4;</p>
+  <p class="FM__BodyCellCode">&nbsp;</p>
+</td>
+</tr>
+  <tr style=" height : 113.00pt;">
+  <td style="width : 432.000pt; vertical-align : top;padding-left: 6.00pt; padding-top: 3.00pt; padding-right: 6.00pt; padding-bottom: 3.00pt;">
+  <p class="FM__BodyCellCode"><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span>/* Get descriptions for the major and minor error </p>
+  <p class="FM__BodyCellCode"><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span>* numbers </p>
+  <p class="FM__BodyCellCode"><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span>*/</p>
+  <p class="FM__BodyCellCode"><a name="IX_H5Eget_class_name_2"></a><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span>if(H5Eget_class_name(err_desc-&gt;cls_id, cls, MSG_SIZE)&lt;0)</p>
+  <p class="FM__BodyCellCode"><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span>TEST_ERROR;</p>
+  <p class="FM__BodyCellCode">&nbsp;</p>
+  <p class="FM__BodyCellCode"><a name="IX_H5Eget_msg_3"></a><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span>if(H5Eget_msg(err_desc-&gt;maj_num, NULL, maj, MSG_SIZE)&lt;0)</p>
+  <p class="FM__BodyCellCode"><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span>TEST_ERROR;</p>
+</td>
+</tr>
+  <tr style=" height : 113.00pt;">
+  <td style="width : 432.000pt; vertical-align : top;padding-left: 6.00pt; padding-top: 3.00pt; padding-right: 6.00pt; padding-bottom: 3.00pt;">
+  <p class="FM__BodyCellCode">&nbsp;</p>
+  <p class="FM__BodyCellCode"><a name="IX_H5Eget_msg_4"></a><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span>if(H5Eget_msg(err_desc-&gt;min_num, NULL, min, MSG_SIZE)&lt;0)</p>
+  <p class="FM__BodyCellCode"><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span>TEST_ERROR;</p>
+  <p class="FM__BodyCellCode">&nbsp;</p>
+  <p class="FM__BodyCellCode"><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span>fprintf (stream, “%*serror #%03d: %s in %s(): </p>
+  <p class="FM__BodyCellCode"><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span>line %u\n”,</p>
+  <p class="FM__BodyCellCode"><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span>indent, “”, n, err_desc-&gt;file_name,</p>
+  <p class="FM__BodyCellCode"><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span>err_desc-&gt;func_name, err_desc-&gt;line);</p>
+</td>
+</tr>
+  <tr style=" height : 126.00pt;">
+  <td style="width : 432.000pt; border-bottom-style: solid; border-bottom-width: 1px; border-bottom-color: #228a22; vertical-align : top;padding-left: 6.00pt; padding-top: 3.00pt; padding-right: 6.00pt; padding-bottom: 3.00pt;">
+  <p class="FM__BodyCellCode"><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span>fprintf (stream, “%*sclass: %s\n”, indent*2, “”, cls);</p>
+  <p class="FM__BodyCellCode"><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span>fprintf (stream, “%*smajor: %s\n”, indent*2, “”, maj);</p>
+  <p class="FM__BodyCellCode"><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span>fprintf (stream, “%*sminor: %s\n”, indent*2, “”, min);</p>
+  <p class="FM__BodyCellCode">&nbsp;</p>
+  <p class="FM__BodyCellCode"><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span>return 0;</p>
+  <p class="FM__BodyCellCode">&nbsp;</p>
+  <p class="FM__BodyCellCode">error:</p>
+  <p class="FM__BodyCellCode"><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span>return -1;</p>
+  <p class="FM__BodyCellCode">}</p>
+</td>
+</tr>
+ </table>
+</div>
+ <p class="FM__Body">&nbsp;</p>
+ <p class="FM__Heading_Level3"><a name="TOC_9_5_1_More_Error_API"></a>9.5.1. More Error API Functions</p>
+ <p class="FM__Body">The Error API has functions that can be used to register or unregister an error class, to create or close error messages, and to query an error class or error message. These functions are illustrated below.</p>
+ <p class="FM__Body" style="font-weight : bold;"><span class="FM_EH_EmphasisHeavy">To register an error class:</span></p>
+ <p class="FM__BodyCellCodeIndent"><a name="IX_H5Eregister_class_1"></a><span class="FM_CodeItalic">hid_t</span>&#160;H5Eregister_class(<span class="FM_CodeItalic">const char*</span>&#160;cls_name, <span class="FM_CodeItalic">const char*</span>&#160;lib_name, </p>
+ <p class="FM__BodyCellCodeIndent"><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span><span class="FM_CodeItalic">const char*</span> version)</p>
+ <p class="FM__Body">This function registers an error class with the HDF5 Library so that the application library or program can report errors together with the HDF5 Library.</p>
+ <p class="FM__Body" style="font-weight : bold;"><span class="FM_EH_EmphasisHeavy">To add an error message to an error class:</span></p>
+ <p class="FM__BodyCodeIndent"><a name="IX_H5Ecreate_msg_1"></a><span class="FM_CodeItalic">hid_t</span>&#160;H5Ecreate_msg(<span class="FM_CodeItalic">hid_t</span>&#160;class, <span class="FM_CodeItalic">H5E_type_t</span>&#160;msg_type, <span class="FM_CodeItalic">const char*</span> mesg)</p>
+ <p class="FM__Body">This function adds an error message to an error class defined by an application library or program. The error message can be either major or minor which is indicated by parameter <span class="FM_Code">msg_type</span>.</p>
+ <p class="FM__Body" style="font-weight : bold;"><span class="FM_EH_EmphasisHeavy">To get the name of an error class:</span></p>
+ <p class="FM__BodyCodeIndent"><a name="IX_H5Eget_class_name_3"></a><span class="FM_CodeItalic">ssize_t</span>&#160;H5Eget_class_name(<span class="FM_CodeItalic">hid_t</span>&#160;class_id, <span class="FM_CodeItalic">char*</span>&#160;name, <span class="FM_CodeItalic">size_t</span> size)</p>
+ <p class="FM__Body">This function retrieves the name of the error class specified by the class <span class="FM_Code">ID</span>.</p>
+ <p class="FM__Body" style="font-weight : bold;"><span class="FM_EH_EmphasisHeavy">To retrieve an error message:</span></p>
+ <p class="FM__BodyCellCodeIndent"><a name="IX_H5Eget_msg_5"></a><span class="FM_Code">ssize_t</span>&#160;H5Eget_msg(<span class="FM_Code">hid_t</span>&#160;mesg_id, <span class="FM_CodeItalic">H5E_type_t*</span>&#160;mesg_type, <span class="FM_CodeItalic">char*</span>&#160;mesg, </p>
+ <p class="FM__BodyCellCodeIndent"><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span><span class="FM_CodeItalic">size_t</span> size)</p>
+ <p class="FM__Body">This function retrieves the error message including its length and type.</p>
+ <p class="FM__Body" style="font-weight : bold;"><span class="FM_EH_EmphasisHeavy">To close an error message:</span></p>
+ <p class="FM__BodyCodeIndent"><a name="IX_H5Eclose_msg_1"></a><span class="FM_CodeItalic">herr_t</span>&#160;H5Eclose_msg(<span class="FM_CodeItalic">hid_t</span> mesg_id)</p>
+ <p class="FM__Body">This function closes an error message.</p>
+ <p class="FM__Body" style="font-weight : bold;"><span class="FM_EH_EmphasisHeavy">To remove an error class:</span></p>
+ <p class="FM__BodyCodeIndent"><a name="IX_H5Eunregister_class_1"></a><span class="FM_CodeItalic">herr_t</span>&#160;H5Eunregister_class(<span class="FM_CodeItalic">hid_t</span> class_id)</p>
+ <p class="FM__Body">This function removes an error class from the Error API.</p>
+ <p class="FM__Heading_SubSection">Example: Error Class and its Message</p>
+ <p class="FM__Body">The example below shows how an application creates an error class and error messages.</p>
+<div width="100%" align="center">
+ <table style=" border-spacing:0; padding-left:6.00pt; padding-top:6.00pt; padding-right:6.00pt; padding-bottom:6.00pt; float:aligncenter; margin-top:12.00pt; width:100%; max-width:432.00pt;" cellspacing="0">
+  <caption class="FM__CaptionCodeExample" align="bottom">Code Example 9-9. Create an error class and error messages</caption>
+  <tr style=" height : 100.00pt;">
+  <td style="width : 432.000pt; border-top-style: solid; border-top-width: 1px; border-top-color: #228a22; vertical-align : top;padding-left: 6.00pt; padding-top: 3.00pt; padding-right: 6.00pt; padding-bottom: 3.00pt;">
+  <p class="FM__BodyCellCode">/* Create an error class */</p>
+  <p class="FM__BodyCellCode"><a name="IX_H5Eregister_class_2"></a>class_id = H5Eregister_class(ERR_CLS_NAME, PROG_NAME, </p>
+  <p class="FM__BodyCellCodeIndent">PROG_VERS);</p>
+  <p class="FM__BodyCellCode">&nbsp;</p>
+  <p class="FM__BodyCellCode">/* Retrieve class name */</p>
+  <p class="FM__BodyCellCode"><a name="IX_H5Eget_class_name_4"></a>H5Eget_class_name(class_id, cls_name, cls_size); </p>
+  <p class="FM__BodyCellCode">&nbsp;</p>
+</td>
+</tr>
+  <tr style=" height : 74.00pt;">
+  <td style="width : 432.000pt; border-bottom-style: solid; border-bottom-width: 1px; border-bottom-color: #228a22; vertical-align : top;padding-left: 6.00pt; padding-top: 3.00pt; padding-right: 6.00pt; padding-bottom: 3.00pt;">
+  <p class="FM__BodyCellCode">/* Create a major error message in the class */</p>
+  <p class="FM__BodyCellCode"><a name="IX_H5E_MAJOR"></a><a name="IX_H5Ecreate_msg_2"></a>maj_id = H5Ecreate_msg(class_id, H5E_MAJOR, “... ...”);</p>
+  <p class="FM__BodyCellCode">&nbsp;</p>
+  <p class="FM__BodyCellCode">/* Create a minor error message in the class */</p>
+  <p class="FM__BodyCellCode"><a name="IX_H5E_MINOR"></a><a name="IX_H5Ecreate_msg_3"></a>min_id = H5Ecreate_msg(class_id, H5E_MINOR, “... ...”);</p>
+</td>
+</tr>
+ </table>
+</div>
+ <p class="FM__Body">&nbsp;</p>
+ <p class="FM__Body">The example below shows how an application closes error messages and unregisters the error class.</p>
+<div width="100%" align="center">
+ <table style=" border-spacing:0; padding-left:6.00pt; padding-top:6.00pt; padding-right:6.00pt; padding-bottom:6.00pt; float:aligncenter; margin-top:12.00pt; width:100%; max-width:432.00pt;" cellspacing="0">
+  <caption class="FM__CaptionCodeExample" align="bottom">Code Example 9-10. Closing error messages and unregistering the error class</caption>
+  <tr style=" height : 48.00pt;">
+  <td style="width : 432.000pt; border-top-style: solid; border-top-width: 1px; border-top-color: #228a22; border-bottom-style: solid; border-bottom-width: 1px; border-bottom-color: #228a22; vertical-align : top;padding-left: 6.00pt; padding-top: 3.00pt; padding-right: 6.00pt; padding-bottom: 3.00pt;">
+  <p class="FM__BodyCellCode"><a name="IX_H5Eclose_msg_2"></a>H5Eclose_msg(maj_id);</p>
+  <p class="FM__BodyCellCode">H5Eclose_msg(min_id);</p>
+  <p class="FM__BodyCellCode"><a name="IX_H5Eunregister_class_2"></a>H5Eunregister_class(class_id);</p>
+</td>
+</tr>
+ </table>
+</div>
+ <p class="FM__Body">&nbsp;</p>
+ <p class="FM__Heading_Level3"><a name="TOC_9_5_2_Pushing_an"></a>9.5.2. Pushing an Application Error Message onto Error Stack</p>
+ <p class="FM__Body">An application can push error records onto or pop error records off of the error stack just as the library does internally. An error stack can be registered, and an object handle can be returned to the application so that the application can manipulate a registered error stack.</p>
+ <p class="FM__Body" style="font-weight : bold;"><span class="FM_EH_EmphasisHeavy">To register the current stack:</span></p>
+ <p class="FM__BodyCodeIndent"><a name="IX_H5Eget_current_stack_1"></a><span class="FM_CodeItalic">hid_t</span>&#160;H5Eget_current_stack(void)</p>
+ <p class="FM__Body">This function registers the current error stack, returns an object handle, and clears the current error stack. An empty error stack will also be assigned an ID.</p>
+ <p class="FM__Body" style="font-weight : bold;"><span class="FM_EH_EmphasisHeavy">To replace the current error stack with another:</span></p>
+ <p class="FM__BodyCodeIndent"><a name="IX_H5Eset_current_stack_1"></a><span class="FM_CodeItalic">herr_t</span>&#160;H5Eset_current_stack(<span class="FM_CodeItalic">hid_t</span> error_stack)</p>
+ <p class="FM__Body">This function replaces the current error stack with another error stack specified by <span class="FM_Code">error_stack</span>&#160;and clears the current error stack. The object handle <span class="FM_Code">error_stack</span> is closed after this function call.</p>
+ <p class="FM__Body" style="font-weight : bold;"><span class="FM_EH_EmphasisHeavy">To push a new error record to the error stack:</span></p>
+ <p class="FM__BodyCellCodeIndent"><a name="IX_H5Epush_2"></a><span class="FM_CodeItalic">herr_t</span>&#160;H5Epush(<span class="FM_CodeItalic">hid_t</span>&#160;error_stack, <span class="FM_CodeItalic">const char*</span>&#160;file, <span class="FM_CodeItalic">const char*</span>&#160;func, </p>
+ <p class="FM__BodyCellCodeIndent"><span class="FM_CodeItalic"><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span>unsigned</span>&#160;line, <span class="FM_CodeItalic">hid_t</span>&#160;cls_id, <span class="FM_CodeItalic">hid_t</span>&#160;major_id, <span class="FM_CodeItalic">hid_t</span>&#160;minor_id, </p>
+ <p class="FM__BodyCellCodeIndent"><span class="FM_CodeItalic"><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span>const char*</span> desc, ... )</p>
+ <p class="FM__Body">This function pushes a new error record onto the error stack for the current thread.</p>
+ <p class="FM__Body" style="font-weight : bold;"><span class="FM_EH_EmphasisHeavy">To delete some error messages:</span></p>
+ <p class="FM__BodyCodeIndent"><a name="IX_H5Epop_1"></a><span class="FM_CodeItalic">herr_t</span>&#160;H5Epop(<span class="FM_CodeItalic">hid_t</span>&#160;error_stack, <span class="FM_CodeItalic">size_t</span> count)</p>
+ <p class="FM__Body">This function deletes some error messages from the error stack.</p>
+ <p class="FM__Body" style="font-weight : bold;"><span class="FM_EH_EmphasisHeavy">To retrieve the number of error records:</span></p>
+ <p class="FM__BodyCodeIndent"><a name="IX_H5Eget_num_1"></a>int H5Eget_num(<span class="FM_CodeItalic">hid_t</span> error_stack)</p>
+ <p class="FM__Body">This function retrieves the number of error records from an error stack.</p>
+ <p class="FM__Body"><span class="FM_EH_EmphasisHeavy">To clear the error stack</span>:</p>
+ <p class="FM__BodyCodeIndent"><a name="IX_H5Eclear_stack_4"></a><span class="FM_CodeItalic">herr_t</span>&#160;H5Eclear_stack(<span class="FM_CodeItalic">hid_t</span> error_stack)</p>
+ <p class="FM__Body">This function clears the error stack.</p>
+ <p class="FM__Body" style="font-weight : bold;"><span class="FM_EH_EmphasisHeavy">To close the object handle for an error stack:</span></p>
+ <p class="FM__BodyCodeIndent"><a name="IX_H5Eclose_stack_1"></a><span class="FM_CodeItalic">herr_t</span>&#160;H5Eclose_stack(<span class="FM_CodeItalic">hid_t</span> error_stack)</p>
+ <p class="FM__Body">This function closes the object handle for an error stack and releases its resources.</p>
+ <p class="FM__Heading_SubSection">Example: Working with an Error Stack</p>
+ <p class="FM__Body">The example below shows how an application pushes an error record onto the default error stack.</p>
+<div width="100%" align="center">
+ <table style=" border-spacing:0; padding-left:6.00pt; padding-top:6.00pt; padding-right:6.00pt; padding-bottom:6.00pt; float:aligncenter; margin-top:12.00pt; width:100%; max-width:432.00pt;" cellspacing="0">
+  <caption class="FM__CaptionCodeExample" align="bottom">Code Example 9-11. Pushing an error message to an error stack</caption>
+  <tr style=" height : 61.00pt;">
+  <td style="width : 432.000pt; border-top-style: solid; border-top-width: 1px; border-top-color: #228a22; vertical-align : top;padding-left: 6.00pt; padding-top: 3.00pt; padding-right: 6.00pt; padding-bottom: 3.00pt;">
+  <p class="FM__BodyCellCode">/* Make call to HDF5 I/O routine */</p>
+  <p class="FM__BodyCellCode"><a name="IX_H5Dopen_24"></a>if((dset_id=H5Dopen(file_id, dset_name, access_plist))&lt;0)</p>
+  <p class="FM__BodyCellCode">{</p>
+  <p class="FM__BodyCellCode"><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span>/* Push client error onto error stack */</p>
+</td>
+</tr>
+  <tr style=" height : 100.00pt;">
+  <td style="width : 432.000pt; border-bottom-style: solid; border-bottom-width: 1px; border-bottom-color: #228a22; vertical-align : top;padding-left: 6.00pt; padding-top: 3.00pt; padding-right: 6.00pt; padding-bottom: 3.00pt;">
+  <p class="FM__BodyCellCode"><a name="IX_H5Epush_3"></a><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span>H5Epush(H5E_DEFAULT,__FILE__,FUNC,__LINE__,cls_id,</p>
+  <p class="FM__BodyCellCode"><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span>CLIENT_ERR_MAJ_IO,CLIENT_ERR_MINOR_OPEN,</p>
+  <p class="FM__BodyCellCode"><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span>“H5Dopen failed”);</p>
+  <p class="FM__BodyCellCode">&nbsp;</p>
+  <p class="FM__BodyCellCode"><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span>/* Indicate error occurred in function */</p>
+  <p class="FM__BodyCellCode"><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span>return(0);</p>
+  <p class="FM__BodyCellCode">}</p>
+</td>
+</tr>
+ </table>
+</div>
+ <p class="FM__Body">&nbsp;</p>
+ <p class="FM__Body">The example below shows how an application registers the current error stack and creates an object han&#173;dle to avoid another HDF5 function from clearing the error stack.</p>
+<div width="100%" align="center">
+ <table style=" border-spacing:0; padding-left:6.00pt; padding-top:6.00pt; padding-right:6.00pt; padding-bottom:6.00pt; float:aligncenter; margin-top:12.00pt; width:100%; max-width:432.00pt;" cellspacing="0">
+  <caption class="FM__CaptionCodeExample" align="bottom">Code Example 9-12. Registering the error stack</caption>
+  <tr style=" height : 48.00pt;">
+  <td style="width : 432.000pt; border-top-style: solid; border-top-width: 1px; border-top-color: #228a22; vertical-align : top;padding-left: 6.00pt; padding-top: 3.00pt; padding-right: 6.00pt; padding-bottom: 3.00pt;">
+  <p class="FM__BodyCellCode"><a name="IX_H5Dwrite_30"></a>if(H5Dwrite(dset_id, mem_type_id, mem_space_id, </p>
+  <p class="FM__BodyCellCode"><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span>file_space_id, dset_xfer_plist_id, buf)&lt;0)</p>
+  <p class="FM__BodyCellCode">{</p>
+</td>
+</tr>
+  <tr style=" height : 74.00pt;">
+  <td style="width : 432.000pt; vertical-align : top;padding-left: 6.00pt; padding-top: 3.00pt; padding-right: 6.00pt; padding-bottom: 3.00pt;">
+  <p class="FM__BodyCellCode"><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span>/* Push client error onto error stack */</p>
+  <p class="FM__BodyCellCode"><a name="IX_H5E_DEFAULT_1"></a><a name="IX_H5Epush_4"></a><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span>H5Epush(H5E_DEFAULT,__FILE__,FUNC,__LINE__,cls_id,</p>
+  <p class="FM__BodyCellCode"><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span>CLIENT_ERR_MAJ_IO,CLIENT_ERR_MINOR_HDF5,</p>
+  <p class="FM__BodyCellCode"><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span>“H5Dwrite failed”);</p>
+  <p class="FM__BodyCellCode">&nbsp;</p>
+</td>
+</tr>
+  <tr style=" height : 113.00pt;">
+  <td style="width : 432.000pt; vertical-align : top;padding-left: 6.00pt; padding-top: 3.00pt; padding-right: 6.00pt; padding-bottom: 3.00pt;">
+  <p class="FM__BodyCellCode"><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span>/* Preserve the error stack by assigning an object </p>
+  <p class="FM__BodyCellCode"><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span>* handle to it </p>
+  <p class="FM__BodyCellCode"><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span>*/</p>
+  <p class="FM__BodyCellCode"><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span>error_stack = H5Eget_current_stack();</p>
+  <p class="FM__BodyCellCode">&nbsp;</p>
+  <p class="FM__BodyCellCode"><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span>/* Close dataset */</p>
+  <p class="FM__BodyCellCode"><a name="IX_H5Dclose_16"></a><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span>H5Dclose(dset_id);</p>
+  <p class="FM__BodyCellCode">&nbsp;</p>
+</td>
+</tr>
+  <tr style=" height : 100.00pt;">
+  <td style="width : 432.000pt; border-bottom-style: solid; border-bottom-width: 1px; border-bottom-color: #228a22; vertical-align : top;padding-left: 6.00pt; padding-top: 3.00pt; padding-right: 6.00pt; padding-bottom: 3.00pt;">
+  <p class="FM__BodyCellCode"><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span>/* Replace the current error stack with the </p>
+  <p class="FM__BodyCellCode"><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span>* preserved one </p>
+  <p class="FM__BodyCellCode"><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span>*/</p>
+  <p class="FM__BodyCellCode"><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span>H5Eset_current_stack(error_stack);</p>
+  <p class="FM__BodyCellCode">&nbsp;</p>
+  <p class="FM__BodyCellCode"><span style="font-family:Times New Roman; font-size:7.0pt">&nbsp;&nbsp;&nbsp;</span>Return(0);</p>
+  <p class="FM__BodyCellCode">}</p>
+</td>
+</tr>
+ </table>
+</div>
+ <p class="FM__Body">&nbsp;</p>
+ <p class="FM__Body">&nbsp;</p>
+</body>
+</html>
