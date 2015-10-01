@@ -77,7 +77,7 @@ TABLE.list TD { border:none; }
     <ol type="I">
       <li><a href="#Intro">Introduction</a></li>
       <li><a href="#FileMetaData">Disk Format Level 0 - File Metadata</a></li>
-        <font size="-2">
+        <font size="-1">
 	<ol type="A">
 	  <li><a href="#Superblock">Disk Format Level 0A - Format Signature and Superblock</a></li>
 	  <li><a href="#DriverInfo">Disk Format Level 0B - File Driver Info</a></li>
@@ -85,7 +85,7 @@ TABLE.list TD { border:none; }
 	</ol>
         </font>
       <li><a href="#FileInfra">Disk Format Level 1 - File Infrastructure</a></li>
-        <font size="-2">
+        <font size="-1">
 	<ol type="A">
 	  <li><a href="#Btrees">Disk Format Level 1A - B-Trees</a></li>
 	    <ol type="1">
@@ -102,7 +102,7 @@ TABLE.list TD { border:none; }
 	</ol>
         </font>
       <li><a href="#DataObject">Disk Format Level 2 - Data Objects</a></li>
-        <font size="-2">
+        <font size="-1">
 	<ol type="A">
 	  <li><a href="#ObjectHeader">Disk Format Level 2A - Data Object Headers</a></li>
             <ol type="1">
@@ -128,7 +128,7 @@ TABLE.list TD { border:none; }
     <td valign="top">
     <ol type="I" start="4">
       <li><a href="#DataObject">Disk Format Level 2 - Data Objects</a></li>
-        <font size="-2"><i>(Continued)</i>
+        <font size="-1"><i>(Continued)</i>
 	<ol type="A">
 	  <li><a href="#ObjectHeader">Disk Format Level 2A - Data Object Headers</a><i>(Continued)</i></li>
 	    <ol type="1" start="2">
@@ -160,8 +160,8 @@ TABLE.list TD { border:none; }
 	  <li><a href="#DataStorage">Disk Format: Level 2B - Data Object Data Storage</a></li>
 	</ol>
         </font>
-      <li><a href="#AppendixA">Appendix A</a></li>
-      <li><a href="#AppendixB">Appendix B</a></li>
+      <li><a href="#AppendixA">Appendix A: Definitions</a></li>
+      <li><a href="#AppendixB">Appendix B: File Memory Allocation Types</a></li>
     </ol>
 </td></tr>
 </table>
@@ -296,9 +296,10 @@ TABLE.list TD { border:none; }
       another file format or adding descriptive information to an HDF5
       file without requiring the modification of the actual file&rsquo;s
       information.  The superblock is located by searching for the
-      HDF5 format signature at byte offset 0, byte offset 512 and at
+      HDF5 format signature at byte offset 0, byte offset 512, and at
       successive locations in the file, each a multiple of two of
-      the previous location, i.e.  0, 512, 1024, 2048, etc.</p>
+      the previous location; in other words, at these byte offsets: 
+      0, 512, 1024, 2048, and so on.</p>
 
     <p>The superblock is composed of the format signature, followed by a
       superblock version number and information that is specific to each
@@ -1113,9 +1114,9 @@ TABLE.list TD { border:none; }
 	  <td><p>These fields are integer values from 1 to 6 
             indicating how the data can be mapped to or merged with another type of
             data.
-	        <table class="list">
+	        <table width="100%" class="list">
                     <tr>
-                    <th width="30%">Member Mapping</th>
+                    <th width="20%">Member Mapping</th>
                     <th align="left">Description</th>
                     </tr>
                     <tr>
@@ -1392,9 +1393,9 @@ TABLE.list TD { border:none; }
             the size of each Key field.
             
 
-            <table class="list">
+            <table width="100%" class="list">
                 <tr>
-                <th width="30%">Node Type</th>
+                <th width="20%">Node Type</th>
                 <th align="left">Description</th>
                 </tr>
                 <tr>
@@ -1718,9 +1719,9 @@ TABLE.list TD { border:none; }
           <td>Type</td>
           <td>
             <p>This field indicates the type of B-tree:
-            <table class="list">
+            <table width="100%" class="list">
                 <tr>
-                <th width="30%">Value</th>
+                <th width="20%">Value</th>
                 <th align="left">Description</th>
                 </tr>
                 <tr>
@@ -1997,15 +1998,21 @@ TABLE.list TD { border:none; }
                 child node.
             </p>
             <p>
-                The maximum number of records in a child node is computed in
-                the following way: Subtract the fixed size overhead for the
-                child node
-                (e.g. its signature, version, checksum, etc. and <em>one</em>
-                pointer triplet of information for the child node (because there
-                is one more pointer triplet than records in each internal node))
-                from the size of nodes for the B-tree and dividing that result
-                by the size of a record plus the pointer triplet of information
-                stored to reach each child node from this node.
+                The maximum number of records in a child node is computed 
+                in the following way: 
+                <dir>
+                <ul>
+                <li>Subtract the fixed size overhead for 
+                the child node (for example, its signature, version, 
+                checksum, and so on and <em>one</em> pointer triplet 
+                of information for the child node (because there is one 
+                more pointer triplet than records in each internal node)) 
+                from the size of nodes for the B-tree. </li>
+                <li>Divide that result by the size of a record plus the 
+                pointer triplet of information stored to reach each 
+                child node from this node.
+                </ul>
+                </dir>
             </p>
             <p>
                 Note that leaf nodes do not encode any
@@ -2030,12 +2037,13 @@ TABLE.list TD { border:none; }
                 in the B-tree.
             </p>
             <p>
-                For example, if the maximum number of child records is 123, one
-                byte will be used to encode these values in this node, if the
-                maximum number of child records is
+                For example, if the maximum number of child records is 
+                123, one byte will be used to encode these values in this 
+                node; if the maximum number of child records is 
                 20000, two bytes will be used to encode these values in this
-                node, etc.  The maximum number of bytes used to encode these
-                values is 8 (i.e. an unsigned 64-bit integer).
+                node; and so on. The maximum number of bytes used to 
+                encode these values is 8 (in other words, an unsigned 
+                64-bit integer).
             </p>
           </td>
         </tr>
@@ -2046,8 +2054,9 @@ TABLE.list TD { border:none; }
             <p>This is the total number of records for the node pointed to by
                the corresponding <em>Node Pointer</em> and all its children.
                This field exists only in nodes whose depth in the B-tree node
-               is greater than 1 (i.e. the &ldquo;twig&rdquo; internal nodes, just above
-               leaf nodes, do not store this field in their child node pointers).
+               is greater than 1 (in other words, the &ldquo;twig&rdquo; 
+               internal nodes, just above leaf nodes, do not store this 
+               field in their child node pointers).
             </p>
             <p>The number of bytes used to store this field is determined by
                 the maximum possible number of records able to be stored in the
@@ -2167,11 +2176,10 @@ TABLE.list TD { border:none; }
       </table>
     </div>
 
-
-    <p>The record layout for each stored (i.e. non-testing) B-tree type is as
-        follows:</p>
-
     <br />
+    <p>The record layout for each stored (in other words, non-testing) 
+    B-tree type is as follows:</p>
+    
     <div align="center">
       <table class="format">
         <caption>
@@ -2655,9 +2663,9 @@ TABLE.list TD { border:none; }
           <td>Message Location</td>
           <td>
             <p>This field Indicates the location where the message is stored:
-            <table class="list">
+            <table width="100%" class="list">
                 <tr>
-                <th width="30%">Value</th>
+                <th width="20%">Value</th>
                 <th align="left">Description</th>
                 </tr>
                 <tr>
@@ -2754,9 +2762,9 @@ TABLE.list TD { border:none; }
           <td>Message Location</td>
           <td>
             <p>This field Indicates the location where the message is stored:
-            <table class="list">
+            <table width="100%" class="list">
                 <tr>
-                <th width="30%">Value</th>
+                <th width="20%">Value</th>
                 <th align="left">Description</th>
                 </tr>
                 <tr>
@@ -3142,9 +3150,9 @@ TABLE.list TD { border:none; }
             <p>The cache type is determined from the object header.
             It also determines the format for the scratch-pad space:
             
-            <table class="list">
+            <table width="100%" class="list">
                 <tr>
-                    <th width="30%" align="center">Type:</th>
+                    <th width="20%" align="center">Type:</th>
                     <th align="left">Description:</th>
                 </tr>
                 <tr>
@@ -3860,16 +3868,17 @@ TABLE.list TD { border:none; }
         </p>
 
         <p>
-            Blocks in the first <em>two</em> rows of an indirect block are
-            <em>Starting Block Size</em> number of bytes in size, and the blocks
-            in each subsequent row are twice the size of the blocks in the
-            previous row (i.e. blocks in the third row are twice the
-            <em>Starting Block Size</em>, blocks in the fourth row are
-            four times the <em>Starting Block Size</em>, etc.).  Entries for
-            blocks up to the <em>Maximum Direct Block Size</em> point to direct
-            blocks and entries for blocks greater than that size point to
-            further indirect blocks (which have their own entries for direct
-            and indirect blocks, etc.).
+            Blocks in the first <em>two</em> rows of an indirect block 
+            are <em>Starting Block Size</em> number of bytes in size, 
+            and the blocks in each subsequent row are twice the size of 
+            the blocks in the previous row. In other words, blocks in 
+            the third row are twice the <em>Starting Block Size</em>, 
+            blocks in the fourth row are four times the 
+            <em>Starting Block Size</em>, and so on.  Entries for
+            blocks up to the <em>Maximum Direct Block Size</em> point to 
+            direct blocks, and entries for blocks greater than that size 
+            point to further indirect blocks (which have their own 
+            entries for direct and indirect blocks).
         </p>
 
         <p>
@@ -4110,9 +4119,9 @@ TABLE.list TD { border:none; }
         <td>
             <p>This field is the heap status flag and is a bit field 
             indicating additional information about the fractal heap.
-            <table class="list">
+            <table width="100%" class="list">
                 <tr>
-                  <th width="30%">Bit(s)</th>
+                  <th width="20%">Bit(s)</th>
                   <th align="left">Description</th>
                 </tr>
 
@@ -4873,9 +4882,9 @@ TABLE.list TD { border:none; }
           <td>Version, Type & Length</td>
           <td>
             <p>This is a bit field with the following definition:
-            <table class="list">
+            <table width="100%" class="list">
                 <tr>
-                  <th width="30%">Bit</th>
+                  <th width="20%">Bit</th>
                   <th align="left">Description</th>
                 </tr>
 
@@ -4954,9 +4963,9 @@ TABLE.list TD { border:none; }
           <td>Version, Type & Length</td>
           <td>
             <p>This is a bit field with the following definition:
-            <table class="list">
+            <table width="100%" class="list">
                 <tr>
-                  <th width="30%">Bit</th>
+                  <th width="20%">Bit</th>
                   <th align="left">Description</th>
                 </tr>
 
@@ -5056,9 +5065,9 @@ TABLE.list TD { border:none; }
           <td>Version & Type</td>
           <td>
             <p>This is a bit field with the following definition:
-            <table class="list">
+            <table width="100%" class="list">
                 <tr>
-                  <th width="30%">Bit</th>
+                  <th width="20%">Bit</th>
                   <th align="left">Description</th>
                 </tr>
 
@@ -5152,9 +5161,9 @@ TABLE.list TD { border:none; }
           <td>Version & Type</td>
           <td>
             <p>This is a bit field with the following definition:
-            <table class="list">
+            <table width="100%" class="list">
                 <tr>
-                  <th width="30%">Bit</th>
+                  <th width="20%">Bit</th>
                   <th align="left">Description</th>
                 </tr>
 
@@ -5256,9 +5265,9 @@ TABLE.list TD { border:none; }
           <td>Version & Type</td>
           <td>
             <p>This is a bit field with the following definition:
-            <table class="list">
+            <table width="100%" class="list">
                 <tr>
-                  <th width="30%">Bit</th>
+                  <th width="20%">Bit</th>
                   <th align="left">Description</th>
                 </tr>
 
@@ -5350,9 +5359,9 @@ TABLE.list TD { border:none; }
           <td>Version & Type</td>
           <td>
             <p>This is a bit field with the following definition:
-            <table class="list">
+            <table width="100%" class="list">
                 <tr>
-                  <th width="30%">Bit</th>
+                  <th width="20%">Bit</th>
                   <th align="left">Description</th>
                 </tr>
 
@@ -5564,7 +5573,7 @@ TABLE.list TD { border:none; }
                 
                 <table class="list" width="100%">
                     <tr>
-                      <th width="30%">ID</th>
+                      <th width="20%">ID</th>
                       <th align="left">Description</th>
                     </tr>
                     
@@ -5654,8 +5663,8 @@ TABLE.list TD { border:none; }
           <td>
             <p>This is the size of the address space that free-space sections
                 are within.  This is stored as the log<sub>2</sub> of the
-                actual value (i.e. the number of bits required to store values
-                within that address space).
+                actual value (in other words, the number of bits required 
+                to store values within that address space).
             </p>
           </td>
         </tr>
@@ -5975,7 +5984,7 @@ TABLE.list TD { border:none; }
         
                 <table width="100%" class="list">
                     <tr>
-                      <th width="30%">Type</th>
+                      <th width="20%">Type</th>
                       <th align="left">Description</th>
                     </tr>
 
@@ -5995,7 +6004,7 @@ TABLE.list TD { border:none; }
         
                 <table width="100%" class="list">
                     <tr>
-                      <th width="30%">Type</th>
+                      <th width="20%">Type</th>
                       <th align="left">Description</th>
                     </tr>
 
@@ -6370,7 +6379,7 @@ TABLE.list TD { border:none; }
                 as follows:
                 <table width="100%" class="list">
                     <tr>
-                      <th width="30%">Bits</th>
+                      <th width="20%">Bits</th>
                       <th align="left">Description</th>
                     </tr>
 
@@ -6945,7 +6954,7 @@ TABLE.list TD { border:none; }
             <p>This is a bit field with the following definition:
             <table width="100%" class="list">
                 <tr>
-                  <th width="30%">Bit</th>
+                  <th width="20%">Bit</th>
                   <th align="left">Description</th>
                 </tr>
 
@@ -6983,9 +6992,10 @@ TABLE.list TD { border:none; }
                 <tr>
                   <td align="center"><code>4</code></td>
                   <td>If set, the HDF5 decoder should set bit 5 of this
-                    message&rsquo;s flags (i.e. this bit field) if it does not understand
-                    the message&rsquo;s type and the object is modified in any way.
-                    (Normally, unknown messages can just be ignored by HDF5
+                    message&rsquo;s flags (in other words, this bit field) 
+                    if it does not understand the message&rsquo;s type 
+                    and the object is modified in any way. (Normally, 
+                    unknown messages can just be ignored by HDF5
                     decoders)
                   </td>
                 </tr>
@@ -7171,7 +7181,7 @@ TABLE.list TD { border:none; }
                 about the object header.
             <table width="100%" class="list">
                 <tr>
-                  <th width="30%">Bit(s)</th>
+                  <th width="20%">Bit(s)</th>
                   <th align="left">Description</th>
                 </tr>
 
@@ -7181,7 +7191,7 @@ TABLE.list TD { border:none; }
                     <em>Size of Chunk #0</em> field.  The values are:
                     <table width="100%" class="list">
                         <tr>
-                          <th width="30%">Value</th>
+                          <th width="20%">Value</th>
                           <th align="left">Description</th>
                         </tr>
 
@@ -7239,8 +7249,8 @@ TABLE.list TD { border:none; }
 	  <td>Access Time</td>
 	  <td>
             <p>This 32-bit value represents the number of seconds after the
-                UNIX epoch when the object&rsquo;s raw data was last accessed (i.e.
-                read or written).
+                UNIX epoch when the object&rsquo;s raw data was last accessed 
+                (in other  words, read or written).
             </p>
 	    <p>This field is present if bit 5 of <em>flags</em> is set.
             </p>
@@ -7250,9 +7260,9 @@ TABLE.list TD { border:none; }
 	<tr>
 	  <td>Modification Time</td>
 	  <td>
-            <p>This 32-bit value represents the number of seconds after the
-                UNIX epoch when the object&rsquo;s raw data was last modified (i.e.
-                written).
+            <p>This 32-bit value represents the number of seconds after 
+            the UNIX epoch when the object&rsquo;s raw data was last 
+            modified (in other words, written).
             </p>
 	    <p>This field is present if bit 5 of <em>flags</em> is set.
             </p>
@@ -7482,7 +7492,7 @@ TABLE.list TD { border:none; }
             of a shared object message and is described here:
 	    <table width="100%" class="list">
 	      <tr>
-		<th width="30%">Version</th>
+		<th width="20%">Version</th>
 		<th align="left">Description</th>
 	      </tr>
 
@@ -7505,7 +7515,7 @@ TABLE.list TD { border:none; }
 	  <td><p>The type of shared message location:
 	    <table width="100%" class="list">
 	      <tr>
-		<th width="30%">Value</th>
+		<th width="20%">Value</th>
 		<th align="left">Description</th>
 	      </tr>
 
@@ -7576,7 +7586,7 @@ TABLE.list TD { border:none; }
             of a shared object message and is described here:
 	    <table width="100%" class="list">
 	      <tr>
-		<th width="30%">Version</th>
+		<th width="20%">Version</th>
 		<th align="left">Description</th>
 	      </tr>
 
@@ -7594,7 +7604,7 @@ TABLE.list TD { border:none; }
 	  <td><p>The type of shared message location:
 	    <table width="100%" class="list">
 	      <tr>
-		<th width="30%">Value</th>
+		<th width="20%">Value</th>
 		<th align="left">Description</th>
 	      </tr>
 
@@ -7656,7 +7666,7 @@ TABLE.list TD { border:none; }
 	    object message and is described here:
 	    <table width="100%" class="list">
 	      <tr>
-		<th width="30%">Version</th>
+		<th width="20%">Version</th>
 		<th align="left">Description</th>
 	      </tr>
 
@@ -7676,7 +7686,7 @@ TABLE.list TD { border:none; }
 	  <td><p>The type of shared message location:
 	    <table width="100%" class="list">
 	      <tr>
-		<th width="30%">Value</th>
+		<th width="20%">Value</th>
 		<th align="left">Description</th>
 	      </tr>
 
@@ -7733,15 +7743,15 @@ TABLE.list TD { border:none; }
 
     <p class="item"><b>Header Message Type: </b>0x0000
     </p>
-    <p class="item"><b>Length:</b> varies
+    <p class="item"><b>Length:</b> Varies
     </p>
-    <p class="item"><b>Status:</b> Optional, may be repeated.
+    <p class="item"><b>Status:</b> Optional; may be repeated.
     </p>
     <p class="item"><b>Purpose and Description:</b> The NIL message is used to indicate a
         message which is to be ignored when reading the header messages for a
         data object.  [Possibly one which has been deleted for some reason.]
     </p>
-    <p class="item"><b>Format of Data:</b> Unspecified.
+    <p class="item"><b>Format of Data:</b> Unspecified
     </p>
 
     <br />
@@ -7753,14 +7763,15 @@ TABLE.list TD { border:none; }
     <p class="item"><b>Length:</b> Varies according to the number of dimensions, 
       as described in the following table.
     </p>
-    <p class="item"><b>Status:</b> Required for dataset objects, may not be
+    <p class="item"><b>Status:</b> Required for dataset objects; may not be
         repeated.
     </p>
-    <p class="item"><b>Description:</b> The dataspace message describes the
-        number of dimensions (i.e., &ldquo;rank&rdquo;) and size of each dimension that the
-        data object has.  This message is only used for datasets which have a
-        simple, rectilinear, array-like layout; datasets requiring a more
-        complex layout are not yet supported.
+    <p class="item"><b>Description:</b> The dataspace message describes 
+    the number of dimensions (in other words, &ldquo;rank&rdquo;) and 
+    size of each dimension that the data object has. This message is 
+    only used for datasets which have a simple, rectilinear, array-like 
+    layout; datasets requiring a more complex layout are not yet 
+    supported.
     </p>
 
     <p class="item"><b>Format of Data:</b></p>
@@ -8007,7 +8018,7 @@ TABLE.list TD { border:none; }
             <p>This field indicates the type of the dataspace:
             <table width="100%" class="list">
                 <tr>
-                  <th width="30%">Value</th>
+                  <th width="20%">Value</th>
                   <th align="left">Description</th>
                 </tr>
 
@@ -8068,7 +8079,7 @@ TABLE.list TD { border:none; }
     <hr />
     <h4><a name="DataSpaceMessage">Name: Complex Dataspace (Fiber Bundle?)</a></h4>
     <b>Header Message Type: </b>0x0002<br />
-    <b>Length:</b> varies<br />
+    <b>Length:</b> Varies<br />
 
     <b>Status:</b> One of the <em>Simple Dataspace</em> or
     <em>Complex Dataspace</em> messages is required (but not both) and may
@@ -8251,10 +8262,9 @@ TABLE.list TD { border:none; }
 
 	  <dt>Embedded Dimensionality: (unsigned 32-bit integer)
 	  <dd>This value is the number of dimensions of the space the
-	    dataset is located 
-	    within.  i.e. a planar dataset located within a 3-D space,
-	    or a 3-D dataset 
-	    which is a subset of another 3-D space, etc.
+	    dataset is located within: in other words, a planar dataset 
+        located within a 3-D space, a 3-D dataset 
+	    which is a subset of another 3-D space, and so on.
 	  <dt>Embedded Dimension Size: (unsigned 32-bit integer)
 	  <dd>These values are the sizes of the dimensions of the
 	    embedded dataspace 
@@ -8392,8 +8402,8 @@ TABLE.list TD { border:none; }
     <h4><a name="LinkInfoMessage">Name: Link Info</a></h4>
 
     <p class="item"><b>Header Message Type:</b> 0x002 </p>
-    <p class="item"><b>Length:</b> varies </p>
-    <p class="item"><b>Status:</b> Optional, may not be repeated. </p>
+    <p class="item"><b>Length:</b> Varies </p>
+    <p class="item"><b>Status:</b> Optional; may not be repeated. </p>
 
     <p class="item"><b>Description:</b> This message tracks variable information
         about the current state of the links for a &ldquo;new style&rdquo; group&rsquo;s behavior.
@@ -8472,7 +8482,7 @@ TABLE.list TD { border:none; }
 	      
             <table width="100%" class="list">
                 <tr>
-                  <th width="30%">Bit</th>
+                  <th width="20%">Bit</th>
                   <th align="left">Description</th>
                 </tr>
 
@@ -8553,10 +8563,10 @@ TABLE.list TD { border:none; }
 
     <p class="item"><b>Header Message Type:</b> 0x0003
     </p>
-    <p class="item"><b>Length:</b> variable
+    <p class="item"><b>Length:</b> Variable
     </p>
     <p class="item"><b>Status:</b> Required for dataset or committed 
-    datatype (formerly named datatype) objects, may not be repeated.
+    datatype (formerly named datatype) objects; may not be repeated.
     </p>
 
     <p class="item"><b>Description:</b> The datatype message defines the datatype
@@ -8627,7 +8637,7 @@ TABLE.list TD { border:none; }
                 format of the datatype message and is described here:
                 <table width="100%" class="list">
                     <tr>
-                      <th width="30%">Version</th>
+                      <th width="20%">Version</th>
                       <th align="left">Description</th>
                     </tr>
 
@@ -8665,7 +8675,7 @@ TABLE.list TD { border:none; }
                 
                 <table width="100%" class="list">
                     <tr>
-                      <th width="30%">Value</th>
+                      <th width="20%">Value</th>
                       <th align="left">Description</th>
                     </tr>
 
@@ -8761,9 +8771,9 @@ TABLE.list TD { border:none; }
     </div>
     
 
+    <br />
     <p>Class specific information for Fixed-Point Numbers (Class 0):</p>
 
-    <br />
     <div align="center">
       <table class="desc">
 	<caption>
@@ -8858,9 +8868,9 @@ TABLE.list TD { border:none; }
     </div>
     
 
+    <br />
     <p>Class specific information for Floating-Point Numbers (Class 1):</p>
 
-    <br />
     <div align="center">
       <table class="desc">
 	<caption>
@@ -8878,8 +8888,8 @@ TABLE.list TD { border:none; }
             &ldquo;endianness&rdquo; of the bytes in the datatype element.
             <table width="100%" class="list">
                 <tr>
-                  <th width="15%">Bit 6</th>
-                  <th width="15%">Bit 0</th>
+                  <th width="10%">Bit 6</th>
+                  <th width="10%">Bit 0</th>
                   <th align="left">Description</th>
                 </tr>
 
@@ -8926,7 +8936,7 @@ TABLE.list TD { border:none; }
             how the most significant bit of the mantissa is managed.
                 <table width="100%" class="list">
                     <tr>
-                      <th width="30%">Value</th>
+                      <th width="20%">Value</th>
                       <th align="left">Description</th>
                     </tr>
 
@@ -9080,6 +9090,7 @@ TABLE.list TD { border:none; }
     </div>
     
 
+    <br />
     <p>Class specific information for Time (Class 2):</p>
 
     
@@ -9145,6 +9156,7 @@ TABLE.list TD { border:none; }
     </div>
     
 
+    <br />
     <p>Class specific information for Strings (Class 3):</p>
 
     
@@ -9166,7 +9178,7 @@ TABLE.list TD { border:none; }
 
             <table width="100%" class="list">
                 <tr>
-                  <th width="30%">Value</th>
+                  <th width="20%">Value</th>
                   <th align="left">Description</th>
                 </tr>
 
@@ -9214,7 +9226,7 @@ TABLE.list TD { border:none; }
 	    encode the string.
             <table width="100%" class="list">
                 <tr>
-                  <th width="30%">Value</th>
+                  <th width="20%">Value</th>
                   <th align="left">Description</th>
                 </tr>
 
@@ -9250,8 +9262,8 @@ TABLE.list TD { border:none; }
     </p>
     
 
+    <br />
     <p>Class specific information for bit fields (Class 4):</p>
-
     
     <div align="center">
       <table class="desc">
@@ -9336,8 +9348,8 @@ TABLE.list TD { border:none; }
     </div>
     
 
+    <br />
     <p>Class specific information for Opaque (Class 5):</p>
-
     
     <div align="center">
       <table class="desc">
@@ -9403,8 +9415,8 @@ TABLE.list TD { border:none; }
     </div>
     
 
+    <br />
     <p>Class specific information for Compound (Class 6):</p>
-
     
     <div align="center">
       <table class="desc">
@@ -9712,8 +9724,8 @@ TABLE.list TD { border:none; }
     </div>
     
 
+    <br />
     <p>Class specific information for Reference (Class 7):</p>
-
     
     <div align="center">
       <table class="desc">
@@ -9733,7 +9745,7 @@ TABLE.list TD { border:none; }
 
             <table width="100%" class="list">
                 <tr>
-                  <th width="30%">Value</th>
+                  <th width="20%">Value</th>
                   <th align="left">Description</th>
                 </tr>
 
@@ -9772,8 +9784,8 @@ TABLE.list TD { border:none; }
     </p>
     
 
+    <br />
     <p>Class specific information for Enumeration (Class 8):</p>
-
     
     <div align="center">
       <table class="desc">
@@ -9941,8 +9953,8 @@ TABLE.list TD { border:none; }
     
 
 
+    <br />
     <p>Class specific information for Variable-Length (Class 9):</p>
-
     
     <div align="center">
       <table class="desc">
@@ -9962,7 +9974,7 @@ TABLE.list TD { border:none; }
 
             <table width="100%" class="list">
                 <tr>
-                  <th width="30%">Value</th>
+                  <th width="20%">Value</th>
                   <th align="left">Description</th>
                 </tr>
 
@@ -10000,7 +10012,7 @@ TABLE.list TD { border:none; }
                   as for the string padding type, as follows:
             <table width="100%" class="list">
                 <tr>
-                  <th width="30%">Value</th>
+                  <th width="20%">Value</th>
                   <th align="left">Description</th>
                 </tr>
 
@@ -10052,7 +10064,7 @@ TABLE.list TD { border:none; }
                   to be used for encoding the string:
             <table width="100%" class="list">
                 <tr>
-                  <th width="30%">Value</th>
+                  <th width="20%">Value</th>
                   <th align="left">Description</th>
                 </tr>
 
@@ -10130,6 +10142,7 @@ TABLE.list TD { border:none; }
     </div>
     
 
+    <br />
     <p>Class specific information for Array (Class 10):</p>
 
     <p>There are no bit fields defined for the array class.
@@ -10220,12 +10233,13 @@ TABLE.list TD { border:none; }
 	<tr>
 	  <td>Permutation Index #n</td>
 	  <td>
-            <p>This value is the index permutation used to map
-	    each dimension from the canonical representation to an
-	    alternate axis for each dimension.  Currently, dimension
-            permutations are not supported and these indices should be set
-            to the index position minus one (i.e. the first dimension should
-            be set to 0, the second dimension should be set to 1, etc.)
+            <p>This value is the index permutation used to map 
+            each dimension from the canonical representation to an 
+            alternate axis for each dimension. Currently, dimension 
+            permutations are not supported, and these indices should 
+            be set to the index position minus one. In other words, 
+            the first dimension should be set to 0, the second dimension 
+            should be set to 1, and so on.
             </p>
           </td>
 	</tr>
@@ -10328,9 +10342,9 @@ TABLE.list TD { border:none; }
 
     <p class="item"><b>Header Message Type:</b> 0x0004
     </p>
-    <p class="item"><b>Length:</b> varies
+    <p class="item"><b>Length:</b> Varies
     </p>
-    <p class="item"><b>Status:</b> Optional, may not be repeated.
+    <p class="item"><b>Status:</b> Optional; may not be repeated.
     </p>
 
     <p class="item"><b>Description:</b> The fill value message stores a single
@@ -10407,10 +10421,10 @@ TABLE.list TD { border:none; }
 
     <p class="item"><b>Header Message Type:</b> 0x0005
     </p>
-    <p class="item"><b>Length:</b> varies
+    <p class="item"><b>Length:</b> Varies
     </p>
-    <p class="item"><b>Status:</b> Required for dataset objects, may not be repeated.
-    </p>
+    <p class="item"><b>Status:</b> Required for dataset objects; may 
+    not be repeated.</p>
 
     <p class="item"><b>Description:</b> The fill value message stores a single
         data value which is returned to the application when an uninitialized
@@ -10465,7 +10479,7 @@ TABLE.list TD { border:none; }
                 format of the fill value message and is described here:
                 <table width="100%" class="list">
                     <tr>
-                      <th width="30%">Version</th>
+                      <th width="20%">Version</th>
                       <th align="left">Description</th>
                     </tr>
 
@@ -10504,7 +10518,7 @@ TABLE.list TD { border:none; }
                 allocated.  The allowed values are:
                 <table width="100%" class="list">
                     <tr>
-                      <th width="30%">Value</th>
+                      <th width="20%">Value</th>
                       <th align="left">Description</th>
                     </tr>
 
@@ -10550,7 +10564,7 @@ TABLE.list TD { border:none; }
                 are:
                 <table width="100%" class="list">
                     <tr>
-                      <th width="30%">Value</th>
+                      <th width="20%">Value</th>
                       <th align="left">Description</th>
                     </tr>
 
@@ -10661,7 +10675,7 @@ TABLE.list TD { border:none; }
                 format of the fill value message and is described here:
                 <table width="100%" class="list">
                     <tr>
-                      <th width="30%">Version</th>
+                      <th width="20%">Version</th>
                       <th align="left">Description</th>
                     </tr>
 
@@ -10700,7 +10714,7 @@ TABLE.list TD { border:none; }
                 allocated.  The allowed values are:
                 <table width="100%" class="list">
                     <tr>
-                      <th width="30%">Bits</th>
+                      <th width="20%">Bits</th>
                       <th align="left">Description</th>
                     </tr>
 
@@ -10768,8 +10782,8 @@ TABLE.list TD { border:none; }
     <hr />
     <h4><a name="LinkMessage">Name: Link Message</a></h4>
     <p class="item"><b>Header Message Type:</b> 0x0006</p>
-    <p class="item"><b>Length:</b> varies </p>
-    <p class="item"><b>Status:</b> Optional, may be repeated. </p>
+    <p class="item"><b>Length:</b> Varies </p>
+    <p class="item"><b>Status:</b> Optional; may be repeated. </p>
 
     <p class="item"><b>Description:</b> This message encodes the information
         for a link in a group&rsquo;s object header, when the group is storing its
@@ -10837,9 +10851,9 @@ TABLE.list TD { border:none; }
 	<td>Flags</td>
 	  <td><p>This field contains information about the link and controls
                 the presence of other fields below.
-                <table class="list">
+                <table width="100%" class="list">
                     <tr>
-                      <th width="30%">Bits</th>
+                      <th width="20%">Bits</th>
                       <th align="left">Description</th>
                     </tr>
 
@@ -10849,7 +10863,7 @@ TABLE.list TD { border:none; }
                         field.
                         <table width="100%" class="list">
                             <tr>
-                              <th width="30%">Value</th>
+                              <th width="20%">Value</th>
                               <th align="left">Description</th>
                             </tr>
 
@@ -10919,7 +10933,7 @@ TABLE.list TD { border:none; }
                 values:
                 <table width="100%" class="list">
                     <tr>
-                      <th width="30%">Value</th>
+                      <th width="20%">Value</th>
                       <th align="left">Description</th>
                     </tr>
 
@@ -10970,7 +10984,7 @@ TABLE.list TD { border:none; }
 	  <td><p>This is the character set for encoding the link&rsquo;s name:
             <table width="100%" class="list">
                 <tr>
-                  <th width="30%">Value</th>
+                  <th width="20%">Value</th>
                   <th align="left">Description</th>
                 </tr>
 
@@ -11012,7 +11026,7 @@ TABLE.list TD { border:none; }
             <dir>
             <table width="100%" class="list">
                 <tr>
-                  <td width="30%"><i>Size of Offsets</i> bytes:</td>
+                  <td width="20%"><i>Size of Offsets</i> bytes:</td>
                   <td>The address of the object header for the object that the
                     link points to.
                   </td>
@@ -11025,7 +11039,7 @@ TABLE.list TD { border:none; }
             <dir>
             <table width="100%" class="list">
                 <tr>
-                  <td width="30%">Bytes 1-2:</td>
+                  <td width="20%">Bytes 1-2:</td>
                   <td>Length of soft link value.</td>
                 </tr>
                 <tr>
@@ -11042,7 +11056,7 @@ TABLE.list TD { border:none; }
             <dir>
             <table width="100%" class="list">
                 <tr>
-                  <td width="30%">Bytes 1-2:</td>
+                  <td width="20%">Bytes 1-2:</td>
                   <td>Length of external link value.</td>
                 </tr>
                 <tr>
@@ -11066,7 +11080,7 @@ TABLE.list TD { border:none; }
             <dir>
             <table width="100%" class="list">
                 <tr>
-                  <td width="30%">Bytes 1-2:</td>
+                  <td width="20%">Bytes 1-2:</td>
                   <td>Length of user-defined data.</td>
                 </tr>
                 <tr>
@@ -11086,8 +11100,8 @@ TABLE.list TD { border:none; }
     <h4><a name="ExternalFileListMessage">Name: Data Storage -
 	External Data Files</a></h4>
     <p class="item"><b>Header Message Type:</b> 0x0007 </p>
-    <p class="item"><b>Length:</b> varies</p>
-    <p class="item"><b>Status:</b> Optional, may not be repeated.</p>
+    <p class="item"><b>Length:</b> Varies</p>
+    <p class="item"><b>Status:</b> Optional; may not be repeated.</p>
 
     <p class="item"><b>Purpose and Description:</b> The external data storage
       message indicates that the data for an object is stored outside the HDF5
@@ -11156,7 +11170,7 @@ TABLE.list TD { border:none; }
                 External Data Storage Message and is described here:
 		 <table width="100%" class="list">
 		     <tr>
-			<th width="30%">Version</th>
+			<th width="20%">Version</th>
 			<th align="left">Description</th>
 		     </tr>
 		     <tr>
@@ -11306,8 +11320,8 @@ TABLE.list TD { border:none; }
     <h4><a name="LayoutMessage">Name: Data Storage - Layout</a></h4>
 
     <p class="item"><b>Header Message Type:</b> 0x0008</p>
-    <p class="item"><b>Length:</b> varies</p>
-    <p class="item"><b>Status:</b> Required for datasets, may not be repeated.</p>
+    <p class="item"><b>Length:</b> Varies</p>
+    <p class="item"><b>Status:</b> Required for datasets; may not be repeated.</p>
 
     <p class="item"><b>Purpose and Description:</b> Data layout describes how the
       elements of a multi-dimensional array are stored in the HDF5 file.
@@ -11418,7 +11432,7 @@ TABLE.list TD { border:none; }
 	    layout message and is described here:
 	      <table width="100%" class="list">
 		<tr>
-		  <th width="30%">Version</th>
+		  <th width="20%">Version</th>
 		  <th align="left">Description</th>
 		</tr>
 
@@ -11444,11 +11458,11 @@ TABLE.list TD { border:none; }
 
 	<tr>
 	  <td>Dimensionality</td>
-	  <td><p>An array has a fixed dimensionality.  This field
-	    specifies the number of dimension size fields later in the
-	    message.  The value stored for chunked storage is 1 greater than
-            the number of dimensions in the dataset&rsquo;s dataspace (i.e. 2 is
-            stored for a 1 dimensional dataset, etc.).
+	  <td><p>An array has a fixed dimensionality.  This field 
+	    specifies the number of dimension size fields later in the 
+	    message. The value stored for chunked storage is 1 greater than 
+        the number of dimensions in the dataset&rsquo;s dataspace. 
+        For example, 2 is stored for a 1 dimensional dataset.
             </p>
           </td>
 	</tr>
@@ -11461,7 +11475,7 @@ TABLE.list TD { border:none; }
             
 	      <table width="100%" class="list">
 		<tr>
-		  <th width="30%">Value</th>
+		  <th width="20%">Value</th>
 		  <th align="left">Description</th>
 		</tr>
 
@@ -11540,7 +11554,7 @@ TABLE.list TD { border:none; }
     <p>Version 3 of this message re-structured the format into specific
         properties that are required for each layout class.</p>
 
-    <br />
+    
     <div align="center">
       <table class="format">
 	<caption>
@@ -11581,7 +11595,7 @@ TABLE.list TD { border:none; }
 	       and is described here:
 	      <table width="100%" class="list">	
 		<tr>
-		  <th width="30%">Version</th>
+		  <th width="20%">Version</th>
 		  <th align="left">Description</th>
 		</tr>
 
@@ -11601,7 +11615,7 @@ TABLE.list TD { border:none; }
             interpreted.
 	      <table width="100%" class="list">
 		<tr>
-		  <th width="30%">Value</th>
+		  <th width="20%">Value</th>
 		  <th align="left">Description</th>
 		</tr>
 
@@ -11861,7 +11875,8 @@ TABLE.list TD { border:none; }
     <h4><a name="BogusMessage">Name: Bogus</a></h4>
     <p class="item"><b>Header Message Type:</b> 0x0009</p>
     <p class="item"><b>Length:</b> 4 bytes</p>
-    <p class="item"><b>Status:</b> For testing only, should never be stored in valid file</p>
+    <p class="item"><b>Status:</b> For testing only; should never be 
+    stored in a valid file.</p>
     <p class="item"><b>Purpose and Description:</b> This message is used for
         testing the HDF5 Library&rsquo;s response to an &ldquo;unknown&rdquo; message type and
         should never be encountered in a valid HDF5 file.</p>
@@ -11907,8 +11922,8 @@ TABLE.list TD { border:none; }
     <hr />
     <h4><a name="GroupInfoMessage">Name: Group Info</a></h4>
     <p class="item"><b>Header Message Type:</b> 0x000A</p>
-    <p class="item"><b>Length:</b> varies</p>
-    <p class="item"><b>Status:</b> Optional, may not be repeated.</p>
+    <p class="item"><b>Length:</b> Varies</p>
+    <p class="item"><b>Status:</b> Optional; may not be repeated.</p>
     <p class="item"><b>Description:</b> This message stores information for the
         constants defining a &ldquo;new style&rdquo; group&rsquo;s behavior.  Constant information
         will be stored in this message and variable information will be stored
@@ -11969,7 +11984,7 @@ TABLE.list TD { border:none; }
 	      
             <table width="100%" class="list">
                 <tr>
-                  <th width="30%">Bit</th>
+                  <th width="20%">Bit</th>
                   <th align="left">Description</th>
                 </tr>
 
@@ -12036,8 +12051,8 @@ TABLE.list TD { border:none; }
     <hr />
     <h4><a name="FilterMessage">Name: Data Storage - Filter Pipeline</a></h4>
     <p class="item"><b>Header Message Type:</b> 0x000B</p>
-    <p class="item"><b>Length:</b> varies</p>
-    <p class="item"><b>Status:</b> Optional, may not be repeated.</p>
+    <p class="item"><b>Length:</b> Varies</p>
+    <p class="item"><b>Status:</b> Optional; may not be repeated.</p>
 
     <p class="item"><b>Description:</b> This message describes the
       filter pipeline which should be applied to the data stream by
@@ -12197,8 +12212,8 @@ TABLE.list TD { border:none; }
         <dir>
 	    <table width="100%" class="list">
 	      <tr>
-		<th width="15%">Identification</th>
-		<th width="15%" align="left">Name</th>
+		<th width="10%">Identification</th>
+		<th width="10%" align="left">Name</th>
 		<th align="left">Description</th>
 	      </tr>
 
@@ -12244,7 +12259,7 @@ TABLE.list TD { border:none; }
 		<td>Scale and offset encoded values</td>
 	      </tr>
 	    </table></dir>
-	  </p></td>
+        </p></td>
 	</tr>
 
 	<tr>
@@ -12262,7 +12277,7 @@ TABLE.list TD { border:none; }
 	    bit values defined so far are:
 	    <table width="100%" class="list">
 	      <tr>
-		<th width="30%">Bit</th>
+		<th width="20%">Bit</th>
 		<th align="left">Description</th>
 	      </tr>
 
@@ -12449,8 +12464,8 @@ TABLE.list TD { border:none; }
         <dir>
 	    <table width="100%" class="list">
 	      <tr>
-		<th width="15%">Identification</th>
-		<th width="15%" align="left">Name</th>
+		<th width="10%">Identification</th>
+		<th width="10%" align="left">Name</th>
 		<th align="left">Description</th>
 	      </tr>
 
@@ -12506,10 +12521,9 @@ TABLE.list TD { border:none; }
 	    null termination padded with nulls to be a multiple of
 	    eight. If the filter has no name then a value of zero is
 	    stored in this field.</p>
-            <p>Filters with IDs less than 256 (i.e. those that are defined in
-                this format documentation)
-                do not store the <em>Name Length</em> or
-                <em>Name</em> fields.
+            <p>Filters with IDs less than 256 (in other words, filters 
+            that are defined in this format documentation) do not store 
+            the <em>Name Length</em> or <em>Name</em> fields.
             </p>
           </td>
 	</tr>
@@ -12520,7 +12534,7 @@ TABLE.list TD { border:none; }
 	    bit values defined so far are:
 	    <table width="100%" class="list">
 	      <tr>
-		<th width="30%">Bit</th>
+		<th width="20%">Bit</th>
 		<th align="left">Description</th>
 	      </tr>
 
@@ -12574,8 +12588,8 @@ TABLE.list TD { border:none; }
     <hr />
     <h4><a name="AttributeMessage">Name: Attribute</a></h4>
     <p class="item"><b>Header Message Type:</b> 0x000C</p>
-    <p class="item"><b>Length:</b> varies</p>
-    <p class="item"><b>Status:</b> Optional, may be repeated.</p>
+    <p class="item"><b>Length:</b> Varies</p>
+    <p class="item"><b>Status:</b> Optional; may be repeated.</p>
     
     <p class="item"><b>Description:</b> The <em>Attribute</em>
       message is used to store objects in the HDF5 file which are used
@@ -12655,7 +12669,7 @@ TABLE.list TD { border:none; }
 	    attribute message and is described here:
 	    <table width="100%" class="list">
 	      <tr>
-		<th width="30%">Version</th>
+		<th width="20%">Version</th>
 		<th align="left">Description</th>
 	      </tr>
 
@@ -12781,10 +12795,10 @@ TABLE.list TD { border:none; }
 	<tr>
 	  <td>Version</td>
 	  <td><p>The version number information is used for changes in the
-                format of the attribute message and is described here:</p>
-                <table class="list" width="90%">
+                format of the attribute message and is described here:
+                <table class="list" width="100%">
                   <tr>
-                    <th width="30%">Version</th>
+                    <th width="20%">Version</th>
                     <th align="left">Description</th>
                   </tr>
 
@@ -12797,7 +12811,7 @@ TABLE.list TD { border:none; }
                         additional bytes of zero.
                     </td>
                   </tr>
-                </table>
+                </table></p>
 	  </td>
 	</tr>
 
@@ -12805,10 +12819,10 @@ TABLE.list TD { border:none; }
 	  <td>Flags</td>
 	  <td><p>This bit field contains extra information about 
                 interpreting the attribute message:
-              </p>
-	    <table class="list" width="90%">
+              
+	    <table class="list" width="100%">
 	      <tr>
-		<th width="30%">Bit</th>
+		<th width="20%">Bit</th>
 		<th align="left">Description</th>
 	      </tr>
 
@@ -12821,7 +12835,7 @@ TABLE.list TD { border:none; }
 		<td align="center"><code>1</code></td>
 		<td>If set, dataspace is shared.</td>
 	      </tr>
-	    </table>
+	    </table></p>
 	  </td>
 	</tr>
 
@@ -12949,10 +12963,10 @@ TABLE.list TD { border:none; }
 	<tr>
 	  <td>Version</td>
 	  <td><p>The version number information is used for changes in the
-                format of the attribute message and is described here:</p>
-                <table class="list" width="90%">
+                format of the attribute message and is described here:
+                <table class="list" width="100%">
                   <tr>
-                    <th width="30%">Version</th>
+                    <th width="20%">Version</th>
                     <th align="left">Description</th>
                   </tr>
 
@@ -12963,7 +12977,7 @@ TABLE.list TD { border:none; }
                         This version supports attributes with non-ASCII names.
                     </td>
                   </tr>
-                </table>
+                </table></p>
 	  </td>
 	</tr>
 
@@ -12971,10 +12985,10 @@ TABLE.list TD { border:none; }
 	  <td>Flags</td>
 	  <td><p>This bit field contains extra information about 
                 interpreting the attribute message:
-              </p>
-	    <table class="list" width="90%">
+              
+	    <table class="list" width="100%">
 	      <tr>
-		<th width="30%">Bit</th>
+		<th width="20%">Bit</th>
 		<th align="left">Description</th>
 	      </tr>
 
@@ -12987,7 +13001,7 @@ TABLE.list TD { border:none; }
 		<td align="center"><code>1</code></td>
 		<td>If set, dataspace is shared.</td>
 	      </tr>
-	    </table>
+	    </table></p>
 	  </td>
 	</tr>
 
@@ -13012,9 +13026,9 @@ TABLE.list TD { border:none; }
 	<tr>
 	  <td>Name Character Set Encoding</td>
 	  <td><p>The character set encoding for the attribute&rsquo;s name:
-            <table width="100"% class="list">
+            <table width="100%" class="list">
                 <tr>
-                  <th width="30%">Value</th>
+                  <th width="20%">Value</th>
                   <th align="left">Description</th>
                 </tr>
 
@@ -13086,8 +13100,8 @@ TABLE.list TD { border:none; }
     <h4><a name="CommentMessage">Name: Object Comment</a></h4>
 
     <p class="item"><b>Header Message Type:</b> 0x000D</p>
-    <p class="item"><b>Length:</b> varies</p>
-    <p class="item"><b>Status:</b> Optional, may not be repeated.</p>
+    <p class="item"><b>Length:</b> Varies</p>
+    <p class="item"><b>Status:</b> Optional; may not be repeated.</p>
 
     <p class="item"><b>Description:</b> The object comment is
       designed to be a short description of an object.  An object comment
@@ -13135,8 +13149,8 @@ TABLE.list TD { border:none; }
     <h4><a name="OldModificationTimeMessage">Name: Object Modification Time (Old)</a></h4>
 
     <p class="item"><b>Header Message Type:</b> 0x000E</p>
-    <p class="item"><b>Length:</b> fixed</p>
-    <p class="item"><b>Status:</b> Optional, may not be repeated.</p>
+    <p class="item"><b>Length:</b> Fixed</p>
+    <p class="item"><b>Status:</b> Optional; may not be repeated.</p>
 
     <p class="item"><b>Description:</b> The object modification date
       and time is a timestamp which indicates (using ISO-8601 date and
@@ -13246,8 +13260,8 @@ TABLE.list TD { border:none; }
     <hr />
     <h4><a name="SOHMTableMessage">Name: Shared Message Table</a></h4>
     <p class="item"><b>Header Message Type:</b> 0x000F</p>
-    <p class="item"><b>Length:</b> fixed </p>
-    <p class="item"><b>Status:</b> Optional, may not be repeated.</p>
+    <p class="item"><b>Length:</b> Fixed </p>
+    <p class="item"><b>Status:</b> Optional; may not be repeated.</p>
 
     <p class="item"><b>Description:</b> This message is used to locate the
         table of shared object header message (SOHM) indexes.  Each
@@ -13330,8 +13344,8 @@ TABLE.list TD { border:none; }
     <hr />
     <h4><a name="ContinuationMessage">Name: Object Header Continuation</a></h4>
     <p class="item"><b>Header Message Type:</b> 0x0010</p>
-    <p class="item"><b>Length:</b> fixed</p>
-    <p class="item"><b>Status:</b> Optional, may be repeated.</p>
+    <p class="item"><b>Length:</b> Fixed</p>
+    <p class="item"><b>Status:</b> Optional; may be repeated.</p>
     <p class="item"><b>Description:</b> The object header continuation is the
         location in the file of a block containing more header messages for the
         current data object.  This can be used when header blocks become too
@@ -13563,8 +13577,9 @@ TABLE.list TD { border:none; }
     <hr />
     <h4><a name="SymbolTableMessage">Name: Symbol Table Message</a></h4>
     <p class="item"><b>Header Message Type:</b> 0x0011</p>
-    <p class="item"><b>Length:</b> fixed</p>
-    <p class="item"><b>Status:</b> Required for &ldquo;old style&rdquo; groups, may not be repeated.</p>
+    <p class="item"><b>Length:</b> Fixed</p>
+    <p class="item"><b>Status:</b> Required for &ldquo;old style&rdquo; 
+    groups; may not be repeated.</p>
     <p class="item"><b>Description:</b> Each &ldquo;old style&rdquo; group has a v1 B-tree
         and a local heap for storing symbol table entries, which are located
         with this message.</p>
@@ -13632,7 +13647,7 @@ TABLE.list TD { border:none; }
 
     <p class="item"><b>Header Message Type:</b> 0x0012 </p>
     <p class="item"><b>Length:</b> Fixed </p>
-    <p class="item"><b>Status:</b> Optional, may not be repeated. </p>
+    <p class="item"><b>Status:</b> Optional; may not be repeated. </p>
 
     <p class="item"><b>Description:</b> The object modification 
       time is a timestamp which indicates the time of the last modification of
@@ -13677,10 +13692,10 @@ TABLE.list TD { border:none; }
 	<tr>
 	  <td>Version</td>
 	  <td><p>The version number is used for changes in the format of Object Modification Time
-	      and is described here:</p>
+	      and is described here:
 	     <table class="list">
 		<tr>
-		  <th width="30%">Version</th>
+		  <th width="20%">Version</th>
 		  <th align="left">Description</th>
 		</tr>
 
@@ -13694,7 +13709,7 @@ TABLE.list TD { border:none; }
 		  <td>Used by Version 1.6.1 and after of the library to encode time.  In
 		    this version, the time is the seconds after Epoch.</td>
 		</tr>
-	      </table>
+	      </table></p>
 	  </td>
 	</tr>
 
@@ -13713,7 +13728,7 @@ TABLE.list TD { border:none; }
 
     <p class="item"><b>Header Message Type:</b> 0x0013 </p>
     <p class="item"><b>Length:</b> Fixed </p>
-    <p class="item"><b>Status:</b> Optional, may not be repeated. </p>
+    <p class="item"><b>Status:</b> Optional; may not be repeated. </p>
 
     <p class="item"><b>Description:</b>This message retrieves non-default &lsquo;K&rsquo;
         values for internal and leaf nodes of a group or indexed storage
@@ -13799,8 +13814,8 @@ TABLE.list TD { border:none; }
     <h4><a name="DrvInfoMessage">Name: Driver Info Message</a></h4>
 
     <p class="item"><b>Header Message Type:</b> 0x0014 </p>
-    <p class="item"><b>Length:</b> varies </p>
-    <p class="item"><b>Status:</b> Optional, may not be repeated. </p>
+    <p class="item"><b>Length:</b> Varies </p>
+    <p class="item"><b>Status:</b> Optional; may not be repeated. </p>
 
     <p class="item">
     <b>Description:</b> This message contains information needed by the
@@ -13893,8 +13908,8 @@ TABLE.list TD { border:none; }
     <h4><a name="AinfoMessage">Name: Attribute Info Message</a></h4>
 
     <p class="item"><b>Header Message Type:</b> 0x0015</p>
-    <p class="item"><b>Length:</b> varies </p>
-    <p class="item"><b>Status:</b> Optional, may not be repeated. </p>
+    <p class="item"><b>Length:</b> Varies </p>
+    <p class="item"><b>Status:</b> Optional; may not be repeated. </p>
 
     <p class="item"><b>Description:</b> This message stores information about the
         attributes on an object, such as the maximum creation index for
@@ -13962,10 +13977,10 @@ TABLE.list TD { border:none; }
 	<td>Flags</td>
 	  <td><p>This is the attribute index information flag with the
                 following definition:
-	      </p>
-            <table class="list">
+	      
+            <table width="100%" class="list">
                 <tr>
-                  <th width="30%">Bit</th>
+                  <th width="20%">Bit</th>
                   <th align="left">Description</th>
                 </tr>
 
@@ -13983,7 +13998,7 @@ TABLE.list TD { border:none; }
                   <td align="center"><code>2-7</code></td>
                   <td>Reserved</td>
                 </tr>
-	    </table>
+	    </table></p>
             
           </td>
 	</tr>
@@ -14026,12 +14041,12 @@ TABLE.list TD { border:none; }
     <h4><a name="RefCountMessage">Name: Object Reference Count</a></h4>
 
     <p class="item"><b>Header Message Type:</b> 0x0016 </p>
-    <p class="item"><b>Length:</b> fixed </p>
-    <p class="item"><b>Status:</b> Optional, may not be repeated. </p>
+    <p class="item"><b>Length:</b> Fixed </p>
+    <p class="item"><b>Status:</b> Optional; may not be repeated. </p>
 
-    <p class="item"><b>Description:</b> This message stores the number of hard
-        links (in groups or objects) pointing to an object (i.e. its
-        <em>reference count</em>).
+    <p class="item"><b>Description:</b> This message stores the number 
+    of hard links (in groups or objects) pointing to an object: in 
+    other words, its <em>reference count</em>.
     </p>
 
     <p class="item"><b>Format of Data:</b></p>
@@ -14093,8 +14108,8 @@ TABLE.list TD { border:none; }
     <h4><a name="FsinfoMessage">Name: File Space Info</a></h4>
 
     <p class="item"><b>Header Message Type:</b> 0x0018 </p>
-    <p class="item"><b>Length:</b> fixed </p>
-    <p class="item"><b>Status:</b> Optional, may not be repeated. </p>
+    <p class="item"><b>Length:</b> Fixed </p>
+    <p class="item"><b>Status:</b> Optional; may not be repeated. </p>
 
     <p class="item"><b>Description:</b> This message stores the file space management strategy
 	(see description below) that the library uses in handling file space request for the file.
@@ -14181,10 +14196,10 @@ TABLE.list TD { border:none; }
 	<tr>
 	  <td>Strategy</td>
 	  <td><p>This is the  file space management strategy for the file.
-		 There are four types of strategies:</p>
-            <table class="list">
+		 There are four types of strategies:
+            <table width="100%" class="list">
                 <tr>
-                  <th width="15%">Value</th>
+                  <th width="20%">Value</th>
                   <th align="left">Description</th>
                 </tr>
 
@@ -14245,7 +14260,7 @@ TABLE.list TD { border:none; }
 		      the library requests space from the virtual file driver. 
                   </td>
                 </tr>
-            </table>
+            </table></p>
 	  </td>
 	</tr>
 
@@ -14330,32 +14345,35 @@ TABLE.list TD { border:none; }
     pointed to with the size of the pointer being the same number of bytes as
     offsets in the file.</p>
 
-<p>Dataset region references are stored as a heap-ID which points to the
-    following information within the file-heap: an offset of the object pointed
-    to, number-type information (same format as header message), dimensionality
-    information (same format as header message), sub-set start and end
-    information (i.e. a coordinate location for each), and field start and end
-    names (i.e.  a [pointer to the] string indicating the first field included
-    and a [pointer to the] string name for the last field).  </p>
+<p>Dataset region references are stored as a heap-ID which points to 
+the following information within the file-heap: an offset of the object 
+pointed to, number-type information (same format as header message), 
+dimensionality information (same format as header message), sub-set start 
+and end information (in other words, a coordinate location for each), 
+and field start and end names (in other words, a [pointer to the] string 
+indicating the first field included and a [pointer to the] string name 
+for the last field).  </p>
 
 <p>Data of a compound datatype is stored as a contiguous stream of the items
     in the structure, with each item formatted according to its datatype.</p>
     <br />
 
 <hr />
-<h3><a name="AppendixA">Appendix A</a></h3>
+<h3><a name="AppendixA">Appendix A: Definitions</a></h3>
 <p>Definitions of various terms used in this document.
 </p>
 
-<p>The <a name="UndefinedAddress">&ldquo;undefined address&rdquo;</a> for a file is a
-file address with all bits set, i.e. <code>0xffff...ff</code>.</p>
+<p>The <a name="UndefinedAddress">&ldquo;undefined address&rdquo;</a> 
+for a file is a file address with all bits set: in other words, 
+<code>0xffff...ff</code>.</p>
 
-<p>The <a name="UnlimitedDim">&ldquo;unlimited size&rdquo;</a> for a size is a
-value with all bits set, i.e. <code>0xffff...ff</code>.</p>
+<p>The <a name="UnlimitedDim">&ldquo;unlimited size&rdquo;</a> for a 
+size is a value with all bits set: in other words, 
+<code>0xffff...ff</code>.</p>
 <br />
 
 <hr />
-<h3><a name="AppendixB">Appendix B</a></h3>
+<h3><a name="AppendixB">Appendix B: File Memory Allocation Types</a></h3>
 <p>There are six basic types of file memory allocation as follows:
 </p>
     <div align="center">
