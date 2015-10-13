@@ -184,6 +184,14 @@ in the transition from HDF5 Release 1.8.15 to Release 1.8.16.
 -->
 
 
+<!--
+<br />&nbsp;
+<br />&nbsp;
+<br />&nbsp;
+<br />
+-->
+
+ 
 <a name="1816">
 <h2>Release 1.8.16 of November 2015 (current release) versus Release 1.8.15</h2>
 </a>
@@ -201,20 +209,7 @@ in the transition from HDF5 Release 1.8.15 to Release 1.8.16.
             <dt><strong>In the C Interface (main library)</strong>
                 </dt>
 
-
-            <dt>The following new C function has been added:
-                </dt>
-                <dd>A function that reports whether the linked
-                    version of the HDF5 Library was built 
-                    with the thread-safety feature enabled.
-                    <ul>
-                    <li><a href="../RM/RM_H5.html#Library-IsLibraryThreadsafe">
-                        <code>H5is_library_threadsafe</code></a>
-                    </ul>
-                    </dd>
-
-            <p />
-            <dt>HDF5 Plugin Interface (H5PL) 
+            <dt>New HDF5 Plugin Interface (H5PL) 
                 </dt>
                 <dd>A new HDF5 Plugin Interface (H5PL), enabling 
                     programmatic control of dynamically loaded plugins, 
@@ -240,6 +235,105 @@ in the transition from HDF5 Release 1.8.15 to Release 1.8.16.
                         </ul>
                     </ul>
                 </dd>
+
+            <p />
+            <dt>The following new C function has been added:
+                </dt>
+                <dd>This function reports whether the linked
+                    version of the HDF5 Library was built 
+                    with the thread-safety feature enabled.
+                    <ul>
+                    <li><a href="../RM/RM_H5.html#Library-IsLibraryThreadsafe">
+                        <code>H5is_library_threadsafe</code></a>
+                    </ul>
+                    </dd>
+
+            <p />
+            <dt>The following flag has been removed:
+                </dt>
+                <dd><code>H5F_ACC_DEBUG</code> flag for 
+                    <code>H5Fopen/create</code>
+                    <font size="1"><br />&nbsp;<br /></font>
+                    The flag <code>H5F_ACC_DEBUG</code> was used to provide 
+                    extra debugging information for HDF Library developers.
+                    This flag and the underlying functionality have been 
+                    removed from the library due to disuse. 
+                    The symbol remains defined since it was visible in
+                    <code>H5Fpublic.h</code>, but it has been set to 
+                    zero&nbsp;(<code>0</code>) and has no effect anywhere 
+                    in the library.
+                    <ul>
+                    <li><a href="../RM/RM_H5F.html#File-Open">
+                        <code>H5Fopen</code></a>
+                    </ul>
+                    </dd>
+        </dl>
+        </dir>
+
+
+    <h3>Library Configuration</h3>
+        <dir>
+        <dl>    
+            <p />
+            <dt>Use of thread-safety with the HDF5 High-level Library
+                has been declared unsupported in the build tools: 
+                Autotools and CMake.
+                <br />&nbsp;
+                </dt>
+                <dd>The global lock used by the thread-safety mechanism 
+                    is not raised to the high-level library level, 
+                    making it possible that the library state could change 
+                    if a context switch were to occur in a high-level library 
+                    call. Because of this, the combination of thread-safety 
+                    and the high-level library is officially unsupported by
+                    The HDF Group.
+                    <p>
+                    Though this combination has never been supported in HDF5, 
+                    this was not enforced by the build systems. 
+                    With this release, the combination has been explicitly 
+                    flagged as unsupported in Autotools and CMake, 
+                    the build systems used with HDF5.
+                    <p>
+                    The new unsupported declaration will cause an Autotools 
+                    configure step to fail if <code>--enable-threadsafe</code> 
+                    and <code>--enable-hl</code> are combined unless 
+                    additional options are specified (see below).
+                    Since the high-level library is built by default, 
+                    this means that these extra configuration options will 
+                    need to be used any time <code>--enable-threadsafe</code> 
+                    is selected.
+                    <p>
+                    To use Autotools to build an application with 
+                    <code>--enable-threadsafe</code>, 
+                    use one of the following approaches:
+                    <ul>
+                        <li>Use <code>--disable-hl</code> to disable the 
+                            high-level library. 
+                            <i>(Recommended)</i>
+                            </li>
+                        <li>Use <code>--enable-unsupported</code> to build the 
+                            high-level library with the thread-safety feature. 
+                            </li>
+                    </ul>
+                    <p>
+                    To use CMake to build an application with 
+                    <code>HDF5_ENABLE_THREADSAFE=ON</code>, 
+                    use one of the following approaches:
+                    <ul>
+                        <li>Use <code>HDF5_BUILD_HL_LIB=OFF</code> 
+                            to disable the high-level library. 
+                            <i>(Recommended)</i>
+                            </li>
+                        <li>Use <code>HDF5_ALLOW_UNSUPPORTED=ON</code> 
+                            to build the high-level library with the 
+                            thread-safety feature. 
+                            </li>
+                    </ul>
+                    <p>
+                    Since this combination is unsupported, applications 
+                    using it must be carefully tested for potential 
+                    thread-safety failures.
+                </dd>    
 
 
         </dl>
@@ -720,7 +814,7 @@ Release to Release for HDF5 Releases 1.4.0 through 1.6.10</a>&rdquo;.
 <!-- Created: Spring 1999 -->
 <!-- hhmts start -->
 <hr />
-Last modified: 25 September 2015
+Last modified: 13 October 2015
 <!-- hhmts end -->
 <br />
 <br />
