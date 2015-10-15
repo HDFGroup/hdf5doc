@@ -261,6 +261,61 @@ Combination $\mathrm{\land}$ Combination & None \\
 \end{tabular}
 \end{table}
 
+\subsection{Cross Container Queries}
+
+In the case where multiple containers (files, locations) need to be queried,
+a single query operation may be used instead of performing individual queries
+on each container. Performing queries across multiple containers with a single
+operation can enable analysis operations to generate an aggregated
+view of query results more easily, as well as enable a silent execution of the
+query in parallel, thereby reducing the time to generate a view from multiple containers.
+
+The first extension to the previously described \texttt{H5Qapply} call is defined
+with the following routine, \texttt{H5Qapply\_multi}:
+
+{\lstsetc
+\begin{lstlisting}
+hid_t H5Qapply_multi(size_t loc_count, hid_t *loc_ids, hid_t query_id,
+  unsigned *result, hid_t vcpl_id);
+\end{lstlisting}
+}
+
+Location IDs specified may be entire containers, groups in a container's hierarchy
+or individual datasets within a container. These locations may reside within the
+same container, or in multiple containers. Additionally, the \texttt{H5Qapply\_str}
+routine allows the user to provide container names instead of HDF5 locations:
+
+{\lstsetc
+\begin{lstlisting}
+hid_t H5Qapply_str(size_t cont_count, const char *cont_name[], hid_t query_id,
+  unsigned *result, hid_t vcpl_id);
+\end{lstlisting}
+}
+
+As a direct consequence, one may want to pass queries that match a particular
+container name. Therefore the \texttt{H5Q\_TYPE\_CONT\_NAME} query type can be
+used to construct a query that matches this new condition. The matching
+condition may be passed in the form of a file name or a regular
+expression.
+
+(Optional?) Apply query on all the containers of a given directory with \texttt{H5Qapply\_dir}
+{\lstsetc
+\begin{lstlisting}
+hid_t H5Qapply_dir(const char *path, hid_t query_id, unsigned *result, hid_t vcpl_id);
+\end{lstlisting}
+}
+
+Applying cross-container queries creates a view that contains references
+to external locations (as opposed to the previous \texttt{H5Qapply} call where
+references were internal). Therefore, the extended HDF5 reference object
+also includes a container identifier so that, when the view result is
+given back to the user, a subsequent call to \texttt{H5Rdereference} can return
+a reference to an object within an externally referenced container\footnote{
+As a result, the HDF5 reference API does not require any changes.}.
+
+Parallel execution of the query optional? \textit{Pass hint for parallel execution
+through property list.}
+
 \section{Index Objects}
 Index objects are designed to accelerate creation of views from query operations.
 For example, if the ``$\mathrm{(link\_name = Pressure)}$
@@ -269,9 +324,11 @@ $\mathrm{\land}$ $\mathrm{(data\_element = 17)}$'' query
 on a container that contains significantly large datasets, indices
 could be created in that container, which would speed up the
 creation of views when querying for link names and for data element values.
-Indices created for accelerating the $link\_name = Pressure$ or $data\_element = 17$ queries
+Indices created for accelerating the  ``$\mathrm{(link\_name = Pressure)}$'' or
+``$\mathrm{(data\_element}$ $\mathrm{= 17)}$'' queries
 would also improve view creation for the more complex
-$(link\_name = Pressure)\land(data\_element = 17)$ query.
+``$\mathrm{(link\_name = Pressure)}$ $\mathrm{\land}$
+$\mathrm{(data\_element = 17)}$'' query.
 Although creating indices for metadata components of queries, such as link or
 attribute names, is possible, we first focus on index creation for dataset elements,
 as they represent the largest volume of data in typical HPC application usage of
@@ -434,7 +491,7 @@ available again.}
 available? \textit{We could fallback to another plugin and do a brute force query on the data.}
 \end{enumerate}
 
-\subsection{Support for HDF5 Compound Types}
+\subsection{Support for HDF5 Compound Types (TBD)}
 
 In a simple scenario, the HDF5 datatype used for creating the dataset can be defined
 as a native and simple type. Therefore, building an index on this dataset implies
@@ -459,7 +516,7 @@ corresponds to a particular field. This can be achieved by calling \texttt{H5Xge
 compare the datatype returned within the info structure, and pass the index number
 that needs to be removed.
 
-\subsection{Support for HDF5 Chunking}
+\subsection{Support for HDF5 Chunking (TBD)}
 
 To support indexing of HDF5 chunks, we make each chunk a local \textit{sub-dataset}
 of the original dataset. In that sense, handling every chunk can be seen as handling
@@ -490,7 +547,7 @@ added to a global selection, which is then in turn returned to the user.
 Finally, when \texttt{H5Xremove} is called, the \texttt{delete} plugin callback is
 invoked for each chunk, by using the index metadata information stored in the B-tree.
 
-\subsection{Support for Parallel Indexing}
+\subsection{Support for Parallel Indexing (TBD)}
 
 An important design choice to support parallel indexing is to give as much
 freedom as possible to the indexing plugin developer so that in the case when
@@ -603,7 +660,7 @@ main(int argc, char *argv[])
     dataset_id = H5Dopen(file_id, "Pressure", H5P_DEFAULT);
 
     /* Use query to select elements in the dataset. */
-    result_space_id = H5Dquery(dataset_id, query_id);
+    result_space_id = H5Dquery(dataset_id, H5S_ALL, query_id, H5P_DEFAULT);
 
     /* Allocate space to read data. */ 
     result_npoints = (size_t) H5Sget_select_npoints(result_space_id);
@@ -614,6 +671,7 @@ main(int argc, char *argv[])
         H5P_DEFAULT, result);
 
     /* Use result. */
+    [...]
 
     /* Free result. */
     free(result);
