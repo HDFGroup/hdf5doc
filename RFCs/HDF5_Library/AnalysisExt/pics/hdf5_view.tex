@@ -1,0 +1,50 @@
+\tikzstyle{groupBox} = [draw, ellipse, fill=white, minimum size=20pt,
+  text centered, font=\footnotesize\sffamily, text width=20pt, inner sep=0]
+
+\tikzstyle{textBox} = [fill=white, inner sep=2pt, text centered, font=\footnotesize\sffamily]
+
+\tikzstyle{link} = [->, thick, >=stealth', shorten <=1pt, shorten >=1pt]
+
+\pgfmathsetseed{1}
+
+\def\drawdataset#1{%
+\begin{scope}[#1]
+  \foreach \y in {-0.5} {
+      \foreach \x in {-2.5,-1.5,-0.5,0.5,1.5} {
+          \path[fill=white, draw] (\x,\y) rectangle ++(1,1);
+      }
+  }
+\end{scope}
+}
+
+\begin{tikzpicture}
+
+% View
+\node[groupBox] (view) {/};
+
+% Refs
+\node[below=30pt of view, inner sep=0] (viewgroup) {};
+
+\node[rectangle, text height=7pt, left=70pt of viewgroup, inner sep=0] (obj_ref) {};
+\drawdataset{shift=(obj_ref.south), scale=0.3}
+\node[rectangle, text height=7pt, below=10pt of viewgroup, inner sep=0] (reg_ref) {};
+\drawdataset{shift=(reg_ref), scale=0.3}
+\node[rectangle, text height=7pt, right=70pt of viewgroup, inner sep=0] (attr_ref) {};
+\drawdataset{shift=(attr_ref.south), scale=0.3}
+\node[left=12pt of obj_ref] (g1) {};
+\node[right=12pt of attr_ref] (g2) {};
+
+% Links
+\draw[link] (view) -- node [textBox] {Obj\_refs} (obj_ref);
+\draw[link] (view) -- node [textBox] {Reg\_refs} (reg_ref);
+\draw[link] (view) -- node [textBox] {Attr\_refs} (attr_ref);
+
+\begin{scope}[on background layer, shape aspect=.10]
+\tikzset{every node/.style={cylinder, shape border rotate=90, draw}}
+\node [fit=(view) (obj_ref) (reg_ref) (attr_ref) (g1) (g2)] {};
+\end{scope}
+
+
+
+%\node [minimum width=1.5cm] at (1.5,0) {B};
+\end{tikzpicture}

@@ -17,15 +17,8 @@
 %% Conditional packages (can be disabled)
 \def\@empty{}
 \def\@yes{yes}
-\def\@requireamsmath{yes}
 \def\@requirebooktabs{yes}
 \def\@requirehyper{}
-
-%% Use AMS math packages
-\DeclareOption{noams}{%
-  \def\@requireamsmath{}}
-\DeclareOption{ams}{%
-  \def\@requireamsmath{yes}}
 
 %% Change footnote markers to alphabetic
 \DeclareOption{alphafoot}{%
@@ -74,17 +67,52 @@
 %% Base class
 \LoadClass[11pt]{scrartcl}
 
+% Conditional packages
+\RequirePackage{ifpdf}
+%\RequirePackage{ifthen}
+\RequirePackage{ifluatex}
+
 % Use English by default
 \RequirePackage[english]{babel}
 
 %% Graphics
-\ifx\pdfoutput
-  \RequirePackage[dvips]{graphicx}
-\else
+\ifpdf
   \RequirePackage[pdftex]{graphicx}
   \DeclareGraphicsExtensions{.pdf,.jpeg,.jpg,.png}
   % For transparency
   \pdfpageattr{/Group <</S /Transparency /I true /CS /DeviceRGB>>}
+\else
+  \RequirePackage[dvips]{graphicx}
+\fi
+
+% Font
+\ifluatex
+  \RequirePackage{luatextra, xunicode}
+  \defaultfontfeatures{Ligatures=TeX}
+  \setmainfont[
+    UprightFont={*},
+    BoldFont={*-Bold},
+    ItalicFont={*-Italic},
+    BoldItalicFont={*-BoldItalic},
+    SlantedFont={*-Italic},
+    BoldSlantedFont={*-BoldItalic}
+  ]{CMU Serif}
+  \setsansfont[
+    UprightFont={*},
+    BoldFont={*-Bold},
+    ItalicFont={*-Oblique},
+    BoldItalicFont={*-BoldOblique}
+  ]{CMU Sans Serif}
+  \setmonofont[
+    UprightFont={*-Regular},
+    BoldFont={*-Bold},
+    ItalicFont={*-Italic},
+    BoldItalicFont={*-BoldItalic}
+  ]{CMU Typewriter}
+\else
+  \RequirePackage{times}
+  \RequirePackage[scaled=.95]{helvet}
+  \RequirePackage{courier}
 \fi
 
 %% If building with PDFLaTeX, use microtype spacing adjustments
@@ -96,21 +124,27 @@
 %% Used to center the variable width page quote (must be version >= 0.9a)
 \RequirePackage{varwidth}[2003/03/10]
 
-%% AMS math package (optional)
-\ifx\@requireamsmath\@empty\else%
-  \RequirePackage{amsmath}
-  \AtEndOfPackage{%
-    %% Displayed maths environments re-defined to be the same as AMS' align
-    \renewenvironment{displaymath}{\align}{\endalign\ignorespacesafterend}
-    \newenvironment{displaymath*}%
-      {\expandafter\let\expandafter\@oldoldalignstar \csname align*\endcsname \@oldoldalignstar}%
-      {\expandafter\let\expandafter\@oldoldendalignstar \csname endalign*\endcsname \@oldoldendalignstar \ignorespacesafterend}
-    \renewenvironment{equation}{\align}{\endalign\ignorespacesafterend}
-    \renewenvironment{equation*}%
-      {\expandafter\let\expandafter\@oldoldalignstar \csname align*\endcsname \@oldoldalignstar}%
-      {\expandafter\let\expandafter\@oldoldendalignstar \csname endalign*\endcsname \@oldoldendalignstar \ignorespacesafterend}
-  }%
+%% Math font
+\RequirePackage{amsmath}
+\RequirePackage{mathtools}
+\ifluatex
+  \RequirePackage{unicode-math, lualatex-math}
+  \setmathfont[math-style=ISO, bold-style=ISO]{Asana Math}
+\else
+  \RequirePackage{amssymb}
+  \newcommand{\lgblksquare}{\blacksquare}
 \fi
+\AtEndOfPackage{%
+  %% Displayed maths environments re-defined to be the same as AMS' align
+  \renewenvironment{displaymath}{\align}{\endalign\ignorespacesafterend}
+  \newenvironment{displaymath*}%
+  {\expandafter\let\expandafter\@oldoldalignstar \csname align*\endcsname \@oldoldalignstar}%
+  {\expandafter\let\expandafter\@oldoldendalignstar \csname endalign*\endcsname \@oldoldendalignstar \ignorespacesafterend}
+  \renewenvironment{equation}{\align}{\endalign\ignorespacesafterend}
+  \renewenvironment{equation*}%
+  {\expandafter\let\expandafter\@oldoldalignstar \csname align*\endcsname \@oldoldalignstar}%
+  {\expandafter\let\expandafter\@oldoldendalignstar \csname endalign*\endcsname \@oldoldendalignstar \ignorespacesafterend}
+}%
 
 %% Use the \title and \author arguments to build the front page etc.
 %% Re-define \title and \author to store their args in \thetitle, \theauthor variables
@@ -122,13 +156,13 @@
 \renewcommand*\date[1]{\gdef\@date{#1}\global\let\thedate\@date}%
 \newcommand*\rfcversion[1]{\gdef\@rfcversion{#1}\global\let\therfcversion\@rfcversion}%
 
+%% Use the \revision argument to build list of revisions.
 \def\revisions{}
 \newcounter{revision}
-% Adds a new reviewer
+% Adds a new revision
 \def\revision#1#2{\g@addto@macro\revisions{%
  {\itshape{#1}:} & {#2} \\}
 }
-%\newcommand*\rfcrevision[1]{\gdef\@rfcrevision{#1}\global\let\therfcrevision\@rfcrevision}%
 
 %% Nice tables (optional)
 \ifx\@requirebooktabs\@empty\else%
@@ -157,25 +191,25 @@
 %% Funky headers
 \RequirePackage{fancyhdr}
 
+%% Nicer itemize
+\def\labelitemi{\tiny$\lgblksquare$}
+
 % For colors
 \RequirePackage{xcolor}
 \definecolor{rulecolor}{RGB}{73,126,191}
 
-% LastPage
+% For number of pages
 \RequirePackage{lastpage}
 
 %% Verbatim things
 \RequirePackage{verbatim}
-
-%% TODO
-\RequirePackage{todonotes}
 
 % Float package
 \RequirePackage{float}
 
 %% Re-defines captions of figures and tables
 %% TODO: make configurable / optional?
-\RequirePackage[format=hang,labelfont=bf,labelsep=space,font=small]{caption}
+\RequirePackage[format=hang,labelfont=bf,labelsep=endash,font=small]{caption}
 
 % Subfigures
 \RequirePackage[labelfont=bf,labelsep=space,list=true]{subcaption}
@@ -274,16 +308,6 @@
 }
 
 %% ========================================================================
-%% Internal environments and commands
-%% ========================================================================
-\AtEndOfClass{%
-  \usepackage[babel]{csquotes}[2007/03/25]
-  %% Provide dumb quoting commands in case the csquotes package hasn't been used.
-  \providecommand{\enquote}[1]{``#1''}%
-  \providecommand{\foreignquote}[1]{``#1''}%
-}
-
-%% ========================================================================
 %% Public environments and commands
 %% ========================================================================
 
@@ -311,7 +335,7 @@
   {\color{rulecolor}\rule{\headwidth}{\headrulewidth}}%
 }
 
-%% A quote on its own page
+%% List of revisions
 \DeclareRobustCommand{\makerevisions}[1]{%
   \begin{flushleft}%
     \begin{tabular}{ll}%
@@ -319,7 +343,6 @@
     \end{tabular}%
   \end{flushleft}%
 }
-
 
 %% Bold inline section heading with a finishing colon
 \DeclareRobustCommand{\verysubsection}[1]{{\noindent\textbf{#1:}}}
