@@ -5,40 +5,99 @@
 <strong>
 Accessing objects by location and name:
 </strong></a>
-<br>
 
-Many HDF5 function calls use a combination of a location and name
-to identify an HDF5 object.
+<p>To work with an HDF5 object, an application needs the object's 
+location identifier. An object's location identifier is returned to an 
+application after the object is opened. </p>
+
+<p>To open an object, an application uses a function with three parameters: 
+the location identifier of an already opened object, a path from the already 
+opened object to the object that will be opened, and a property list. The 
+location identifier of an already opened object is its <code>loc_id</code>. 
+An already opened object might be a file or a group. The path from the 
+already opened object to the object that will be opened is kept in 
+the <code>name</code> parameter. The path will be one or more links. 
+For the rest of this discussion, we will assume that the default property 
+list, <code>H5P_DEFAULT</code>, is used. </p>
+
+<p>See the <i>HDF5 Reference Manual</i> entries for the <code>H5Dopen</code>, 
+<code>H5Gopen</code>, <code>H5Oopen</code>, and <code>H5Topen</code> 
+functions for more information on opening datasets, groups, objects, and 
+datatypes.</p>
+
+
+<br /><br /><br />
+an identifier from the file where the object is located and the 
+path from the identifier to the object. The identifier is usually 
+known as <code>loc_id</code>. <code>loc_id</code> is short for 
+location identifier. The path from the identifer is 
+</p>
+
+<br /><br /><br />
+<p>* 
+<p> ??????? The process of identifying an object is to specify a path to 
+the object from a known location. </p>
+
+<p>Suppose we wanted to read the dataset that is the target of the 
+<code>dset3</code> link in the figure below. The <code>H5Dread</code> 
+function call needs an identifier for the dataset. How does an application 
+go about getting that identifier?</p>
+
+
+
+<p>The identifier that is returned from this process 
+can then be used when the object is operated on.
+
+
+
+The <code>loc_id</code> and <code>name</code> 
+parameters are used in many HDF5 function calls to specify a known 
+location 
+
+</p>
+
+
+
+
+
+
+
+
+<p>??????? </p>
+
+
+<p>Many HDF5 function calls use a combination of a location and name
+to identify an HDF5 object. </p>
 <p>
 The location will be specified by a location identifier, <code>loc_id</code>, 
-and will be an HDF5 file or an object in a file, 
-such as a group, dataset or named datatype. 
-<p>
-The name, <code>name</code>, will be a character string and
-will specify an object in an HDF5 file, 
-such as a group, dataset or named datatype.
-<code>name</code> will specify that object by 
-either an absolute path in the file specified by <code>loc_id</code> 
-or by a relative path  relative to <code>loc_id</code>.
-<p>
+and will be an HDF5 file or object such as a group, dataset, or committed 
+datatype*. </p>
 
-<table border=1 align=right width=210><tr>
+<p>
+The name parameter, <code>name</code>, will be a character string and
+will specify the links to an object in an HDF5 file.
+The link or links to the object will be either an absolute path 
+or a relative path. An absolute path will include all of the links from 
+the root group to the object. A relative path will include all of the 
+links from any other group to the object.</p>
+
+
+<table border=1 align=right ><tr>
     <td align=center>
-        <img src="../UG/Images/Dmodel_fig40_d+g3.jpg" width=250>    
+        <img src="../UG/Images/Dmodel_fig40_d+g3.jpg" width=300>    
 <!--    <img src="./Dmodel_fig40_d.jpg" width=250> -->
-    </td></tr><tr><td align=center>
-        Sample file structure:<br><code>DATA_FILE1</code>
+    </td></tr><tr><td align="left"><b>
+    Figure 1: File structure for DATA_FILE1</b>
 </tr></table>
 
 <p>
-The <code>loc_id</code> and <code>name</code> combination,
-as used in these function calls, can interact in any of several ways.
-To illustrate, the following combinations all identify <code>dset3</code> 
-in the illustrated file structure.
+Several <code>loc_id</code> and <code>name</code> combinations are 
+possible. To illustrate, the following combinations all identify 
+<code>dset3</code> in the file structure in the figure.
 <ul>
     <li>If <code>loc_id</code> is a file identifier,
         <code>name</code> must specify the object from the file&rsquo;s
-        root group, i.e., by an absolute path.
+        root group.
         <p>
         <code>loc_id</code> specifies the file <code>DATA_FILE1</code>.
         <br>
@@ -53,15 +112,15 @@ in the illustrated file structure.
 -->
     <li>If <code>loc_id</code> is a group identifier 
         and the object of interest is a member of that group,
-        <code>name</code> will simply be the name of the object.
+        <code>name</code> will simply be the name of the link to the object.
         <p>
         <code>loc_id</code> specifies <code>group3</code>.
         <br>
         <code>name = 'dset3'</code>                                    &nbsp;
     <li>If <code>loc_id</code> is a group identifier 
         but the object of interest is not a direct member of that group,
-        <code>name</code> would generally specify the object by a relative 
-        pathe, relative to that group.
+        <code>name</code> would specify the object by a path relative 
+        to that group.
         <p>
         <code>loc_id</code> specifies <code>group2</code>.
         <br>
@@ -94,11 +153,15 @@ the limitations are mentioned in the function&rsquo;s reference manual entry.
 
 <p>
 For a related discussion of the structure of HDF5 files and HDF5 path names, 
-see &ldquo;<a href="../UG/03_DataModel.html#Structure">The 
+see &ldquo;<a href="../UG/HDF5_Users_Guide-Responsive%20HTML5/index.html#t=HDF5_Users_Guide%2FDataModelAndFileStructure%2FThe_HDF5_Data_Model_and_File_Structure.htm%23TOC_1_4_The_Structure_of_anbc-14&rhtocid=1.3">The 
 Structure of an HDF5 File</a>&rdquo;
-(particularly the subsection &ldquo;HDF5 Path Names and Navigation&rdquo;)
-in the &ldquo;<a href="../UG/UG_frame03DataModel.html">HDF5 
-Data Model and File Structure</a>&rdquo chapter
-of the <cite>HDF5 User&rsquo;s Guide</cite>.
+(particularly the sub-section &ldquo;HDF5 Path Names and Navigation&rdquo;)
+in the &ldquo;<a href="../UG/HDF5_Users_Guide-Responsive%20HTML5/index.html#t=HDF5_Users_Guide%2FDataModelAndFileStructure%2FThe_HDF5_Data_Model_and_File_Structure.htm">HDF5 
+Data Model and File Structure</a>&rdquo; chapter
+of the <cite>HDF5 User&rsquo;s Guide</cite>.</p>
+<br />
+<p>
+* In the past, a committed datatype was known as a named datatype.
+</p>
  
 
