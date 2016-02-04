@@ -2,16 +2,18 @@
 When working on large datasets, finding and selecting the interesting pieces of
 the data can be a cumbersome process. Currently, the HDF5 library enables the 
 application developer to select, read and write data but does not provide any 
-mechanism to select and retrieve pieces without prior knowledge of their
+mechanism to select and retrieve pieces without prior knowledge of its
 content, or without the developer to provide the exact data coordinates that
 he is willing to access. To satisfy that need, one must be able
 to issue queries by specifying a data selection criteria. These queries,
-when applied to the data, can then generate a selection, which contains the coordinates
-that satisfy the query---this may imply accessing the data and selecting it,
-depending on the query condition satisfaction. To accelerate and facilitate this
-process (i.e., so that the data no longer needs to be directly accessed), one can
-use indexing techniques, which consist of generating an index and using that index
-to answer the query selection criteria and find the matching elements.
+applied to the data, can then generate a selection, which in turn contains a
+set of coordinates
+satisfying the query. However, generating a selection may actually imply accessing the
+data. To accelerate and facilitate that
+process (i.e., so that the actual data no longer needs to be accessed), one can
+also generate indexes and use these indexes
+to directly answer the specified query, by finding the coordinates of the matching
+elements directly from the index.
 
 We define in this RFC the components that can enable application developers to
 create complex and high-performance queries on both metadata and data elements
@@ -23,7 +25,7 @@ operations. Support for these operations can be defined via:
 container.\label{fn:object}} and API routines, enabling the construction of
 query requests for execution on HDF5 containers;
 \item New \textit{index} objects and API routines, which allows the creation of
-indices on the contents of HDF5 containers, to improve query performance.
+indexes on the contents of HDF5 containers, to improve query performance.
 \end{itemize}
 
 \section{Query Objects}
@@ -77,7 +79,6 @@ new query object, using boolean operators such as:
 \end{itemize}
 Queries created with \texttt{H5Qcombine} can be used as input to further
 calls to \texttt{H5Qcombine}, creating more complex queries.
-
 For example, a single call to \texttt{H5Qcreate} could create a query object
 that would match data elements in any dataset within the container that are
 equal to the value ``$\mathrm{17}$''. Another call to \texttt{H5Qcreate} could create a
@@ -99,7 +100,7 @@ However, we regard this as out-of-scope for now.
 
 \subsection{Query Execution and Views}
 Applying a query to an HDF5 container creates an HDF5 \textit{view}. A view is
-an anonymous HDF5 group in a temporary memory container. A view group contains up to
+an anonymous HDF5 group created in a temporary memory container. A view group contains up to
 three 1-D dataset objects with references into the contents of the HDF5 container
 that the query was applied to:
 one with \textit{object} references, one with \textit{region} references and
@@ -117,7 +118,7 @@ A new view is created by the
 following \texttt{H5Qapply} routine, which applies a query to an HDF5 container,
 group hierarchy, or individual object and returns the object ID of the newly created
 group. The attributes, objects, and/or data regions referenced within a view's
-datasets can be retrieved by further HDF5 dataset (H5D*) API calls.
+datasets can be retrieved by further HDF5 dataset (\texttt{H5D*}) API calls.
 
 {\lstsetc
 \begin{lstlisting}
@@ -131,7 +132,7 @@ container) to a persistent container. For
 coherency, a time stamp may also be attached to it so that its states has a meaning
 compared to the state of the container that the query was applied to (as the
 container may have been modified in the meantime). It may be useful in
-that case to define different states to the view (\textit{dead} or
+the future to define different states to the view (\textit{dead} or
 \textit{live}) so that the user knows whether the view is current or not.
 
 %To further ease the retrieval of the results from the view and for convenience,
@@ -227,12 +228,21 @@ results of \textit{None} type may be implemented with another result type in the
 future, once experience with the query framework is acquired and a meaningful
 grammar for those results are defined.}.
 
-\begin{table}[ht]\footnotesize
-\caption{Query combinations and associated result reference type.}
-\label{tab:querycomb}
-\begin{tabular}{ll} \toprule
-Query &
-Result Type\\ \midrule
+\begin{longtable}{ll}
+\vspace{-30pt}\\
+\caption{Query combinations and associated result reference type.}\\
+\label{tab:querycomb} \vspace{-10pt} \\
+\toprule
+Query & Result Type\\ \midrule
+\endfirsthead
+\toprule
+Query & Result Type\\ \midrule
+\endhead
+\multicolumn{2}{c}{\ldots}\\
+\bottomrule
+\endfoot
+\bottomrule
+\endlastfoot
 \texttt{H5Q\_TYPE\_DATA\_ELEM} & Dataset~Region \\
 \texttt{H5Q\_TYPE\_ATTR\_VALUE} & Attribute \\
 \texttt{H5Q\_TYPE\_ATTR\_NAME} & Attribute \\
@@ -257,9 +267,7 @@ Combination $\mathrm{\land}$ Dataset~Element & None \\
 Combination $\mathrm{\land}$ Attribute & None \\
 Combination $\mathrm{\land}$ Object & None \\
 Combination $\mathrm{\land}$ Combination & None \\
-\bottomrule
-\end{tabular}
-\end{table}
+\end{longtable}
 
 \subsection{Cross Container Queries}
 
@@ -275,61 +283,59 @@ with the following routine, \texttt{H5Qapply\_multi}:
 
 {\lstsetc
 \begin{lstlisting}
-hid_t H5Qapply_multi(size_t loc_count, hid_t *loc_ids, hid_t query_id,
+hid_t H5Qapply_multi(size_t loc_count, hid_t loc_ids[], hid_t query_id,
   unsigned *result, hid_t vcpl_id);
 \end{lstlisting}
 }
 
 Location IDs specified may be entire containers, groups in a container's hierarchy
 or individual datasets within a container. These locations may reside within the
-same container, or in multiple containers. Additionally, the \texttt{H5Qapply\_str}
-routine allows the user to provide container names instead of HDF5 locations:
-
-{\lstsetc
-\begin{lstlisting}
-hid_t H5Qapply_str(size_t cont_count, const char *cont_name[], hid_t query_id,
-  unsigned *result, hid_t vcpl_id);
-\end{lstlisting}
-}
-
-As a direct consequence, one may want to pass queries that match a particular
-container name. Therefore the \texttt{H5Q\_TYPE\_CONT\_NAME} query type can be
-used to construct a query that matches this new condition. The matching
-condition may be passed in the form of a file name or a regular
-expression.
-
-(Optional?) Apply query on all the containers of a given directory with \texttt{H5Qapply\_dir}
-{\lstsetc
-\begin{lstlisting}
-hid_t H5Qapply_dir(const char *path, hid_t query_id, unsigned *result, hid_t vcpl_id);
-\end{lstlisting}
-}
-
+same container, or in multiple containers.
 Applying cross-container queries creates a view that contains references
 to external locations (as opposed to the previous \texttt{H5Qapply} call where
 references were internal). Therefore, the extended HDF5 reference object
 also includes a container identifier so that, when the view result is
 given back to the user, a subsequent call to \texttt{H5Rdereference} can return
 a reference to an object within an externally referenced container\footnote{
-As a result, the HDF5 reference API does not require any changes.}.
+Please refer to the H5R reference RFC.}.
 
-Parallel execution of the query optional? \textit{Pass hint for parallel execution
-through property list.}
+%Additionally, the \texttt{H5Qapply\_str}
+%routine allows the user to provide container names instead of HDF5 locations:
+%{\lstsetc
+%\begin{lstlisting}
+%hid_t H5Qapply_str(size_t cont_count, const char *cont_name[], hid_t query_id,
+%  unsigned *result, hid_t vcpl_id);
+%\end{lstlisting}
+%}
+%As a direct consequence, one may want to pass queries that match a particular
+%container name. Therefore the \texttt{H5Q\_TYPE\_CONT\_NAME} query type can be
+%used to construct a query that matches this new condition. The matching
+%condition may be passed in the form of a file name or a regular
+%expression.
+%(Optional?) Apply query on all the containers of a given directory with \texttt{H5Qapply\_dir}
+%{\lstsetc
+%\begin{lstlisting}
+%hid_t H5Qapply_dir(const char *path, hid_t query_id, unsigned *result, hid_t vcpl_id);
+%\end{lstlisting}
+%}
+
+%Parallel execution of the query optional? \textit{Pass hint for parallel execution
+%through property list.}
 
 \section{Index Objects}
 Index objects are designed to accelerate creation of views from query operations.
-For example, if the ``$\mathrm{(link\_name = Pressure)}$
+For example, if the previously described ``$\mathrm{(link\_name = Pressure)}$
 $\mathrm{\land}$ $\mathrm{(data\_element = 17)}$'' query
-(previously described) is going to be either frequently executed or executed
-on a container that contains significantly large datasets, indices
+is going to be either frequently executed or executed
+on a container that contains significantly large datasets, indexes
 could be created in that container, which would speed up the
 creation of views when querying for link names and for data element values.
-Indices created for accelerating the  ``$\mathrm{(link\_name = Pressure)}$'' or
+Indexes created for accelerating the  ``$\mathrm{(link\_name = Pressure)}$'' or
 ``$\mathrm{(data\_element}$ $\mathrm{= 17)}$'' queries
 would also improve view creation for the more complex
 ``$\mathrm{(link\_name = Pressure)}$ $\mathrm{\land}$
 $\mathrm{(data\_element = 17)}$'' query.
-Although creating indices for metadata components of queries, such as link or
+Although creating indexes for metadata components of queries, such as link or
 attribute names, is possible, we first focus on index creation for dataset elements,
 as they represent the largest volume of data in typical HPC application usage of
 HDF5. Queries with metadata components execute properly,
@@ -339,7 +345,7 @@ The indexing API can work in conjunction with the view creation. When an \texttt
 call is made on a given location, an index attached to any dataset queried
 for element value ranges will be used to speed up the query process and return
 a dataspace selection to the library for later use.
-There are different techniques for creating data element indices, and the most
+There are different techniques for creating data element indexes, and the most
 efficient method will vary depending on the type of the data that is to be
 indexed, its layout, etc. A new interface for the HDF5 library that uses a
 plugin mechanism is therefore defined.
@@ -349,7 +355,7 @@ plugin mechanism is therefore defined.
 This interface is defined for adding third-party indexing plugins,
 such as FastBit~\cite{Wu05}, ALACRITY~\cite{alacrity13}, etc.
 The interface provides indexing plugins with efficient access to the contents of
-the container for both the creation and the maintenance of indices. In addition,
+the container for both the creation and the maintenance of indexes. In addition,
 the interface allows third-party plugins to create private data structures
 within the container for storing the contents of the index.
 The current API as well as the plugin interface are presented below:
@@ -414,6 +420,7 @@ will call the plugin index close callback and close the objects used to store
 the index data.
 
 \begin{figure}
+\vspace{-30pt}
 \input{pics/hdf5_index}
 \caption{Index information (plugin ID and metadata) is stored along the object header.}
 \label{fig:hdf5_index}
@@ -432,8 +439,8 @@ hence saving repeated index computation/update calls.
 When a call to \texttt{H5Qapply} is made, the index plugin query callback will be
 invoked to create a selection of elements in the dataset that match the query
 parameters. Applications can also directly use the internally called
-\texttt{H5Dquery} routine defined below
-to directly execute a query on a particular dataset (accelerated by any index defined on the dataset),
+\texttt{H5Dquery} routine defined below to directly execute a query on a
+particular dataset (accelerated by any index defined on the dataset),
 and retrieve the selection that matches the query.
 
 {\lstsetc
@@ -443,7 +450,7 @@ hid_t H5Dquery(hid_t dset_id, hid_t space_id, hid_t query_id, hid_t xapl_id);
 }
 
 Because the amount of space taken by the index cannot be directly retrieved by
-the user (since the datasets storing the indices are known only by the plugin
+the user (since the datasets storing the indexes are known only by the plugin
 itself), the \texttt{get\_size} callback can query the amount of space that
 the index takes in the file and users may correspondingly query that information using the
 \texttt{H5Xget\_size} routine.
@@ -455,6 +462,7 @@ present, as well as a dummy brute force indexing plugin. Early performance resul
 are presented in~\FigureRef{fig:indexing_perf}.
 
 \begin{figure}
+\vspace{-10pt}
 \input{plots/indexing_perf}
 \caption{Indexing performance.}
 \label{fig:indexing_perf}
@@ -468,10 +476,10 @@ allowing external libraries to plug to the current interface.
 
 \subsection{Limitations}
 
-There are some existing limitations in the use of indices in the current
+There are some existing limitations in the use of indexes in the current
 implementation: FastBit and ALACRITY do not support incremental updates,
 an index is a shared resource for a dataset. Taken together, these conspire to
-put limits on application updates to datasets with indices.
+put limits on application updates to datasets with indexes.
 Additionally, because FastBit and ALACRITY do not allow incremental updates to
 an index, each modification to an existing index forces the index to be entirely
 rebuilt. The limitation in FastBit and ALACRITY will need to be addressed in
@@ -479,7 +487,7 @@ the base packages' implementation, so that incremental updates
 to their index information can be made.
 
 \subsubsection*{Questions}
-Some questions are still open regarding the handling of indices:
+Some questions are still open regarding the handling of indexes:
 \begin{enumerate}
 %\item How could an index be built and queried in parallel for a dataset that already exists?
 \item How to handle index updates when the specified index plugin is not available?
@@ -499,7 +507,7 @@ building that index from the entire dataset. However, in more complex scenarios,
 dataset may have been created by using a compound datatype, hence defining
 multiple fields composed of native and simple datatypes within that same dataset.
 Consequently, creating an index from that dataset requires the user to select a
-particular field to be indexed, which may lead to having multiple indices per dataset
+particular field to be indexed, which may lead to having multiple indexes per dataset
 depending on the number of fields that it contains. This can be done by passing
 the \texttt{datatype\_id} of the field to be indexed to the \texttt{xcpl\_id},
 the index creation property list, of the \texttt{H5Xcreate} call, which passes
@@ -580,7 +588,7 @@ interface more heavy.
 \section{HDF5 and tools}
 
 Existing HDF5 tools must be compatible and take into account the existence of
-indices in the file if there are any. For reference, the following behavior for
+indexes in the file if there are any. For reference, the following behavior for
 the tools is given:
 
 \begin{itemize}
