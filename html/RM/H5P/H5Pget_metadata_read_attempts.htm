@@ -1,0 +1,293 @@
+
+
+<!--
+  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+  * Copyright by The HDF Group.                                               *
+  * All rights reserved.                                                      *
+  *                                                                           *
+  * This file is part of HDF5.  The full HDF5 copyright notice, including     *
+  * terms governing use, modification, and redistribution, is contained in    *
+  * the files COPYING and Copyright.html.  COPYING can be found at the root   *
+  * of the source code distribution tree; Copyright.html can be found at the  *
+  * root level of an installed copy of the electronic HDF5 document set and   *
+  * is linked from the top-level documents page.  It can also be found at     *
+  * http://www.hdfgroup.org/HDF5/doc/Copyright.html.  If you do not have      *
+  * access to either file, you may request a copy from help@hdfgroup.org.     *
+  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+ -->
+
+
+<!--__ ***********************************************************  -->
+<!--__ Do not alter the next line; it is used by the PDF generator. -->
+<!--__ ***********************************************************  -->
+<!-- NEW PAGE -->
+<!-- HEADER RIGHT "H5Pget_metadata_read_attempts" -->
+<hr>
+<dl>
+
+  <dt><div align="right"><font color="999999" size="-1"><i>
+      Last modified: 28 February 2014
+      </i></font></div></dt>
+  <br />
+
+  <dt><strong>Name:</strong><a name= 
+    "Property-GetMetadataReadAttempts">H5Pget_metadata_read_attempts</a>
+    </dt>
+    <br />
+
+  <dt><strong>Signature:</strong>
+    <dd><code><em>herr_t </em> H5Pget_metadata_read_attempts(
+              <em>hid_t </em> plist_id,
+              <em>unsigned</em> *attempts
+        )</code>
+    </dd></dt><br />
+
+  <dt><strong>Purpose:</strong>
+    <dd>Retrieves the number of read attempts from a file access 
+        property list.
+    </dd></dt><br />
+
+  <dt><strong>Motivation:</strong>
+    <dd>See the description in <code>H5Pset_metadata_read_attempts</code>.
+    </dd></dt><br />
+
+  <dt><strong>Description:</strong>
+    <dd><code>H5Pget_metadata_read_attempts</code> retrieves the number 
+    of read attempts that is set in the file access property list 
+    <code>plist_id</code>.
+    
+    <p>For a default file access property list, the value retrieved will 
+    depend on whether the user sets the number of attempts via 
+    <code>H5Pset_metadata_read_attempts</code>:</p>
+    <ul>
+      <li>If the number of attempts is set to N, the value returned 
+      will be N.</li>
+      <li>If the number of attempts is not set, the value returned will 
+      be the default for non-SWMR access (1). SWMR is short for 
+      single-writer/multiple-reader. </li>
+    </ul>
+      
+    <p>For the file access property list of a specified HDF5 file, 
+    the value retrieved will depend on how the file is opened and 
+    whether the user sets the number of read attempts via 
+    <code>H5Pset_metadata_read_attempts</code>:</p>
+      
+    <ul>
+      <li>For a file opened with SWMR access:
+          <ul>
+          <li>If the number of attempts is set to N, the value returned will 
+          be N.</li>
+          <li>If the number of attempts is not set, the value returned will 
+          be the default for SWMR access (100).</li>
+          </ul>
+      </li>
+      <li>For a file opened without SWMR access, the value retrieved will 
+          always be the default for non-SWMR access (1). The value set via 
+          <code>H5Pset_metadata_read_attempts</code> does not have any 
+          effect on non-SWMR access.</li>
+    </ul>
+    </dd></dt><br />
+
+  <dt><strong>Parameters:</strong>
+    <dd>
+    <table>
+      <tr valign="top">
+        <td width="20%"><code><em>hid_t</em> plist_id</code>&nbsp;
+            </td>
+        <td>IN: Identifier for a file access property list.
+            </td></tr>
+      <tr valign="top">
+        <td><code><em>unsigned</em>&nbsp;*attempts&nbsp;&nbsp;</code>&nbsp;
+            </td>
+        <td>OUT: The number of read attempts.
+            </td></tr>
+    </table></dd></dt><br />
+
+  <dt><strong>Returns:</strong>
+    <dd>Returns a non-negative value if successful;
+        otherwise returns a negative value.</dd></dt><br />
+  
+  <dt><strong>Failure Modes:</strong>
+    <dd> When the input property list is not a file access property list.
+    <p>When the library is unable to retrieve the number of read attempts 
+    from the file access property list.</p>
+    </dd></dt><br />
+
+  <dt><strong>Example Usage:</strong>
+    <dd>The first example illustrates the two cases for retrieving the 
+    number of read attempts from a default file access property list.
+
+    <dir><pre>
+    /* Get a copy of file access property list */
+    fapl = H5Pcreate(H5P_FILE_ACCESS);
+
+    /* Retrieve the # of read attempts from the file access property list */
+    H5Pget_metadata_read_attempts(fapl, &attempts);
+
+    /*
+     *  The value returned in "attempts" will be 1 (default for non-SWMR access).
+     */
+
+    /* Set the # of read attempts to 20 */
+    H5Pset_metadata_read_attempts(fapl, 20);
+
+    /* Retrieve the # of read attempts from the file access property list */
+    H5Pget_metadata_read_attempts(fapl, &attempts);
+
+    /*
+     *  The value returned in "attempts" will be 20 as set.
+     */
+
+    /* Close the property list */	    
+    H5Pclose(fapl);
+</pre></dir></dd>
+    
+    <dd>The second example illustrates the two cases for retrieving the 
+    number of read attempts from the file access property list of a file 
+    opened with SWMR acccess.
+
+    <dir><pre>
+    /* Open the file with SWMR access and default file access property list */
+    fid = H5Fopen(FILE, (H5F_ACC_RDONLY | H5F_ACC_SWMR_READ), H5P_DEFAULT);
+
+    /* Get the file's file access roperty list */
+    file_fapl = H5Fget_access_plist(fid);
+
+    /* Retrieve the # of read attempts from the file's file access property list */
+    H5Pget_metadata_read_attempts(file_fapl, &attempts);
+
+    /*
+     *  The value returned in "attempts" will be 100 (default for SWMR access).
+     */
+
+    /* Close the property list */	    
+    H5Pclose(file_fapl);
+
+    /* Close the file */
+    H5Fclose(fid);
+
+    /* Create a copy of file access property list */
+    fapl = H5Pcreate(H5P_FILE_ACCESS);
+
+    /* Set the # of read attempts */
+    H5Pset_metadata_read_attempts(fapl, 20);
+
+    /* Open the file with SWMR access and the non-default file access property list */
+    fid = H5Fopen(FILE, (H5F_ACC_RDONLY | H5F_ACC_SWMR_READ), fapl);
+
+    /* Get the file's file access roperty list */
+    file_fapl = H5Fget_access_plist(fid);
+
+    /* Retrieve the # of read attempts from the file's file access property list */
+    H5Pget_metadata_read_attempts(file_fapl, &attempts);
+
+    /*
+     *  The value returned in "attempts" will be 20.
+     */
+
+    /* Close the property lists */	    
+    H5Pclose(file_fapl);
+    H5Pclose(fapl);
+
+    /* Close the file */
+    H5Fclose(fid);
+</pre></dir></dd>
+
+
+    <dd>The third example illustrates the two cases for retrieving the number 
+    of read attempts from the file access property list of a file opened 
+    with non-SWMR acccess.
+    <dir><pre>
+    /* Open the file with non-SWMR access and default file access property list */
+    fid = H5Fopen(FILE, H5F_ACC_RDONLY, H5P_DEFAULT);
+
+    /* Get the file's file access roperty list */
+    file_fapl = H5Fget_access_plist(fid);
+
+    /* Retrieve the # of read attempts from the file's file access property list */
+    H5Pget_metadata_read_attempts(file_fapl, &attempts);
+
+    /*
+     *  The value returned in "attempts" will be 1 (default for non-SWMR access).
+     */
+
+    /* Close the property list */	    
+    H5Pclose(file_fapl);
+
+    /* Close the file */
+    H5Fclose(fid);
+
+    /* Create a copy of file access property list */
+    fapl = H5Pcreate(H5P_FILE_ACCESS);
+
+    /* Set the # of read attempts */
+    H5Pset_metadata_read_attempts(fapl, 20);
+
+    /* Open the file with non-SWMR access and the non-default file access property list */
+    fid = H5Fopen(FILE, H5F_ACC_RDONLY, fapl);
+
+    /* Get the file's file access roperty list */
+    file_fapl = H5Fget_access_plist(fid);
+
+    /* Retrieve the # of read attempts from the file's file access property list */
+    H5Pget_metadata_read_attempts(file_fapl, &attempts);
+
+    /*
+     *  The value returned in "attempts" will be 1 (default for non-SWMR access).
+     */
+
+    /* Close the property lists */	    
+    H5Pclose(file_fapl);
+    H5Pclose(fapl);
+
+    /* Close the file */
+    H5Fclose(fid);
+</pre></dir></dd></dt><br />
+  
+
+<!--__ *** FORTRAN90 INTERFACE  **********************************  -->
+<!--__ When the Fortran90 interface is complete, replace this       -->
+<!--__ section with the Fortran90 subroutine description.           -->
+<!--__                                                              -->
+<!--__ See the file h5fortran_f_insert.htm for a template and       -->
+<!--__ instructions.                                                -->
+<!--__ ***********************************************************  -->
+
+  <dt><strong>Fortran Interface:</strong></dt>
+    <dd>None</dd>
+    <br />
+
+  <dt><strong>See Also:</strong></dt>
+    <dd>
+    <li><a href="#Property-SetMetadataReadAttempts">
+        <code>H5Pset_metadata_read_attempts</code></a></li>
+    <li><a href="#File-GetMetadataReadRetriesInfo">
+        <code>H5Fget_metadata_read_retries_info</code></a></li>
+    </dd>
+    <br />
+
+
+<!--__ ***********************************************************  -->
+<!--__ Do not modify the next 9 lines; they set up the table.       -->
+<!--__ ***********************************************************  -->
+
+  <dt><strong>History:</strong></dt>
+    <dd><table width="90%">
+        <tr>
+          <td valign="top" align="left" width="10%">
+          <strong>Release</strong>&nbsp;&nbsp;&nbsp;&nbsp;</td>
+          <td valign="top" align="left">
+          <strong>Change</strong></td></tr>
+        <tr>
+          <td valign="top">1.10.0</td>
+          <td valign="top">
+          C function introduced with this release. </td></tr>
+        </table></dd>
+
+</dl>
+<br />
+<br />
+<br />
+
+
+

@@ -1,0 +1,415 @@
+
+
+<!--
+  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+  * Copyright by The HDF Group.                                               *
+  * All rights reserved.                                                      *
+  *                                                                           *
+  * This file is part of HDF5.  The full HDF5 copyright notice, including     *
+  * terms governing use, modification, and redistribution, is contained in    *
+  * the files COPYING and Copyright.html.  COPYING can be found at the root   *
+  * of the source code distribution tree; Copyright.html can be found at the  *
+  * root level of an installed copy of the electronic HDF5 document set and   *
+  * is linked from the top-level documents page.  It can also be found at     *
+  * http://hdfgroup.org/HDF5/doc/Copyright.html.  If you do not have          *
+  * access to either file, you may request a copy from help@hdfgroup.org.     *
+  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+ -->
+
+
+<!--__ ***********************************************************  -->
+<!--__ Do not alter the next line; it is used by the PDF generator. -->
+<!--__ ***********************************************************  -->
+<!-- NEW PAGE -->
+<!-- HEADER RIGHT "H5Pset_read_attempts" -->
+<hr>
+<dl>
+
+  <dt><div align="right"><font color="999999" size="-1"><i>
+      Last modified: 7 December 2015
+      </i></font></div></dt>
+  <br />
+
+  <dt><strong>Name:</strong> <a name="File-GetMetadataReadRetriesInfo">
+    H5Fget_metadata_read_retries_info</a></dt>
+    <br />
+
+  <dt><strong>Signature:</strong>
+    <dd><code><em>herr_t</em> H5Fget_metadata_read_retries_info(
+              <em>hid_t</em> file_id,
+              <em>H5F_retries_info_t</em>  *info
+        )</code>
+    </dd></dt><br />
+
+  <dt><strong>Purpose:</strong>
+    <dd>Retrieves the collection of read retries for metadata entries with 
+    checksum.
+    </dd></dt><br />
+
+  <dt><strong>Motivation:</strong>
+    <dd>On a system that is not atomic, the library might possibly read 
+    inconsistent metadata with checksum when performing 
+    single-writer/multiple-reader (SWMR) operations 
+    for an HDF5 file. Upon encountering such situations, the library will 
+    try reading the metadata again for a set number of times to attempt 
+    to obtain consistent data. The maximum number of read attempts used 
+    by the library will be either the value set via 
+    <code>H5Pset_metadata_read_attempts</code> or 
+    the library default value when a value is not set.
+    <br /><br />
+    When the current number of metadata read attempts used in the library 
+    is unable to remedy the reading of inconsistent metadata on a system, 
+    the user can assess the information obtained via this routine to 
+    derive a different maximum value. The information can also be helpful 
+    for debugging purposes to identify potential issues with metadata flush 
+    dependencies and SWMR implementation in general. 
+    </dd></dt><br />
+    
+  <dt><strong>Description:</strong>
+    <dd><code>H5Fget_metadata_read_retries_info</code> 
+      retrieves information regarding the number of read retries for 
+      metadata entries with checksum for the file <code>file_id</code>.
+      This information is reported in the <code>H5F_retries_info_t</code> struct
+      defined in <code>H5Fpublic.h</code> as follows:
+    <pre>
+        /* The number of metadata entries with checksum */
+        #define NUM_METADATA_READ_RETRIES         21        
+
+        typedef struct H5F_retries_info_t {
+            unsigned nbins;
+            uint32_t *retries[NUM_METADATA_READ_RETRIES];
+        } H5F_retries_info_t;
+    </pre>
+    
+    <p><code>nbins</code> is the number of bins for 
+    each <code>retries[i]</code> of metadata entry <code>i</code>.
+    It is calculated based on the current number of read attempts 
+    used in the library and logarithmic 10.</p>
+    
+    <p>If read retries are incurred for a metadata entry <code>i</code>,
+    the library will allocate memory 
+    for <code>retries[i] (nbins * sizeof(uint32_t)</code>
+    and store the collection of retries there.  
+    If there are no retries for a metadata entry <code>i</code>,
+    <code>retries[i]</code> will be NULL. After a call to this routine,
+    users should free each <code>retries[i]</code> that is non-NULL, 
+    otherwise resource leak will occur.</p>
+    
+    <p>For the library default read attempts of 100 for SWMR access, 
+    <code>nbins</code> will be 2 as depicted below:</p>
+    <ul>
+    <li><code>retries[i][0]</code> is the number of 1 to 9 read retries.</li>
+    <li><code>retries[i][1]</code> is the number of 10 to 99 read retries.</li>
+    </ul>
+    
+    <p>For the library default read attempts of 1 for non-SWMR access,
+    <code>nbins</code> will be 0 and each <code>retries[i]</code> will be NULL.</p>
+    
+    <p>The following table lists the 21 metadata entries of 
+    <code>retries[]</code>:</p>
+    
+    <table>
+      <tr><td><code>&nbsp;&nbsp;&nbsp;&nbsp;</code></td>
+        <td>
+    <table>
+      <tr valign="top" align="left">
+        <td colspan="3"><hr color="green" size="3" /></td>
+        </tr>
+      <tr valign="top">
+        <th align="right" width="20%">Index&nbsp;for&nbsp;<code>retries[]</code></th>
+        <th width="5%"><code>&nbsp;&nbsp;&nbsp;&nbsp;</code></th>
+        <th align="left" width="70%">Metadata entries<sup>*</sup></th>
+        </tr>
+
+      <tr valign="top" align="left">
+        <td colspan="3"><hr color="green" size="3" /></td>
+        </tr>
+      <tr align="top">
+        <td align="right">0&nbsp;&nbsp;</td>
+        <td>&nbsp;</td>
+        <td align="left">Object header (version 2)</td>
+        </tr>
+      <tr align="top">
+        <td align="right">1&nbsp;&nbsp;</td>
+        <td>&nbsp;</td>
+        <td align="left">Object header chunk (version 2)</td>
+        </tr>
+
+      <tr valign="top" align="left">
+        <td colspan="3"><hr color="green" size="1" /></td>
+        </tr>
+      <tr align="top">
+        <td align="right">2&nbsp;&nbsp;</td>
+        <td>&nbsp;</td>
+        <td align="left">B-tree header (version 2)</td>
+        </tr>
+      <tr align="top">
+        <td align="right">3&nbsp;&nbsp;</td>
+        <td>&nbsp;</td>
+        <td align="left">B-tree internal node (version 2)</td>
+        </tr>
+      <tr align="top">
+        <td align="right">4&nbsp;&nbsp;</td>
+        <td>&nbsp;</td>
+        <td align="left">B-tree leaf node (version 2)</td>
+        </tr>
+
+      <tr valign="top" align="left">
+        <td colspan="3"><hr color="green" size="1" /></td>
+        </tr>
+      <tr align="top">
+        <td align="right">5&nbsp;&nbsp;</td>
+        <td>&nbsp;</td>
+        <td align="left">Fractal heap header</td>
+        </tr>
+      <tr align="top">
+        <td align="right">6&nbsp;&nbsp;</td>
+        <td>&nbsp;</td>
+        <td align="left">Fractal heap direct block 
+            (optional checksum)<code>&nbsp;&nbsp;</code></td>
+        </tr>
+      <tr align="top">
+        <td align="right">7&nbsp;&nbsp;</td>
+        <td>&nbsp;</td>
+        <td align="left">Fractal heap indirect block</td>
+        </tr>
+
+      <tr valign="top" align="left">
+        <td colspan="3"><hr color="green" size="1" /></td>
+        </tr>
+      <tr align="top">
+        <td align="right">8&nbsp;&nbsp;</td>
+        <td>&nbsp;</td>
+        <td align="left">Free-space  header</td>
+        </tr>
+      <tr align="top">
+        <td align="right">9&nbsp;&nbsp;</td>
+        <td>&nbsp;</td>
+        <td align="left">Free-space  sections</td>
+        </tr>
+
+      <tr valign="top" align="left">
+        <td colspan="3"><hr color="green" size="1" /></td>
+        </tr>
+      <tr align="top">
+        <td align="right">10&nbsp;&nbsp;</td>
+        <td>&nbsp;</td>
+        <td align="left">Shared object header message table</td>
+        </tr>
+      <tr align="top">
+        <td align="right">11&nbsp;&nbsp;</td>
+        <td>&nbsp;</td>
+        <td align="left">Shared message record list</td>
+        </tr>
+
+      <tr valign="top" align="left">
+        <td colspan="3"><hr color="green" size="1" /></td>
+        </tr>
+      <tr align="top">
+        <td align="right">12&nbsp;&nbsp;</td>
+        <td>&nbsp;</td>
+        <td align="left">Extensive array header</td>
+        </tr>
+      <tr align="top">
+        <td align="right">13&nbsp;&nbsp;</td>
+        <td>&nbsp;</td>
+        <td align="left">Extensive array index block</td>
+        </tr>
+
+      <tr valign="top" align="left">
+        <td colspan="3"><hr color="green" size="1" /></td>
+        </tr>
+      <tr align="top">
+        <td align="right">14&nbsp;&nbsp;</td>
+        <td>&nbsp;</td>
+        <td align="left">Extensive array super block</td>
+        </tr>
+      <tr align="top">
+        <td align="right">15&nbsp;&nbsp;</td>
+        <td>&nbsp;</td>
+        <td align="left">Extensive array data block</td>
+        </tr>
+      <tr align="top">
+        <td align="right">16&nbsp;&nbsp;</td>
+        <td>&nbsp;</td>
+        <td align="left">Extensive array data block page</td>
+        </tr>
+
+      <tr valign="top" align="left">
+        <td colspan="3"><hr color="green" size="1" /></td>
+        </tr>
+      <tr align="top">
+        <td align="right">17&nbsp;&nbsp;</td>
+        <td>&nbsp;</td>
+        <td align="left">Fixed array header</td>
+        </tr>
+      <tr align="top">
+        <td align="right">18&nbsp;&nbsp;</td>
+        <td>&nbsp;</td>
+        <td align="left">Fixed array data block</td>
+        </tr>
+      <tr align="top">
+        <td align="right">19&nbsp;&nbsp;</td>
+        <td>&nbsp;</td>
+        <td align="left">Fixed array data block page</td>
+        </tr>
+      <tr valign="top" align="left">
+        <td colspan="3"><hr color="green" size="1" /></td>
+        </tr>
+      <tr align="top">
+        <td align="right">20&nbsp;&nbsp;</td>
+        <td>&nbsp;</td>
+        <td align="left">File&rsquo;s superblock (version 2)</td>
+        </tr>
+
+      <tr valign="top" align="left">
+        <td colspan="3"><hr color="green" size="3" /></td>
+        </tr>
+      <tr valign="top" align="left">
+        <td colspan="3"><sup>*</sup> <i>All entries are of version 0 (zero)
+            unless indicated otherwise.</i></td>
+        </tr>
+    </table>
+        </td>
+      </tr>
+    </table>
+    </dd></dt><br />
+
+  <dt><strong>Parameters:</strong>
+    <dd>
+    <table>
+    <tr valign="top">
+      <td width="15%"><code><em>hid_t</em> file_id</code>
+           </td>
+      <td>
+          IN: Identifier for a currently opened HDF5 file.
+          </td></tr>
+    <tr valign="top">
+      <td><code><em>H5F_retries_info_t</em>&nbsp;*info&nbsp;&nbsp;&nbsp;</code>
+          </td>
+      <td>OUT: Struct containing the collection of read retries 
+          for metadata entries with checksum.
+          </td></tr>
+    </table></dd></dt><br />
+
+  <dt><strong>Returns:</strong>
+    <dd>Returns a non-negative value if successful;
+        otherwise returns a negative value.</dd></dt><br />
+
+  <dt><strong>Failure Modes:</strong>
+    <dd>When the input identifier is not a file identifier.
+    <p>When the pointer to the output structure is NULL.</p>
+    <p>When memory allocation failed for <code>retries</code>.</p>
+    </dd></dt><br />
+    
+
+  <dt><strong>Example Usage:</strong>
+    <dd>This example illustrates the case on retrieving the collection of 
+    read retries for a file opened with SWMR access.
+    <dir><pre>
+
+H5F_retries_info_t info;
+
+/* Get a copy of file access property list */
+fapl = H5Pcreate(H5P_FILE_ACCESS);
+
+/* Set to use the latest library format */
+H5Pset_libver_bounds(fapl, H5F_LIBVER_LATEST, H5F_LIBVER_LATEST);
+
+/* Create a file with the latest library format */
+fid = H5Fcreate(filename, H5F_ACC_TRUNC, H5P_DEFAULT, fapl);
+
+/* Create groups/datasets etc. in the file */
+:
+:
+:
+
+/* Close the file */
+H5Fclose(fid);
+
+/* Open and perform operations via a writer. */
+fidw = H5Fopen(filename, H5F_ACC_RDWR |H5F_ACC_SWMR_WRITE, fapl);
+:
+:
+:
+:
+:
+/* Open and perform operations via a reader */
+fidr = H5Fopen(FILE, H5F_ACC_RDONLY|H5F_ACC_SWMR_READ, fapl);
+:
+:
+:
+:
+:
+/* Retrieve the collection of read retries for the file */
+H5Fget_metadata_read_retries_info(fidr, &info);
+
+/* Print the collection of read retries */
+for(i = 0; i < NUM_METADATA_READ_RETRIES; i++) {
+    if(info. retries[i] != NULL) {
+        printf("Read retries for metadata entry %u:\n", i);
+
+        /* info.nbins will be 2 */
+        for(j = 0; j < info.nbins; j++)
+            /* 
+             * Print the following if nonzero:
+             * info.retries[i][0] for # of 1-9 read retries
+             * info.retries[i][1] for # of 10-99 read retries
+             */
+    } /* end if */
+} /* end for */
+
+/* Free the array of retries */
+for(i = 0; i < NUM_ METADATA_READ_RETRIES; i++)
+    if(info.retries[i] != NULL)
+        free(info.retries[i];
+:
+:
+:
+</pre></dir></dd></dt><br />
+
+<!--__ *** FORTRAN90 INTERFACE  **********************************  -->
+<!--__ When the Fortran90 interface is complete, replace this       -->
+<!--__ section with the Fortran90 subroutine description.           -->
+<!--__                                                              -->
+<!--__ See the file h5fortran_f_insert.htm for a template and       -->
+<!--__ instructions.                                                -->
+<!--__ ***********************************************************  -->
+
+  <dt><strong>Fortran Interface:</strong></dt>
+    <dd>None</dd>
+    <br />
+
+  <dt><strong>See Also:</strong>
+  <ul>
+    <li><a href="#Property-SetMetadataReadAttempts">
+        <code>H5Pset_metadata_read_attempts</code></a></li>
+    <li><a href="#Property-GetMetadataReadAttempts">
+        <code>H5Pget_metadata_read_attempts</code></a></li>
+    </ul>
+    <br />
+
+<!--__ ***********************************************************  -->
+<!--__ Do not modify the next 8 lines; they set up the table.       -->
+<!--__ ***********************************************************  -->
+
+  <dt><strong>History:</strong></dt>
+    <dd><table width="90%">
+        <tr>
+          <td valign="top" align="left" width="10%">
+              <strong>Release</strong>&nbsp;&nbsp;&nbsp;&nbsp;</td>
+          <td valign="top" align="left">
+              <strong>Change</strong></td></tr>
+        <tr>
+          <td valign="top">1.10.0</td>
+          <td valign="top">
+              C function introduced with this release. </td></tr>
+        </table></dd>
+
+</dl>
+<br />
+<br />
+<br />
+
+
+
