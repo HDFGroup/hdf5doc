@@ -1,0 +1,222 @@
+
+
+<!--
+  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+  * Copyright by The HDF Group.                                               *
+  * All rights reserved.                                                      *
+  *                                                                           *
+  * This file is part of HDF5.  The full HDF5 copyright notice, including     *
+  * terms governing use, modification, and redistribution, is contained in    *
+  * the files COPYING and Copyright.html.  COPYING can be found at the root   *
+  * of the source code distribution tree; Copyright.html can be found at the  *
+  * root level of an installed copy of the electronic HDF5 document set and   *
+  * is linked from the top-level documents page.  It can also be found at     *
+  * http://www.hdfgroup.org/HDF5/doc/Copyright.html.  If you do not have      *
+  * access to either file, you may request a copy from help@hdfgroup.org.     *
+  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+ -->
+
+
+<!--__ ***********************************************************  -->
+<!--__ Do not alter the next line; it is used by the PDF generator. -->
+<!--__ ***********************************************************  -->
+<!-- NEW PAGE -->
+<!-- HEADER RIGHT "H5Pget_append_flush" -->
+
+<hr />
+<dl>
+
+<dt><div align="right"><font color="999999" size="-1"><i>
+    Last modified: 18 February 2014
+    </i></font></div></dt>
+    <br />
+
+<dt><strong>Name:</strong> 
+    <a name="Property-GetAppendFlush">H5Pget_append_flush</a></dt>
+    <br />
+
+<dt><strong>Signature:</strong></dt>
+    <dd><code><em>herr_t</em> H5Pget_append_flush (
+              <em>hid_t</em> dapl_id,  
+              <em>int</em> ndims, 
+              <em>hsize_t</em> boundary[], 
+              <em>H5D_append_cb_t</em>  *func, 
+              <em>void</em> **user_data
+        )</code></dd>
+    <br />
+
+<dt><strong>Purpose:</strong></dt>  
+    <dd>Retrieves the values of the append property that is set up in the 
+        dataset access property list. </dd>
+    <br />
+
+<dt><strong>Description:</strong></dt> 
+    <dd><code>H5Pget_append_flush</code> obtains the following information 
+    from the dataset access property list <code>dapl_id</code>: 
+    <dir>
+    <table>
+      <tr valign="top" align="left">
+          <td><code>boundary[]&nbsp;&nbsp;&nbsp;</code> </td>
+          <td>The sizes set up in the access property list that are used 
+              to determine when a dataset dimension size hits the boundary.  
+              Only at most <code>ndims</code> boundary sizes are retrieved, 
+              and <code>ndims</code> will not exceed the corresponding 
+              value that is set in the property list.</td>
+      </tr><tr valign="top" align="left">
+          <td><code>func</code> </td>
+          <td>The user-defined callback function to invoke when a
+              dataset&rsquo;s appended dimension size reaches a boundary.</td>
+      </tr><tr valign="top" align="left">
+          <td><code>user_data</code> </td>
+          <td>The user-defined input data for the callback function.</td>
+      </tr>
+    </table>
+    </dir>
+    </dd>
+    <br />
+
+<dt><strong>Parameters:</strong></dt> 
+    <dd>
+    <table width="100%">
+      <tr valign="top">
+        <td width="20%"><code><em>hid_t</em> dapl_id</code></td>
+        <td>IN: Dataset access property list identifier.</td></tr>
+      <tr valign="top">
+        <td><code><em>int</em> ndims</code></td>
+        <td>IN: The number of elements for 
+            <code>boundary</code>.</td></tr>
+      <tr valign="top">
+        <td><code><em>hsize_t</em> *boundary[]</code></td>
+        <td>IN: The dimension sizes used to determine the 
+            boundary.</td></tr>
+      <tr valign="top">
+        <td><code><em>H5D_append_cb_t</em>&nbsp;*func&nbsp;&nbsp;&nbsp;</code></td>
+        <td>IN: The user-defined callback function.</td></tr>
+      <tr valign="top">
+        <td><code><em>void</em> **user_data</code></td>
+        <td>IN: The user-defined input data.</td></tr>
+    </table>
+    </dd>
+    <br />
+
+<dt><strong>Returns:</strong></dt> 
+    <dd>Returns a non-negative value if successful; 
+        otherwise returns a negative value.</dd>
+    <br />
+
+<dt><strong>Example Usage:</strong></dt> 
+    <dd>The example below illustrates the usage of this public routine to 
+        obtain the append values that are set up in the dataset access 
+        property list. 
+
+        <dir><pre>
+hid_t file_id;
+hid_t dapl_id, dataset_id, dapl;
+hsize_t dims[2] = {0, 100};
+hsize_t max_dims[2] = {H5S_UNLIMITED, 100};
+hsize_t boundary_dims[2] = {5, 0};
+int counter;
+hsize_t ret_boundary[1];
+H5D_append_flush_cb_t ret_cb;
+void *ret_udata;
+
+/* Open the file */
+file_id = H5Fopen(FILE, H5F_ACC_RDWR|H5F_ACC_SWMR_WRITE, H5P_DEFAULT);
+
+/* Create a copy of the dataset access property list */
+dapl_id = H5Pcreate(H5P_DATASET_ACCESS);
+
+/* Set up the append property values */
+/* boundary_dims[0]=5: to invoke callback and flush every 5 lines */
+/* boundary_dims[1]=0: no boundary is set for the non-extendible dimension */
+/* append_cb: callback function to invoke when hitting boundary (see below) */
+/* counter: user data to pass along to the callback function */
+H5Pset_append_flush(dapl_id, 2, boundary_dims, append_cb, &counter);
+
+/* DATASET is a 2-dimensional chunked dataset with dataspace: 
+   dims[] and max_dims[] */
+dataset_id = H5Dopen2(file_id, “dataset”, dapl_id);
+
+/* Get the dataset access property list for DATASET */
+dapl = H5Dget_access_plist(dataset_id);
+
+/* Retrieve the append property values for the dataset */
+/* Only 1 boundary size is retrieved: ret_boundary[0] is 5 */
+/* ret_cb will point to append_cb() */
+/* ret_udata will point to counter */
+H5Pget_append_flush(dapl, 1, ret_boundary, &ret_cb, &ret_udata);
+:
+:
+:
+
+/* The callback function */
+static herr_t
+append_cb(hid_t dset_id, hsize_t *cur_dims, void *_udata)
+{
+    unsigned *count = (unsigned *)_udata;
+    ++(*count++);
+    return 0;
+} /* append_cb() */
+</pre>
+    </dir>
+    </dd>
+    <br />
+
+
+<dt><strong>Fortran Interface:</strong></dt>
+    <dd>None</dd>
+    <br />
+
+<dt><strong>See Also:</strong></dt>
+
+    <ul>
+      <li><a href="H5Fstart_swmr_write.htm">H5Fstart_swmr_write</a></li>
+      <li><a href="H5DOappend.htm">H5DOappend</a></li>
+      <li><a href="H5Pset_append_flush.htm">H5Pset_append_flush</a></li>
+      <li><a href="H5Pset_object_flush_cb.htm">H5Pset_object_flush_cb</a></li>
+      <li><a href="H5Pget_object_flush_cb.htm">H5Pget_object_flush_cb</a></li>
+    </ul>
+    <br />
+
+    <ul>
+      <li><a href="H5Odisable_mdc_flushes.htm">H5Odisable_mdc_flushes</a></li>
+      <li><a href="H5Oenable_mdc_flushes.htm">H5Oenable_mdc_flushes</a></li>
+      <li><a href="H5Oare_mdc_flushes_disabled.htm">H5Oare_mdc_flushes_disabled</a></li>
+      <li><a href="H5Fdisable_mdc_flushes.htm">H5Fdisable_mdc_flushes</a></li>
+      <li><a href="H5Fenable_mdc_flushes.htm">H5Fenable_mdc_flushes</a></li>
+      <li><a href="H5Fare_mdc_flushes_disabled.htm">H5Fare_mdc_flushes_disabled</a></li>
+      <li><a href="H5Fget_mdc_flush_disabled_obj_ids.htm">H5Fget_mdc_flush_disabled_obj_ids</a></li>
+    </ul>
+    <br />
+
+    <ul>
+      <li><a href="H5Dflush.htm">H5Dflush</a></li>
+      <li><a href="H5Drefresh.htm">H5Drefresh</a></li>
+      <li><a href="H5Gflush.htm">H5Gflush</a></li>
+      <li><a href="H5Grefresh.htm">H5Grefresh</a></li>
+      <li><a href="H5Oflush.htm">H5Oflush</a></li>
+      <li><a href="H5Orefresh.htm">H5Orefresh</a></li>
+      <li><a href="H5Tflush.htm">H5Tflush</a></li>
+      <li><a href="H5Trefresh.htm">H5Trefresh</a></li>
+    </ul>
+    <br />
+
+
+<dt><strong>History:</strong></dt>
+    <dd><table width="90%">
+        <tr>
+          <td valign="top" align="left" width="10%">
+              <strong>Release</strong>&nbsp;&nbsp;&nbsp;&nbsp;</td>
+          <td valign="top" align="left">
+              <strong>Change</strong></td></tr>
+        <tr>
+          <td valign="top">1.10.0</td>
+          <td valign="top">
+              C function introduced with this release. </td></tr>
+        </table></dd>
+
+</dl>
+<br />
+<br />
+<br />
+

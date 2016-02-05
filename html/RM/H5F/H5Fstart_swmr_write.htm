@@ -1,0 +1,208 @@
+
+
+<!--
+  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+  * Copyright by The HDF Group.                                               *
+  * All rights reserved.                                                      *
+  *                                                                           *
+  * This file is part of HDF5.  The full HDF5 copyright notice, including     *
+  * terms governing use, modification, and redistribution, is contained in    *
+  * the files COPYING and Copyright.html.  COPYING can be found at the root   *
+  * of the source code distribution tree; Copyright.html can be found at the  *
+  * root level of an installed copy of the electronic HDF5 document set and   *
+  * is linked from the top-level documents page.  It can also be found at     *
+  * http://www.hdfgroup.org/HDF5/doc/Copyright.html.  If you do not have      *
+  * access to either file, you may request a copy from help@hdfgroup.org.     *
+  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+ -->
+
+
+<!--__ ***********************************************************  -->
+<!--__ Do not alter the next line; it is used by the PDF generator. -->
+<!--__ ***********************************************************  -->
+<!-- NEW PAGE -->
+<!-- HEADER RIGHT "H5Fstart_swmr_write" -->
+
+<hr />
+<dl>
+
+<dt><div align="right"><font color="999999" size="-1"><i>
+    Last modified: 18 February 2014
+    </i></font></div></dt>
+    <br />
+
+<dt><strong>Name:</strong> 
+    <a name="File-StartSwmrWrite">H5Fstart_swmr_write</a></dt>
+    <br />
+
+<dt><strong>Signature:</strong></dt>
+    <dd><code><em>herr_t</em> H5Fstart_swmr_write(<em>hid_t</em> file_id)
+        </code></dd>
+    <br />
+
+<dt><strong>Purpose:</strong></dt>
+    <dd>Enables SWMR writing mode for a file.</dd>
+    <br />
+
+<dt><strong>Description:</strong></dt> 
+    <dd>
+    <code>H5Fstart_swmr_write</code> will activate SWMR writing mode for 
+    a file associated with <code>file_id</code>. This routine will prepare 
+    and ensure the file is safe for SWMR writing as follows: 
+    <br /><br />
+    <ul>
+    <li>Check that the file is opened with write access
+        (<code>H5F_ACC_RDWR</code>). </li>
+    <li>Check that the file is opened with the latest library format to 
+        ensure data structures with check-summed metadata are used. </li>
+    <li>Check that the file is not already marked in SWMR writing mode. </li>
+    <li>Enable reading retries for check-summed metadata to remedy possible 
+        checksum failures from reading inconsistent metadata on a system 
+        that is not atomic. </li>
+    <li>Turn off usage of the library&rsquo;s accumulator to avoid possible 
+        ordering problem on a system that is not atomic. </li>
+    <li>Perform a flush of the file&rsquo;s data buffers and metadata to 
+        set a consistent state for starting SWMR write operations. </li>
+    </ul>
+    </dd>
+    <dd>
+    <p>Library objects are groups, datasets, and committed datatypes.
+    For the current implementation, groups and datasets can remain open
+    when activating SWMR writing mode, but not committed datatypes.
+    Attributes attached to objects cannot remain open either.
+    </dd>
+    <br />
+
+<dt><strong>Parameters:</strong></dt> 
+    <dd>
+    <table width="100%">
+      <tr valign="top">
+        <td width="20%"><code><em>hid_t</em>&nbsp;file_id&nbsp;&nbsp;&nbsp;
+            </code></td>
+        <td width="80%">IN: A file identifier.</td></tr>
+    </table>
+    </dd>
+    <br />
+
+<dt><strong>Returns:</strong></dt> 
+    <dd>Returns a non-negative value if successful; otherwise returns a 
+    negative value.</dd>
+    <br />
+
+<dt><strong>Example Usage:</strong></dt>
+    <dd>
+    The example below illustrates the usage of this routine to activate the 
+    SWMR writing mode for an opened file.
+    <dir><pre>
+/*
+ *   The writer process
+ */
+/* Create a copy of the file access property list */
+fapl_id = H5Pcreate(H5P_FILE_ACCESS);
+
+/* Set to use the latest library format */
+H5Pset_libver_bounds(fapl_id, H5F_LIBVER_LATEST, H5F_LIBVER_LATEST); 
+
+/* Create a file with the latest library format */ 
+file_id = H5Fcreate(filename, H5F_ACC_TRUNC, H5P_DEFAULT, fapl_id);
+:
+:
+:
+/* Perform operations that are not SWMR-safe. */
+:
+:
+:
+/* Start a concurrent SWMR reader process (see coding below) at this point 
+   will fail because the file is not marked as SWMR-safe */
+
+/* Enable SWMR writing mode */
+H5Fstart_swmr_write(file_id);
+
+/* Start a concurrent SWMR reader process (see coding below) at this point 
+   will succeed because the file is marked as SWMR-safe */
+
+
+/* Perform SWMR-safe operations */
+:
+:
+:
+/* Close the file */
+H5Fclose(file_id);
+
+/* Close the property list */
+H5Pclose(fapl_id);
+
+
+/*
+ *   The SWMR reader process
+ */
+read_file_id = H5Fopen(filename, H5F_ACC_RDONLY|H5F_ACC_SWMR_READ, fapl_id);
+
+/* Perform reading operations */
+:
+:
+:
+/* Close the file */
+H5Fclose(read_file_id);
+</pre></dir>
+    </dd>
+    <br />
+
+<dt><strong>Fortran Interface:</strong></dt>
+    <dd>None</dd>
+    <br />
+
+<dt><strong>See Also:</strong></dt>
+    <ul>
+      <li><a href="H5DOappend.htm">H5DOappend</a></li>
+      <li><a href="H5Pset_append_flush.htm">H5Pset_append_flush</a></li>
+      <li><a href="H5Pget_append_flush.htm">H5Pget_append_flush</a></li>
+      <li><a href="H5Pset_object_flush_cb.htm">H5Pset_object_flush_cb</a></li>
+      <li><a href="H5Pget_object_flush_cb.htm">H5Pget_object_flush_cb</a></li>
+    </ul>
+    <br />
+
+    <ul>
+      <li><a href="H5Odisable_mdc_flushes.htm">H5Odisable_mdc_flushes</a></li>
+      <li><a href="H5Oenable_mdc_flushes.htm">H5Oenable_mdc_flushes</a></li>
+      <li><a href="H5Oare_mdc_flushes_disabled.htm">H5Oare_mdc_flushes_disabled</a></li>
+      <li><a href="H5Fdisable_mdc_flushes.htm">H5Fdisable_mdc_flushes</a></li>
+      <li><a href="H5Fenable_mdc_flushes.htm">H5Fenable_mdc_flushes</a></li>
+      <li><a href="H5Fare_mdc_flushes_disabled.htm">H5Fare_mdc_flushes_disabled</a></li>
+      <li><a href="H5Fget_mdc_flush_disabled_obj_ids.htm">H5Fget_mdc_flush_disabled_obj_ids</a></li>
+    </ul>
+    <br />
+
+    <ul>
+      <li><a href="H5Dflush.htm">H5Dflush</a></li>
+      <li><a href="H5Drefresh.htm">H5Drefresh</a></li>
+      <li><a href="H5Gflush.htm">H5Gflush</a></li>
+      <li><a href="H5Grefresh.htm">H5Grefresh</a></li>
+      <li><a href="H5Oflush.htm">H5Oflush</a></li>
+      <li><a href="H5Orefresh.htm">H5Orefresh</a></li>
+      <li><a href="H5Tflush.htm">H5Tflush</a></li>
+      <li><a href="H5Trefresh.htm">H5Trefresh</a></li>
+    </ul>
+    <br />
+
+
+
+
+<dt><strong>History:</strong></dt>
+    <dd><table width="90%">
+        <tr>
+          <td valign="top" align="left" width="10%">
+          <strong>Release</strong>&nbsp;&nbsp;&nbsp;&nbsp;</td>
+          <td valign="top" align="left">
+          <strong>Change</strong></td></tr>
+        <tr>
+          <td valign="top">1.10.0</td>
+          <td valign="top">
+          C function introduced with this release. </td></tr>
+        </table></dd>
+
+</dl>
+<br />
+<br />
+<br />
+
