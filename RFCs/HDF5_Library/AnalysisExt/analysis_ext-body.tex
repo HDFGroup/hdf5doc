@@ -335,13 +335,14 @@ Indexes created for accelerating the  ``$\mathrm{(link\_name = Pressure)}$'' or
 would also improve view creation for the more complex
 ``$\mathrm{(link\_name = Pressure)}$ $\mathrm{\land}$
 $\mathrm{(data\_element = 17)}$'' query.
-Although creating indexes for metadata components of queries, such as link or
-attribute names, is possible, we first focus on index creation for dataset elements,
-as they represent the largest volume of data in typical HPC application usage of
-HDF5. Queries with metadata components execute properly,
-but are not able to be accelerated with an index currently.
+We distinguish two different types of indexes: \textit{data} indexes and
+\textit{metadata} indexes. Data indexes apply to dataset elements, which
+represent the largest volume of data in typical HPC application usage of HDF5,
+whereas metadata indexes apply to link or attribute name components of the queries.
 
-The indexing API can work in conjunction with the view creation. When an \texttt{H5Qapply}
+\subsection{Data Indexing}
+
+The data indexing API can work in conjunction with the view creation. When an \texttt{H5Qapply}
 call is made on a given location, an index attached to any dataset queried
 for element value ranges will be used to speed up the query process and return
 a dataspace selection to the library for later use.
@@ -350,7 +351,7 @@ efficient method will vary depending on the type of the data that is to be
 indexed, its layout, etc. A new interface for the HDF5 library that uses a
 plugin mechanism is therefore defined.
 
-\subsection{Indexing Interface and Plugins}
+\subsubsection{Indexing Interface and Plugins}
 
 This interface is defined for adding third-party indexing plugins,
 such as FastBit~\cite{Wu05}, ALACRITY~\cite{alacrity13}, etc.
@@ -378,7 +379,14 @@ typedef struct {
     const char *idx_name; /* Index name (for debugging only, currently) */
     H5X_type_t type;      /* Type of data indexed by this plugin */
 
-    /* Callbacks, described above */
+    /* Callbacks */
+    union {               /* Union of callback index structures */
+        H5X_data_class_t data_class;
+        H5X_metadata_class_t metadata_class;
+    } idx_class;
+} H5X_class_t;
+
+typedef struct {
     void *(*create)(hid_t dataset_id, hid_t xcpl_id, hid_t xapl_id,
         size_t *metadata_size, void **metadata);
     herr_t (*remove)(hid_t dataset_id, size_t metadata_size, void *metadata);
@@ -395,7 +403,7 @@ typedef struct {
         hid_t *dataspace_id);
     herr_t (*refresh)(void *idx_handle, size_t *metadata_size, void **metadata);
     herr_t (*get_size)(void *idx_handle, hsize_t *idx_size);
-} H5X_class_t;
+} H5X_data_class_t;
 \end{lstlisting}
 }
 
@@ -474,7 +482,7 @@ In the future more plugins will be added, with or without external dependency
 To satisfy that need, dynamic plugin loading and registration will be supported,
 allowing external libraries to plug to the current interface.
 
-\subsection{Limitations}
+\subsubsection{Limitations}
 
 There are some existing limitations in the use of indexes in the current
 implementation: FastBit and ALACRITY do not support incremental updates,
@@ -486,8 +494,7 @@ rebuilt. The limitation in FastBit and ALACRITY will need to be addressed in
 the base packages' implementation, so that incremental updates
 to their index information can be made.
 
-\subsubsection*{Questions}
-Some questions are still open regarding the handling of indexes:
+\paragraph{Questions}Some questions are still open regarding the handling of indexes:
 \begin{enumerate}
 %\item How could an index be built and queried in parallel for a dataset that already exists?
 \item How to handle index updates when the specified index plugin is not available?
@@ -499,7 +506,7 @@ available again.}
 available? \textit{We could fallback to another plugin and do a brute force query on the data.}
 \end{enumerate}
 
-\subsection{Support for HDF5 Compound Types (TBD)}
+\subsubsection{Support for HDF5 Compound Types (TBD)}
 
 In a simple scenario, the HDF5 datatype used for creating the dataset can be defined
 as a native and simple type. Therefore, building an index on this dataset implies
@@ -524,7 +531,7 @@ corresponds to a particular field. This can be achieved by calling \texttt{H5Xge
 compare the datatype returned within the info structure, and pass the index number
 that needs to be removed.
 
-\subsection{Support for HDF5 Chunking (TBD)}
+\subsubsection{Support for HDF5 Chunking (TBD)}
 
 To support indexing of HDF5 chunks, we make each chunk a local \textit{sub-dataset}
 of the original dataset. In that sense, handling every chunk can be seen as handling
@@ -555,7 +562,7 @@ added to a global selection, which is then in turn returned to the user.
 Finally, when \texttt{H5Xremove} is called, the \texttt{delete} plugin callback is
 invoked for each chunk, by using the index metadata information stored in the B-tree.
 
-\subsection{Support for Parallel Indexing (TBD)}
+\subsubsection{Support for Parallel Indexing (TBD)}
 
 An important design choice to support parallel indexing is to give as much
 freedom as possible to the indexing plugin developer so that in the case when
@@ -584,6 +591,68 @@ In the case of chunked datasets, one may also want to operate on several chunks
 at the same time, in parallel. This can be done by passing a list of IDs that
 corresponds to each chunk to the callbacks. However, this also makes the plugin
 interface more heavy.
+
+\subsection{Metadata Indexing}
+
+Metadata indexing accelerates HDF5 metadata query operations, improving 
+the speed of data analysis operations. Currently metadata query operations
+in HDF5 are performed by traversing the contents of the container specified
+in the query, potentially generating a large amount of I/O and taking
+significant time to create the query results. Adding a mechanism for storing
+metadata indexes to HDF5 containers can accelerate query operations by avoiding
+these expensive traversals, as is available for data element queries.
+
+A metadata index is a data structure that tracks a particular aspect of an HDF5 container 
+and can quickly answer queries about that aspect. For example, a metadata index can 
+be created that tracks all the link names for objects in a container, updating the index 
+whenever a link is added, modified or removed. This index can then be applied to 
+queries on link names, avoiding a traversal over all the links for groups in the container.
+
+\subsubsection{Indexing Interface and Plugins}
+
+The interface for metadata indexes in HDF5 containers is modeled after the interface 
+for data element indexes in HDF5, with a plugin architecture that allows new metadata 
+index packages to be developed and added at application runtime, without modifications 
+to the core HDF5 library.
+The HDF5 library can then interact with the third-party indexes created in this manner 
+through a set of callback interfaces that present query information to the
+indexing package and retrieve results from it.
+An HDF5 metadata index can be considered as a generic key-value store, in the
+sense that for each \textit{key} that represents an HDF5 object ID, is associated
+either a link/attribute name or an attribute \textit{value}.
+
+{\lstsetc
+\begin{lstlisting}
+typedef struct {
+    void *(*create)(hid_t loc_id, hid_t xcpl_id, hid_t xapl_id,
+        size_t *metadata_size, void **metadata);
+    herr_t (*remove)(hid_t loc_id, size_t metadata_size, void *metadata);
+    void *(*open)(hid_t loc_id, hid_t xapl_id, size_t metadata_size,
+        void *metadata);
+    herr_t (*close)(void *idx_handle);
+
+    herr_t (*insert_entry)(void *idx_handle, hid_t obj_id, hid_t xxpl_id);
+    herr_t (*remove_entry)(void *idx_handle, hid_t obj_id, hid_t xxpl_id);
+    herr_t (*query)(void *idx_handle, hid_t query_id, hid_t xxpl_id,
+        size_t *obj_count, hid_t *obj_ids[]);
+
+    herr_t (*get_size)(void *idx_handle, hsize_t *idx_size);
+} H5X_metadata_class_t;
+\end{lstlisting}
+}
+
+The \texttt{create}, \texttt{remove}, \texttt{open}, \texttt{close} callbacks
+are similar to the data index plugins, albeit they operate on a file location and
+not on a single object. The \texttt{insert\_entry}, \texttt{remove\_entry} callbacks
+respectively insert/remove a referenced object from the index. Values can be extracted from
+the object ID, depending on the metadata type that the plugin will index.
+When the \texttt{query} callback is invoked, a list of object IDs that matches
+the query is returned. The \texttt{get\_size} callback returns the size of the index
+and additional info callbacks may also be added depending on the needs.
+
+\subsubsection{Current and future plugins}
+
+Are considered both a MDHIM and a B-Tree plugin.
 
 \section{HDF5 and tools}
 
