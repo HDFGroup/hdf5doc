@@ -618,8 +618,10 @@ The HDF5 library can then interact with the third-party indexes created in this 
 through a set of callback interfaces that present query information to the
 indexing package and retrieve results from it.
 An HDF5 metadata index can be considered as a generic key-value store, in the
-sense that for each \textit{key} that represents an HDF5 object ID, is associated
-either a link/attribute name or an attribute \textit{value}.
+sense that for each \textit{key} that can for instance represent either a
+link/attribute name and/or an attribute \textit{value}, is associated an HDF5
+object ID. However, this is up to the plugin to define that mapping and its
+storage organization.
 
 {\lstsetc
 \begin{lstlisting}
@@ -644,15 +646,18 @@ typedef struct {
 The \texttt{create}, \texttt{remove}, \texttt{open}, \texttt{close} callbacks
 are similar to the data index plugins, albeit they operate on a file location and
 not on a single object. The \texttt{insert\_entry}, \texttt{remove\_entry} callbacks
-respectively insert/remove a referenced object from the index. Values can be extracted from
-the object ID, depending on the metadata type that the plugin will index.
+respectively insert/remove a referenced object from the index. Information can
+be directly extracted from the object ID, depending on the metadata type that
+the plugin will choose to index.
 When the \texttt{query} callback is invoked, a list of object IDs that matches
-the query is returned. The \texttt{get\_size} callback returns the size of the index
-and additional info callbacks may also be added depending on the needs.
+the query is returned. The \texttt{get\_size} callback\footnote{Additional info
+callbacks may also be added depending on the needs.} returns the size of the index.
 
 \subsubsection{Current and future plugins}
 
-Are considered both a MDHIM and a B-Tree plugin.
+Are considered both a MDHIM~\cite{Greenberg15} and a B-Tree based plugin to
+provide metadata indexing capabilities. \textit{More details will be added
+once the design for these plugins has been defined.}
 
 \section{HDF5 and tools}
 
@@ -674,96 +679,242 @@ the tools is given:
 Additional tools for indexing data and answering queries will also be added
 in the future.
 
-\section{Usage Example}
+\section{Usage Examples}
 
-In the following example, we show how one can make use of the query and
-indexing interface to retrieve a dataspace selection within a dataset.
-For simplicity's sake, we first create a dataset within the file, then open it to
-create and attach a new index, in order to finally query data from it.
-Note that for convenience, calls to directly read data that corresponds to the
-result of the index query may be moved to the high-level API in the future.
+These basic examples aim at showing the analysis components presented so far.
+We describe in these examples the query and view creation process and how to
+efficiently retrieve data from a file by adding indexes.
+
+\subsection{Query and View}
+In this example, we show how one can create a query, apply that query to a file,
+and retrieve data from the resulting view.
 
 {\lstsetc
 \begin{lstlisting}
-#define NTUPLES 256
+#define FILENAME "test.h5"
+#define DATASETNAME "Pressure"
 
 int
 main(int argc, char *argv[])
 {
-    float data[NTUPLES];
-    hsize_t dims[1] = {NTUPLES};
-    hid_t t file_id, dataspace_id, dataset_id;
-    hid_t query_id, result_space_id;
-    size_t result_npoints;
-    float *result;
-    int i;
+    hid_t t file, query, subquery1, subquery2, view;
+    float subquery2_value = 3.14;
+    unsigned apply_result = 0;
 
-    /* Initialize data. */
-    for(i = 0; i < NTUPLES; i++) data[i] = (float) i;
+    /* Create file */
+    file = H5Fcreate(FILENAME, H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT);
 
-    /* Create file. */
-    file_id = H5Fcreate(file_name, H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT);
+    /* Create groups / datasets / attributes / etc */
 
-    /* Create the data space for the dataset. */
-    dataspace_id = H5Screate_simple(rank, dims, NULL);
-
-    /* Create dataset. */
-    dataset_id = H5Dcreate(file_id, "Pressure", H5T_NATIVE_FLOAT, dataspace_id,
-        H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
-
-    /* Write dataset. */
-    H5Dwrite(dataset_id, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL, H5P_DEFAULT, data);
-
-    /* Close the dataset. */
-    H5Dclose(dataset_id);
-
-    /* Close dataspace. */
-    H5Sclose(dataspace_id);
-
-    /* Open dataset. */
-    dataset_id = H5Dopen(file_id, "Pressure", H5P_DEFAULT);
-
-    /* Create index using FastBit. */
-    H5Xcreate(file_id, H5X_PLUGIN_FASTBIT, dataset_id, H5P_DEFAULT);
-
-    /* Close the dataset. */
-    H5Dclose(dataset_id);
+    /* Close the file */
+    H5Fclose(file);
 
     /* Create a simple query */
-    query_id = H5Qcreate(H5Q_TYPE_DATA_ELEM, H5Q_MATCH_EQUAL, H5T_NATIVE_FLOAT,
+    subquery1 = H5Qcreate(H5Q_TYPE_LINK_NAME, H5Q_MATCH_EQUAL, DATASETNAME);
+    subquery2 = H5Qcreate(H5Q_TYPE_DATA_ELEM, H5Q_MATCH_LESS_THAN,
+        H5T_NATIVE_FLOAT, &subquery2_value);
+    query = H5Qcombine(subquery1, H5Q_COMBINE_AND, subquery2);
+
+    /* Open file */
+    file = H5Fopen(FILENAME, H5F_ACC_RDONLY, H5P_DEFAULT);
+
+    /* Apply query to file */
+    view = H5Qapply(file, query, &apply_result, H5P_DEFAULT)
+
+    /* Result should contain region reference */
+    if (result & H5Q_REF_REG) {
+        hid_t refs, ref_type, ref_space, space;
+        size_t n_refs, ref_size;
+        void *ref_buf;
+
+        /* Read region reference from view */
+        refs = H5Dopen(view, H5Q_VIEW_REF_REG_NAME, H5P_DEFAULT);
+        ref_type = H5Dget_type(refs);
+        ref_space = H5Dget_space(refs);
+        n_refs = (size_t) H5Sget_select_npoints(ref_space);
+        ref_size = H5Tget_size(ref_type);
+        ref_buf = malloc(n_refs * ref_size)
+        H5Dread(refs, ref_type, H5S_ALL, ref_space, H5P_DEFAULT, ref_buf);
+        H5Dclose(refs);
+        H5Sclose(ref_space);
+
+        /* Get selection from region reference */
+        space = H5Rget_region(file, (href_t *) ref_buf);
+
+        /* Use selection result [...] */
+
+        /* Close selection */
+        H5Sclose(space);
+
+        /* Free reference buffer */
+        free(ref_buf);
+    }
+
+    /* Close view */
+    H5Gclose(view);
+
+    /* Close queries */
+    H5Qclose(query);
+    H5Qclose(subquery1);
+    H5Qclose(subquery2);
+
+    /* Close the file */
+    H5Fclose(file);
+}
+\end{lstlisting}
+}
+
+\subsection{Data Index and Data Query}
+In this example, we show how one can make use of the query and
+indexing APIs to efficiently retrieve a dataspace selection within a dataset.
+
+{\lstsetc
+\begin{lstlisting}
+#define NTUPLES 256
+#define FILENAME "test.h5"
+#define DATASETNAME "Pressure"
+
+int
+main(int argc, char *argv[])
+{
+    float data[NTUPLES], *result;
+    hsize_t dims[1] = {NTUPLES};
+    hid_t t file, dataspace, dataset, dcpl, query, result_space;
+    size_t result_npoints;
+    int i;
+
+    /* Initialize data */
+    for(i = 0; i < NTUPLES; i++) data[i] = (float) i;
+
+    /* Create file */
+    file = H5Fcreate(FILENAME, H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT);
+
+    /* Create the data space for the dataset */
+    dataspace = H5Screate_simple(1, dims, NULL);
+
+    /* Create and set property list to use FastBit index */
+    dcpl = H5Pcreate(H5P_DATASET_CREATE);
+    H5Pset_index_plugin(dcpl, H5X_PLUGIN_FASTBIT);
+
+    /* Create dataset */
+    dataset = H5Dcreate(file, DATASETNAME, H5T_NATIVE_FLOAT, dataspace,
+        H5P_DEFAULT, dcpl, H5P_DEFAULT);
+
+    /* Write dataset */
+    H5Dwrite(dataset, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL, H5P_DEFAULT, data);
+
+    /* Close the dataset */
+    H5Dclose(dataset);
+
+    /* Close dataspace */
+    H5Sclose(dataspace);
+
+    /* Close the property */
+    H5Pclose(dcpl);
+
+    /* Close the file */
+    H5Fclose(file);
+
+    /* Create a simple query */
+    query = H5Qcreate(H5Q_TYPE_DATA_ELEM, H5Q_MATCH_EQUAL, H5T_NATIVE_FLOAT,
         &query_value);
 
-    /* Open dataset. */
-    dataset_id = H5Dopen(file_id, "Pressure", H5P_DEFAULT);
+    /* Open file */
+    file = H5Fopen(FILENAME, H5F_ACC_RDONLY, H5P_DEFAULT);
 
-    /* Use query to select elements in the dataset. */
-    result_space_id = H5Dquery(dataset_id, H5S_ALL, query_id, H5P_DEFAULT);
+    /* Open dataset */
+    dataset = H5Dopen(file, DATASETNAME, H5P_DEFAULT);
 
-    /* Allocate space to read data. */ 
-    result_npoints = (size_t) H5Sget_select_npoints(result_space_id);
+    /* NB. Alternatively the index can be generated on the existing dataset.
+     * This, however, requires the file to be open in H5F_ACC_RDWR so that
+     * the index can be stored within the file and attached to the dataset.
+     * H5Xcreate(dataset, H5X_PLUGIN_FASTBIT, H5P_DEFAULT); */
+
+    /* Use query to select elements in the dataset */
+    result_space = H5Dquery(dataset, H5S_ALL, query, H5P_DEFAULT);
+
+    /* Allocate space to read data */ 
+    result_npoints = (size_t) H5Sget_select_npoints(result_space);
     result = malloc(result_npoints * sizeof(float));
 
-    /* Read data using result_space_id. */
-    H5Dread(dataset_id, H5T_NATIVE_FLOAT, H5S_ALL, result_space_id,
+    /* Read data using result_space_id */
+    H5Dread(dataset, H5T_NATIVE_FLOAT, H5S_ALL, result_space,
         H5P_DEFAULT, result);
 
-    /* Use result. */
-    [...]
+    /* Use result [...] */
 
-    /* Free result. */
+    /* Free result */
     free(result);
 
-    /* Close the dataset. */
-    H5Dclose(dataset_id);
+    /* Close the dataset */
+    H5Dclose(dataset);
 
-    /* Close dataspace. */
-    H5Sclose(result_space_id);
+    /* Close dataspace */
+    H5Sclose(result_space);
 
-    /* Close query. */
-    H5Qclose(query_id);
+    /* Close query */
+    H5Qclose(query);
 
-    /* Close the file. */
-    H5Fclose(file_id);
+    /* Close the file */
+    H5Fclose(file);
+}
+\end{lstlisting}
+}
+
+\subsection{Metadata Index}
+In this example, we show how one can make use of the query and
+indexing APIs to efficiently execute a metadata query on a file.
+
+{\lstsetc
+\begin{lstlisting}
+#define FILENAME "test.h5"
+#define DATASETNAME "Pressure"
+
+int
+main(int argc, char *argv[])
+{
+    hid_t t file, fcpl, query, view;
+    unsigned apply_result = 0;
+
+    /* Create and set property list to use B-Tree index */
+    fcpl = H5Pcreate(H5P_FILE_CREATE);
+    H5Pset_index_plugin(fcpl, H5X_PLUGIN_BTREE);
+
+    /* Create file */
+    file = H5Fcreate(FILENAME, H5F_ACC_TRUNC, fcpl, H5P_DEFAULT);
+
+    /* Create groups / datasets / attributes / etc */
+
+    /* Close the property */
+    H5Pclose(fcpl);
+
+    /* Close the file */
+    H5Fclose(file);
+
+    /* Create a simple query */
+    query = H5Qcreate(H5Q_TYPE_LINK_NAME, H5Q_MATCH_EQUAL, DATASETNAME);
+
+    /* Open file */
+    file = H5Fopen(FILENAME, H5F_ACC_RDONLY, H5P_DEFAULT);
+
+    /* NB. Alternatively the index can be generated on the existing file.
+     * This, however, requires the file to be open in H5F_ACC_RDWR so that
+     * the index can be stored within the file and attached to it.
+     * H5Xcreate(file, H5X_PLUGIN_BTREE, H5P_DEFAULT); */
+
+    /* Apply query to file */
+    view = H5Qapply(file, query, &apply_result, H5P_DEFAULT)
+
+    /* Use view result [...] */
+
+    /* Close view */
+    H5Gclose(view);
+
+    /* Close query */
+    H5Qclose(query);
+
+    /* Close the file */
+    H5Fclose(file);
 }
 \end{lstlisting}
 }
