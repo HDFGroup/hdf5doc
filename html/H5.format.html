@@ -1,4 +1,3 @@
-<!DOCTYPE HTML>
 <html>
   <head>
     <title>
@@ -219,6 +218,7 @@ div {   page-break-inside:avoid;
       <li><a href="#FileMetaData">Disk Format: Level 0 - File Metadata</a></li>
         <font size="-1">
 	<ol type="A">
+    <p style="background-color:#ff9999">change for 1.10</p>
 	  <li><a href="#Superblock">Disk Format: Level 0A - Format Signature and Superblock</a></li>
 	  <li><a href="#DriverInfo">Disk Format: Level 0B - File Driver Info</a></li>
 	  <li><a href="#SuperblockExt">Disk Format: Level 0C - Superblock Extension</a></li>
@@ -232,6 +232,7 @@ div {   page-break-inside:avoid;
 	    <ol type="1">
               <li><a href="#V1Btrees">Disk Format: Level 1A1 - Version 1 
                 B-trees (B-link Trees)</a></li>
+    <p style="background-color:#ff9999">change for 1.10</p>
               <li><a href="#V2Btrees">Disk Format: Level 1A2 - Version 2 
                 B-trees</a></li>
             </ol>
@@ -242,9 +243,6 @@ div {   page-break-inside:avoid;
 	  <li><a href="#FractalHeap">Disk Format: Level 1F - Fractal Heap</a></li>
 	  <li><a href="#FreeSpaceManager">Disk Format: Level 1G - Free-space Manager</a></li>
 	  <li><a href="#SOHMTable">Disk Format: Level 1H - Shared Object Header Message Table</a></li>
-    <p style="background-color:#ff9999">change for 1.10</p>
-	  <li style="background-color:#DDEEEE"><a href="#FixedArray">Disk Format Level 1I - Fixed Array</a></li>
-	  <li style="background-color:#DDEEEE"><a href="#ExtensibleArray">Disk Format Level 1J - Extensible Array</a></li>
 	</ol>
         </font>
       <li><a href="#DataObject">Disk Format: Level 2 - Data Objects</a></li>
@@ -319,10 +317,10 @@ div {   page-break-inside:avoid;
                     Message</a></li>                                         <!-- 0x0015 -->
                   <li><a href="#RefCountMessage">The Object Reference 
                     Count Message</a></li>                              <!-- 0x0016 -->
+<!-- Will be updated for release 1.10.1
+    <p style="background-color:#ff9999">change for 1.10.1</p>
                   <li><a href="#FsinfoMessage">The File Space Info 
-                    Message</a></li>                                      <!-- 0x0018 -->
-    <p style="background-color:#ff9999">change for 1.10</p>
-                  <li style="background-color:#DDEEEE"><a href="#DataStorageMessage">Data Storage</a></li>                    		  <!-- 0x0018 -->
+                    Message</a></li> -->                                     <!-- 0x0017 -->
                 </ol>
 	    </ol>
 	  <li><a href="#DataStorage">Disk Format: Level 2B - Data Object Data Storage</a></li>
@@ -333,6 +331,15 @@ div {   page-break-inside:avoid;
     <p style="background-color:#ff9999">change for 1.10</p>
       <li style="background-color:#DDEEEE"><a href="#AppendixC">
       Appendix C: Types of Indexes for Dataset Chunks</a></li>
+        <font size="-1">
+	<ol type="1">
+	  <li><a href="#SingleChunk">Appendix C1: Single Chunk index</a></li>
+	  <li><a href="#Implicit">Appendix C2: Implicit index</a></li>
+	  <li><a href="#FixedArray">Appendix C3: Fixed Array index</a></li>
+	  <li><a href="#ExtensibleArray">Appendix C4: Extensible Array index</a></li>
+	  <li><a href="#V2Btrees">Appendix C5: Version 2 B-trees</a></li>
+	</ol>
+        </font>
     </ol>
 </td></tr>
 </table>
@@ -475,24 +482,25 @@ I.B. Changes for HDF5 1.10</h3></a>
         describe the <a href="#V2BtreesType10">type 10</a> and 
         <a href="#V2BtreesType11">11</a> record layouts were added at 
         the end of the section.</li>
-        <li>The section <a href="#FixedArray">
-        &ldquo;Disk Format: Level 1I - Fixed Array&rdquo;</a> was 
-        added.</li>
-        <li>The section <a href="#ExtensibleArray">
-        &ldquo;Disk Format: Level 1J - Extensible Array&rdquo;</a> was 
-        added.</li>
+        <li>Move the section <a href="#FixedArray">
+        &ldquo;Disk Format: Level 1I - Fixed Array&rdquo;</a> to Appendix C.
+        </li>
+        <li>Move the section <a href="#ExtensibleArray">
+        &ldquo;Disk Format: Level 1J - Extensible Array&rdquo;</a> to Appendix C.
+        </li>
         <li>The section <a href="#LayoutMessage">
         &ldquo;The Data Layout Message&rdquo;</a> was changed. The name 
         was changed, and <a href="#DataLayoutV4">version 4</a> of the 
         data layout message was added.</li>
+
+<!-- Will be updated for release 1.10.1
         <li>In <a href="#FsinfoMessage">
         &ldquo;The File Space Info Message&rdquo;</a> section, 
         the header message type was changed.</li>
-        <li>The section <a href="#DataStorageMessage">
-        &ldquo;The Data Storage Message&rdquo;</a> was added.</li>
+-->
         <li><a href="#AppendixC">
         &ldquo;Appendix C: Types of Indexes for Dataset Chunks&rdquo;</a> 
-        was added.</li>
+        was added.  Five sections on indexing types are added to the Appendix.</li>
     </ul>
 
 
@@ -521,15 +529,27 @@ II.A. Disk Format: Level 0A - Format Signature and Superblock</a></h3>
       the previous location; in other words, at these byte offsets: 
       0, 512, 1024, 2048, and so on.</p>
 
+<p style="background-color:#ff9999">change for 1.10</p>
     <p>The superblock is composed of the format signature, followed by a
       superblock version number and information that is specific to each
       version of the superblock.
-      Currently, there are three versions of the superblock format.
-      Version 0 is the default format, while version 1 is basically the same
-      as version 0 with additional information when a non-default B-tree &lsquo;K&rsquo;
-      value is stored.  Version 2 is the latest format, with some fields
-      eliminated or compressed and with superblock extension and checksum
-      support.</p>
+      Currently, there are four versions of the superblock format:
+      <ul>
+      <li>
+      Version 0 is the default format.
+      <li>
+      Version 1 is the same
+      as version 0 but with the "<em>Indexed Storage Internal Node K</em>"  field
+      for storing non-default B-tree &lsquo;K&rsquo; value.  
+      <li>
+      Version 2 has some fields eliminated and compressed from superblock format versions 0 and 1.
+      It has added checksum support and superblock extension to store
+      additional superblock metadata.
+      <li>
+      Version 3 is the same as version 2 except that the field "<em>File Consistency Flags</em>" 
+      is used for file locking.
+      This format version will enable the latest version support.</p>
+      </ul>
 
     <p>Version 0 and 1 of the superblock are described below:</p>
 
@@ -826,27 +846,9 @@ II.A. Disk Format: Level 0A - Format Signature and Superblock</a></h3>
         <tr>
           <td><p>File Consistency Flags</p></td>
           <td>
-            <p>This value contains flags to indicate information
-            about the consistency of the information contained
-            within the file.  Currently, the following bit flags are
-            defined: 
-            <ul>
-            <li>Bit 0 set indicates that the file is opened for
-            write-access.</li>
-            <li>Bit 1 set indicates that the file has
-            been verified for consistency and is guaranteed to be
-            consistent with the format defined in this document.</li>
-            <li>Bits 2-31 are reserved for future use.</li>
-            </ul>
-            Bit 0 should be
-            set as the first action when a file is opened for write
-            access and should be cleared only as the final action
-            when closing a file.  Bit 1 should be cleared during
-            normal access to a file and only set after the file&rsquo;s
-            consistency is guaranteed by the library or a
-            consistency utility.
+<p style="background-color:#ff9999">change for 1.10</p>
+            <p>This field is unused and is reserved for future use.
             </p>
-
             <p><em>This field is present in version 0+ of the superblock.</em>
             </p>
           </td>
@@ -952,12 +954,13 @@ II.A. Disk Format: Level 0A - Format Signature and Superblock</a></h3>
     </div>
 
     <br />
-    <p>Version 2 of the superblock is described below:</p>
+<p style="background-color:#ff9999">change for 1.10</p>
+    <p>Version 2 and 3 of the superblock is described below:</p>
 
     <div align="center">
       <table class="format">
 	<caption>
-	  Superblock (Version 2)
+	  Superblock (Version 2 and 3)
 	</caption>
 
 	<tr>
@@ -1058,12 +1061,30 @@ II.A. Disk Format: Level 0A - Format Signature and Superblock</a></h3>
 
         <tr>
           <td><p>File Consistency Flags</p></td>
+
           <td>
-            <p>This field is the same as described for versions 0 and 1 except
-            that it is smaller (the number of reserved bits has been reduced
-            from 30 to 6).
+<p style="background-color:#ff9999">change for 1.10</p>
+            <p>For superblock version 2: This field is unused.</p>
+            <p>For superblock version 3: This value contains flags to ensure file consistency for file locking.
+            Currently, the following bit flags are defined: 
+            <ul>
+            <li>Bit 0 set indicates that the file is opened for
+            write-access.</li>
+            <li>Bit 1 is reserved for future use.</li>
+            <li>Bit 2 set indicates that the file is opened for SWMR-write-access.</li>
+            <li>Bits 4-31 are reserved for future use.</li>
+            </ul>
+            Bit 0 and/or bit 2 should be
+            set as the first action when a file is opened for write and/or SWMR-write
+            access.  They should be cleared only as the final action
+            when closing a file.  
+            </p>
+            <p><em>This field is present in version 0+ of the superblock.</em>
+            </p>
+            <p><em>The size of this field has been reduced from 4 bytes in superblock format version 0 and 1 to 1 byte.</em>
             </p>
           </td>
+
         </tr>
 
         <tr>
@@ -1115,6 +1136,8 @@ II.A. Disk Format: Level 0A - Format Signature and Superblock</a></h3>
 
       </table>
     </div>
+
+    <br />
 
 <br />
 <h3><a name="DriverInfo">
@@ -1435,6 +1458,7 @@ II.B. Disk Format: Level 0B - File Driver Info</a></h3>
 <h3><a name="SuperblockExt">
 II.C. Disk Format: Level 0C - Superblock Extension</a></h3>
 
+<p style="background-color:#ff9999">change for 1.10</p>
     <p>The <em>superblock extension</em> is used to store superblock metadata
       which is either optional, or added after the version of the superblock
       was defined.  Superblock extensions may only exist when version 2+ of
@@ -1454,13 +1478,11 @@ II.C. Disk Format: Level 0C - Superblock Extension</a></h3>
         See also the 
         <a href="#DriverInfo">&ldquo;Disk Format: Level 0B - File Driver 
         Info&rdquo;</a> section above.</li>
+<!-- Will be updated for release 1.10.1
 	<li>
 	<a href="#FsinfoMessage">File Space Info message</a> containing
 	information about file space handling in the file.</li>
-    <p style="background-color:#ff9999">change for 1.10</p>
-	<li style="background-color:#DDEEEE">
-	<a href="#DataStorageMessage">Data Storage message</a> containing
-	information about file space handling in the file.</li>
+-->
 	</ul>
 
 
@@ -3232,9 +3254,7 @@ III.A.2. Disk Format: Level 1A2 - Version 2 B-trees</a></h4>
       <table class="format">
         <caption>
           <a name="V2BtreesType10">
-          Version 2 B-tree, Type 10 Record Layout - Non-filtered 
-          Dataset Chunks Whose Dataspace Has Greater Than One 
-          Unlimited Dimensions</a>
+          Version 2 B-tree, Type 10 Record Layout - Non-filtered Dataset Chunks</a>
         </caption>
 
         <tr>
@@ -3249,11 +3269,11 @@ III.A.2. Disk Format: Level 1A2 - Version 2 B-trees</a></h4>
 	</tr>
 
 	<tr>
-          <td colspan="4"><br />Dimension 0 Offset<em> (8 bytes)</em><br /><br /></td>
+          <td colspan="4"><br />Dimension 0 Scaled Offset<em> (8 bytes)</em><br /><br /></td>
 	</tr>
 
 	<tr>
-          <td colspan="4"><br />Dimension 1 Offset<em> (8 bytes)</em><br /><br /></td>
+          <td colspan="4"><br />Dimension 1 Scaled Offset<em> (8 bytes)</em><br /><br /></td>
 	</tr>
 
 	<tr>
@@ -3261,7 +3281,7 @@ III.A.2. Disk Format: Level 1A2 - Version 2 B-trees</a></h4>
 	</tr>
 
 	<tr>
-          <td colspan="4"><br />Dimension #n Offset<em> (8 bytes)</em><br /><br /></td>
+          <td colspan="4"><br />Dimension #n Scaled Offset<em> (8 bytes)</em><br /><br /></td>
 	</tr>
 
       </table>
@@ -3294,13 +3314,14 @@ III.A.2. Disk Format: Level 1A2 - Version 2 B-trees</a></h4>
         </tr>
 
         <tr>
-          <td>Dimension #n Offset</td>
+          <td>Dimension #n Scaled Offset</td>
           <td>
-            <p>This field is the offset of the chunk within the dataset.
+            <p>This field is the scaled offset of the chunk within the dataset.
 		<em>n</em> is the number of dimensions for the dataset.
-		The first offset stored in the list is for the slowest changing
-		dimension and the last offset stored is for the fastest
-		changing dimension.
+		The first scaled offset stored in the list is for the slowest changing
+		dimension and the last scaled offset stored is for the fastest
+		changing dimension.  Scaled offset is calculated by dividing the chunk dimension
+	        sizes into the chunk offsets.
             </p>
           </td>
         </tr>
@@ -3313,9 +3334,7 @@ III.A.2. Disk Format: Level 1A2 - Version 2 B-trees</a></h4>
       <table class="format">
         <caption>
           <a name="V2BtreesType11">
-          Version 2 B-tree, Type 11 Record Layout - Filtered Dataset 
-          Chunks Whose Dataspace Has Greater Than One Unlimited 
-          Dimensions</a>
+          Version 2 B-tree, Type 11 Record Layout - Filtered Dataset Chunks </a>
         </caption>
 
         <tr>
@@ -3338,11 +3357,11 @@ III.A.2. Disk Format: Level 1A2 - Version 2 B-trees</a></h4>
 	</tr>
 
 	<tr>
-          <td colspan="4"><br />Dimension 0 Offset<em> (8 bytes)</em><br /><br /></td>
+          <td colspan="4"><br />Dimension 0 Scaled Offset<em> (8 bytes)</em><br /><br /></td>
 	</tr>
 
 	<tr>
-          <td colspan="4"><br />Dimension 1 Offset<em> (8 bytes)</em><br /><br /></td>
+          <td colspan="4"><br />Dimension 1 Scaled Offset<em> (8 bytes)</em><br /><br /></td>
 	</tr>
 
 	<tr>
@@ -3350,7 +3369,7 @@ III.A.2. Disk Format: Level 1A2 - Version 2 B-trees</a></h4>
 	</tr>
 
 	<tr>
-          <td colspan="4"><br />Dimension #n Offset<em> (8 bytes)</em><br /><br /></td>
+          <td colspan="4"><br />Dimension #n Scaled Offset<em> (8 bytes)</em><br /><br /></td>
 	</tr>
 
       </table>
@@ -3400,12 +3419,12 @@ III.A.2. Disk Format: Level 1A2 - Version 2 B-trees</a></h4>
         </tr>
 
         <tr>
-          <td>Dimension #n Offset</td>
+          <td>Dimension #n Scaled Offset</td>
           <td>
-            <p>This field is the offset of the chunk within the dataset.
+            <p>This field is the scaled offset of the chunk within the dataset.
 		<em>n</em> is the number of dimensions for the dataset.
-		The first offset stored in the list is for the slowest changing
-		dimension and the last offset stored is for the fastest
+		The first scaled offset stored in the list is for the slowest changing
+		dimension and the last scaled offset stored is for the fastest
 		changing dimension.
             </p>
           </td>
@@ -7269,1579 +7288,6 @@ III.H. Disk Format: Level 1H - Shared Object Header Message Table</a></h3>
       </table>
     </div>
 
-
-
-<br />
-<p style="background-color:#ff9999">change for 1.10</p>
-<h3 style="background-color:#DDEEEE"><a name="FixedArray">
-III.I. Disk Format: Level 1I - Fixed Array</a></h3>
-    <p style="background-color:#DDEEEE">
-    The Fixed Array is a data structure that is used as a chunk index 
-    in datasets where the dataspace has fixed maximum dimension extents. 
-    In other words, no dimension can have its maximum size be 
-    <code>H5S_UNLIMITED</code>. Since the number of chunks is known 
-    <em>a priori</em>, a simple array can be used to locate them, 
-    providing space and speed improvements over index structures 
-    that handle more dynamic data arrangements.
-    </p>
-    <p style="background-color:#DDEEEE">
-    The Fixed Array consists of a header and a data block that contains the chunk information.
-    For improved efficiency, the data will be divided into multiple pages if
-    the number of elements exceeds a threshold value. 
-    The header contains metadata information about the elements stored in the array
-    as well as the address of the data block.
-    The content of the data block depends on whether paging is turned on or not.  When paging
-    is not being used, the data block simply contains the chunk information.
-    If paging is on, the data block will contain a bit mask indicating which pages have been initialized
-    in the file but will not the include data.  The subsequent data block pages will contain the actual
-    chunk information.
-    </p>
-    <p style="background-color:#DDEEEE">
-    The space for the fixed array data (data block + pages, if any) is laid out in the file at
-    creation time as a single contiguous block of space.  If the array is
-    paged, the pages are initialized as needed, and the bitmap updated accordingly.
-    </p>
-    <p style="background-color:#DDEEEE">
-    An element in the array describes either a filterd or non-filtered dataset chunk.  The formats
-    of both types of element are described below.
-    </p>
-    <br />
-    <div align="center" style="background-color:#DDEEEE">
-      <table class="format">
-        <caption>
-          Fixed Array Header
-        </caption>
-
-        <tr>
-          <th>byte</th>
-          <th>byte</th>
-          <th>byte</th>
-          <th>byte</th>
-        </tr>
-
-        <tr>
-          <td colspan="4">Signature</td>
-        </tr>
-          
-        <tr>
-          <td>Version</td>
-          <td>Client ID</td>
-          <td>Element Size</td>
-          <td>Page Bits</td>
-        </tr>
-
-        <tr>
-          <td colspan="4"><br />Num Elements<sup>L</sup><br /><br /></td>
-        </tr>
-          
-        <tr>
-          <td colspan="4"><br />Data Block Address<sup>O</sup><br /><br /></td>
-        </tr>
-
-        <tr>
-          <td colspan="4">Checksum</td>
-        </tr>
-
-      </table>
-
-      <table class="note">
-        <tr>
-            <td width="60%">&nbsp;</td>
-            <td width="40%">
-            (Items marked with an &lsquo;O&rsquo; in the above table are
-            of the size specified in the <a href="#SizeOfOffsetsV0">Size 
-            of Offsets</a> field in the superblock.)
-            </td></tr>
-        <tr>
-            <td>&nbsp;</td>
-            <td>
-            (Items marked with an &lsquo;L&rsquo; in the above table are
-            of the size specified in the <a href="#SizeOfLengthsV0">Size 
-            of Lengths</a> field in the superblock.)
-            </td></tr>
-      </table>
-
-    </div>
-
-    <br />
-    <div align="center" style="background-color:#DDEEEE">
-      <table class="desc">
-	<tr>
-          <th width="40%">Field Name</th>
-          <th>Description</th>
-        </tr>
-
-        <tr>
-          <td>Signature</td>
-          <td>
-            <p>The ASCII character string &ldquo;<code>FAHD</code>&rdquo;
-            is used to indicate the
-            beginning of a Fixed Array header.  This gives file consistency
-            checking utilities a better chance of reconstructing a
-            damaged file.
-            </p>
-          </td>
-        </tr>
-          
-        <tr>
-          <td>Version</td>
-          <td>
-            <p>This document describes version 0.</p>
-          </td>
-        </tr>
-
-	<tr>
-          <td>Client ID</td>
-          <td>
-            <p>This is the client ID for identifying the user of the
-                Fixed Array index:
-
-                <table class="list">
-                    <tr>
-                      <th width="20%" align="center">ID</th>
-                      <th width="80%" align="left">Description</th>
-                    </tr>
-
-                    <tr>
-                      <td align="center"><code>0</code></td>
-                      <td>Dataset chunks without fliters
-                      </td>
-                    </tr>
-                    <tr>
-                      <td align="center"><code>1</code></td>
-                      <td>Dataset chunks with filters
-                      </td>
-                    </tr>
-                    <tr>
-                      <td align="center"><code>2+</code></td>
-                      <td>Reserved.
-                      </td>
-                    </tr>
-                </table>
-            </p>
-          </td>
-        </tr>
-
-        <tr>
-          <td>Element Size</td>
-	  <td>
-	    <p>This is the size in bytes of an element in the Fixed Array.
-            </p>
-	  </td>
-        </tr>
-
-	<tr>
-	  <td>Page Bits</td>
-	  <td>
-            <p>This field contains the number of bits needed to store maxium number
-	    of elements in a data block page.</p>
-          </td>
-	</tr>
-	
-	<tr>
-	  <td>Num Elements</td>
-	  <td>
-	    <p>This is the number of elements in the Fixed Array.
-	    </p>
-	  </td>
-	</tr>
-
-	<tr>
-	  <td>Data Block Address</td>
-	  <td>
-	    <p>This is the address of the data block in the Fixed Array.
-	    </p>
-	  </td>
-
-        <tr>
-          <td>Checksum</td>
-          <td>
-            <p>This is the checksum for the header.</p>
-          </td>
-        </tr>
-
-      </table>
-    </div>
-
-    <br />
-    <div align="center" style="background-color:#DDEEEE">
-      <table class="format">
-        <caption>
-          Fixed Array Data Block
-        </caption>
-
-        <tr>
-          <th>byte</th>
-          <th>byte</th>
-          <th>byte</th>
-          <th>byte</th>
-        </tr>
-
-        <tr>
-          <td colspan="4">Signature</td>
-        </tr>
-          
-        <tr>
-          <td>Version</td>
-          <td>Client ID</td>
-          <td colspan="2" bgcolor="#DDDDDD"><em>This space inserted only to align table nicely</em></td>
-        </tr>
-
-        <tr>
-          <td colspan="4"><br />Header Address<sup>O</sup><br /><br /></td>
-        </tr>
-
-        <tr>
-          <td colspan="4"><br />Page Bit Mask <em>(variable size and optional)</em><br /><br /></td>
-        </tr>
-
-        <tr>
-          <td colspan="4"><br />Elements<br /><em>(variable size and optional)</em><br /><br /></td>
-        </tr>
-
-        <tr>
-          <td colspan="4">Checksum</td>
-        </tr>
-
-      </table>
-
-      <table class="note">
-        <tr>
-            <td width="60%">&nbsp;</td>
-            <td width="40%">
-            (Items marked with an &lsquo;O&rsquo; in the above table are
-            of the size specified in the <a href="#SizeOfOffsetsV0">Size 
-            of Offsets</a> field in the superblock.)
-            </td></tr>
-      </table>
-
-    </div>
-
-    <br />
-    <div align="center" style="background-color:#DDEEEE">
-      <table class="desc">
-	<tr>
-          <th width="40%">Field Name</th>
-          <th>Description</th>
-        </tr>
-
-        <tr>
-          <td>Signature</td>
-          <td>
-            <p>The ASCII character string &ldquo;<code>FADB</code>&rdquo;
-            is used to indicate the
-            beginning of a Fixed Array data block.  This gives file consistency
-            checking utilities a better chance of reconstructing a
-            damaged file.
-            </p>
-          </td>
-        </tr>
-          
-        <tr>
-          <td>Version</td>
-          <td>
-            <p>This document describes version 0.</p>
-          </td>
-        </tr>
-
-	<tr>
-          <td>Client ID</td>
-          <td>
-            <p>This is the client ID for identifying the user of the
-                Fixed Array:
-
-                <table class="list">
-                    <tr>
-                      <th width="20%" align="center">ID</th>
-                      <th width="80%" align="left">Description</th>
-                    </tr>
-
-                    <tr>
-                      <td align="center"><code>0</code></td>
-                      <td>Dataset chunks without fliters
-                      </td>
-                    </tr>
-                    <tr>
-                      <td align="center"><code>1</code></td>
-                      <td>Dataset chunks with filters
-                      </td>
-                    </tr>
-                    <tr>
-                      <td align="center"><code>2+</code></td>
-                      <td>Reserved.
-                      </td>
-                    </tr>
-                </table>
-            </p>
-          </td>
-        </tr>
-
-        <tr>
-          <td>Header Address</td>
-	  <td>
-	    <p>This is the address of the Fixed Array header.  This field 
-        is principally used for file integrity checking.
-            </p>
-	  </td>
-        </tr>
-
-	<tr>
-	  <td>Page Bit Mask</td>
-	  <td>This field is the bit mask indicating whether a Data
-	    Block Page is initialized or not. This field exists only if 
-        the Data Block is paged.</td>
-	</tr>
-	
-	<tr>
-	  <td>Elements</td>
-	  <td>
-	    <p>This field contains the elements in a Data Block and
-	    exists only if the Data Block is not paged.
-	    There are two element types:
-                <table class="list">
-                    <tr>
-                      <th width="20%" align="center">ID</th>
-                      <th width="80%" align="left">Description</th>
-                    </tr>
-
-                    <tr>
-                      <td align="center"><code>0</code></td>
-                      <td>This is for non-filtered dataset chunks
-			    and is described below.
-                      </td>
-                    </tr>
-                    <tr>
-                      <td align="center"><code>1</code></td>
-                      <td>This is for filtered dataset chunks and
-			is described below.
-                      </td>
-                    </tr>
-                </table>
-	    </p>
-	  </td>
-	</tr>
-
-        <tr>
-          <td>Checksum</td>
-          <td>
-            <p>This is the checksum for the Fixed Array Data Block.</p>
-          </td>
-        </tr>
-
-      </table>
-    </div>
-
-    <br />
-    <div align="center" style="background-color:#DDEEEE">
-      <table class="format">
-        <caption>
-          Fixed Array Data Block Page
-        </caption>
-
-        <tr>
-          <th>byte</th>
-          <th>byte</th>
-          <th>byte</th>
-          <th>byte</th>
-        </tr>
-
-        <tr>
-          <td colspan="4"><br />Elements<br /><em>(variable size)</em><br /><br /></td>
-        </tr>
-
-        <tr>
-          <td colspan="4">Checksum</td>
-        </tr>
-
-      </table>
-    </div>
-
-    <br />
-    <div align="center" style="background-color:#DDEEEE">
-      <table class="desc">
-	<tr>
-          <th width="40%">Field Name</th>
-          <th>Description</th>
-        </tr>
-
-	<tr>
-	  <td>Elements</td>
-	  <td>
-	    <p>This field contains the elements in a Data Block Page.
-	    There are two element types:
-                <table class="list">
-                    <tr>
-                      <th width="20%" align="center">ID</th>
-                      <th width="80%" align="left">Description</th>
-                    </tr>
-
-                    <tr>
-                      <td align="center"><code>0</code></td>
-                      <td>This is for non-filtered dataset chunks
-			    and is described below.
-                      </td>
-                    </tr>
-                    <tr>
-                      <td align="center"><code>1</code></td>
-                      <td>This is for filtered dataset chunks and
-			is described below.
-                      </td>
-                    </tr>
-                </table>
-	    </p>
-	  </td>
-	</tr>
-
-        <tr>
-          <td>Checksum</td>
-          <td>
-            <p>This is the checksum for a Fixed Array Data Block Page.</p>
-          </td>
-        </tr>
-
-      </table>
-    </div>
-
-    <br />
-    <div align="center" style="background-color:#DDEEEE">
-      <table class="format">
-	<caption>
-	  Data Block Element for Non-filtered Dataset Chunk
-	</caption>
-
-	<tr>
-	  <th width="25%">byte</th>
-	  <th width="25%">byte</th>
-	  <th width="25%">byte</th>
-	  <th width="25%">byte</th>
-	</tr>
-
-	<tr>
-	  <td colspan="4"><br />Address<sup>O</sup><br /><br /></td>
-	</tr>
-
-      </table>
-
-      <table class="note" style="background-color:#DDEEEE">
-        <tr>
-            <td width="60%">&nbsp;</td>
-            <td width="40%">
-            (Items marked with an &lsquo;O&rsquo; in the above table are
-            of the size specified in the <a href="#SizeOfOffsetsV0">Size 
-            of Offsets</a> field in the superblock.)
-            </td></tr>
-      </table>
-    </div>
-
-    <br />
-    <div align="center" style="background-color:#DDEEEE">
-      <table class="desc">
-	<tr>
-          <th width="30%">Field Name</th>
-          <th>Description</th>
-	</tr>
-
-	<tr>
-	  <td>Address</td>
-	  <td><p>This field is the address of the dataset chunk in the file.
-              </p>
-          </td>
-	</tr>
-
-      </table>
-    </div>
-<!--    </p> -->
-
-    <br />
-    <div align="center" style="background-color:#DDEEEE">
-      <table class="format">
-	<caption>
-	  Data Block Element for Filtered Dataset Chunk
-	</caption>
-
-	<tr>
-	  <th width="25%">byte</th>
-	  <th width="25%">byte</th>
-	  <th width="25%">byte</th>
-	  <th width="25%">byte</th>
-	</tr>
-
-	<tr>
-	  <td colspan="4"><br />Address<sup>O</sup><br /><br /></td>
-	</tr>
-
-	<tr>
-	  <td colspan="4"><br />Chunk Size<em>
-	   <br />(variable size; at most 8 bytes)</em><br /><br /></td>
-	</tr>
-
-	<tr>
-	  <td colspan="4">Filter Mask</td>
-	</tr>
-
-      </table>
-
-      <table class="note" style="background-color:#DDEEEE">
-        <tr>
-            <td width="60%">&nbsp;</td>
-            <td width="40%">
-            (Items marked with an &lsquo;O&rsquo; in the above table are
-            of the size specified in the <a href="#SizeOfOffsetsV0">Size 
-            of Offsets</a> field in the superblock.)
-            </td></tr>
-      </table>
-    </div>
-
-    <br />
-    <div align="center" style="background-color:#DDEEEE">
-      <table class="desc">
-	<tr>
-          <th width="30%">Field Name</th>
-          <th>Description</th>
-	</tr>
-
-	<tr>
-	  <td>Address</td>
-	  <td><p>This field is the address of the dataset chunk in the file.
-              </p>
-          </td>
-	</tr>
-
-	<tr>
-	  <td>Chunk Size</td>
-	  <td><p>This field is the size of the dataset chunk in bytes.
-              </p>
-          </td>
-	</tr>
-
-	<tr>
-	  <td>Filter Mask</td>
-	  <td><p>This field is the filter mask which indicates the filter to
-	    skip for the dataset chunk.  Each filter has an index number in he
-	    pipeline and if that filter is skipped, the bit corresponding to
-	    its index is set.
-              </p>
-          </td>
-	</tr>
-
-      </table>
-    </div>
-<!--    </p> -->
-
-<br />
-<h3 style="background-color:#DDEEEE"><a name="ExtensibleArray">
-III.J. Disk Format: Level 1J - Extensible Array</a></h3>
-
-    <p style="background-color:#DDEEEE">
-    The Extensible Array is a data structure that is used as a chunk index in
-    datasets where the dataspace has a single unlimited dimension. In 
-    other words, one dimension is set to <code>H5S_UNLIMITED</code> 
-    and the other dimensions are any number of fixed-size dimensions. 
-    The idea behind the extensible array is that a particular data object can
-    be located via a lightweight indexing structure of fixed depth for a given
-    address space. This indexing structure requires only a few (2-3) file operations
-    per element lookup and gives good cache performance. Unlike the B-tree structure,
-    the extensible array is optimized for appends. Where a B-tree would always add at
-    the rightmost node under these circumstances, either creating a deep tree 
-    (version 1) or requiring expensive rebalances to correct (version 2), 
-    the extensible array has already mapped out a pre-balanced internal structure. 
-    This idealized internal structure is instantiated as needed when chunk records 
-    are inserted into the structure.
-    </p>
-    <p style="background-color:#DDEEEE">
-    A description of the logic that lead to the present implementation of the
-    extensible array can be found at <a href="http://www.hdfgroup.org/RFC/RFCs/HDF5/ReviseChunks/skip_lists/SkipListChunkIndex.html">
-    http://www.hdfgroup.org/RFC/RFCs/HDF5/ReviseChunks/skip_lists/SkipListChunkIndex.html</a>.
-    The current implementation differs from the data structure described in that
-    link in some ways, but the basic idea is the same.</p>
-    <p style="background-color:#DDEEEE">
-    ??????? should SkipListChunkIndex.html be published somewhere more 
-    accessible to users? perhaps in the ADGuide.html? in Tech Notes?
-    in Advanced Topics? ???????
-    </p>
-    <p style="background-color:#DDEEEE">
-    An Extensible Array consists of a Header, an Index Block, Superblocks, Data Blocks,
-    and (optional) Data Block Pages.
-    The general scheme
-    is that the index block is used to reference a superblock, which is, in turn, used to
-    reference the data block page where the chunk information is stored.
-    The data blocks will be paged for efficiency when their size passes a threshold value.
-    These pages are laid out contiguously on the disk after the data block, are initialized
-    as needed, and are tracked via bitmaps stored in the superblock.
-    The number of super and data blocks/pages in a chunk index varies as they are 
-    allocated as needed and the first
-    few are (conceptually) stored in parent elements as an optimization.
-    <br />
-    <div align="center" style="background-color:#DDEEEE">
-      <table class="format">
-        <caption>
-          Extensible Array Header
-        </caption>
-
-        <tr>
-          <th>byte</th>
-          <th>byte</th>
-          <th>byte</th>
-          <th>byte</th>
-        </tr>
-
-        <tr>
-          <td colspan="4">Signature</td>
-        </tr>
-          
-        <tr>
-          <td>Version</td>
-          <td>Client ID</td>
-          <td>Element Size</td>
-          <td>Max Nelmts Bits</td>
-	</tr>
-
-	<tr>
-          <td>Index Blk Elmts</td>
-          <td>Data Blk Min Elmts</td>
-          <td>Super Blk Min Data Ptrs</td>
-          <td>Max Data Blk Page Nelmts Bits</td>
-        </tr>
-
-        <tr>
-          <td colspan="4"><br />Num Super Blks<sup>L</sup><br /><br /></td>
-        </tr>
-        <tr>
-          <td colspan="4"><br />Super Blk Size<sup>L</sup><br /><br /></td>
-        </tr>
-        <tr>
-          <td colspan="4"><br />Num Data Blks<sup>L</sup><br /><br /></td>
-        </tr>
-        <tr>
-          <td colspan="4"><br />Data Blk Size<sup>L</sup><br /><br /></td>
-        </tr>
-        <tr>
-          <td colspan="4"><br />Max Index Set<sup>L</sup><br /><br /></td>
-        </tr>
-        <tr>
-          <td colspan="4"><br />Num Elements<sup>L</sup><br /><br /></td>
-        </tr>
-          
-        <tr>
-          <td colspan="4"><br />Index Block Address<sup>O</sup><br /><br /></td>
-        </tr>
-
-        <tr>
-          <td colspan="4">Checksum</td>
-        </tr>
-
-      </table>
-
-      <table class="note">
-        <tr>
-            <td width="60%">&nbsp;</td>
-            <td width="40%">
-            (Items marked with an &lsquo;O&rsquo; in the above table are
-            of the size specified in the <a href="#SizeOfOffsetsV0">Size 
-            of Offsets</a> field in the superblock.)
-            </td></tr>
-        <tr>
-            <td>&nbsp;</td>
-            <td>
-            (Items marked with an &lsquo;L&rsquo; in the above table are
-            of the size specified in the <a href="#SizeOfLengthsV0">Size 
-            of Lengths</a> field in the superblock.)
-            </td></tr>
-      </table>
-
-    </div>
-
-    <br />
-    <div align="center" style="background-color:#DDEEEE">
-      <table class="desc">
-	<tr>
-          <th width="40%">Field Name</th>
-          <th>Description</th>
-        </tr>
-
-        <tr>
-          <td>Signature</td>
-          <td>
-            <p>The ASCII character string &ldquo;<code>EAHD</code>&rdquo;
-            is used to indicate the
-            beginning of an Extensible Array header.  This gives file consistency
-            checking utilities a better chance of reconstructing a
-            damaged file.
-            </p>
-          </td>
-        </tr>
-          
-        <tr>
-          <td>Version</td>
-          <td>
-            <p>This document describes version 0.</p>
-          </td>
-        </tr>
-
-	<tr>
-          <td>Client ID</td>
-          <td>
-            <p>This is the client ID for identifying the user of the
-                Fixed Array index:
-
-                <table class="list">
-                    <tr>
-                      <th width="20%" align="center">ID</th>
-                      <th width="80%" align="left">Description</th>
-                    </tr>
-
-                    <tr>
-                      <td align="center"><code>0</code></td>
-                      <td>Dataset chunks without fliters
-                      </td>
-                    </tr>
-                    <tr>
-                      <td align="center"><code>1</code></td>
-                      <td>Dataset chunks with filters
-                      </td>
-                    </tr>
-                    <tr>
-                      <td align="center"><code>2+</code></td>
-                      <td>Reserved.
-                      </td>
-                    </tr>
-                </table>
-            </p>
-          </td>
-        </tr>
-
-        <tr>
-          <td>Element Size</td>
-	  <td>
-	    <p>This is the size in bytes of an element in the Extensible Array.
-            </p>
-	  </td>
-        </tr>
-
-	<tr>
-	  <td>Max Nelmts Bits</td>
-	  <td>
-            <p>This field is the number of bits needed to store maximum number of elements in the Extensible Array.</p>
-          </td>
-	</tr>
-	
-	<tr>
-	  <td>Index Blk Elmts</td>
-	  <td>
-	    <p>This field is the number of elements to store in index block.
-	    </p>
-	  </td>
-	</tr>
-
-	<tr>
-	  <td>Data Bllk Min Elmts</td>
-	  <td>
-	    <p>This field is the minumum numer of elements per data block.
-	    </p>
-	  </td>
-	</tr>
-
-	<tr>
-	  <td>Super Bllk Min Data Ptrs</td>
-	  <td>
-	    <p>This field is the minimum number of data block pointers for a 
-	    superblock.
-	    </p>
-	  </td>
-	</tr>
-
-	<tr>
-	  <td>Max Dblk Page Nelmts Bits</td>
-	  <td>
-	    <p>This field is the number of bits needed to store maximum number
-	    of elements in a data block page.
-	    </p>
-	  </td>
-	</tr>
-
-	<tr>
-	  <td>Num Super Blks</td>
-	  <td>
-	    <p>This field is the number of superblocks created.
-	    </p>
-	  </td>
-	</tr>
-
-	<tr>
-	  <td>Super Blk Size</td>
-	  <td>
-	    <p>This field is size of superblocks created.
-	    </p>
-	  </td>
-	</tr>
-
-	<tr>
-	  <td>Num Data Blks</td>
-	  <td>
-	    <p>This field is number of data blocks created.
-	    </p>
-	  </td>
-	</tr>
-
-	<tr>
-	  <td>Data Blk Size</td>
-	  <td>
-	    <p>This field is size of data blocks created.
-	    </p>
-	  </td>
-	</tr>
-
-	<tr>
-	  <td>Max Index Set</td>
-	  <td>
-	    <p>This field is maximum index set.
-	    </p>
-	  </td>
-	</tr>
-
-	<tr>
-	  <td>Num Elmts</td>
-	  <td>
-	    <p>This field is number of elements realized.
-	    </p>
-	  </td>
-	</tr>
-
-	<tr>
-	  <td>Index Block Address</td>
-	  <td>
-	    <p>This field is the address of the index block.
-	    </p>
-	  </td>
-	</tr>
-
-        <tr>
-          <td>Checksum</td>
-          <td>
-            <p>This is the checksum for the header.</p>
-          </td>
-        </tr>
-
-      </table>
-    </div>
-
-    <br />
-    <div align="center" style="background-color:#DDEEEE">
-      <table class="format">
-        <caption>
-          Extensible Array Index Block
-        </caption>
-
-        <tr>
-          <th>byte</th>
-          <th>byte</th>
-          <th>byte</th>
-          <th>byte</th>
-        </tr>
-
-        <tr>
-          <td colspan="4">Signature</td>
-        </tr>
-          
-        <tr>
-          <td>Version</td>
-          <td>Client ID</td>
-          <td colspan="2" bgcolor="#DDDDDD"><em>This space inserted only to align table nicely</em></td>
-        </tr>
-
-        <tr>
-          <td colspan="4"><br />Header Address<sup>O</sup><br /><br /></td>
-        </tr>
-
-        <tr>
-          <td colspan="4"><br />Index Block Elements<em>(variable size and optional)</em><br /><br /></td>
-        </tr>
-
-        <tr>
-          <td colspan="4"><br />Data Block Addresses<br /><em>(variable size and optional)</em><br /><br /></td>
-        </tr>
-
-        <tr>
-          <td colspan="4"><br />Superblock Addresses<br /><em>(variable size and optional)</em><br /><br /></td>
-        </tr>
-
-        <tr>
-          <td colspan="4">Checksum</td>
-        </tr>
-
-      </table>
-
-      <table class="note">
-        <tr>
-            <td width="60%">&nbsp;</td>
-            <td width="40%">
-            (Items marked with an &lsquo;O&rsquo; in the above table are
-            of the size specified in the <a href="#SizeOfOffsetsV0">Size 
-            of Offsets</a> field in the superblock.)
-            </td></tr>
-      </table>
-
-    </div>
-
-    <br />
-    <div align="center" style="background-color:#DDEEEE">
-      <table class="desc">
-	<tr>
-          <th width="40%">Field Name</th>
-          <th>Description</th>
-        </tr>
-
-        <tr>
-          <td>Signature</td>
-          <td>
-            <p>The ASCII character string &ldquo;<code>EAIB</code>&rdquo;
-            is used to indicate the
-            beginning of an Extensible Array Index Block.  This gives file consistency
-            checking utilities a better chance of reconstructing a
-            damaged file.
-            </p>
-          </td>
-        </tr>
-          
-        <tr>
-          <td>Version</td>
-          <td>
-            <p>This document describes version 0.</p>
-          </td>
-        </tr>
-
-	<tr>
-          <td>Client ID</td>
-          <td>
-            <p>This is the client ID for identifying the user of the
-                Extensible Array:
-
-                <table class="list">
-                    <tr>
-                      <th width="20%" align="center">ID</th>
-                      <th width="80%" align="left">Description</th>
-                    </tr>
-
-                    <tr>
-                      <td align="center"><code>0</code></td>
-                      <td>Dataset chunks without fliters
-                      </td>
-                    </tr>
-                    <tr>
-                      <td align="center"><code>1</code></td>
-                      <td>Dataset chunks with filters
-                      </td>
-                    </tr>
-                    <tr>
-                      <td align="center"><code>2+</code></td>
-                      <td>Reserved.
-                      </td>
-                    </tr>
-                </table>
-            </p>
-          </td>
-        </tr>
-
-        <tr>
-          <td>Header Address</td>
-	  <td>
-	    <p>This is the address of the Extensible Array header. This 
-        field is principally used for file integrity checking.</p>
-	  </td>
-        </tr>
-
-	<tr>
-	  <td>Index Block Elements</td>
-	  <td>
-	    <p>This field contains elements that are encoded directly in 
-        the index block. This is an optimization to avoid unnecessary 
-        superblocks. 
-        <br />
-        <br />
-        There are two element types:
-                <table class="list">
-                    <tr>
-                      <th width="20%" align="center">ID</th>
-                      <th width="80%" align="left">Description</th>
-                    </tr>
-
-                    <tr>
-                      <td align="center"><code>0</code></td>
-                      <td>This is for non-filtered dataset chunks
-                        and is described below.
-                      </td>
-                    </tr>
-                    <tr>
-                      <td align="center"><code>1</code></td>
-                      <td>This is for filtered dataset chunks and
-                        is described below.
-                      </td>
-                    </tr>
-                </table>
-	    </p>
-	  </td>
-	</tr>
-
-        <tr>
-          <td>Data Block Addresses</td>
-          <td>
-            <p>This field contains addresses of data blocks stored in 
-            the Index Block (instead of via a superblock). This is 
-            an optimization to avoid unnecessary superblocks.</p>
-          </td>
-        </tr>
-
-        <tr>
-          <td>Superblock Addresses</td>
-          <td>
-            <p>This field contains the addresses of the superblocks.</p>
-          </td>
-        </tr>
-
-        <tr>
-          <td>Checksum</td>
-          <td>
-            <p>This is the checksum for the Extensible Array Index Block.</p>
-          </td>
-        </tr>
-
-      </table>
-    </div>
-
-    <br />
-    <div align="center" style="background-color:#DDEEEE">
-      <table class="format">
-        <caption>
-          Extensible Array Superblock
-        </caption>
-
-        <tr>
-          <th>byte</th>
-          <th>byte</th>
-          <th>byte</th>
-          <th>byte</th>
-        </tr>
-
-        <tr>
-          <td colspan="4">Signature</td>
-        </tr>
-          
-        <tr>
-          <td>Version</td>
-          <td>Client ID</td>
-          <td colspan="2" bgcolor="#DDDDDD"><em>This space inserted only to align table nicely</em></td>
-        </tr>
-
-        <tr>
-          <td colspan="4"><br />Header Address<sup>O</sup><br /><br /></td>
-        </tr>
-
-        <tr>
-          <td colspan="4"><br />Block Offset<em>(variable size)</em><br /><br /></td>
-        </tr>
-
-        <tr>
-          <td colspan="4"><br />Page Bit Masks<br /><em>(variable size and optional)</em><br /><br /></td>
-        </tr>
-
-        <tr>
-          <td colspan="4"><br />Data Block Addresses<br /><em>(variable size and optional)</em><br /><br /></td>
-        </tr>
-
-        <tr>
-          <td colspan="4">Checksum</td>
-        </tr>
-
-      </table>
-
-      <table class="note">
-        <tr>
-            <td width="60%">&nbsp;</td>
-            <td width="40%">
-            (Items marked with an &lsquo;O&rsquo; in the above table are
-            of the size specified in the <a href="#SizeOfOffsetsV0">Size 
-            of Offsets</a> field in the superblock.)
-            </td></tr>
-      </table>
-
-    </div>
-
-    <br />
-    <div align="center" style="background-color:#DDEEEE">
-      <table class="desc">
-	<tr>
-          <th width="40%">Field Name</th>
-          <th>Description</th>
-        </tr>
-
-        <tr>
-          <td>Signature</td>
-          <td>
-            <p>The ASCII character string &ldquo;<code>EASB</code>&rdquo;
-            is used to indicate the
-            beginning of an Extensible Array Superblock.  This gives file consistency
-            checking utilities a better chance of reconstructing a
-            damaged file.
-            </p>
-          </td>
-        </tr>
-          
-        <tr>
-          <td>Version</td>
-          <td>
-            <p>This document describes version 0.</p>
-          </td>
-        </tr>
-
-	<tr>
-          <td>Client ID</td>
-          <td>
-            <p>This is the client ID for identifying the user of the
-                Extensible Array:
-
-                <table class="list">
-                    <tr>
-                      <th width="20%" align="center">ID</th>
-                      <th width="80%" align="left">Description</th>
-                    </tr>
-
-                    <tr>
-                      <td align="center"><code>0</code></td>
-                      <td>Dataset chunks without fliters
-                      </td>
-                    </tr>
-                    <tr>
-                      <td align="center"><code>1</code></td>
-                      <td>Dataset chunks with filters
-                      </td>
-                    </tr>
-                    <tr>
-                      <td align="center"><code>2+</code></td>
-                      <td>Reserved.
-                      </td>
-                    </tr>
-                </table>
-            </p>
-          </td>
-        </tr>
-
-        <tr>
-          <td>Header Address</td>
-	  <td>
-	    <p>This is the address of the Extensible Array header. This 
-        field is principally used for file integrity checking.</p>
-	  </td>
-        </tr>
-
-        <tr>
-          <td>Block Offset</td>
-	  <td>
-	    <p>This field stores the offset of the block in the array.
-            </p>
-	  </td>
-        </tr>
-
-	<tr>
-	  <td>Page Bit Masks</td>
-	  <td>
-            <p>This field contains the bit masks indicating whether a 
-            data block page is initialized or not.  There is one bit 
-            mask per data block address. This field exists only if the 
-            data blocks are large enough to be paged.
-          </td>
-	</tr>
-	
-        <tr>
-          <td>Data Block Addresses</td>
-          <td>
-            <p>This field contains addresses of the data blocks 
-            referenced by this superblock.</p>
-          </td>
-        </tr>
-
-        <tr>
-          <td>Checksum</td>
-          <td>
-            <p>This is the checksum for the Extensible Array Superblock.</p>
-          </td>
-        </tr>
-
-      </table>
-    </div>
-
-    <br />
-    <div align="center" style="background-color:#DDEEEE">
-      <table class="format">
-        <caption>
-          Extensible Array Data Block
-        </caption>
-
-        <tr>
-          <th>byte</th>
-          <th>byte</th>
-          <th>byte</th>
-          <th>byte</th>
-        </tr>
-
-        <tr>
-          <td colspan="4">Signature</td>
-        </tr>
-          
-        <tr>
-          <td>Version</td>
-          <td>Client ID</td>
-          <td colspan="2" bgcolor="#DDDDDD"><em>This space inserted only to align table nicely</em></td>
-        </tr>
-
-        <tr>
-          <td colspan="4"><br />Header Address<sup>O</sup><br /><br /></td>
-        </tr>
-
-        <tr>
-          <td colspan="4"><br />Block Offset<em>(variable size)</em><br /><br /></td>
-        </tr>
-
-        <tr>
-          <td colspan="4"><br />Data Block Elements<em>(variable size and optional)</em><br /><br /></td>
-        </tr>
-
-        <tr>
-          <td colspan="4">Checksum</td>
-        </tr>
-
-      </table>
-
-      <table class="note">
-        <tr>
-            <td width="60%">&nbsp;</td>
-            <td width="40%">
-            (Items marked with an &lsquo;O&rsquo; in the above table are
-            of the size specified in the <a href="#SizeOfOffsetsV0">Size 
-            of Offsets</a> field in the superblock.)
-            </td></tr>
-      </table>
-
-    </div>
-
-    <br />
-    <div align="center" style="background-color:#DDEEEE">
-      <table class="desc">
-	<tr>
-          <th width="40%">Field Name</th>
-          <th>Description</th>
-        </tr>
-
-        <tr>
-          <td>Signature</td>
-          <td>
-            <p>The ASCII character string &ldquo;<code>EADB</code>&rdquo;
-            is used to indicate the
-            beginning of an Extensible Array Data Block.  This gives file consistency
-            checking utilities a better chance of reconstructing a
-            damaged file.
-            </p>
-          </td>
-        </tr>
-          
-        <tr>
-          <td>Version</td>
-          <td>
-            <p>This document describes version 0.</p>
-          </td>
-        </tr>
-
-	<tr>
-          <td>Client ID</td>
-          <td>
-            <p>This is the client ID for identifying the user of the
-                Extensible Array:
-
-                <table class="list">
-                    <tr>
-                      <th width="20%" align="center">ID</th>
-                      <th width="80%" align="left">Description</th>
-                    </tr>
-
-                    <tr>
-                      <td align="center"><code>0</code></td>
-                      <td>Dataset chunks without fliters
-                      </td>
-                    </tr>
-                    <tr>
-                      <td align="center"><code>1</code></td>
-                      <td>Dataset chunks with filters
-                      </td>
-                    </tr>
-                    <tr>
-                      <td align="center"><code>2+</code></td>
-                      <td>Reserved.
-                      </td>
-                    </tr>
-                </table>
-            </p>
-          </td>
-        </tr>
-
-        <tr>
-          <td>Header Address</td>
-	  <td>
-	    <p>This is the address of the Extensible Array header. This 
-        field is principally used for file integrity checking.
-            </p>
-	  </td>
-        </tr>
-
-	<tr>
-	  <td>Block Offset</td>
-	  <td>
-            <p>This field is the offset of the data block in the array.
-          </td>
-	</tr>
-	
-	<tr>
-	  <td>Data Block Elements</td>
-	  <td>
-	    <p>This field contains the elements in a Data Block.
-        It only exists if the Data Block is unpaged.
-        <br />
-        <br />
-	    There are two element types:
-                <table class="list">
-                    <tr>
-                      <th width="20%" align="center">ID</th>
-                      <th width="80%" align="left">Description</th>
-                    </tr>
-
-                    <tr>
-                      <td align="center"><code>0</code></td>
-                      <td>This is for non-filtered dataset chunks
-			    and is described below.
-                      </td>
-                    </tr>
-                    <tr>
-                      <td align="center"><code>1</code></td>
-                      <td>This is for filtered dataset chunks and
-			is described below.
-                      </td>
-                    </tr>
-                </table>
-	    </p>
-	  </td>
-	</tr>
-
-        <tr>
-          <td>Checksum</td>
-          <td>
-            <p>This is the checksum for the Extensible Array Data Block.</p>
-          </td>
-        </tr>
-
-      </table>
-    </div>
-          <br />
-    <div align="center" style="background-color:#DDEEEE">
-      <table class="format">
-        <caption>
-          Extensible Array Data Block Page
-        </caption>
-
-        <tr>
-          <th>byte</th>
-          <th>byte</th>
-          <th>byte</th>
-          <th>byte</th>
-        </tr>
-
-        <tr>
-          <td colspan="4"><br />Elements<br /><em>(variable size)</em><br /><br /></td>
-        </tr>
-
-        <tr>
-          <td colspan="4">Checksum</td>
-        </tr>
-
-      </table>
-    </div>
-
-    <br />
-    <div align="center" style="background-color:#DDEEEE">
-      <table class="desc">
-	<tr>
-          <th width="40%">Field Name</th>
-          <th>Description</th>
-        </tr>
-
-	<tr>
-	  <td>Elements</td>
-	  <td>
-	    <p>This field contains the elements in a Data Block Page.</p>
-        <p>
-	    There are two element types:
-                <table class="list">
-                    <tr>
-                      <th width="20%" align="center">ID</th>
-                      <th width="80%" align="left">Description</th>
-                    </tr>
-
-                    <tr>
-                      <td align="center"><code>0</code></td>
-                      <td>This is for non-filtered dataset chunks
-			    and is described below.
-                      </td>
-                    </tr>
-                    <tr>
-                      <td align="center"><code>1</code></td>
-                      <td>This is for filtered dataset chunks and
-			is described below.
-                      </td>
-                    </tr>
-                </table>
-	    </p>
-	  </td>
-	</tr>
-
-        <tr>
-          <td>Checksum</td>
-          <td>
-            <p>This is the checksum for an Extensible Array Data Block Page.</p>
-          </td>
-        </tr>
-
-      </table>
-    </div>
-
-    <br />
-    <div align="center" style="background-color:#DDEEEE">
-      <table class="format">
-	<caption>
-	  Data Block Element for Non-filtered Dataset Chunk
-	</caption>
-
-	<tr>
-	  <th width="25%">byte</th>
-	  <th width="25%">byte</th>
-	  <th width="25%">byte</th>
-	  <th width="25%">byte</th>
-	</tr>
-
-	<tr>
-	  <td colspan="4"><br />Address<sup>O</sup><br /><br /></td>
-	</tr>
-
-      </table>
-
-      <table class="note" style="background-color:#DDEEEE">
-        <tr><td>
-        <tr>
-            <td width="60%">&nbsp;</td>
-            <td width="40%">
-            (Items marked with an &lsquo;O&rsquo; in the above table are
-            of the size specified in the <a href="#SizeOfOffsetsV0">Size 
-            of Offsets</a> field in the superblock.)
-            </td></tr>
-      </table>
-    </div>
-
-    <br />
-    <div align="center" style="background-color:#DDEEEE">
-      <table class="desc">
-	<tr>
-          <th width="30%">Field Name</th>
-          <th>Description</th>
-	</tr>
-
-	<tr>
-	  <td>Address</td>
-	  <td><p>This field is the address of the dataset chunk in the file.
-              </p>
-          </td>
-	</tr>
-
-      </table>
-    </div>
-    </p>
-
-    <br />
-    <div align="center" style="background-color:#DDEEEE">
-      <table class="format">
-	<caption>
-	  Data Block Element for Filtered Dataset Chunk
-	</caption>
-
-	<tr>
-	  <th width="25%">byte</th>
-	  <th width="25%">byte</th>
-	  <th width="25%">byte</th>
-	  <th width="25%">byte</th>
-	</tr>
-
-	<tr>
-	  <td colspan="4"><br />Address<sup>O</sup><br /><br /></td>
-	</tr>
-
-	<tr>
-	  <td colspan="4"><br />Chunk Size<em>
-	   <br />(variable size; at most 8 bytes)</em><br /><br /></td>
-	</tr>
-
-	<tr>
-	  <td colspan="4">Filter Mask</td>
-	</tr>
-
-      </table>
-
-      <table class="note" style="background-color:#DDEEEE">
-        <tr>
-            <td width="60%">&nbsp;</td>
-            <td width="40%">
-            (Items marked with an &lsquo;O&rsquo; in the above table are
-            of the size specified in the <a href="#SizeOfOffsetsV0">Size 
-            of Offsets</a> field in the superblock.)
-            </td></tr>
-      </table>
-    </div>
-
-    <br />
-    <div align="center" style="background-color:#DDEEEE">
-      <table class="desc">
-	<tr>
-          <th width="30%">Field Name</th>
-          <th>Description</th>
-	</tr>
-
-	<tr>
-	  <td>Address</td>
-	  <td><p>This field is the address of the dataset chunk in the file.
-              </p>
-          </td>
-	</tr>
-
-	<tr>
-	  <td>Chunk Size</td>
-	  <td><p>This field is the size of the dataset chunk in bytes.
-              </p>
-          </td>
-	</tr>
-
-	<tr>
-	  <td>Filter Mask</td>
-	  <td><p>This field is the filter mask which indicates the filter to
-	    skip for the dataset chunk.  Each filter has an index number in he
-	    pipeline and if that filter is skipped, the bit corresponding to
-	    its index is set.
-              </p>
-          </td>
-	</tr>
-
-      </table>
-    </div>
-    <p style="background-color:#ff9999">change for 1.10</p>
-
-
-
-
-
-<br />
 <br />
 <hr />
 <h2><a name="DataObject">
@@ -13462,20 +11908,20 @@ External Data Files Message</a></h4>
     
 
 <br />
-    <p style="background-color:#ff9999">change for 1.10</p>
-<h4 style="background-color:#DDEEEE"><a name="LayoutMessage">IV.A.2.i. The Data Layout Message</a></h4>
+<h4><a name="LayoutMessage">IV.A.2.i. The Data Layout Message</a></h4>
 
+<p style="background-color:#ff9999">change for 1.10</p>
     <!-- start msgdesc table -->
     <center>
     <table class="msgdesc">
-    <tr style="background-color:#DDEEEE"><td colspan="2"><b>Header Message Name:</b> Data Layout</td></tr>
+    <tr><td colspan="2"><b>Header Message Name:</b> Data Layout</td></tr>
     <tr><td colspan="2"><b>Header Message Type:</b> 0x0008</td></tr>
     <tr><td colspan="2"><b>Length:</b> Varies</td></tr>
     <tr><td colspan="2"><b>Status:</b> Required for datasets; may not 
       be repeated.</td></tr>
     <tr><td><b>Description:</b></td>
       <td>Data layout describes how the elements of a multi-dimensional 
-    array are stored in the HDF5 file. Three types of data layout 
+    array are stored in the HDF5 file. Four types of data layout 
     are supported:
       <ol>
         <li>Contiguous: The array is stored in one contiguous area of 
@@ -13491,10 +11937,16 @@ External Data Files Message</a></h4>
         encryption, and checksums. (these features are described 
         in other messages). The message stores the size of a chunk 
         instead of the size of the entire array; the storage size of 
-        the entire array can be calculated by traversing the B-tree 
+        the entire array can be calculated by traversing the chunk index
         that stores the chunk addresses.</li>
         <li>Compact: The array is stored in one contiguous block, as 
         part of this object header message.</li>
+        <li>Virtual: This is only supported for version 4 of the Data Layout message.
+	The message stores information that is used to locate the global heap collection 
+	containing the Virtual Dataset (VDS) mapping information.
+	The mapping associates the VDS to the source dataset elements that are stored across 
+	a collection of HDF5 files.
+	</li>
       </ol></td></tr>
     <tr><td colspan="2"><b>Format of Data:</b> See the tables 
       below.</td></tr>
@@ -13658,7 +12110,7 @@ External Data Files Message</a></h4>
 	  <td><p>Data Address</p></td>
 	  <td><p>For contiguous storage, this is the address of the raw
 	    data in the file.  For chunked storage this is the address
-	    of the v1 B-tree that is used to look up the addresses of the
+	    of the <a href="#V1Btrees">v1 B-tree</a> that is used to look up the addresses of the
 	    chunks.  This field is not present for compact storage.
             If the version for this message is greater than 1, the address
             may have the &ldquo;undefined address&rdquo; value, to indicate that
@@ -13805,7 +12257,7 @@ External Data Files Message</a></h4>
     </div>
 
     <br />
-    <p>Class-specific information for compact layout (Class 0):  (Note: The dimensionality information
+    <p>Class-specific information for compact storage (layout class 0):  (Note: The dimensionality information
        is in the Dataspace message)</p>
 
     
@@ -13858,7 +12310,7 @@ External Data Files Message</a></h4>
     
 
     <br />
-    <p>Class-specific information for contiguous layout (Class 1):  (Note: The dimensionality information
+    <p>Class-specific information for contiguous storage (layout class 1):  (Note: The dimensionality information
        is in the Dataspace message)</p>
 
     
@@ -13929,7 +12381,7 @@ External Data Files Message</a></h4>
     
 
     <br />
-    <p>Class-specific information for chunked layout (Class 2):</p>
+    <p>Class-specific information for chunked storage (layout class 2):</p>
 
     
     <div align="center">
@@ -14003,7 +12455,8 @@ External Data Files Message</a></h4>
 
 	<tr>
 	  <td><p>Address</p></td>
-	  <td><p>This is the address of the v1 B-tree that is used to look up the
+	  <td><p>This is the address of the <a href="#V1Btrees">v1 B-tree</a>
+	    that is used to look up the
             addresses of the chunks that actually store portions of the array
             data.  The address may have the &ldquo;undefined address&rdquo; value, to
             indicate that storage has not yet been allocated for this array.</p></td>
@@ -14031,12 +12484,10 @@ External Data Files Message</a></h4>
 
     <br />
 <p style="background-color:#ff9999">change for 1.10</p>
+
     <p style="background-color:#DDEEEE"><a name="DataLayoutV4">
-    Version 4</a> of this message re-structured the <em>properties</em> 
-    information in version 3.  
-	The data storage information for a layout class is moved to the 
-	<a href="#DataStorageMessage">Data Storage Message</a>
-	while this message contains only properties specific for a layout class.
+    Version 4</a> of this message is similar to version 3 but has additional
+    information for virtual layout class as well as indexing information for chunked layout class.
 
     <br />
     <div align="center" style="background-color:#DDEEEE">
@@ -14076,9 +12527,8 @@ External Data Files Message</a></h4>
 	  <td>Version</td>
 	  <td>
 	    <p>The value for this field is 4 and
-		is used by the <em>revise_chunks</em> feature branch of the library.
-		This version re-structured the <em>properties</em> information of the version 3 
-		<em>Data Layout</em> message.
+		is used by version 1.10.0 and later of the library to store properties
+		for each layout class and indexing information for chunked layout.
 	    </p>
 	  </td>
 	</tr>
@@ -14111,6 +12561,11 @@ External Data Files Message</a></h4>
                 <td>Chunked Storage
                   </td>
             </tr>
+            <tr>
+                <td align="center"><code>3</code></td>
+                <td>Virtual Storage
+                  </td>
+            </tr>
           </table>
           </p>
           </td>
@@ -14128,19 +12583,25 @@ External Data Files Message</a></h4>
 
             <tr>
                 <td align="left">Compact Storage</td>
-                <td>No information for this class.
+                <td>See Compact Storage Property Description for version 3 <i>Data Layout Message</i> above.
                 </td>
             </tr>
 
             <tr>
                 <td align="left">Contiguous Storage</td>
-                <td>No information for this class.
+                <td>See Contiguous Storage Property Description for version 3 <i>Data Layout Message</i> above.
                   </td>
             </tr>
 
             <tr>
                 <td align="left">Chunked Storage</td>
                 <td>See Chunked Storage Property Description below.
+                  </td>
+            </tr>
+
+            <tr>
+                <td align="left">Virtual Storage</td>
+                <td>See Virtual Storage Property Description below.
                   </td>
             </tr>
 	      </table>
@@ -14151,7 +12612,7 @@ External Data Files Message</a></h4>
     </div>
 
     <br />
-    <p style="background-color:#DDEEEE">Class-specific information for chunked layout (Class 2):
+    <p style="background-color:#DDEEEE">Class-specific information for chunked storage (layout class 2):
 
     <br />
     <div align="center" style="background-color:#DDEEEE">
@@ -14169,13 +12630,9 @@ External Data Files Message</a></h4>
 
 	<tr>
 	  <td>Flags</td>
-          <td colspan="3" bgcolor="#DDDDDD"><em>This space inserted only to align table nicely</em></td>
-	</tr>
-
-	<tr>
 	  <td>Dimensionality</td>
 	  <td>Dimension Size Encoded Length</td>
-          <td colspan="2" bgcolor="#DDDDDD"><em>This space inserted only to align table nicely</em></td>
+          <td colspan="1" bgcolor="#DDDDDD"><em>This space inserted to align table nicely</em></td>
 	</tr>
 
 	<tr>
@@ -14216,19 +12673,43 @@ External Data Files Message</a></h4>
 
 	<tr>
 	  <td>Flags</td>
-	  <td><p>This field encodes layout features for chunks in the future.</p></td>
+	  <td><p>This is the chunked layout feature flag:</p>
+
+	      <table class="list">
+		<tr>
+		  <th width="60%" align="left">Value</th>
+		  <th width="40%" align="left">Description</th>
+		</tr>
+
+		<tr>
+		  <td align="left"><code>H5O_LAYOUT_CHUNK_DONT_FILTER_PARTIAL_BOUND_CHUNKS</code></td>
+		  <td>Do not apply filter to a partial edge chunk.
+
+                  </td>
+		</tr>
+
+		<tr>
+		  <td align="left"><code>H5O_LAYOUT_CHUNK_SINGLE_INDEX_WITH_FILTER</code></td>
+		  <td>A filtered chunk for <i>Single Chunk</i> indexing.
+                  </td>
+		</tr>
+
+	      </table>
+
+	    </td>
+
 	</tr>
 
 	<tr>
 	  <td>Dimensionality</td>
-	  <td><p>A chunk has a fixed dimensionality.  This field specifies 
-	    the number of dimension size fields later in the message.</p></td>
+	  <td><p>A chunk has fixed dimension.  This field specifies 
+	    the number of <em>Dimension Size</em> fields later in the message.</p></td>
 	</tr>
 
 	<tr>
 	  <td>Dimension Size Encoded Length</td>
 	  <td>
-	    <p>This is the size in bytes of the encoded <em>Dimension #n Size</em>.
+	    <p>This is the size in bytes used to encode <em>Dimension Size</em>.
             </p>
 	  </td>
 	</tr>
@@ -14245,7 +12726,7 @@ External Data Files Message</a></h4>
 
 	<tr>
 	  <td>Chunk Indexing Type</td>
-	  <td><p>There are five indexing types:
+	  <td><p>There are five indexing types used to look up addresses of the chunks:
 	      <table class="list">
 		<tr>
 		  <th width="20%" align="center">Value</th>
@@ -14253,44 +12734,32 @@ External Data Files Message</a></h4>
 		</tr>
 
 		<tr>
-		  <td align="center"><code>0</code></td>
-		  <td>This is the Version 1 B-tree indexing type.  
-		    It is used before version 4 of the <em>Data Layout Message</em>
-		    to look up addresses of the chunks. 	
-		    See <a href="#V1Btrees">Version 1 B-Trees (B-link trees)</a>.
-                  </td>
-		</tr>
-
-		<tr>
 		  <td align="center"><code>1</code></td>
-		  <td>This is the Non-index indexing type.
-		    The chunk coordinate is mapped into the actual disk addresses
-		    without using an index.
+		  <td>This is the <a href="#SingleChunk"><i>Single Chunk</i></a> indexing type.  
                   </td>
 		</tr>
 
 		<tr>
 		  <td align="center"><code>2</code></td>
-		  <td>This is the Fixed Array indexing type.
-		    The chunk coordinate is mapped as an index into a fixed array of
-		    disk addresses for the chunks.
-		    See <a href="#FixedArray">Fixed Array</a>.
+		  <td>This is the <a href="#Implicit"><i>Implicit</i></a> indexing type.
                   </td>
 		</tr>
 
 		<tr>
 		  <td align="center"><code>3</code></td>
-		  <td>This is the Extensible Array indexing type.
-		    The chunk coordinate is mapped as an index into an extensible
-		    array of disk addresses for the chunks.
+		  <td>This is the <a href="#FixedArray"><i>Fixed Array</i></a> indexing type.
                   </td>
 		</tr>
 
 		<tr>
 		  <td align="center"><code>4</code></td>
-		  <td>This is the Version 2 B-tree indexing type which is used 
-		    to look up addresses of the chunks.
-		    See <a href="#V2Btrees">Version 2 B-Trees</a>.
+		  <td>This is the <a href="#ExtensibleArray"><i>Extensible Array</i></a> indexing type.
+                  </td>
+		</tr>
+
+		<tr>
+		  <td align="center"><code>5</code></td>
+		  <td>This is the <a href="#V2Btrees"><i>Version 2 B-tree</i></a> indexing type.
                   </td>
 		</tr>
 
@@ -14301,8 +12770,23 @@ External Data Files Message</a></h4>
 
 	<tr>
 	  <td>Indexing Type Information</td>
-	  <td><p>This variable-sized field encodes information specific to an indexing type
-		and is described below.  
+	  <td><p>This variable-sized field encodes information specific to an indexing type:
+		<ul>
+		<li><i>Single Chunk</i> index:<p>
+		    This field exists only when the chunk is filtered i.e. when
+		    H5O_LAYOUT_CHUNK_DONT_FILTER_PARTIAL_BOUND_CHUNKS is enabled in <em>flags</em>.
+		</li>
+		<li><i>Implicit index</i>:<p>
+		    There is no specific indexing information.
+		</li>
+		<li><i>Fixed Array</i> index:
+		</li>
+		<li><i>Extensible Array</i> index:
+		</li>
+		<li><i>Version 2 B-tree index</i>:<p> 
+		    See description below.
+		</li>
+            </ul>
             </p>
           </td>
 	</tr>
@@ -14311,14 +12795,85 @@ External Data Files Message</a></h4>
     </div>
 
     <br />
-    <p style="background-color:#DDEEEE">Indexing type information for 
-    Non-index indexing:
+
+<ol>
+
+<li>
+    <p style="background-color:#DDEEEE">Index-specific information for 
+    <i>Single Chunk</i> index:
+</li>
+    <br />
+    <div align="center" style="background-color:#DDEEEE">
+      <table class="format">
+	<caption>
+	  Single Chunk Indexing Information
+	</caption>
+
+	<tr>
+	  <th width="25%">byte</th>
+	  <th width="25%">byte</th>
+	  <th width="25%">byte</th>
+	  <th width="25%">byte</th>
+	</tr>
+
+	<tr>
+	  <td colspan="4"><br />Size of filtered chunk<sup>L</sup><br /><br /></td>
+	</tr>
+
+	<tr>
+	  <td colspan="4">Filters for chunk</td>
+	</tr>
+
+      </table>
+    </div>
+
+      <table class="note">
+        <tr>
+            <td>&nbsp;</td>
+            <td>
+            (Items marked with an &lsquo;L&rsquo; in the above table are
+            of the size specified in the <a href="#SizeOfLengthsV0">Size 
+            of Lengths</a> field in the superblock.)
+            </td></tr>
+      </table>
+
+    <br />
+    <div align="center" style="background-color:#DDEEEE">
+      <table class="desc">
+	<tr>
+          <th width="30%">Field Name</th>
+          <th>Description</th>
+	</tr>
+
+	<tr>
+	  <td>Size of filtered chunk</td>
+	  <td><p>This field is the size of a filtered chunk. <p>
+              </p>
+          </td>
+	</tr>
+
+	<tr>
+	  <td>Filters for chunk</td>
+	  <td><p>This field contains filters for the chunk. <p>
+              </p>
+          </td>
+	</tr>
+      </table>
+    </div>
+    </p>
+
+    <br />
+
+<li>
+    <p style="background-color:#DDEEEE">Index-specific information for 
+    <i>Implicit</i> index:
+</li>
 
     <br />
     <div align="center" style="background-color:#DDEEEE">
       <table class="format">
 	<caption>
-	  Non-index Indexing Information
+	  Implicit Indexing Information
 	</caption>
 
 	<tr>
@@ -14336,7 +12891,9 @@ External Data Files Message</a></h4>
     </div>
 
     <br />
-    <p style="background-color:#DDEEEE">Indexing type information for Fixed Array Indexing:
+ <li>
+    <p style="background-color:#DDEEEE">Index-specific information for <i>Fixed Array</i> index:
+</li>
 
     <br />
     <div align="center" style="background-color:#DDEEEE">
@@ -14370,7 +12927,7 @@ External Data Files Message</a></h4>
 
 	<tr>
 	  <td>Page Bits</td>
-	  <td><p>This field contains the number of bits needed to store 
+	  <td><p>This field contains the number of bits needed to store the
 	    maximum number of elements in a data block page.
               </p>
           </td>
@@ -14381,7 +12938,9 @@ External Data Files Message</a></h4>
     </p>
 
     <br />
-    <p style="background-color:#DDEEEE">Indexing type information for Extensible Array Indexing:
+<li>
+    <p style="background-color:#DDEEEE">Index-specific information for <i>Extensible Array</i> index:
+</li>
 
     <br />
     <div align="center" style="background-color:#DDEEEE">
@@ -14421,7 +12980,7 @@ External Data Files Message</a></h4>
 
 	<tr>
 	  <td>Max Bits</td>
-	  <td><p>This field is the number of bits needed to store maximum number of elements
+	  <td><p>This field contains the number of bits needed to store the maximum number of elements
                 in the array.
               </p>
           </td>
@@ -14429,7 +12988,7 @@ External Data Files Message</a></h4>
 
 	<tr>
 	  <td>Index Elements</td>
-	  <td><p>This field is the number of elements to store in the
+	  <td><p>This field contains the number of elements to store in the
                 index block.
               </p>
           </td>
@@ -14437,7 +12996,7 @@ External Data Files Message</a></h4>
 
 	<tr>
 	  <td>Min Pointers</td>
-	  <td><p>This field is the minimum number of data block pointers
+	  <td><p>This field contains the minimum number of data block pointers
                 for a superblock.
               </p>
           </td>
@@ -14445,14 +13004,14 @@ External Data Files Message</a></h4>
 
 	<tr>
 	  <td>Min Elements</td>
-	  <td><p>This field is the minimum number of elements per data block.
+	  <td><p>This field contains the minimum number of elements per data block.
               </p>
           </td>
 	</tr>
 
 	<tr>
 	  <td>Page Bits</td>
-	  <td><p>This field contains the number of bits needed to store 
+	  <td><p>This field contains the number of bits needed to store the
 	    maximum number of elements in a data block page.
               </p>
           </td>
@@ -14462,7 +13021,10 @@ External Data Files Message</a></h4>
     </div>
     </p>
     <br />
-    <p style="background-color:#DDEEEE">Indexing type information for Version 2 B-tree Indexing:
+<li>
+    <p style="background-color:#DDEEEE">Indexing type information for <i>Version 2 B-tree</i> Indexing:
+</li>
+</ol>
 
     <br />
     <div align="center" style="background-color:#DDEEEE">
@@ -14500,23 +13062,84 @@ External Data Files Message</a></h4>
 
 	<tr>
 	  <td>Node Size</td>
-	  <td><p>This is the size in bytes of a B-tree node.
+	  <td><p>This field is the size in bytes of a B-tree node.
               </p>
           </td>
 	</tr>
 
 	<tr>
 	  <td>Split Percent</td>
-	  <td><p>This field is the percentage full that a B-tree node needs to increase above before it is split.</p></td>
+	  <td><p>This field is the percentage full of a B-tree node at which to split the node.</p></td>
 	</tr>
 
 	<tr>
 	  <td>Merge Percent</td>
-	  <td><p>This field is the percentage full that a B-tree node needs to decrease below before it is merged.</p></td>
+	  <td><p>This field is the percentage full of a B-tree node at which to merge the node.</p></td>
 	</tr>
       </table>
     </div>
     </p>
+
+    <br />
+    <p style="background-color:#DDEEEE">Class-specific information for virtual storage (layout class 3):
+   
+    <div align="center" style="background-color:#DDEEEE">
+      <table class="format">
+	<caption>
+	  Virtual Storage Property Description
+	</caption>
+
+	<tr>
+	  <th width="25%">byte</th>
+	  <th width="25%">byte</th>
+	  <th width="25%">byte</th>
+	  <th width="25%">byte</th>
+	</tr>
+
+	<tr>
+	  <td colspan="4"><br />Address<sup>O</sup><br /><br /></td>
+	</tr>
+
+	<tr>
+	  <td colspan="4">Index</td>
+	</tr>
+
+      </table>
+
+      <table class="note">
+        <tr>
+            <td width="60%">&nbsp;</td>
+            <td width="40%">
+            (Items marked with an &lsquo;O&rsquo; in the above table are
+            of the size specified in the <a href="#SizeOfOffsetsV0">Size 
+            of Offsets</a> field in the superblock.)
+            </td></tr>
+      </table>
+    </div>
+
+    <br />
+    <div align="center">
+      <table class="desc">
+	<tr>
+          <th width="30%">Field Name</th>
+          <th>Description</th>
+	</tr>
+
+	<tr>
+	  <td><p>Address</p></td>
+	  <td><p>This is the address of the global heap collection where
+            the VDS mapping entries are stored.</p></td>
+	</tr>
+
+	<tr>
+	  <td><p>Index</p></td>
+	  <td><p>This is the index of the data object within the global heap collection.
+              </p>
+          </td>
+	</tr>
+      </table>
+    </div>
+
 <p style="background-color:#ff9999">change for 1.10</p>
 
 
@@ -16882,10 +15505,12 @@ Count Message</a></h4>
     </div>
     
 <br />
+
+<!-- Will be updated for release 1.10.1
+
 <h4><a name="FsinfoMessage">IV.A.2.x. The File Space Info 
 Message</a></h4>
 
-    <!-- start msgdesc table -->
     <center>
     <table class="msgdesc">
     <tr><td colspan="2"><b>Header Message Name:</b> File Space 
@@ -16914,7 +15539,6 @@ Message</a></h4>
     <tr><td colspan="2"><b>Format of Data:</b> See the tables 
       below.</td></tr>
     </table></center>
-    <!-- end msgdesc table -->
     
     <div align="center">
       <table class="format">
@@ -17118,372 +15742,8 @@ Message</a></h4>
       </table>
     </div>
     <br />
+-->
 
-
-
-
-
-    <p style="background-color:#ff9999">change for 1.10</p>
-
-
-<h4 style="background-color:#DDEEEE"><a name="DataStorageMessage">
-IV.A.2.y. The Data Storage Message</a></h4>
-
-    <!-- start msgdesc table -->
-    <center>
-    <table class="msgdesc" style="background-color:#DDEEEE">
-    <tr><td colspan="2"><b>Header Message Name:</b> Data Storage
-        </td></tr>
-    <tr><td colspan="2"><b>Header Message Type:</b> 0x0018 WORK IN 
-        PROGRESS</td></tr>
-    <tr><td colspan="2"><b>Length:</b> Varies</td></tr>
-    <tr><td colspan="2"><b>Status:</b> Required for datasets; may not be 
-      repeated.</td></tr>
-    <tr><td>
-    <b>Description:</b></td>
-      <td>Data storage describes how data is stored according to each 
-      layout class. The three types of layout classes are described in 
-      the <a href="#LayoutMessage">Data Layout</a> message.</td></tr>
-    <tr><td colspan="2"><b>Format of Data:</b> See the tables 
-      below.</td></tr>
-    </table></center>
-    <!-- end msgdesc table -->
-
-    <div align="center" style="background-color:#DDEEEE">
-      <table class="format">
-	<caption>
-	  <b>Data Storage Message</b>
-	</caption>
-
-	<tr>
-	  <th width="25%">byte</th>
-	  <th width="25%">byte</th>
-	  <th width="25%">byte</th>
-	  <th width="25%">byte</th>
-	</tr>
-
-	<tr>
-	  <td>Version</td>
-	  <td>Layout Class</td>
-          <td colspan="2" bgcolor="#DDDDDD"><em>This space inserted only to align table nicely</em></td>
-	</tr>
-
-	<tr>
-	  <td colspan="4"><br />Properties <em>(variable size)</em><br /><br /></td>
-	</tr>
-      </table>
-    </div>
-
-    <br />
-    <div align="center" style="background-color:#DDEEEE">
-      <table class="desc">
-	<tr>
-	  <th width="30%">Field Name</th>
-	  <th>Description</th>
-	</tr>
-
-	<tr>
-	  <td>Version</td>
-	  <td>
-	    <p>The version number of this message.</p>
-          <table class="list">	
-            <tr>
-                <th width="20%" align="center">Version</th>
-                <th width="80%" align="left">Description</th>
-            </tr>
-
-            <tr>
-                <td align="center"><code>0</code></td>
-                <td>Used by the <em>revise_chunks</em> feature branch 
-                of the library to describe storage information for each 
-                layout class.</td>
-            </tr>
-          </table>
-	  </td>
-	</tr>
-
-    <tr>
-      <td>Layout Class</td>
-      <td><p>The layout class specifies the type of storage for the data
-      as follows:
-        <table class="list">
-            <tr>
-                <th width="20%" align="center">Value</th>
-                <th width="80%" align="left">Description</th>
-            </tr>
-
-            <tr>
-                <td align="center"><code>0</code></td>
-                <td>Compact Storage
-                  </td>
-            </tr>
-
-            <tr>
-                <td align="center"><code>1</code></td>
-                <td>Contiguous Storage
-                  </td>
-            </tr>
-
-		<tr>
-		  <td align="center"><code>2</code></td>
-		  <td>Chunked Storage
-                  </td>
-		</tr>
-	      </table>
-            </p>
-          </td>
-	</tr>
-
-	<tr>
-	  <td>Properties</td>
-	  <td><p>This variable-sized field encodes storage information specific to each
-            layout class and is described below.  </p></td>
-	</tr>
-      </table>
-    </div>
-
-    <br />
-    <p style="background-color:#DDEEEE">Class-specific information for compact layout (Class 0):  (Note: The dimensionality information
-       is in the Dataspace message)
-
-    <br />
-    <div align="center" style="background-color:#DDEEEE">
-      <table class="format">
-	<caption>
-	  Compact Storage Property Description
-	</caption>
-
-	<tr>
-	  <th width="25%">byte</th>
-	  <th width="25%">byte</th>
-	  <th width="25%">byte</th>
-	  <th width="25%">byte</th>
-	</tr>
-
-	<tr>
-	  <td colspan="2">Size</td>
-          <td colspan="2" bgcolor="#DDDDDD"><em>This space inserted only to align table nicely</em></td>
-	</tr>
-	
-	<tr>
-	  <td colspan="4"><br />Raw Data... <em>(variable size)</em><br /><br /></td>
-	</tr>
-      </table>
-    </div>
-
-    <br />
-    <div align="center" style="background-color:#DDEEEE">
-      <table class="desc">
-	<tr>
-          <th width="30%">Field Name</th>
-          <th>Description</th>
-	</tr>
-
-	<tr>
-	  <td>Size</td>
-	  <td><p>This field contains the size of the raw data for the dataset
-                array, in bytes.
-              </p>
-          </td>
-	</tr>
-
-	<tr>
-	  <td>Raw Data</td>
-	  <td><p>This field contains the raw data for the dataset array.</p></td>
-	</tr>
-      </table>
-    </div>
-<!--    </p> -->
-
-    <br />
-    <p style="background-color:#DDEEEE">Class-specific information for contiguous layout (Class 1):  (Note: The dimensionality information
-       is in the Dataspace message)
-
-    <br />
-    <div align="center" style="background-color:#DDEEEE">
-      <table class="format">
-	<caption>
-	  Contiguous Storage Property Description
-	</caption>
-
-	<tr>
-	  <th width="25%">byte</th>
-	  <th width="25%">byte</th>
-	  <th width="25%">byte</th>
-	  <th width="25%">byte</th>
-	</tr>
-
-	<tr>
-	  <td colspan="4"><br />Address<sup>O</sup><br /><br /></td>
-	</tr>
-
-	<tr>
-	  <td colspan="4"><br />Size<sup>L</sup><br /><br /></td>
-	</tr>
-      </table>
-
-      <table class="note">
-        <tr>
-            <td width="60%">&nbsp;</td>
-            <td width="40%">
-            (Items marked with an &lsquo;O&rsquo; in the above table are
-            of the size specified in the <a href="#SizeOfOffsetsV0">Size 
-            of Offsets</a> field in the superblock.)
-            </td></tr>
-        <tr>
-            <td>&nbsp;</td>
-            <td>
-            (Items marked with an &lsquo;L&rsquo; in the above table are
-            of the size specified in the <a href="#SizeOfLengthsV0">Size 
-            of Lengths</a> field in the superblock.)
-            </td></tr>
-      </table>
-    </div>
-
-    <br />
-    <div align="center" style="background-color:#DDEEEE">
-      <table class="desc">
-	<tr>
-          <th width="30%">Field Name</th>
-          <th>Description</th>
-	</tr>
-
-	<tr>
-	  <td>Address</td>
-	  <td><p>This is the address of the raw data in the file.
-            The address may have the &ldquo;undefined address&rdquo; 
-            value, to indicate that storage has not yet been allocated 
-            for this array.</p></td>
-	</tr>
-
-	<tr>
-	  <td>Size</td>
-	  <td><p>This field contains the size allocated to store the raw data,
-                in bytes.
-              </p>
-          </td>
-	</tr>
-      </table>
-    </div>
-<!--    </p> -->
-
-    <br />
-    <p style="background-color:#DDEEEE">Class-specific information for chunked layout (Class 2):
-
-    <br />
-    <div align="center" style="background-color:#DDEEEE">
-      <table class="format">
-	<caption>
-	  Chunked Storage Property Description
-	</caption>
-
-	<tr>
-	  <th width="25%">byte</th>
-	  <th width="25%">byte</th>
-	  <th width="25%">byte</th>
-	  <th width="25%">byte</th>
-	</tr>
-
-	<tr>
-	  <td>Flags</td>
-	  <td>Chunk Indexing Type</td>
-          <td colspan="2" bgcolor="#DDDDDD"><em>This space inserted only to align table nicely</em></td>
-	</tr>
-
-	<tr>
-	  <td colspan="4"><br />Address<sup>O</sup><br /><br /></td>
-	</tr>
-
-      </table>
-
-      <table class="note">
-        <tr>
-            <td width="60%">&nbsp;</td>
-            <td width="40%">
-            (Items marked with an &lsquo;O&rsquo; in the above table are
-            of the size specified in the <a href="#SizeOfOffsetsV0">Size 
-            of Offsets</a> field in the superblock.)
-            </td></tr>
-      </table>
-
-    </div>
-
-    <br />
-    <div align="center" style="background-color:#DDEEEE">
-      <table class="desc">
-	<tr>
-          <th width="30%">Field Name</th>
-          <th>Description</th>
-	</tr>
-
-	<tr>
-	  <td>Flags</td>
-	  <td><p>This field encodes storage features for chunks in the future.</p></td>
-	</tr>
-
-	<tr>
-	  <td>Chunk Indexing Type</td>
-	  <td><p>This is the chunk indexing type. 
-	    This field exists only if
-	    chunk indexing is enabled in the previous field <em>flags</em>.</p>
-	  </td>
-	</tr>
-
-	<tr>
-	  <td>Address</td>
-	  <td><p>This is the address where chunk indexing information is found as listed below.
-	    This field exists only if chunk indexing is enabled in the 
-	    previous field <em>flags</em>.
-            The address may have the &ldquo;undefined address&rdquo; value, to
-            indicate that storage information for the index type has not yet been allocated.</p>
-	      <table class="list">
-            <tr>
-                <th width="20%" align="center">Value</th>
-                <th width="80%" align="left">Description</th>
-            </tr>
-
-            <tr>
-                <td align="center"><code>1</code></td>
-                <td>This is the address of the dataset chunks for the
-                    Non-index index.
-                  </td>
-            </tr>
-
-            <tr>
-                <td align="center"><code>2</code></td>
-                <td>This is the address of the Fixed Array index.
-                    See <a href="#FixedArray">Fixed Array</a>.
-                  </td>
-            </tr>
-
-            <tr>
-                <td align="center"><code>3</code></td>
-                <td>This is the address of the Extensible Array index.
-                  </td>
-            </tr>
-
-            <tr>
-                <td align="center"><code>4</code></td>
-                <td>This is the address of the version 2 B-tree index.
-                </td>
-            </tr>
-	      </table>
-
-	   </td>
-	</tr>
-
-      </table>
-    </div>
-    <p style="background-color:#ff9999">change for 1.10</p>
-
-
-
-
-
-
-
-
-<br />
 <h3><a name="DataStorage">
 IV.B. Disk Format: Level 2B - Data Object Data Storage</a></h3>
 
@@ -17713,15 +15973,1579 @@ Types of Indexes for Dataset Chunks</h3>
 <p style="background-color:#DDEEEE">The five types of indexes to index dataset chunks in the library are 
 listed below.</p>
 
-<ul style="background-color:#DDEEEE">
-    <li>Non-index index: fixed dimension, fixed maximum dimensions, 
-        early allocation, without filter</li>
-    <li>Fixed Array index: fixed dimension, fixed maximum dimensions</li>
-    <li>Extensible Array index: with one unlimited dimension</li>
-    <li>Version 2 B-tree index: with greater than one unlimited 
-        dimensions</li>
-    <li>Version 1 B-tree index: old type default</li>
-</ul>
+                <ol stype="background-color:#DDEEEE" type="1">
+
+    <a name="SingleChunk">
+    <a href="#SingleChunk"><h3>VII.C.1. Single Chunk index</h3></a>
+
+    <a name="Implicit">
+    <a href="#Implicit"><h3>VII.C.2. Implicit index</h3></a>
+
+    <a name="FixedArray">
+    <a href="#FixedArray"><h3>VII.C.3. Fixed Array index</h3></a>
+
+    <p style="background-color:#DDEEEE">
+    The Fixed Array is a data structure that is used as a chunk index 
+    in datasets where the dataspace has fixed maximum dimension extents. 
+    In other words, no dimension can have its maximum size be 
+    <code>H5S_UNLIMITED</code>. Since the number of chunks is known 
+    <em>a priori</em>, a simple array can be used to locate them, 
+    providing space and speed improvements over index structures 
+    that handle more dynamic data arrangements.
+    </p>
+    <p style="background-color:#DDEEEE">
+    The Fixed Array consists of a header and a data block that contains the chunk information.
+    For improved efficiency, the data will be divided into multiple pages if
+    the number of elements exceeds a threshold value. 
+    The header contains metadata information about the elements stored in the array
+    as well as the address of the data block.
+    The content of the data block depends on whether paging is turned on or not.  When paging
+    is not being used, the data block simply contains the chunk information.
+    If paging is on, the data block will contain a bit mask indicating which pages have been initialized
+    in the file but will not the include data.  The subsequent data block pages will contain the actual
+    chunk information.
+    </p>
+    <p style="background-color:#DDEEEE">
+    The space for the fixed array data (data block + pages, if any) is laid out in the file at
+    creation time as a single contiguous block of space.  If the array is
+    paged, the pages are initialized as needed, and the bitmap updated accordingly.
+    </p>
+    <p style="background-color:#DDEEEE">
+    An element in the array describes either a filterd or non-filtered dataset chunk.  The formats
+    of both types of element are described below.
+    </p>
+    <br />
+    <div align="center" style="background-color:#DDEEEE">
+      <table class="format">
+        <caption>
+          Fixed Array Header
+        </caption>
+
+        <tr>
+          <th>byte</th>
+          <th>byte</th>
+          <th>byte</th>
+          <th>byte</th>
+        </tr>
+
+        <tr>
+          <td colspan="4">Signature</td>
+        </tr>
+          
+        <tr>
+          <td>Version</td>
+          <td>Client ID</td>
+          <td>Element Size</td>
+          <td>Page Bits</td>
+        </tr>
+
+        <tr>
+          <td colspan="4"><br />Num Elements<sup>L</sup><br /><br /></td>
+        </tr>
+          
+        <tr>
+          <td colspan="4"><br />Data Block Address<sup>O</sup><br /><br /></td>
+        </tr>
+
+        <tr>
+          <td colspan="4">Checksum</td>
+        </tr>
+
+      </table>
+
+      <table class="note">
+        <tr>
+            <td width="60%">&nbsp;</td>
+            <td width="40%">
+            (Items marked with an &lsquo;O&rsquo; in the above table are
+            of the size specified in the <a href="#SizeOfOffsetsV0">Size 
+            of Offsets</a> field in the superblock.)
+            </td></tr>
+        <tr>
+            <td>&nbsp;</td>
+            <td>
+            (Items marked with an &lsquo;L&rsquo; in the above table are
+            of the size specified in the <a href="#SizeOfLengthsV0">Size 
+            of Lengths</a> field in the superblock.)
+            </td></tr>
+      </table>
+
+    </div>
+
+    <br />
+    <div align="center" style="background-color:#DDEEEE">
+      <table class="desc">
+	<tr>
+          <th width="40%">Field Name</th>
+          <th>Description</th>
+        </tr>
+
+        <tr>
+          <td>Signature</td>
+          <td>
+            <p>The ASCII character string &ldquo;<code>FAHD</code>&rdquo;
+            is used to indicate the
+            beginning of a Fixed Array header.  This gives file consistency
+            checking utilities a better chance of reconstructing a
+            damaged file.
+            </p>
+          </td>
+        </tr>
+          
+        <tr>
+          <td>Version</td>
+          <td>
+            <p>This document describes version 0.</p>
+          </td>
+        </tr>
+
+	<tr>
+          <td>Client ID</td>
+          <td>
+            <p>This is the client ID for identifying the user of the
+                Fixed Array index:
+
+                <table class="list">
+                    <tr>
+                      <th width="20%" align="center">ID</th>
+                      <th width="80%" align="left">Description</th>
+                    </tr>
+
+                    <tr>
+                      <td align="center"><code>0</code></td>
+                      <td>Dataset chunks without fliters
+                      </td>
+                    </tr>
+                    <tr>
+                      <td align="center"><code>1</code></td>
+                      <td>Dataset chunks with filters
+                      </td>
+                    </tr>
+                    <tr>
+                      <td align="center"><code>2+</code></td>
+                      <td>Reserved.
+                      </td>
+                    </tr>
+                </table>
+            </p>
+          </td>
+        </tr>
+
+        <tr>
+          <td>Element Size</td>
+	  <td>
+	    <p>This is the size in bytes of an element in the Fixed Array.
+            </p>
+	  </td>
+        </tr>
+
+	<tr>
+	  <td>Page Bits</td>
+	  <td>
+            <p>This field contains the number of bits needed to store maxium number
+	    of elements in a data block page.</p>
+          </td>
+	</tr>
+	
+	<tr>
+	  <td>Num Elements</td>
+	  <td>
+	    <p>This is the number of elements in the Fixed Array.
+	    </p>
+	  </td>
+	</tr>
+
+	<tr>
+	  <td>Data Block Address</td>
+	  <td>
+	    <p>This is the address of the data block in the Fixed Array.
+	    </p>
+	  </td>
+
+        <tr>
+          <td>Checksum</td>
+          <td>
+            <p>This is the checksum for the header.</p>
+          </td>
+        </tr>
+
+      </table>
+    </div>
+
+    <br />
+    <div align="center" style="background-color:#DDEEEE">
+      <table class="format">
+        <caption>
+          Fixed Array Data Block
+        </caption>
+
+        <tr>
+          <th>byte</th>
+          <th>byte</th>
+          <th>byte</th>
+          <th>byte</th>
+        </tr>
+
+        <tr>
+          <td colspan="4">Signature</td>
+        </tr>
+          
+        <tr>
+          <td>Version</td>
+          <td>Client ID</td>
+          <td colspan="2" bgcolor="#DDDDDD"><em>This space inserted only to align table nicely</em></td>
+        </tr>
+
+        <tr>
+          <td colspan="4"><br />Header Address<sup>O</sup><br /><br /></td>
+        </tr>
+
+        <tr>
+          <td colspan="4"><br />Page Bit Mask <em>(variable size and optional)</em><br /><br /></td>
+        </tr>
+
+        <tr>
+          <td colspan="4"><br />Elements<br /><em>(variable size and optional)</em><br /><br /></td>
+        </tr>
+
+        <tr>
+          <td colspan="4">Checksum</td>
+        </tr>
+
+      </table>
+
+      <table class="note">
+        <tr>
+            <td width="60%">&nbsp;</td>
+            <td width="40%">
+            (Items marked with an &lsquo;O&rsquo; in the above table are
+            of the size specified in the <a href="#SizeOfOffsetsV0">Size 
+            of Offsets</a> field in the superblock.)
+            </td></tr>
+      </table>
+
+    </div>
+
+    <br />
+    <div align="center" style="background-color:#DDEEEE">
+      <table class="desc">
+	<tr>
+          <th width="40%">Field Name</th>
+          <th>Description</th>
+        </tr>
+
+        <tr>
+          <td>Signature</td>
+          <td>
+            <p>The ASCII character string &ldquo;<code>FADB</code>&rdquo;
+            is used to indicate the
+            beginning of a Fixed Array data block.  This gives file consistency
+            checking utilities a better chance of reconstructing a
+            damaged file.
+            </p>
+          </td>
+        </tr>
+          
+        <tr>
+          <td>Version</td>
+          <td>
+            <p>This document describes version 0.</p>
+          </td>
+        </tr>
+
+	<tr>
+          <td>Client ID</td>
+          <td>
+            <p>This is the client ID for identifying the user of the
+                Fixed Array:
+
+                <table class="list">
+                    <tr>
+                      <th width="20%" align="center">ID</th>
+                      <th width="80%" align="left">Description</th>
+                    </tr>
+
+                    <tr>
+                      <td align="center"><code>0</code></td>
+                      <td>Dataset chunks without fliters
+                      </td>
+                    </tr>
+                    <tr>
+                      <td align="center"><code>1</code></td>
+                      <td>Dataset chunks with filters
+                      </td>
+                    </tr>
+                    <tr>
+                      <td align="center"><code>2+</code></td>
+                      <td>Reserved.
+                      </td>
+                    </tr>
+                </table>
+            </p>
+          </td>
+        </tr>
+
+        <tr>
+          <td>Header Address</td>
+	  <td>
+	    <p>This is the address of the Fixed Array header.  This field 
+        is principally used for file integrity checking.
+            </p>
+	  </td>
+        </tr>
+
+	<tr>
+	  <td>Page Bit Mask</td>
+	  <td>This field is the bit mask indicating whether a Data
+	    Block Page is initialized or not. This field exists only if 
+        the Data Block is paged.</td>
+	</tr>
+	
+	<tr>
+	  <td>Elements</td>
+	  <td>
+	    <p>This field contains the elements in a Data Block and
+	    exists only if the Data Block is not paged.
+	    There are two element types:
+                <table class="list">
+                    <tr>
+                      <th width="20%" align="center">ID</th>
+                      <th width="80%" align="left">Description</th>
+                    </tr>
+
+                    <tr>
+                      <td align="center"><code>0</code></td>
+                      <td>This is for non-filtered dataset chunks
+			    and is described below.
+                      </td>
+                    </tr>
+                    <tr>
+                      <td align="center"><code>1</code></td>
+                      <td>This is for filtered dataset chunks and
+			is described below.
+                      </td>
+                    </tr>
+                </table>
+	    </p>
+	  </td>
+	</tr>
+
+        <tr>
+          <td>Checksum</td>
+          <td>
+            <p>This is the checksum for the Fixed Array Data Block.</p>
+          </td>
+        </tr>
+
+      </table>
+    </div>
+
+    <br />
+    <div align="center" style="background-color:#DDEEEE">
+      <table class="format">
+        <caption>
+          Fixed Array Data Block Page
+        </caption>
+
+        <tr>
+          <th>byte</th>
+          <th>byte</th>
+          <th>byte</th>
+          <th>byte</th>
+        </tr>
+
+        <tr>
+          <td colspan="4"><br />Elements<br /><em>(variable size)</em><br /><br /></td>
+        </tr>
+
+        <tr>
+          <td colspan="4">Checksum</td>
+        </tr>
+
+      </table>
+    </div>
+
+    <br />
+    <div align="center" style="background-color:#DDEEEE">
+      <table class="desc">
+	<tr>
+          <th width="40%">Field Name</th>
+          <th>Description</th>
+        </tr>
+
+	<tr>
+	  <td>Elements</td>
+	  <td>
+	    <p>This field contains the elements in a Data Block Page.
+	    There are two element types:
+                <table class="list">
+                    <tr>
+                      <th width="20%" align="center">ID</th>
+                      <th width="80%" align="left">Description</th>
+                    </tr>
+
+                    <tr>
+                      <td align="center"><code>0</code></td>
+                      <td>This is for non-filtered dataset chunks
+			    and is described below.
+                      </td>
+                    </tr>
+                    <tr>
+                      <td align="center"><code>1</code></td>
+                      <td>This is for filtered dataset chunks and
+			is described below.
+                      </td>
+                    </tr>
+                </table>
+	    </p>
+	  </td>
+	</tr>
+
+        <tr>
+          <td>Checksum</td>
+          <td>
+            <p>This is the checksum for a Fixed Array Data Block Page.</p>
+          </td>
+        </tr>
+
+      </table>
+    </div>
+
+    <br />
+    <div align="center" style="background-color:#DDEEEE">
+      <table class="format">
+	<caption>
+	  Data Block Element for Non-filtered Dataset Chunk
+	</caption>
+
+	<tr>
+	  <th width="25%">byte</th>
+	  <th width="25%">byte</th>
+	  <th width="25%">byte</th>
+	  <th width="25%">byte</th>
+	</tr>
+
+	<tr>
+	  <td colspan="4"><br />Address<sup>O</sup><br /><br /></td>
+	</tr>
+
+      </table>
+
+      <table class="note" style="background-color:#DDEEEE">
+        <tr>
+            <td width="60%">&nbsp;</td>
+            <td width="40%">
+            (Items marked with an &lsquo;O&rsquo; in the above table are
+            of the size specified in the <a href="#SizeOfOffsetsV0">Size 
+            of Offsets</a> field in the superblock.)
+            </td></tr>
+      </table>
+    </div>
+
+    <br />
+    <div align="center" style="background-color:#DDEEEE">
+      <table class="desc">
+	<tr>
+          <th width="30%">Field Name</th>
+          <th>Description</th>
+	</tr>
+
+	<tr>
+	  <td>Address</td>
+	  <td><p>This field is the address of the dataset chunk in the file.
+              </p>
+          </td>
+	</tr>
+
+      </table>
+    </div>
+<!--    </p> -->
+
+    <br />
+    <div align="center" style="background-color:#DDEEEE">
+      <table class="format">
+	<caption>
+	  Data Block Element for Filtered Dataset Chunk
+	</caption>
+
+	<tr>
+	  <th width="25%">byte</th>
+	  <th width="25%">byte</th>
+	  <th width="25%">byte</th>
+	  <th width="25%">byte</th>
+	</tr>
+
+	<tr>
+	  <td colspan="4"><br />Address<sup>O</sup><br /><br /></td>
+	</tr>
+
+	<tr>
+	  <td colspan="4"><br />Chunk Size<em>
+	   <br />(variable size; at most 8 bytes)</em><br /><br /></td>
+	</tr>
+
+	<tr>
+	  <td colspan="4">Filter Mask</td>
+	</tr>
+
+      </table>
+
+      <table class="note" style="background-color:#DDEEEE">
+        <tr>
+            <td width="60%">&nbsp;</td>
+            <td width="40%">
+            (Items marked with an &lsquo;O&rsquo; in the above table are
+            of the size specified in the <a href="#SizeOfOffsetsV0">Size 
+            of Offsets</a> field in the superblock.)
+            </td></tr>
+      </table>
+    </div>
+
+    <br />
+    <div align="center" style="background-color:#DDEEEE">
+      <table class="desc">
+	<tr>
+          <th width="30%">Field Name</th>
+          <th>Description</th>
+	</tr>
+
+	<tr>
+	  <td>Address</td>
+	  <td><p>This field is the address of the dataset chunk in the file.
+              </p>
+          </td>
+	</tr>
+
+	<tr>
+	  <td>Chunk Size</td>
+	  <td><p>This field is the size of the dataset chunk in bytes.
+              </p>
+          </td>
+	</tr>
+
+	<tr>
+	  <td>Filter Mask</td>
+	  <td><p>This field is the filter mask which indicates the filter to
+	    skip for the dataset chunk.  Each filter has an index number in he
+	    pipeline and if that filter is skipped, the bit corresponding to
+	    its index is set.
+              </p>
+          </td>
+	</tr>
+
+      </table>
+    </div>
+
+
+    <a name="ExtensibleArray">
+    <a href="#ExtensibleArray"><h3>VII.C.4. Extensible Array index</h3></a>
+    <p style="background-color:#DDEEEE">
+    The Extensible Array is a data structure that is used as a chunk index in
+    datasets where the dataspace has a single unlimited dimension. In 
+    other words, one dimension is set to <code>H5S_UNLIMITED</code> 
+    and the other dimensions are any number of fixed-size dimensions. 
+    The idea behind the extensible array is that a particular data object can
+    be located via a lightweight indexing structure of fixed depth for a given
+    address space. This indexing structure requires only a few (2-3) file operations
+    per element lookup and gives good cache performance. Unlike the B-tree structure,
+    the extensible array is optimized for appends. Where a B-tree would always add at
+    the rightmost node under these circumstances, either creating a deep tree 
+    (version 1) or requiring expensive rebalances to correct (version 2), 
+    the extensible array has already mapped out a pre-balanced internal structure. 
+    This idealized internal structure is instantiated as needed when chunk records 
+    are inserted into the structure.
+    </p>
+    <p style="background-color:#DDEEEE">
+    A description of the logic that lead to the present implementation of the
+    extensible array can be found at <a href="http://www.hdfgroup.org/RFC/RFCs/HDF5/ReviseChunks/skip_lists/SkipListChunkIndex.html">
+    http://www.hdfgroup.org/RFC/RFCs/HDF5/ReviseChunks/skip_lists/SkipListChunkIndex.html</a>.
+    The current implementation differs from the data structure described in that
+    link in some ways, but the basic idea is the same.</p>
+    <p style="background-color:#DDEEEE">
+    ??????? should SkipListChunkIndex.html be published somewhere more 
+    accessible to users? perhaps in the ADGuide.html? in Tech Notes?
+    in Advanced Topics? ???????
+    </p>
+    <p style="background-color:#DDEEEE">
+    An Extensible Array consists of a Header, an Index Block, Superblocks, Data Blocks,
+    and (optional) Data Block Pages.
+    The general scheme
+    is that the index block is used to reference a superblock, which is, in turn, used to
+    reference the data block page where the chunk information is stored.
+    The data blocks will be paged for efficiency when their size passes a threshold value.
+    These pages are laid out contiguously on the disk after the data block, are initialized
+    as needed, and are tracked via bitmaps stored in the superblock.
+    The number of super and data blocks/pages in a chunk index varies as they are 
+    allocated as needed and the first
+    few are (conceptually) stored in parent elements as an optimization.
+    <br />
+    <div align="center" style="background-color:#DDEEEE">
+      <table class="format">
+        <caption>
+          Extensible Array Header
+        </caption>
+
+        <tr>
+          <th>byte</th>
+          <th>byte</th>
+          <th>byte</th>
+          <th>byte</th>
+        </tr>
+
+        <tr>
+          <td colspan="4">Signature</td>
+        </tr>
+          
+        <tr>
+          <td>Version</td>
+          <td>Client ID</td>
+          <td>Element Size</td>
+          <td>Max Nelmts Bits</td>
+	</tr>
+
+	<tr>
+          <td>Index Blk Elmts</td>
+          <td>Data Blk Min Elmts</td>
+          <td>Super Blk Min Data Ptrs</td>
+          <td>Max Data Blk Page Nelmts Bits</td>
+        </tr>
+
+        <tr>
+          <td colspan="4"><br />Num Super Blks<sup>L</sup><br /><br /></td>
+        </tr>
+        <tr>
+          <td colspan="4"><br />Super Blk Size<sup>L</sup><br /><br /></td>
+        </tr>
+        <tr>
+          <td colspan="4"><br />Num Data Blks<sup>L</sup><br /><br /></td>
+        </tr>
+        <tr>
+          <td colspan="4"><br />Data Blk Size<sup>L</sup><br /><br /></td>
+        </tr>
+        <tr>
+          <td colspan="4"><br />Max Index Set<sup>L</sup><br /><br /></td>
+        </tr>
+        <tr>
+          <td colspan="4"><br />Num Elements<sup>L</sup><br /><br /></td>
+        </tr>
+          
+        <tr>
+          <td colspan="4"><br />Index Block Address<sup>O</sup><br /><br /></td>
+        </tr>
+
+        <tr>
+          <td colspan="4">Checksum</td>
+        </tr>
+
+      </table>
+
+      <table class="note">
+        <tr>
+            <td width="60%">&nbsp;</td>
+            <td width="40%">
+            (Items marked with an &lsquo;O&rsquo; in the above table are
+            of the size specified in the <a href="#SizeOfOffsetsV0">Size 
+            of Offsets</a> field in the superblock.)
+            </td></tr>
+        <tr>
+            <td>&nbsp;</td>
+            <td>
+            (Items marked with an &lsquo;L&rsquo; in the above table are
+            of the size specified in the <a href="#SizeOfLengthsV0">Size 
+            of Lengths</a> field in the superblock.)
+            </td></tr>
+      </table>
+
+    </div>
+
+    <br />
+    <div align="center" style="background-color:#DDEEEE">
+      <table class="desc">
+	<tr>
+          <th width="40%">Field Name</th>
+          <th>Description</th>
+        </tr>
+
+        <tr>
+          <td>Signature</td>
+          <td>
+            <p>The ASCII character string &ldquo;<code>EAHD</code>&rdquo;
+            is used to indicate the
+            beginning of an Extensible Array header.  This gives file consistency
+            checking utilities a better chance of reconstructing a
+            damaged file.
+            </p>
+          </td>
+        </tr>
+          
+        <tr>
+          <td>Version</td>
+          <td>
+            <p>This document describes version 0.</p>
+          </td>
+        </tr>
+
+	<tr>
+          <td>Client ID</td>
+          <td>
+            <p>This is the client ID for identifying the user of the
+                Fixed Array index:
+
+                <table class="list">
+                    <tr>
+                      <th width="20%" align="center">ID</th>
+                      <th width="80%" align="left">Description</th>
+                    </tr>
+
+                    <tr>
+                      <td align="center"><code>0</code></td>
+                      <td>Dataset chunks without fliters
+                      </td>
+                    </tr>
+                    <tr>
+                      <td align="center"><code>1</code></td>
+                      <td>Dataset chunks with filters
+                      </td>
+                    </tr>
+                    <tr>
+                      <td align="center"><code>2+</code></td>
+                      <td>Reserved.
+                      </td>
+                    </tr>
+                </table>
+            </p>
+          </td>
+        </tr>
+
+        <tr>
+          <td>Element Size</td>
+	  <td>
+	    <p>This is the size in bytes of an element in the Extensible Array.
+            </p>
+	  </td>
+        </tr>
+
+	<tr>
+	  <td>Max Nelmts Bits</td>
+	  <td>
+            <p>This field is the number of bits needed to store maximum number of elements in the Extensible Array.</p>
+          </td>
+	</tr>
+	
+	<tr>
+	  <td>Index Blk Elmts</td>
+	  <td>
+	    <p>This field is the number of elements to store in index block.
+	    </p>
+	  </td>
+	</tr>
+
+	<tr>
+	  <td>Data Bllk Min Elmts</td>
+	  <td>
+	    <p>This field is the minumum numer of elements per data block.
+	    </p>
+	  </td>
+	</tr>
+
+	<tr>
+	  <td>Super Bllk Min Data Ptrs</td>
+	  <td>
+	    <p>This field is the minimum number of data block pointers for a 
+	    superblock.
+	    </p>
+	  </td>
+	</tr>
+
+	<tr>
+	  <td>Max Dblk Page Nelmts Bits</td>
+	  <td>
+	    <p>This field is the number of bits needed to store maximum number
+	    of elements in a data block page.
+	    </p>
+	  </td>
+	</tr>
+
+	<tr>
+	  <td>Num Super Blks</td>
+	  <td>
+	    <p>This field is the number of superblocks created.
+	    </p>
+	  </td>
+	</tr>
+
+	<tr>
+	  <td>Super Blk Size</td>
+	  <td>
+	    <p>This field is size of superblocks created.
+	    </p>
+	  </td>
+	</tr>
+
+	<tr>
+	  <td>Num Data Blks</td>
+	  <td>
+	    <p>This field is number of data blocks created.
+	    </p>
+	  </td>
+	</tr>
+
+	<tr>
+	  <td>Data Blk Size</td>
+	  <td>
+	    <p>This field is size of data blocks created.
+	    </p>
+	  </td>
+	</tr>
+
+	<tr>
+	  <td>Max Index Set</td>
+	  <td>
+	    <p>This field is maximum index set.
+	    </p>
+	  </td>
+	</tr>
+
+	<tr>
+	  <td>Num Elmts</td>
+	  <td>
+	    <p>This field is number of elements realized.
+	    </p>
+	  </td>
+	</tr>
+
+	<tr>
+	  <td>Index Block Address</td>
+	  <td>
+	    <p>This field is the address of the index block.
+	    </p>
+	  </td>
+	</tr>
+
+        <tr>
+          <td>Checksum</td>
+          <td>
+            <p>This is the checksum for the header.</p>
+          </td>
+        </tr>
+
+      </table>
+    </div>
+
+    <br />
+    <div align="center" style="background-color:#DDEEEE">
+      <table class="format">
+        <caption>
+          Extensible Array Index Block
+        </caption>
+
+        <tr>
+          <th>byte</th>
+          <th>byte</th>
+          <th>byte</th>
+          <th>byte</th>
+        </tr>
+
+        <tr>
+          <td colspan="4">Signature</td>
+        </tr>
+          
+        <tr>
+          <td>Version</td>
+          <td>Client ID</td>
+          <td colspan="2" bgcolor="#DDDDDD"><em>This space inserted only to align table nicely</em></td>
+        </tr>
+
+        <tr>
+          <td colspan="4"><br />Header Address<sup>O</sup><br /><br /></td>
+        </tr>
+
+        <tr>
+          <td colspan="4"><br />Index Block Elements<em>(variable size and optional)</em><br /><br /></td>
+        </tr>
+
+        <tr>
+          <td colspan="4"><br />Data Block Addresses<br /><em>(variable size and optional)</em><br /><br /></td>
+        </tr>
+
+        <tr>
+          <td colspan="4"><br />Superblock Addresses<br /><em>(variable size and optional)</em><br /><br /></td>
+        </tr>
+
+        <tr>
+          <td colspan="4">Checksum</td>
+        </tr>
+
+      </table>
+
+      <table class="note">
+        <tr>
+            <td width="60%">&nbsp;</td>
+            <td width="40%">
+            (Items marked with an &lsquo;O&rsquo; in the above table are
+            of the size specified in the <a href="#SizeOfOffsetsV0">Size 
+            of Offsets</a> field in the superblock.)
+            </td></tr>
+      </table>
+
+    </div>
+
+    <br />
+    <div align="center" style="background-color:#DDEEEE">
+      <table class="desc">
+	<tr>
+          <th width="40%">Field Name</th>
+          <th>Description</th>
+        </tr>
+
+        <tr>
+          <td>Signature</td>
+          <td>
+            <p>The ASCII character string &ldquo;<code>EAIB</code>&rdquo;
+            is used to indicate the
+            beginning of an Extensible Array Index Block.  This gives file consistency
+            checking utilities a better chance of reconstructing a
+            damaged file.
+            </p>
+          </td>
+        </tr>
+          
+        <tr>
+          <td>Version</td>
+          <td>
+            <p>This document describes version 0.</p>
+          </td>
+        </tr>
+
+	<tr>
+          <td>Client ID</td>
+          <td>
+            <p>This is the client ID for identifying the user of the
+                Extensible Array:
+
+                <table class="list">
+                    <tr>
+                      <th width="20%" align="center">ID</th>
+                      <th width="80%" align="left">Description</th>
+                    </tr>
+
+                    <tr>
+                      <td align="center"><code>0</code></td>
+                      <td>Dataset chunks without fliters
+                      </td>
+                    </tr>
+                    <tr>
+                      <td align="center"><code>1</code></td>
+                      <td>Dataset chunks with filters
+                      </td>
+                    </tr>
+                    <tr>
+                      <td align="center"><code>2+</code></td>
+                      <td>Reserved.
+                      </td>
+                    </tr>
+                </table>
+            </p>
+          </td>
+        </tr>
+
+        <tr>
+          <td>Header Address</td>
+	  <td>
+	    <p>This is the address of the Extensible Array header. This 
+        field is principally used for file integrity checking.</p>
+	  </td>
+        </tr>
+
+	<tr>
+	  <td>Index Block Elements</td>
+	  <td>
+	    <p>This field contains elements that are encoded directly in 
+        the index block. This is an optimization to avoid unnecessary 
+        superblocks. 
+        <br />
+        <br />
+        There are two element types:
+                <table class="list">
+                    <tr>
+                      <th width="20%" align="center">ID</th>
+                      <th width="80%" align="left">Description</th>
+                    </tr>
+
+                    <tr>
+                      <td align="center"><code>0</code></td>
+                      <td>This is for non-filtered dataset chunks
+                        and is described below.
+                      </td>
+                    </tr>
+                    <tr>
+                      <td align="center"><code>1</code></td>
+                      <td>This is for filtered dataset chunks and
+                        is described below.
+                      </td>
+                    </tr>
+                </table>
+	    </p>
+	  </td>
+	</tr>
+
+        <tr>
+          <td>Data Block Addresses</td>
+          <td>
+            <p>This field contains addresses of data blocks stored in 
+            the Index Block (instead of via a superblock). This is 
+            an optimization to avoid unnecessary superblocks.</p>
+          </td>
+        </tr>
+
+        <tr>
+          <td>Superblock Addresses</td>
+          <td>
+            <p>This field contains the addresses of the superblocks.</p>
+          </td>
+        </tr>
+
+        <tr>
+          <td>Checksum</td>
+          <td>
+            <p>This is the checksum for the Extensible Array Index Block.</p>
+          </td>
+        </tr>
+
+      </table>
+    </div>
+
+    <br />
+    <div align="center" style="background-color:#DDEEEE">
+      <table class="format">
+        <caption>
+          Extensible Array Superblock
+        </caption>
+
+        <tr>
+          <th>byte</th>
+          <th>byte</th>
+          <th>byte</th>
+          <th>byte</th>
+        </tr>
+
+        <tr>
+          <td colspan="4">Signature</td>
+        </tr>
+          
+        <tr>
+          <td>Version</td>
+          <td>Client ID</td>
+          <td colspan="2" bgcolor="#DDDDDD"><em>This space inserted only to align table nicely</em></td>
+        </tr>
+
+        <tr>
+          <td colspan="4"><br />Header Address<sup>O</sup><br /><br /></td>
+        </tr>
+
+        <tr>
+          <td colspan="4"><br />Block Offset<em>(variable size)</em><br /><br /></td>
+        </tr>
+
+        <tr>
+          <td colspan="4"><br />Page Bit Masks<br /><em>(variable size and optional)</em><br /><br /></td>
+        </tr>
+
+        <tr>
+          <td colspan="4"><br />Data Block Addresses<br /><em>(variable size and optional)</em><br /><br /></td>
+        </tr>
+
+        <tr>
+          <td colspan="4">Checksum</td>
+        </tr>
+
+      </table>
+
+      <table class="note">
+        <tr>
+            <td width="60%">&nbsp;</td>
+            <td width="40%">
+            (Items marked with an &lsquo;O&rsquo; in the above table are
+            of the size specified in the <a href="#SizeOfOffsetsV0">Size 
+            of Offsets</a> field in the superblock.)
+            </td></tr>
+      </table>
+
+    </div>
+
+    <br />
+    <div align="center" style="background-color:#DDEEEE">
+      <table class="desc">
+	<tr>
+          <th width="40%">Field Name</th>
+          <th>Description</th>
+        </tr>
+
+        <tr>
+          <td>Signature</td>
+          <td>
+            <p>The ASCII character string &ldquo;<code>EASB</code>&rdquo;
+            is used to indicate the
+            beginning of an Extensible Array Superblock.  This gives file consistency
+            checking utilities a better chance of reconstructing a
+            damaged file.
+            </p>
+          </td>
+        </tr>
+          
+        <tr>
+          <td>Version</td>
+          <td>
+            <p>This document describes version 0.</p>
+          </td>
+        </tr>
+
+	<tr>
+          <td>Client ID</td>
+          <td>
+            <p>This is the client ID for identifying the user of the
+                Extensible Array:
+
+                <table class="list">
+                    <tr>
+                      <th width="20%" align="center">ID</th>
+                      <th width="80%" align="left">Description</th>
+                    </tr>
+
+                    <tr>
+                      <td align="center"><code>0</code></td>
+                      <td>Dataset chunks without fliters
+                      </td>
+                    </tr>
+                    <tr>
+                      <td align="center"><code>1</code></td>
+                      <td>Dataset chunks with filters
+                      </td>
+                    </tr>
+                    <tr>
+                      <td align="center"><code>2+</code></td>
+                      <td>Reserved.
+                      </td>
+                    </tr>
+                </table>
+            </p>
+          </td>
+        </tr>
+
+        <tr>
+          <td>Header Address</td>
+	  <td>
+	    <p>This is the address of the Extensible Array header. This 
+        field is principally used for file integrity checking.</p>
+	  </td>
+        </tr>
+
+        <tr>
+          <td>Block Offset</td>
+	  <td>
+	    <p>This field stores the offset of the block in the array.
+            </p>
+	  </td>
+        </tr>
+
+	<tr>
+	  <td>Page Bit Masks</td>
+	  <td>
+            <p>This field contains the bit masks indicating whether a 
+            data block page is initialized or not.  There is one bit 
+            mask per data block address. This field exists only if the 
+            data blocks are large enough to be paged.
+          </td>
+	</tr>
+	
+        <tr>
+          <td>Data Block Addresses</td>
+          <td>
+            <p>This field contains addresses of the data blocks 
+            referenced by this superblock.</p>
+          </td>
+        </tr>
+
+        <tr>
+          <td>Checksum</td>
+          <td>
+            <p>This is the checksum for the Extensible Array Superblock.</p>
+          </td>
+        </tr>
+
+      </table>
+    </div>
+
+    <br />
+    <div align="center" style="background-color:#DDEEEE">
+      <table class="format">
+        <caption>
+          Extensible Array Data Block
+        </caption>
+
+        <tr>
+          <th>byte</th>
+          <th>byte</th>
+          <th>byte</th>
+          <th>byte</th>
+        </tr>
+
+        <tr>
+          <td colspan="4">Signature</td>
+        </tr>
+          
+        <tr>
+          <td>Version</td>
+          <td>Client ID</td>
+          <td colspan="2" bgcolor="#DDDDDD"><em>This space inserted only to align table nicely</em></td>
+        </tr>
+
+        <tr>
+          <td colspan="4"><br />Header Address<sup>O</sup><br /><br /></td>
+        </tr>
+
+        <tr>
+          <td colspan="4"><br />Block Offset<em>(variable size)</em><br /><br /></td>
+        </tr>
+
+        <tr>
+          <td colspan="4"><br />Data Block Elements<em>(variable size and optional)</em><br /><br /></td>
+        </tr>
+
+        <tr>
+          <td colspan="4">Checksum</td>
+        </tr>
+
+      </table>
+
+      <table class="note">
+        <tr>
+            <td width="60%">&nbsp;</td>
+            <td width="40%">
+            (Items marked with an &lsquo;O&rsquo; in the above table are
+            of the size specified in the <a href="#SizeOfOffsetsV0">Size 
+            of Offsets</a> field in the superblock.)
+            </td></tr>
+      </table>
+
+    </div>
+
+    <br />
+    <div align="center" style="background-color:#DDEEEE">
+      <table class="desc">
+	<tr>
+          <th width="40%">Field Name</th>
+          <th>Description</th>
+        </tr>
+
+        <tr>
+          <td>Signature</td>
+          <td>
+            <p>The ASCII character string &ldquo;<code>EADB</code>&rdquo;
+            is used to indicate the
+            beginning of an Extensible Array Data Block.  This gives file consistency
+            checking utilities a better chance of reconstructing a
+            damaged file.
+            </p>
+          </td>
+        </tr>
+          
+        <tr>
+          <td>Version</td>
+          <td>
+            <p>This document describes version 0.</p>
+          </td>
+        </tr>
+
+	<tr>
+          <td>Client ID</td>
+          <td>
+            <p>This is the client ID for identifying the user of the
+                Extensible Array:
+
+                <table class="list">
+                    <tr>
+                      <th width="20%" align="center">ID</th>
+                      <th width="80%" align="left">Description</th>
+                    </tr>
+
+                    <tr>
+                      <td align="center"><code>0</code></td>
+                      <td>Dataset chunks without fliters
+                      </td>
+                    </tr>
+                    <tr>
+                      <td align="center"><code>1</code></td>
+                      <td>Dataset chunks with filters
+                      </td>
+                    </tr>
+                    <tr>
+                      <td align="center"><code>2+</code></td>
+                      <td>Reserved.
+                      </td>
+                    </tr>
+                </table>
+            </p>
+          </td>
+        </tr>
+
+        <tr>
+          <td>Header Address</td>
+	  <td>
+	    <p>This is the address of the Extensible Array header. This 
+        field is principally used for file integrity checking.
+            </p>
+	  </td>
+        </tr>
+
+	<tr>
+	  <td>Block Offset</td>
+	  <td>
+            <p>This field is the offset of the data block in the array.
+          </td>
+	</tr>
+	
+	<tr>
+	  <td>Data Block Elements</td>
+	  <td>
+	    <p>This field contains the elements in a Data Block.
+        It only exists if the Data Block is unpaged.
+        <br />
+        <br />
+	    There are two element types:
+                <table class="list">
+                    <tr>
+                      <th width="20%" align="center">ID</th>
+                      <th width="80%" align="left">Description</th>
+                    </tr>
+
+                    <tr>
+                      <td align="center"><code>0</code></td>
+                      <td>This is for non-filtered dataset chunks
+			    and is described below.
+                      </td>
+                    </tr>
+                    <tr>
+                      <td align="center"><code>1</code></td>
+                      <td>This is for filtered dataset chunks and
+			is described below.
+                      </td>
+                    </tr>
+                </table>
+	    </p>
+	  </td>
+	</tr>
+
+        <tr>
+          <td>Checksum</td>
+          <td>
+            <p>This is the checksum for the Extensible Array Data Block.</p>
+          </td>
+        </tr>
+
+      </table>
+    </div>
+          <br />
+    <div align="center" style="background-color:#DDEEEE">
+      <table class="format">
+        <caption>
+          Extensible Array Data Block Page
+        </caption>
+
+        <tr>
+          <th>byte</th>
+          <th>byte</th>
+          <th>byte</th>
+          <th>byte</th>
+        </tr>
+
+        <tr>
+          <td colspan="4"><br />Elements<br /><em>(variable size)</em><br /><br /></td>
+        </tr>
+
+        <tr>
+          <td colspan="4">Checksum</td>
+        </tr>
+
+      </table>
+    </div>
+
+    <br />
+    <div align="center" style="background-color:#DDEEEE">
+      <table class="desc">
+	<tr>
+          <th width="40%">Field Name</th>
+          <th>Description</th>
+        </tr>
+
+	<tr>
+	  <td>Elements</td>
+	  <td>
+	    <p>This field contains the elements in a Data Block Page.</p>
+        <p>
+	    There are two element types:
+                <table class="list">
+                    <tr>
+                      <th width="20%" align="center">ID</th>
+                      <th width="80%" align="left">Description</th>
+                    </tr>
+
+                    <tr>
+                      <td align="center"><code>0</code></td>
+                      <td>This is for non-filtered dataset chunks
+			    and is described below.
+                      </td>
+                    </tr>
+                    <tr>
+                      <td align="center"><code>1</code></td>
+                      <td>This is for filtered dataset chunks and
+			is described below.
+                      </td>
+                    </tr>
+                </table>
+	    </p>
+	  </td>
+	</tr>
+
+        <tr>
+          <td>Checksum</td>
+          <td>
+            <p>This is the checksum for an Extensible Array Data Block Page.</p>
+          </td>
+        </tr>
+
+      </table>
+    </div>
+
+    <br />
+    <div align="center" style="background-color:#DDEEEE">
+      <table class="format">
+	<caption>
+	  Data Block Element for Non-filtered Dataset Chunk
+	</caption>
+
+	<tr>
+	  <th width="25%">byte</th>
+	  <th width="25%">byte</th>
+	  <th width="25%">byte</th>
+	  <th width="25%">byte</th>
+	</tr>
+
+	<tr>
+	  <td colspan="4"><br />Address<sup>O</sup><br /><br /></td>
+	</tr>
+
+      </table>
+
+      <table class="note" style="background-color:#DDEEEE">
+        <tr><td>
+        <tr>
+            <td width="60%">&nbsp;</td>
+            <td width="40%">
+            (Items marked with an &lsquo;O&rsquo; in the above table are
+            of the size specified in the <a href="#SizeOfOffsetsV0">Size 
+            of Offsets</a> field in the superblock.)
+            </td></tr>
+      </table>
+    </div>
+
+    <br />
+    <div align="center" style="background-color:#DDEEEE">
+      <table class="desc">
+	<tr>
+          <th width="30%">Field Name</th>
+          <th>Description</th>
+	</tr>
+
+	<tr>
+	  <td>Address</td>
+	  <td><p>This field is the address of the dataset chunk in the file.
+              </p>
+          </td>
+	</tr>
+
+      </table>
+    </div>
+    </p>
+
+    <br />
+    <div align="center" style="background-color:#DDEEEE">
+      <table class="format">
+	<caption>
+	  Data Block Element for Filtered Dataset Chunk
+	</caption>
+
+	<tr>
+	  <th width="25%">byte</th>
+	  <th width="25%">byte</th>
+	  <th width="25%">byte</th>
+	  <th width="25%">byte</th>
+	</tr>
+
+	<tr>
+	  <td colspan="4"><br />Address<sup>O</sup><br /><br /></td>
+	</tr>
+
+	<tr>
+	  <td colspan="4"><br />Chunk Size<em>
+	   <br />(variable size; at most 8 bytes)</em><br /><br /></td>
+	</tr>
+
+	<tr>
+	  <td colspan="4">Filter Mask</td>
+	</tr>
+
+      </table>
+
+      <table class="note" style="background-color:#DDEEEE">
+        <tr>
+            <td width="60%">&nbsp;</td>
+            <td width="40%">
+            (Items marked with an &lsquo;O&rsquo; in the above table are
+            of the size specified in the <a href="#SizeOfOffsetsV0">Size 
+            of Offsets</a> field in the superblock.)
+            </td></tr>
+      </table>
+    </div>
+
+    <br />
+    <div align="center" style="background-color:#DDEEEE">
+      <table class="desc">
+	<tr>
+          <th width="30%">Field Name</th>
+          <th>Description</th>
+	</tr>
+
+	<tr>
+	  <td>Address</td>
+	  <td><p>This field is the address of the dataset chunk in the file.
+              </p>
+          </td>
+	</tr>
+
+	<tr>
+	  <td>Chunk Size</td>
+	  <td><p>This field is the size of the dataset chunk in bytes.
+              </p>
+          </td>
+	</tr>
+
+	<tr>
+	  <td>Filter Mask</td>
+	  <td><p>This field is the filter mask which indicates the filter to
+	    skip for the dataset chunk.  Each filter has an index number in he
+	    pipeline and if that filter is skipped, the bit corresponding to
+	    its index is set.
+              </p>
+          </td>
+	</tr>
+
+      </table>
+    </div>
+
+    <a name="V2Btrees">
+    <a href="#V2Btrees"><h3>VII.C.5. Version 2 B-tree index</h3></a>
+
     <p style="background-color:#ff9999">change for 1.10</p>
 <br />
 
