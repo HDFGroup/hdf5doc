@@ -3249,6 +3249,7 @@ III.A.2. Disk Format: Level 1A2 - Version 2 B-trees</a></h4>
     </div>
 
     <br />
+    <a name="V2BtType10">
     <p style="background-color:#ff9999">change for 1.10</p>
     <div align="center" style="background-color:#DDEEEE">
       <table class="format">
@@ -3330,6 +3331,7 @@ III.A.2. Disk Format: Level 1A2 - Version 2 B-trees</a></h4>
     </div>
 
     <br />
+    <a name="V2BtType11">
     <div align="center" style="background-color:#DDEEEE">
       <table class="format">
         <caption>
@@ -16017,18 +16019,16 @@ The mapping is listed in the following table:
 
 <br />
 <hr />
-    <p style="background-color:#ff9999">change for 1.10</p>
+<p style="background-color:#ff9999">change for 1.10</p>
 <h2><a name="AppendixC"> VII. Appendix C</a>: 
 Types of Indexes for Dataset Chunks</h3>
-For an HDF5 file without the latest format, the library always uses the
+For an HDF5 file without the latest format enabled,
+the library uses the
 <a href="#V1Btrees">Version 1 B-tree</a> to index dataset chunks.
 <p>
-For an HDF5 with the latest format, the library will use one of the following five indexing types
+For an HDF5 file with the latest format enabled, the library uses one of the following five indexing types
 depending on a chunked dataset's dimension specification and the way it is extended.
-The first 3 indexes are for a dataset with fixed maximum dimension sizes.
-The last 2 indexes are for a dataset with unlimited maximum dimension sizes.</p>
-
-<ol stype="background-color:#DDEEEE" type="1">
+</p>
 
     <a name="SingleChunk">
     <h3>VII.C.1. Single Chunk index</h3>
@@ -16037,8 +16037,10 @@ The last 2 indexes are for a dataset with unlimited maximum dimension sizes.</p>
     <li>the current, maximum and chunk dimension sizes are all the same</li>
     <li>filtered or non-filtered</li>
     </ul>
-    This means the dataset has only one chunk.
-    The address of the single chunk is stored in the Data Layout message.
+    <p>
+    The dataset has only one chunk and the address
+    of the single chunk is stored in the version 4 <i>Data Layout</i> message.
+    See <a href="#ChunkedStorage">Chunked Storage Property Description</i></a>.
 
     <a name="Implicit">
     <h3>VII.C.2. Implicit index</h3>
@@ -16048,47 +16050,108 @@ The last 2 indexes are for a dataset with unlimited maximum dimension sizes.</p>
     <li>non-filtered only</li>
     <li>the timing for the space allocation of the dataset chunks is H5P_ALLOC_TIME_EARLY</li>
     </ul>
-    This means the dataset chunks are allocated when the dataset is created.
-    The address of the dataset chunks is stored in the Data Layout message.
+    <p>
+    Since the dataset's dimension sizes are known and storage space is to be allocated early,
+    an array of dataset chunks are allocated based on the maximum dimension sizes when the dataset is created.
+    The base address of the array is stored in the version 4 <i>Data Layout</i> message.
+    See <a href="#ChunkedStorage">Chunked Storage Property Description</i></a>.
+    <p>
+    When accessing a dataset chunk with a specified offset, the address of the chunk in the array is computed as below:
+    <p>
+	<em>base address + (size of a chunk in bytes * chunk index associated with the offset)</em>
+    <p>
+    A chunk index starts at 0 and increases according to the
+    fastest changing dimension, then the next fastest, etc.
+    <a name="ChunkIndex"></a>
+    The chunk index for a dataset chunk offset is computed as below:
+    <ol>
+    <li>Calculate the scaled offset for each dimension in <em>scaled_offset</em>: 
+        <br /> <br />
+	<em>scaled_offset = chunk_offset/chunk_dims</em></li>
+        <br />
+    <li>Calculate the # of chunks for each dimension in <em>nchunks</em>: 
+        <br /> <br />
+	<em>nchunks = (curr_dims + chunk_dims - 1)/chunk_dims</em></li>
+        <br />
+    <li>Calculate the down chunks for each dimension in <em>down_chunks</em>:
+        <br /> <br />
+	<em>
+	/* n is the # of dimensions */
+	<p>
+	for(i = (int)(n-1), acc = 1; i >= 0; i--) {
+	<p>
+	    down_chunks[i] = acc;
+	<p>
+	    acc *= nchunks[i];
+	<p>
+	} 
+	</em>
+        <br />
+    </li>
+    <li>Calculate the chunk index in <em>chunk_index</em>:
+        <br /> <br />
+	<em>
+	/* n is the # of dimensions */
+	<p>
+	for(u = 0, chunk_index = 0; u < n; u++)
+	<p>
+	    chunk_index += down_chunks[u] * scaled_offset[u];
+	</em>
+        <br />
+    </li>
+    </ol>
+    <p>
+    For example, for a 2-dimensional dataset with <em>curr_dims[4,5]</em> and <em>chunk_dims[3,2]</em>,
+    there will be a total of 6 chunks, with 3 chunks in the fastest changing dimension and
+    2 chunks in the slowest changing dimension.  SEE DIAGRAM (Mark is helping with this).
+    The chunk index for the chunk offset <em>[3, 2]</em>
+    is computed as below:
+    <ol>
+    <em>
+    <li>scaled_offset[0] = 1, scaled_offset[1] = 1</li>
+    <li>nchunks[0] = 2, nchunks[1] = 3</li>
+    <li>down_chunks[0] = 3, down_chunks[1] = 1</li>
+    <li>chunk_index = 4</li>
+    </em>
+    </ol>
 
     <a name="FixedArray">
     <h3>VII.C.3. Fixed Array index</h3>
-
-    <p style="background-color:#DDEEEE">
     The <i>Fixed Array</i> index is used when the dataset fulfills the following conditions:
     <ul>
     <li>fixed maximum dimension sizes</li>
     <li>filtered or non-filtered</li>
     </ul>
-    Since the number of chunks is known <em>a priori</em>, 
-    the dataset chunk coordinates are mapped into an array of
-    disk addresses where the chunks are located.
-    This index structure provides space and speed improvements in locating chunks 
-    over index structures that handle more dynamic data accesses.
+    <p>
+    Since the maximum number of chunks is known, 
+    an array of disk addresses based on the maximum # of chunks are allocated
+    when data is written to the dataset.
+    To access a dataset chunk with a specified offset,
+    the <a href="#ChunkIndex">chunk index</i></a>
+    associated with the offset is
+    calculated.  The index is mapped into the array to locate the disk address for the chunk.
     </p>
-    <p style="background-color:#DDEEEE">
-    The Fixed Array consists of a header and a data block that contains the chunk information.
-    For improved efficiency, the data will be divided into multiple pages if
+    The Fixed Array index structure provides space and speed improvements in locating chunks 
+    over index structures that handle more dynamic data accesses like
+    Version 2 B-trees index.
+    The entry into the Fixed Array is the Fixed Array header which contains metadata about the
+    elements stored in the array.  The header contains a pointer to a Data Block which stores 
+    the array of elements that describe the dataset chunks.
+    For improved efficiency, the array will be divided into multiple pages if
     the number of elements exceeds a threshold value. 
-    The header contains metadata information about the elements stored in the array
-    as well as the address of the data block.
-    The content of the data block depends on whether paging is turned on or not.  When paging
-    is not being used, the data block simply contains the chunk information.
-    If paging is on, the data block will contain a bitmap indicating which pages have been initialized
-    in the file but will not the include data.  The subsequent data block pages will contain the actual
-    chunk information.
-    </p>
-    <p style="background-color:#DDEEEE">
-    The space for the fixed array data (data block + pages, if any) is laid out in the file at
-    creation time as a single contiguous block of space.  If the array is
-    paged, the pages are initialized as needed, and the bitmap updated accordingly.
-    </p>
-    <p style="background-color:#DDEEEE">
-    An element in the array describes either a filterd or non-filtered dataset chunk.  The formats
-    of both types of element are described below.
+    The space for the Data Block and possibly Data Block pages are allocated as a single contiguous
+    block of space.
+    <p>
+    The content of the Data Block depends on whether paging is activated or not.  When paging
+    is not used, elements that describe the chunks are stored in the Data Block.
+    If paging is turned on, the Data Block contains a bitmap indicating which pages are initialized.
+    Then subsequent Data Block pages will contain the elements that describe the chunks.
+    <p>
+    An element describes either a filterd or non-filtered dataset chunk.  The formats
+    for both element types are described below.
     </p>
     <br />
-    <div align="center" style="background-color:#DDEEEE">
+    <div align="center">
       <table class="format">
         <caption>
           Fixed Array Header
@@ -16146,7 +16209,7 @@ The last 2 indexes are for a dataset with unlimited maximum dimension sizes.</p>
     </div>
 
     <br />
-    <div align="center" style="background-color:#DDEEEE">
+    <div align="center">
       <table class="desc">
 	<tr>
           <th width="40%">Field Name</th>
@@ -16176,7 +16239,7 @@ The last 2 indexes are for a dataset with unlimited maximum dimension sizes.</p>
           <td>Client ID</td>
           <td>
             <p>This is the ID for identifying the client of the
-                Fixed Array index:
+                Fixed Array:
 
                 <table class="list">
                     <tr>
@@ -16215,8 +16278,8 @@ The last 2 indexes are for a dataset with unlimited maximum dimension sizes.</p>
 	<tr>
 	  <td>Page Bits</td>
 	  <td>
-            <p>This is the number of bits used to calculate the maximum number
-	    of elements per data block page.</p>
+            <p>This is the number of bits needed to stored the maximum number
+	    of elements in a data block page.</p>
           </td>
 	</tr>
 	
@@ -16246,7 +16309,7 @@ The last 2 indexes are for a dataset with unlimited maximum dimension sizes.</p>
     </div>
 
     <br />
-    <div align="center" style="background-color:#DDEEEE">
+    <div align="center">
       <table class="format">
         <caption>
           Fixed Array Data Block
@@ -16300,7 +16363,7 @@ The last 2 indexes are for a dataset with unlimited maximum dimension sizes.</p>
     </div>
 
     <br />
-    <div align="center" style="background-color:#DDEEEE">
+    <div align="center">
       <table class="desc">
 	<tr>
           <th width="40%">Field Name</th>
@@ -16369,15 +16432,15 @@ The last 2 indexes are for a dataset with unlimited maximum dimension sizes.</p>
 
 	<tr>
 	  <td>Page Bitmap</td>
-	  <td>This field is a bitmap indicating whether a Data
-	    Block Page is initialized or not. <p>
+	  <td>This field is a bitmap indicating which Data
+	    Block pages are initialized. <p>
 	    This field exists only if the Data Block is paged.</td>
 	</tr>
 	
 	<tr>
 	  <td>Elements</td>
 	  <td>
-	    <p>This field contains the elements in a Data Block and
+	    <p>This field contains the elements stored in the Data Block and
 	    exists only if the Data Block is not paged.
 	    There are two element types:
                 <table class="list">
@@ -16388,14 +16451,12 @@ The last 2 indexes are for a dataset with unlimited maximum dimension sizes.</p>
 
                     <tr>
                       <td align="center"><code>0</code></td>
-                      <td>This is for non-filtered dataset chunks
-			    and is described below.
+                      <td><a href="#FaNonFilterChunk">Non-filtered dataset chunks</i></a>
                       </td>
                     </tr>
                     <tr>
                       <td align="center"><code>1</code></td>
-                      <td>This is for filtered dataset chunks and
-			is described below.
+                      <td><a href="#FaFilterChunk">Filtered dataset chunks</i></a>
                       </td>
                     </tr>
                 </table>
@@ -16414,7 +16475,7 @@ The last 2 indexes are for a dataset with unlimited maximum dimension sizes.</p>
     </div>
 
     <br />
-    <div align="center" style="background-color:#DDEEEE">
+    <div align="center">
       <table class="format">
         <caption>
           Fixed Array Data Block Page
@@ -16439,7 +16500,7 @@ The last 2 indexes are for a dataset with unlimited maximum dimension sizes.</p>
     </div>
 
     <br />
-    <div align="center" style="background-color:#DDEEEE">
+    <div align="center">
       <table class="desc">
 	<tr>
           <th width="40%">Field Name</th>
@@ -16449,7 +16510,7 @@ The last 2 indexes are for a dataset with unlimited maximum dimension sizes.</p>
 	<tr>
 	  <td>Elements</td>
 	  <td>
-	    <p>This field contains the elements in a Data Block Page.
+	    <p>This field contains the elements stored in the Data Block Page.
 	    There are two element types:
                 <table class="list">
                     <tr>
@@ -16459,14 +16520,12 @@ The last 2 indexes are for a dataset with unlimited maximum dimension sizes.</p>
 
                     <tr>
                       <td align="center"><code>0</code></td>
-                      <td>This is for non-filtered dataset chunks
-			    and is described below.
+                      <td><a href="#FaNonFilterChunk">Non-filtered dataset chunks</i></a>
                       </td>
                     </tr>
                     <tr>
                       <td align="center"><code>1</code></td>
-                      <td>This is for filtered dataset chunks and
-			is described below.
+                      <td><a href="#FaFilterChunk">Filtered dataset chunks</i></a>
                       </td>
                     </tr>
                 </table>
@@ -16485,7 +16544,8 @@ The last 2 indexes are for a dataset with unlimited maximum dimension sizes.</p>
     </div>
 
     <br />
-    <div align="center" style="background-color:#DDEEEE">
+    <a name="FaNonFilterChunk"></a>
+    <div align="center">
       <table class="format">
 	<caption>
 	  Data Block Element for Non-filtered Dataset Chunk
@@ -16504,7 +16564,7 @@ The last 2 indexes are for a dataset with unlimited maximum dimension sizes.</p>
 
       </table>
 
-      <table class="note" style="background-color:#DDEEEE">
+      <table class="note">
         <tr>
             <td width="60%">&nbsp;</td>
             <td width="40%">
@@ -16516,7 +16576,7 @@ The last 2 indexes are for a dataset with unlimited maximum dimension sizes.</p>
     </div>
 
     <br />
-    <div align="center" style="background-color:#DDEEEE">
+    <div align="center">
       <table class="desc">
 	<tr>
           <th width="30%">Field Name</th>
@@ -16535,7 +16595,8 @@ The last 2 indexes are for a dataset with unlimited maximum dimension sizes.</p>
 <!--    </p> -->
 
     <br />
-    <div align="center" style="background-color:#DDEEEE">
+    <a name="FaFilterChunk"></a>
+    <div align="center">
       <table class="format">
 	<caption>
 	  Data Block Element for Filtered Dataset Chunk
@@ -16563,7 +16624,7 @@ The last 2 indexes are for a dataset with unlimited maximum dimension sizes.</p>
 
       </table>
 
-      <table class="note" style="background-color:#DDEEEE">
+      <table class="note">
         <tr>
             <td width="60%">&nbsp;</td>
             <td width="40%">
@@ -16575,7 +16636,7 @@ The last 2 indexes are for a dataset with unlimited maximum dimension sizes.</p>
     </div>
 
     <br />
-    <div align="center" style="background-color:#DDEEEE">
+    <div align="center">
       <table class="desc">
 	<tr>
           <th width="30%">Field Name</th>
@@ -16611,10 +16672,9 @@ The last 2 indexes are for a dataset with unlimited maximum dimension sizes.</p>
 
     <a name="ExtensibleArray">
     <h3>VII.C.4. Extensible Array index</h3>
-    <p style="background-color:#DDEEEE">
     The <i>Extensible Array</i> index is used when the dataset fulfills the following conditions:
     <ul>
-    <li>only 1 unlimited (H5S_UNLIMITED) maximum dimension sizes</li>
+    <li>only 1 unlimited maximum dimension sizes</li>
     <li>filtered or non-filtered</li>
     </ul>
     The Extensible Array is a data structure that is used as a chunk index in
@@ -16632,18 +16692,13 @@ The last 2 indexes are for a dataset with unlimited maximum dimension sizes.</p>
     This idealized internal structure is instantiated as needed when chunk records 
     are inserted into the structure.
     </p>
-    <p style="background-color:#DDEEEE">
-    A description of the logic that lead to the present implementation of the
-    extensible array can be found at <a href="http://www.hdfgroup.org/RFC/RFCs/HDF5/ReviseChunks/skip_lists/SkipListChunkIndex.html">
-    http://www.hdfgroup.org/RFC/RFCs/HDF5/ReviseChunks/skip_lists/SkipListChunkIndex.html</a>.
+    A description of the logic that leads to the present implementation of the
+    extensible array can be found at <a href="https://svn.hdfgroup.org/hdf5doc/trunk/projects/1_10_alpha/ReviseChunks/skip_lists">
+    https://svn.hdfgroup.org/hdf5doc/trunk/projects/1_10_alpha/ReviseChunks/skip_lists</a>.
+
     The current implementation differs from the data structure described in that
     link in some ways, but the basic idea is the same.</p>
-    <p style="background-color:#DDEEEE">
-    ??????? should SkipListChunkIndex.html be published somewhere more 
-    accessible to users? perhaps in the ADGuide.html? in Tech Notes?
-    in Advanced Topics? ???????
     </p>
-    <p style="background-color:#DDEEEE">
     An Extensible Array consists of a Header, an Index Block, Superblocks, Data Blocks,
     and (optional) Data Block Pages.
     The general scheme
@@ -16656,7 +16711,8 @@ The last 2 indexes are for a dataset with unlimited maximum dimension sizes.</p>
     allocated as needed and the first
     few are (conceptually) stored in parent elements as an optimization.
     <br />
-    <div align="center" style="background-color:#DDEEEE">
+    <br />
+    <div align="center">
       <table class="format">
         <caption>
           Extensible Array Header
@@ -16736,7 +16792,7 @@ The last 2 indexes are for a dataset with unlimited maximum dimension sizes.</p>
     </div>
 
     <br />
-    <div align="center" style="background-color:#DDEEEE">
+    <div align="center">
       <table class="desc">
 	<tr>
           <th width="40%">Field Name</th>
@@ -16765,8 +16821,8 @@ The last 2 indexes are for a dataset with unlimited maximum dimension sizes.</p>
 	<tr>
           <td>Client ID</td>
           <td>
-            <p>This is the client ID for identifying the user of the
-                Fixed Array index:
+            <p>This is the ID for identifying the client of the
+                Fixed Array:
 
                 <table class="list">
                     <tr>
@@ -16797,7 +16853,7 @@ The last 2 indexes are for a dataset with unlimited maximum dimension sizes.</p>
         <tr>
           <td>Element Size</td>
 	  <td>
-	    <p>This is the size in bytes of an element in the Extensible Array.
+	    <p>This field is the size in bytes of an element in the Extensible Array.
             </p>
 	  </td>
         </tr>
@@ -16805,22 +16861,22 @@ The last 2 indexes are for a dataset with unlimited maximum dimension sizes.</p>
 	<tr>
 	  <td>Max Nelmts Bits</td>
 	  <td>
-            <p>This field is the number of bits needed to store maximum number of elements in the Extensible Array.</p>
+            <p>This field is the number of bits needed to store the maximum number of elements in the Extensible Array.</p>
           </td>
 	</tr>
 	
 	<tr>
 	  <td>Index Blk Elmts</td>
 	  <td>
-	    <p>This field is the number of elements to store in index block.
+	    <p>This field is the number of elements to store in the index block.
 	    </p>
 	  </td>
 	</tr>
 
 	<tr>
-	  <td>Data Bllk Min Elmts</td>
+	  <td>Data Blk Min Elmts</td>
 	  <td>
-	    <p>This field is the minumum numer of elements per data block.
+	    <p>This field is the minimum number of elements per data block.
 	    </p>
 	  </td>
 	</tr>
@@ -16837,7 +16893,7 @@ The last 2 indexes are for a dataset with unlimited maximum dimension sizes.</p>
 	<tr>
 	  <td>Max Dblk Page Nelmts Bits</td>
 	  <td>
-	    <p>This field is the number of bits needed to store maximum number
+	    <p>This field is the number of bits needed to store the maximum number
 	    of elements in a data block page.
 	    </p>
 	  </td>
@@ -16854,7 +16910,7 @@ The last 2 indexes are for a dataset with unlimited maximum dimension sizes.</p>
 	<tr>
 	  <td>Super Blk Size</td>
 	  <td>
-	    <p>This field is size of superblocks created.
+	    <p>This field is the size of superblocks created.
 	    </p>
 	  </td>
 	</tr>
@@ -16862,7 +16918,7 @@ The last 2 indexes are for a dataset with unlimited maximum dimension sizes.</p>
 	<tr>
 	  <td>Num Data Blks</td>
 	  <td>
-	    <p>This field is number of data blocks created.
+	    <p>This field is the number of data blocks created.
 	    </p>
 	  </td>
 	</tr>
@@ -16870,7 +16926,7 @@ The last 2 indexes are for a dataset with unlimited maximum dimension sizes.</p>
 	<tr>
 	  <td>Data Blk Size</td>
 	  <td>
-	    <p>This field is size of data blocks created.
+	    <p>This field is the size of the data blocks created.
 	    </p>
 	  </td>
 	</tr>
@@ -16878,7 +16934,7 @@ The last 2 indexes are for a dataset with unlimited maximum dimension sizes.</p>
 	<tr>
 	  <td>Max Index Set</td>
 	  <td>
-	    <p>This field is maximum index set.
+	    <p>This field is the maximum index set.
 	    </p>
 	  </td>
 	</tr>
@@ -16886,7 +16942,7 @@ The last 2 indexes are for a dataset with unlimited maximum dimension sizes.</p>
 	<tr>
 	  <td>Num Elmts</td>
 	  <td>
-	    <p>This field is number of elements realized.
+	    <p>This field is the number of elements realized.
 	    </p>
 	  </td>
 	</tr>
@@ -16910,7 +16966,7 @@ The last 2 indexes are for a dataset with unlimited maximum dimension sizes.</p>
     </div>
 
     <br />
-    <div align="center" style="background-color:#DDEEEE">
+    <div align="center">
       <table class="format">
         <caption>
           Extensible Array Index Block
@@ -16938,7 +16994,7 @@ The last 2 indexes are for a dataset with unlimited maximum dimension sizes.</p>
         </tr>
 
         <tr>
-          <td colspan="4"><br />Index Block Elements<em>(variable size and optional)</em><br /><br /></td>
+          <td colspan="4"><br />Elements<em>(variable size and optional)</em><br /><br /></td>
         </tr>
 
         <tr>
@@ -16968,7 +17024,7 @@ The last 2 indexes are for a dataset with unlimited maximum dimension sizes.</p>
     </div>
 
     <br />
-    <div align="center" style="background-color:#DDEEEE">
+    <div align="center">
       <table class="desc">
 	<tr>
           <th width="40%">Field Name</th>
@@ -17035,9 +17091,9 @@ The last 2 indexes are for a dataset with unlimited maximum dimension sizes.</p>
         </tr>
 
 	<tr>
-	  <td>Index Block Elements</td>
+	  <td>Elements</td>
 	  <td>
-	    <p>This field contains elements that are encoded directly in 
+	    <p>This field contains the elements that are stored directly in 
         the index block. This is an optimization to avoid unnecessary 
         superblocks. 
         <br />
@@ -17051,14 +17107,12 @@ The last 2 indexes are for a dataset with unlimited maximum dimension sizes.</p>
 
                     <tr>
                       <td align="center"><code>0</code></td>
-                      <td>This is for non-filtered dataset chunks
-                        and is described below.
+                      <td><a href="#EaNonFilterChunk">Non-filtered dataset chunks</i></a>
                       </td>
                     </tr>
                     <tr>
                       <td align="center"><code>1</code></td>
-                      <td>This is for filtered dataset chunks and
-                        is described below.
+                      <td><a href="#EaFilterChunk">Filtered dataset chunks</i></a>
                       </td>
                     </tr>
                 </table>
@@ -17069,9 +17123,9 @@ The last 2 indexes are for a dataset with unlimited maximum dimension sizes.</p>
         <tr>
           <td>Data Block Addresses</td>
           <td>
-            <p>This field contains addresses of data blocks stored in 
-            the Index Block (instead of via a superblock). This is 
-            an optimization to avoid unnecessary superblocks.</p>
+            <p>This field contains the addresses of the data blocks that are stored directly 
+            in the Index Block.
+            This is an optimization to avoid unnecessary superblocks.</p>
           </td>
         </tr>
 
@@ -17093,7 +17147,7 @@ The last 2 indexes are for a dataset with unlimited maximum dimension sizes.</p>
     </div>
 
     <br />
-    <div align="center" style="background-color:#DDEEEE">
+    <div align="center">
       <table class="format">
         <caption>
           Extensible Array Superblock
@@ -17125,7 +17179,7 @@ The last 2 indexes are for a dataset with unlimited maximum dimension sizes.</p>
         </tr>
 
         <tr>
-          <td colspan="4"><br />Page Bit Masks<br /><em>(variable size and optional)</em><br /><br /></td>
+          <td colspan="4"><br />Page Bitmap<br /><em>(variable size and optional)</em><br /><br /></td>
         </tr>
 
         <tr>
@@ -17151,7 +17205,7 @@ The last 2 indexes are for a dataset with unlimited maximum dimension sizes.</p>
     </div>
 
     <br />
-    <div align="center" style="background-color:#DDEEEE">
+    <div align="center">
       <table class="desc">
 	<tr>
           <th width="40%">Field Name</th>
@@ -17180,7 +17234,7 @@ The last 2 indexes are for a dataset with unlimited maximum dimension sizes.</p>
 	<tr>
           <td>Client ID</td>
           <td>
-            <p>This is the client ID for identifying the user of the
+            <p>This is the ID for identifying the client of the
                 Extensible Array:
 
                 <table class="list">
@@ -17220,25 +17274,25 @@ The last 2 indexes are for a dataset with unlimited maximum dimension sizes.</p>
         <tr>
           <td>Block Offset</td>
 	  <td>
-	    <p>This field stores the offset of the block in the array.
+	    <p>This field is the offset of the block in the array.
             </p>
 	  </td>
         </tr>
 
 	<tr>
-	  <td>Page Bit Masks</td>
+	  <td>Page Bitmap</td>
 	  <td>
-            <p>This field contains the bit masks indicating whether a 
-            data block page is initialized or not.  There is one bit 
-            mask per data block address. This field exists only if the 
-            data blocks are large enough to be paged.
+            <p>This field is a bitmap indicating which
+            Data Block pages are initialized.
+	    <p>
+	    This field exists only if the Data Block is paged.
           </td>
 	</tr>
 	
         <tr>
           <td>Data Block Addresses</td>
           <td>
-            <p>This field contains addresses of the data blocks 
+            <p>This field contains the addresses of the data blocks 
             referenced by this superblock.</p>
           </td>
         </tr>
@@ -17254,7 +17308,7 @@ The last 2 indexes are for a dataset with unlimited maximum dimension sizes.</p>
     </div>
 
     <br />
-    <div align="center" style="background-color:#DDEEEE">
+    <div align="center">
       <table class="format">
         <caption>
           Extensible Array Data Block
@@ -17286,7 +17340,7 @@ The last 2 indexes are for a dataset with unlimited maximum dimension sizes.</p>
         </tr>
 
         <tr>
-          <td colspan="4"><br />Data Block Elements<em>(variable size and optional)</em><br /><br /></td>
+          <td colspan="4"><br />Elements<em>(variable size and optional)</em><br /><br /></td>
         </tr>
 
         <tr>
@@ -17308,7 +17362,7 @@ The last 2 indexes are for a dataset with unlimited maximum dimension sizes.</p>
     </div>
 
     <br />
-    <div align="center" style="background-color:#DDEEEE">
+    <div align="center">
       <table class="desc">
 	<tr>
           <th width="40%">Field Name</th>
@@ -17337,7 +17391,7 @@ The last 2 indexes are for a dataset with unlimited maximum dimension sizes.</p>
 	<tr>
           <td>Client ID</td>
           <td>
-            <p>This is the client ID for identifying the user of the
+            <p>This is the ID for identifying the client of the
                 Extensible Array:
 
                 <table class="list">
@@ -17378,15 +17432,15 @@ The last 2 indexes are for a dataset with unlimited maximum dimension sizes.</p>
 	<tr>
 	  <td>Block Offset</td>
 	  <td>
-            <p>This field is the offset of the data block in the array.
+            <p>This field is the offset of the block in the array.
           </td>
 	</tr>
 	
 	<tr>
-	  <td>Data Block Elements</td>
+	  <td>Elements</td>
 	  <td>
-	    <p>This field contains the elements in a Data Block.
-        It only exists if the Data Block is unpaged.
+	    <p>This field contains the elements stored in the Data Block and
+		exists only if the Data Block is not paged.
         <br />
         <br />
 	    There are two element types:
@@ -17398,14 +17452,12 @@ The last 2 indexes are for a dataset with unlimited maximum dimension sizes.</p>
 
                     <tr>
                       <td align="center"><code>0</code></td>
-                      <td>This is for non-filtered dataset chunks
-			    and is described below.
+                      <td><a href="#EaNonFilterChunk">Non-filtered dataset chunks</i></a>
                       </td>
                     </tr>
                     <tr>
                       <td align="center"><code>1</code></td>
-                      <td>This is for filtered dataset chunks and
-			is described below.
+                      <td><a href="#EaFilterChunk">Filtered dataset chunks</i></a>
                       </td>
                     </tr>
                 </table>
@@ -17423,7 +17475,7 @@ The last 2 indexes are for a dataset with unlimited maximum dimension sizes.</p>
       </table>
     </div>
           <br />
-    <div align="center" style="background-color:#DDEEEE">
+    <div align="center">
       <table class="format">
         <caption>
           Extensible Array Data Block Page
@@ -17448,7 +17500,7 @@ The last 2 indexes are for a dataset with unlimited maximum dimension sizes.</p>
     </div>
 
     <br />
-    <div align="center" style="background-color:#DDEEEE">
+    <div align="center">
       <table class="desc">
 	<tr>
           <th width="40%">Field Name</th>
@@ -17458,7 +17510,7 @@ The last 2 indexes are for a dataset with unlimited maximum dimension sizes.</p>
 	<tr>
 	  <td>Elements</td>
 	  <td>
-	    <p>This field contains the elements in a Data Block Page.</p>
+	    <p>This field contains the elements stored in the Data Block Page.</p>
         <p>
 	    There are two element types:
                 <table class="list">
@@ -17469,14 +17521,12 @@ The last 2 indexes are for a dataset with unlimited maximum dimension sizes.</p>
 
                     <tr>
                       <td align="center"><code>0</code></td>
-                      <td>This is for non-filtered dataset chunks
-			    and is described below.
+                      <td><a href="#EaNonFilterChunk">Non-filtered dataset chunks</i></a>
                       </td>
                     </tr>
                     <tr>
                       <td align="center"><code>1</code></td>
-                      <td>This is for filtered dataset chunks and
-			is described below.
+                      <td><a href="#EaFilterChunk">Filtered dataset chunks</i></a>
                       </td>
                     </tr>
                 </table>
@@ -17495,7 +17545,8 @@ The last 2 indexes are for a dataset with unlimited maximum dimension sizes.</p>
     </div>
 
     <br />
-    <div align="center" style="background-color:#DDEEEE">
+    <a name="EaNonFilterChunk"></a>
+    <div align="center">
       <table class="format">
 	<caption>
 	  Data Block Element for Non-filtered Dataset Chunk
@@ -17514,7 +17565,7 @@ The last 2 indexes are for a dataset with unlimited maximum dimension sizes.</p>
 
       </table>
 
-      <table class="note" style="background-color:#DDEEEE">
+      <table class="note">
         <tr><td>
         <tr>
             <td width="60%">&nbsp;</td>
@@ -17527,7 +17578,7 @@ The last 2 indexes are for a dataset with unlimited maximum dimension sizes.</p>
     </div>
 
     <br />
-    <div align="center" style="background-color:#DDEEEE">
+    <div align="center">
       <table class="desc">
 	<tr>
           <th width="30%">Field Name</th>
@@ -17546,7 +17597,8 @@ The last 2 indexes are for a dataset with unlimited maximum dimension sizes.</p>
     </p>
 
     <br />
-    <div align="center" style="background-color:#DDEEEE">
+    <a name="EaFilterChunk"></a>
+    <div align="center">
       <table class="format">
 	<caption>
 	  Data Block Element for Filtered Dataset Chunk
@@ -17574,7 +17626,7 @@ The last 2 indexes are for a dataset with unlimited maximum dimension sizes.</p>
 
       </table>
 
-      <table class="note" style="background-color:#DDEEEE">
+      <table class="note">
         <tr>
             <td width="60%">&nbsp;</td>
             <td width="40%">
@@ -17586,7 +17638,7 @@ The last 2 indexes are for a dataset with unlimited maximum dimension sizes.</p>
     </div>
 
     <br />
-    <div align="center" style="background-color:#DDEEEE">
+    <div align="center">
       <table class="desc">
 	<tr>
           <th width="30%">Field Name</th>
@@ -17622,21 +17674,162 @@ The last 2 indexes are for a dataset with unlimited maximum dimension sizes.</p>
 
     <a name="AppendV2Btrees">
     <h3>VII.C.5. Version 2 B-trees index</h3>
-<p style="background-color:#DDEEEE">
+    <p> 
     The <i>Version 2 B-trees</i> index is used when the dataset fulfills the following conditions:
-    <ul style="background-color:#DDEEEE">
-    <li>more than 1 unlimited (H5S_UNLIMITED) maximum dimension sizes</li>
+    <ul>
+    <li>more than 1 unlimited maximum dimension sizes</li>
     <li>filtered or non-filtered</li>
     </ul>
-<p style="background-color:#DDEEEE">
+    <p>
     The version 2 B-trees is used to index various objects in the library.
     See detailed description in <a href="#V2Btrees">Version 2 B-tree</a>.
-    The tree type #10 and #11 record layout are for indexing dataset chunks.
+    The tree type <a href="#V2BtType10">10</a> and <a href="#V2BtType11">11</a> record layouts are 
+    for indexing dataset chunks.
 
 <br />
 
 <p style="background-color:#ff9999">change for 1.10</p>
-<h2><a name="AppendixD"> VII. Appendix D</a>: Virtual Dataset/Global Heap???</h2>
+<h2><a name="AppendixD"> VII. Appendix D</a>: Virtual Dataset Global Heap Block</h2>
+WORK IN PROGRESS
+
+    <br />
+    <div align="center">
+      <table class="format">
+        <caption>
+          Virtual Dataset Global Heap Block
+        </caption>
+
+        <tr>
+          <th>byte</th>
+          <th>byte</th>
+          <th>byte</th>
+          <th>byte</th>
+        </tr>
+
+        <tr>
+          <td>Version</td>
+          <td colspan="3" bgcolor="#DDDDDD"><em>This space inserted only to align table nicely</em></td>
+        </tr>
+
+        <tr>
+          <td colspan="4"><br />Num Entries<sup>L</sup><br /><br /></td>
+        </tr>
+
+        <tr>
+          <td colspan="4"><br />Source Filename #1<em>(variable size)</em><br /><br /></td>
+        </tr>
+
+        <tr>
+          <td colspan="4"><br />Source Dataset #1<br /><em>(variable size)</em><br /><br /></td>
+        </tr>
+
+        <tr>
+          <td colspan="4"><br />Source Selection #1<br /><em>(variable size)</em><br /><br /></td>
+        </tr>
+
+        <tr>
+          <td colspan="4"><br />Virtual Selection #1<br /><em>(variable size)</em><br /><br /></td>
+        </tr>
+
+	<tr>
+	  <td colspan="4">.<br />.<br />.<br /></td>
+	</tr>
+
+        <tr>
+          <td colspan="4"><br />Source Filename #n<br /><em>(variable size)</em><br /><br /></td>
+        </tr>
+
+        <tr>
+          <td colspan="4"><br />Source Dataset #n<br /><em>(variable size)</em><br /><br /></td>
+        </tr>
+
+        <tr>
+          <td colspan="4"><br />Source Selection #n<br /><em>(variable size)</em><br /><br /></td>
+        </tr>
+
+        <tr>
+          <td colspan="4"><br />Virtual Selection #n<br /><em>(variable size)</em><br /><br /></td>
+        </tr>
+
+        <tr>
+          <td colspan="4">Checksum</td>
+        </tr>
+
+      </table>
+
+      <table class="note">
+        <tr>
+            <td width="60%">&nbsp;</td>
+            <td width="40%">
+            (Items marked with an &lsquo;L&rsquo; in the above table are
+            of the size specified in the <a href="#SizeOfLengthsV0">Size 
+            of Lengths</a> field in the superblock.)
+            </td></tr>
+      </table>
+
+    </div>
+
+    <br />
+    <div align="center">
+      <table class="desc">
+	<tr>
+          <th width="40%">Field Name</th>
+          <th>Description</th>
+        </tr>
+
+        <tr>
+          <td>Version</td>
+          <td>
+            <p>This document describes version 0.</p>
+          </td>
+        </tr>
+
+	<tr>
+          <td>Num Entries</td>
+          <td>
+	    This is the number of entries in the block.
+          </td>
+        </tr>
+
+        <tr>
+          <td>Source Filename #n</td>
+	  <td>
+	    <p>This is source file name where the source dataset is located.
+            </p>
+	  </td>
+        </tr>
+
+	<tr>
+	  <td>Source Dataset #n</td>
+	  <td>This is the source dataset name that is mapped to the virtual dataset.
+	  </td>
+	</tr>
+	
+	<tr>
+	  <td>Source Selection #n</td>
+	  <td>
+	    <p>This is the dataspace selection in the source dataset that is mapped to the virtual selection.
+	    </p>
+	  </td>
+	</tr>
+
+	<tr>
+	  <td>Virtual Selection #n</td>
+	  <td>
+	    <p>This is the dataspace selection in the virtual dataset that is mapped to the source selection.
+	    </p>
+	  </td>
+	</tr>
+
+        <tr>
+          <td>Checksum</td>
+          <td>
+            <p>This is the checksum for the block.</p>
+          </td>
+        </tr>
+
+      </table>
+    </div>
 
 <!-- #BeginLibraryItem "/ed_libs/NavBar_ADevG.lbi" -->
 <hr />
