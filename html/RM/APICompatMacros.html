@@ -136,12 +136,12 @@ or 1.10.x functions.
 We refer to these as the <em>API compatibility macros</em>.
 <p>
 The HDF Group generally encourages users to update applications 
-to work with the latest HDF5 Library release, so that 
+to work with the latest HDF5 Library release so that 
 all new features and enhancements are available to them.
-At the same time, The HDF Group understands that under some circumstances
+At the same time, The HDF Group understands that, under some circumstances,
 updating applications may not be feasible or necessary.
 The API compatibility macros, described in this document,
-provide a bridge from old APIs to new, 
+provide a bridge from old APIs to new 
 and can be particularly helpful in situations such as these:
 <ul>
     <li>Source code is not available - only binaries are available;
@@ -251,25 +251,56 @@ a combination of user-controlled selections,
 collectively referred to as the 
 <em>compatibility macro mapping options</em>,
 is considered in the following sequence:
+
+<table border="0" width="100%">
+<tr><td width="50%" valign="top">
+
 <ol>
   <li> What compatibility macro configuration option was used to
        build the HDF5 Library?  
        We refer to this selection as the <em>library mapping</em>.
 
-  <p>
+  <br />&nbsp;
   <li> Was a compatibility macro global compile-time option specified
        when the application was built?
        We refer to this (optional) selection as the 
        <em>application mapping</em>.  
-       If an application mapping exists, it overrides the library mapping.
+       If an application mapping exists, it overrides the library 
+       mapping. 
+       <i>(See adjacent <a href="#KnownLimitation">notes</a>.)</i>
 
-  <p>
+  <br />&nbsp;
   <li> Were any compatibility macro function-level compile-time options
        specified when the application was built?  
        We refer to these (optional) selections as <em>function mappings</em>.
        If function mappings exist, they override library and application
        mappings for the relevant API compatibility macros.
+       <i>(See adjacent <a href="#KnownLimitation">notes</a>.)</i>
 </ol>
+
+</td><td width="50%" valign="top">
+
+<table border="1" cellpadding="10" width="100%">
+<tr><td>
+<a name="KnownLimitation"><b>Notes:</b></a>
+       An application mapping can map APIs to the same version 
+       or to a version older than the configured library mapping. 
+       When the application attempts to map APIs to a newer version of 
+       the API than the library was configured with, it will fail to 
+       &ldquo;upgrade&rdquo; the mapping
+       (and may fail silently). 
+       <p>
+       When it is necessary to &ldquo;upgrade&rdquo; the macro mappings
+       from those set in the library mapping, it must be done at 
+       the per-function level, using the function-level mappings. 
+       As long as one does not try to map a function to a version 
+       that was compiled out in the library mapping, 
+       individual functions can be upgraded or downgraded freely. 
+</td></tr>
+</table>
+
+</td></tr>
+</table>
 
 
 <p>
@@ -320,8 +351,8 @@ the library.
     <tr align=center>
       <td align=left>
         <code>--with-default-api-version=v110</code>
-        <p>
-        <em>Also, default behavior if no flag specified.</em>
+        <br />
+        <em>Default&nbsp;behavior&nbsp;if&nbsp;no&nbsp;flag&nbsp;is&nbsp;specified.</em>
       <td>
         1.10.x 
         <br>(<code>H5Rdereference2</code>)
@@ -333,6 +364,15 @@ the library.
         <code>--with-default-api-version=v18</code>
       <td>
         1.8.x 
+        <br>(<code>H5Rdereference1</code>)
+      <td>
+        yes
+
+    <tr align=center>
+      <td align=left>
+        <code>--with-default-api-version=v16</code>
+      <td>
+        1.6.x 
         <br>(<code>H5Rdereference1</code>)
       <td>
         yes
@@ -411,6 +451,16 @@ application mapping options.
         <code>-DH5_USE_18_API</code>
       <td>
         1.8.x 
+        <br>(<code>H5Rdereference1</code>)
+      <td>
+        yes*
+        <br><em>*if available in library</em>
+
+    <tr align=center>
+      <td align=left>
+        <code>-DH5_USE_16_API</code>
+      <td>
+        1.6.x 
         <br>(<code>H5Rdereference1</code>)
       <td>
         yes*
@@ -524,23 +574,15 @@ these are the only macros you need to worry about.
     <tr> 
       <td rowspan="2"><code>H5Fget_info</code> </td>
         <td><code>-DH5Fget_info_vers=1</code></td>
-        <td><code>H5Fget_info1</code></td>
+        <td><code>H5Fget_info1</code>
+            <br />
+            with struct <code>H5F_info1_t</code></td>
     </tr>
     <tr> 
         <td><code>-DH5Fget_info_vers=2</code></td>
-        <td><code>H5Fget_info2</code></td>
-    </tr>
-
-    <tr> 
-      <td rowspan="2"><code>H5F_info_t</code> 
-        <br />
-        <i>Struct for <code>H5Fget_info</code></i></td>
-        <td><code>-DH5F_info_t_vers=1</code></td>
-        <td><code>H5F_info1_t</code></td>
-    </tr>
-    <tr> 
-        <td><code>-DH5F_info_t_vers=2</code></td>
-        <td><code>H5F_info2_t</code></td>
+        <td><code>H5Fget_info2</code>
+            <br />
+            with struct <code>H5F_info2_t</code></td>
     </tr>
     </table>
 </div>
@@ -582,9 +624,13 @@ you must also consider these macros and mapping options.
       <td rowspan="2"><code>H5Aiterate</code> 
         <td><code>-DH5Aiterate_vers=1</code>
         <td><code>H5Aiterate1</code>
+            <br />
+            with struct <code>H5A_operator1_t</code></td>
     <tr> 
         <td><code>-DH5Aiterate_vers=2</code>
         <td><code>H5Aiterate2</code>
+            <br />
+            with struct <code>H5A_operator2_t</code></td>
 
     <tr> 
       <td rowspan="2"><code>H5Dcreate</code> 
@@ -643,12 +689,32 @@ you must also consider these macros and mapping options.
         <td><code>H5Eget_auto2</code>
 
     <tr> 
+      <td rowspan="2"><code>H5E_auto_t</code>
+            <br />
+            Struct for <code>H5Eset_auto</code> 
+            <br />
+            and <code>H5Eget_auto</code> 
+        <td><code>-DH5E_auto_t_vers=1</code>
+        <td><code>H5E_auto1_t</code>
+    <tr> 
+        <td><code>-DH5E_auto_t_vers=2</code>
+        <td><code>H5E_auto2_t</code>
+
+    <tr> 
       <td rowspan="2"><code>H5Ewalk</code> 
         <td><code>-DH5Ewalk_vers=1</code>
         <td><code>H5Ewalk1</code>
+            <br />
+            with callback <code>H5E_walk1_t</code>
+            <br />
+            and struct <code>H5E_error1_t</code></td>
     <tr> 
         <td><code>-DH5Ewalk_vers=2</code>
         <td><code>H5Ewalk2</code>
+            <br />
+            with callback <code>H5E_walk2_t</code>
+            <br />
+            and struct <code>H5E_error2_t</code></td>
 
     <tr> 
       <td rowspan="2"><code>H5Gcreate</code> 
@@ -737,6 +803,16 @@ you must also consider these macros and mapping options.
     <tr> 
         <td><code>-DH5Topen_vers=2</code>
         <td><code>H5Topen2</code>
+
+    <tr> 
+      <td rowspan="2"><code>H5Z_class_t</code> 
+            <br \>
+            Struct for <code>H5Zregister</code>
+        <td><code>-DH5Z_class_t_vers=1</code>
+        <td><code>H5Z_class1_t</code>
+    <tr> 
+        <td><code>-DH5Z_class_t_vers=2</code>
+        <td><code>H5Z_class2_t</code>
 </table>
 </div>
 
@@ -750,16 +826,13 @@ in question was written for a 1.6.x version of HDF5).
 It is possible to specify multiple function mappings for a single 
 application build:
 <ul>
-<code> h5cc ... -DH5Rdereference_vers=1 -DH5Fget_info_vers=2
-            -DH5F_info_t_vers=2 ...</code>
+<code> h5cc ... -DH5Rdereference_vers=1 -DH5Fget_info_vers=2 ...</code>
 </ul>
 As a result of the function and struct mappings in this compile example, 
 all occurrences of the macro <code>H5Rdereference</code> 
-will be mapped to <code>H5Rdereference1</code>, 
+will be mapped to <code>H5Rdereference1</code> and 
 all occurrences of the macro <code>H5Fget_info</code> 
-will be mapped to <code>H5Fget_info2</code>, and
-all occurrences of the macro <code>H5F_info_t</code> 
-will be mapped to the struct <code>H5F_info2_t</code>
+will be mapped to <code>H5Fget_info2</code>
 for the application being built.  
 <p>
 The function and struct mappings can be used to guarantee that a given
@@ -799,8 +872,8 @@ to be copied to multiple applications or when writing code in a header file.
 <h3>Compatibility Macros in HDF5 1.6.8 and Later</h3>
 A series of similar compatibility macros were introduced into
 the release 1.6 series of the library, starting with release 1.6.8.
-These macros simply alias the &lsquo;1&rsquo; version functions listed above,
-as well as the typedefs not listed, to their original non-numbered names.
+These macros simply alias the &lsquo;1&rsquo; version functions, callbacks, 
+and typedefs listed above to their original non-numbered names.
 <p>
 These macros were strictly a forward-looking feature at that time; 
 they were not necessary for compatibility in 1.6.x.
@@ -930,7 +1003,7 @@ In the
 
 <SCRIPT LANGUAGE="JAVASCRIPT">
 <!--
-document.writeln("Last modified: 10 March 2016");
+document.writeln("Last modified: 15 March 2016");
 -->
 </SCRIPT>
 
