@@ -1,7 +1,7 @@
 <html>
   <head>
     <title>
-      HDF5 File Format Specification Version 2.0
+      HDF5 File Format Specification Version 3.0
     </title>
 
 <style>
@@ -11,33 +11,40 @@ h1 {    display: block;
         margin-left: 0px;
         margin-right: 0px;
         text-indent: 0px;
+        font-size: 300%;
         }
 
 h2 {    display: block;
-        margin-top: 8px;
+        margin-top: 60px;
         margin-bottom: 8px;
         margin-left: 0px;
         margin-right: 0px;
         text-indent: 0px;
+        border-style: solid;
+        border-top-style: medium;
+        border-top-color: #A9A9A9;
+        border-bottom: none;
+        border-left: none;
+        border-right: none;
+        font-size: 250%;
         }
-<!-- A horizontal rule (<hr />) should be placed on the line above 
-each h2 tag. The h2 tags are used on the main sections along with 
-the hr tags. -->
 
 h3 {    display: block;
-        margin-top: 8px;
+        margin-top: 40px;
         margin-bottom: 8px;
         margin-left: 0px;
         margin-right: 0px;
         text-indent: 0px;
+        font-size: 200%;
         }
 
 h4 {    display: block;
-        margin-top: 8px;
+        margin-top: 32px;
         margin-bottom: 8px;
         margin-left: 0px;
         margin-right: 0px;
         text-indent: 0px;
+        font-size: 150%;
         }
 
 p { display: block;
@@ -46,6 +53,7 @@ p { display: block;
     margin-left: 0px;
     margin-right: 0px;
     text-indent: 0px;
+    font-size: 100%;
     }
 <!-- 
 p.item {    margin-left: 2em; 
@@ -199,7 +207,7 @@ div {   page-break-inside:avoid;
 <!-- #EndLibraryItem -->
 
 <center>
-<h1>HDF5 File Format Specification Version 2.0</h1>
+<h1>HDF5 File Format Specification Version 3.0</h1>
 </center>
 
     <center>
@@ -231,7 +239,7 @@ div {   page-break-inside:avoid;
         Nodes</a></li>
 	    <ol type="1">
               <li><a href="#V1Btrees">Disk Format: Level 1A1 - Version 1 
-                B-trees (B-link Trees)</a></li>
+                B-trees</a></li>
     <p style="background-color:#ff9999">change for 1.10</p>
               <li><a href="#V2Btrees">Disk Format: Level 1A2 - Version 2 
                 B-trees</a></li>
@@ -347,9 +355,15 @@ div {   page-break-inside:avoid;
 
 
 
-<br />
-<br />
-<hr />
+<!--
+<h1>test h1</h1>
+<h2>test h2</h2>
+<h3>test h3</h3>
+<h4>test h4</h4>
+-->
+
+
+
 <a name="Intro"><h2>I. Introduction</h2></a>
 
     <table align="right" width="100">
@@ -405,13 +419,12 @@ div {   page-break-inside:avoid;
       object header that contains a message that points to a local 
       heap (for storing the links to objects in the group) and to a 
       B-tree (which indexes the links). A dataset is an object header 
-      that contains messages that describe datatype, dataspace, layout, 
-      filters, external files, fill value, and other elements with the 
-      layout message pointing to either a raw data chunk or to a 
-      B-tree that points to raw data chunks.</p>
+      that contains messages that describe the datatype, dataspace, 
+      layout, filters, external files, fill value, and other elements 
+      with the layout message pointing to either a raw data chunk or 
+      to a B-tree that points to raw data chunks.</p>
 
 
-<br />
 <a name="ThisDocument"><h3>I.A. This Document</h3></a>
 
     <p>This document describes the lower-level data objects;
@@ -422,23 +435,37 @@ div {   page-break-inside:avoid;
       Level 0 contains basic information for identifying and
       defining information about the file.  Level 1 information contains
       the information about the pieces of a file shared by many objects
-      in the file (such as a B-trees and heaps).  Level 2 is the rest 
-      of the file and contains all of the data objects, with each object
+      in the file (such as B-trees and heaps).  Level 2 is the rest 
+      of the file and contains all of the data objects with each object
       partitioned into header information, also known as 
       <em>metadata</em>, and data.</p>
+    
+    <p>The various components of the lower-level data objects are 
+    described in pairs of tables. The first table shows the format 
+    layout, and the second table describes the fields. The titles 
+    of format layout tables begin with &ldquo;Layout&rdquo;. The 
+    titles of the tables where the fields are described begin with 
+    &ldquo;Fields&rdquo;. For example, the table that describes the 
+    format of the <a href="#V2Btrees">version 2 B-tree header</a> has 
+    a title of &ldquo;Layout: Version 2 B-tree Header&rdquo;, and the 
+    fields in the version 2 B-tree header are described in the table 
+    titled &ldquo;Fields: Version 2 B-tree Header&rdquo;.
 
     <p>The sizes of various fields in the following layout tables are
       determined by looking at the number of columns the field spans
-      in the table.  There are three exceptions: (1) The size may be
-      overridden by specifying a size in parentheses, (2) the size of
-      addresses is determined by the 
-      <em><a href="#SizeOfOffsetsV0">Size of Offsets</a></em> field
+      in the table.  There are exceptions: </p>
+      <ul>
+      <li> The size may be overridden by specifying a size in 
+      parentheses</li>
+      <li> The size of addresses is determined by the 
+      <em><a href="#SizeOfOffsetsV0">Size of Offsets</a></em> field 
       in the superblock and is indicated in this document with a
-      superscripted &lsquo;O&rsquo;, and (3) the size of length fields 
-      is determined by the 
+      superscripted &lsquo;O&rsquo;</li>
+      <li> The size of length fields is determined by the 
       <em><a href="#SizeOfLengthsV0">Size of Lengths</a></em> field in 
-      the superblock and is 
-      indicated in this document with a superscripted &lsquo;L&rsquo;.</p>
+      the superblock and is indicated in this document with a 
+      superscripted &lsquo;L&rsquo;</li>
+      </ul>
 
     <p>Values for all fields in this document should be treated as unsigned
       integers, unless otherwise noted in the description of a field.
@@ -455,17 +482,16 @@ div {   page-break-inside:avoid;
       numbered from the lowest bit position in the entry.
     </p>
 
-    <p>Various tables in this document aligned with &ldquo;This space inserted
-        only to align table nicely&rdquo;.  These entries in the table are just
-        to make the table presentation nicer and do not represent any values
-        or padding in the file.
+    <p>Various format tables in this document have cells with 
+    &ldquo;This space inserted only to align table nicely&rdquo;. These 
+    entries in the table are just to make the table presentation nicer 
+    and do not represent any values or padding in the file.
     </p>
 
-
-<br />
+<br /> <!-- remove br tag when change for 1.10 lines are removed -->
     <p style="background-color:#ff9999">change for 1.10</p>
-<a name="ChangesForHdf5_1_10" style="background-color:#DDEEEE"><h3>
-I.B. Changes for HDF5 1.10</h3></a>
+<a name="ChangesForHdf5_1_10" style="background-color:#DDEEEE">
+<h3>I.B. Changes for HDF5 1.10</h3></a>
 
     <p style="background-color:#DDEEEE">As of January 2016, changes in 
     the file format for HDF5 1.10 have not yet been finalized.</p>
@@ -505,13 +531,11 @@ I.B. Changes for HDF5 1.10</h3></a>
 
 
 
-<br />
-<br />
-<hr />
 <h2><a name="FileMetaData">
 II. Disk Format: Level 0 - File Metadata</a></h2>
 
-<br />
+
+
 <h3><a name="Superblock">
 II.A. Disk Format: Level 0A - Format Signature and Superblock</a></h3>
 
@@ -536,30 +560,28 @@ II.A. Disk Format: Level 0A - Format Signature and Superblock</a></h3>
 <p style="background-color:#DDEEEE">
       Currently, there are four versions of the superblock format:
       <ul style="background-color:#DDEEEE">
-      <li>
-      Version 0 is the default format.
-      <li>
-      Version 1 is the same
-      as version 0 but with the "<em>Indexed Storage Internal Node K</em>"  field
-      for storing non-default B-tree &lsquo;K&rsquo; value.  
-      <li>
-      Version 2 has some fields eliminated and compressed from superblock format versions 0 and 1.
-      It has added checksum support and superblock extension to store
-      additional superblock metadata.
-      <li>
-      Version 3 is the same as version 2 except that the field "<em>File Consistency Flags</em>" 
-      is used for file locking.
-      This format version will enable the latest version support.</p>
+      <li>Version 0 is the default format.</li>
+      <li>Version 1 is the same as version 0 but with the 
+      &ldquo;<em>Indexed Storage Internal Node K</em>&rdquo; field 
+      for storing non-default B-tree &lsquo;K&rsquo; value.</li>
+      <li>Version 2 has some fields eliminated and compressed from 
+      superblock format versions 0 and 1. It has added checksum support 
+      and superblock extension to store additional superblock 
+      metadata.</li>
+      <li>Version 3 is the same as version 2 except that the field 
+      &ldquo;<em>File Consistency Flags</em>&rdquo; is used for file 
+      locking. This format version will enable support for the latest 
+      version.</li>
       </ul>
 
-    <p>Version 0 and 1 of the superblock are described below:</p>
+    <p>Versions 0 and 1 of the superblock are described below:</p>
 
     
     <div align="center">
       <table class="format">
-	<caption>
-	  Superblock (Versions 0 and 1)
-	</caption>
+    <caption>
+        Layout: Superblock (Versions 0 and 1)
+    </caption>
 
 	<tr>
 	  <th>byte</th>
@@ -641,6 +663,9 @@ II.A. Disk Format: Level 0A - Format Signature and Superblock</a></h3>
     <br />
     <div align="center">
       <table class="desc">
+    <caption>
+        Fields: Superblock (Versions 0 and 1)
+    </caption>
 	<tr>
           <th width="30%">Field Name</th>
           <th>Description</th>
@@ -722,8 +747,8 @@ II.A. Disk Format: Level 0A - Format Signature and Superblock</a></h3>
 	    determine how the information in the superblock is
 	    formatted.</p>
 
-            <p>Values of 0, 1 and 2 are defined for this field.  (The format
-            of version 2 is described below, not here)
+            <p>Values of 0, 1 and 2 are defined for this field (the 
+            format of version 2 is described below, not here).
             </p>
 
             <p><em>This field is present in version 0+ of the superblock.</em>
@@ -955,14 +980,17 @@ II.A. Disk Format: Level 0A - Format Signature and Superblock</a></h3>
     </div>
 
     <br />
+    <br />
+    <br />
 <p style="background-color:#ff9999">change for 1.10</p>
-    <p style="background-color:#DDEEEE">Version 2 and 3 of the superblock is described below:</p>
+    <p style="background-color:#DDEEEE">
+    Versions 2 and 3 of the superblock are described below:</p>
 
     <div align="center">
       <table class="format">
-	<caption style="background-color:#DDEEEE">
-	  Superblock (Version 2 and 3)
-	</caption>
+    <caption style="background-color:#DDEEEE">
+        Layout: Superblock (Versions 2 and 3)
+    </caption>
 
 	<tr>
 	  <th>byte</th>
@@ -1018,6 +1046,9 @@ II.A. Disk Format: Level 0A - Format Signature and Superblock</a></h3>
     <br />
     <div align="center">
       <table class="desc">
+    <caption style="background-color:#DDEEEE">
+        Fields: Superblock (Versions 2 and 3)
+    </caption>
 	<tr>
           <th width="30%">Field Name</th>
           <th>Description</th>
@@ -1082,7 +1113,9 @@ II.A. Disk Format: Level 0A - Format Signature and Superblock</a></h3>
             </p>
             <p><em>This field is present in version 0+ of the superblock.</em>
             </p>
-            <p style="background-color:#DDEEEE"><em>The size of this field has been reduced from 4 bytes in superblock format version 0 and 1 to 1 byte.</em>
+            <p style="background-color:#DDEEEE">
+            <em>The size of this field has been reduced from 4 bytes 
+            in superblock format versions 0 and 1 to 1 byte.</em>
             </p>
           </td>
 
@@ -1140,7 +1173,6 @@ II.A. Disk Format: Level 0A - Format Signature and Superblock</a></h3>
 
     <br />
 
-<br />
 <h3><a name="DriverInfo">
 II.B. Disk Format: Level 0B - File Driver Info</a></h3>
 
@@ -1152,7 +1184,7 @@ II.B. Disk Format: Level 0B - File Driver Info</a></h3>
     <div align="center">
       <table class="format">
         <caption>
-          Driver Information Block
+            Layout: Driver Information Block
         </caption>
  
         <tr>
@@ -1184,6 +1216,9 @@ II.B. Disk Format: Level 0B - File Driver Info</a></h3>
     <br />
     <div align="center">
       <table class="desc">
+        <caption>
+            Fields: Driver Information Block
+        </caption>
 	<tr>
           <th width="30%">Field Name</th>
           <th>Description</th>
@@ -1236,7 +1271,8 @@ II.B. Disk Format: Level 0B - File Driver Info</a></h3>
     </div>
 
     <br />
-    The two drivers encoded in the <em>Driver Identification</em> field are as follows:
+    <p>The two drivers encoded in the <em>Driver Identification</em> 
+    field are as follows:</p>
     <ul>
     <li>
     Multi driver:
@@ -1264,9 +1300,9 @@ II.B. Disk Format: Level 0B - File Driver Info</a></h3>
 
     <div align="center">
       <table class="format">
-	<caption>
-	  Multi Driver Information
-	</caption>
+    <caption>
+        Layout: Multi Driver Information
+    </caption>
 
 	<tr>
 	  <th width="25%">byte</th>
@@ -1339,6 +1375,9 @@ II.B. Disk Format: Level 0B - File Driver Info</a></h3>
     <br />
     <div align="center">
       <table class="desc">
+    <caption>
+        Fields: Multi Driver Information
+    </caption>
 	<tr>
 	  <th width="30%">Field Name</th>
 	  <th>Description</th>
@@ -1420,11 +1459,13 @@ II.B. Disk Format: Level 0B - File Driver Info</a></h3>
     </div>
 
     <br />
+    <br />
+    <br />
     <div align="center">
       <table class="format">
-	<caption>
-	  Family Driver Information
-	</caption>
+    <caption>
+        Layout: Family Driver Information
+    </caption>
 
 	<tr>
 	  <th width="25%">byte</th>
@@ -1443,6 +1484,9 @@ II.B. Disk Format: Level 0B - File Driver Info</a></h3>
     <br />
     <div align="center">
       <table class="desc">
+    <caption>
+        Fields: Family Driver Information
+    </caption>
 	<tr>
 	  <th width="30%">Field Name</th>
 	  <th>Description</th>
@@ -1455,15 +1499,14 @@ II.B. Disk Format: Level 0B - File Driver Info</a></h3>
       </table>
     </div>
 
-<br />
 <h3><a name="SuperblockExt">
 II.C. Disk Format: Level 0C - Superblock Extension</a></h3>
 
-    <p>The <em>superblock extension</em> is used to store superblock metadata
-      which is either optional, or added after the version of the superblock
-      was defined.  Superblock extensions may only exist when version 2+ of
-      superblock is used.  A superblock extension is an object header which may
-      hold the following messages:</p>
+<p>The <em>superblock extension</em> is used to store superblock metadata
+which is either optional, or added after the version of the superblock
+was defined. Superblock extensions may only exist when version 2 
+or later of the superblock is used. A superblock extension is an object 
+header which may hold the following messages:</p>
 	<ul>
 	<li>
 	<a href="#SOHMTableMessage">Shared Message Table message</a> containing
@@ -1487,13 +1530,9 @@ II.C. Disk Format: Level 0C - Superblock Extension</a></h3>
 
 
 
-<br />
-<br />
-<hr />
 <h2><a name="FileInfra">
 III. Disk Format: Level 1 - File Infrastructure</a></h2>
 
-<br />
 <h3><a name="Btrees">
 III.A. Disk Format: Level 1A - B-trees and B-tree Nodes</a></h3>
 
@@ -1504,26 +1543,25 @@ III.A. Disk Format: Level 1A - B-trees and B-tree Nodes</a></h3>
       L. Rivest.  B-trees are used in several places in the HDF5 file format,
       when an index is needed for another data structure.</p>
 
-    <p>The version 1 B-tree structure described below is the original index
-      structure, but are limited by some bugs in our implementation (mainly in
-      how they handle deleting records).  The version 1 B-trees are being phased
-      out in favor of the version 2 B-trees described below, although both
-      types of structures may be found in the same file, depending on
-      application settings when creating the file.</p>
+    <p>The version 1 B-tree structure described below is the original 
+    index structure. The version 1 B-trees are being phased out in 
+    favor of the version 2 B-trees described below. Note that both 
+    types of structures may be found in the same file depending on 
+    the application settings when creating the file.</p>
 
-<br />
 <h4><a name="V1Btrees">
-III.A.1. Disk Format: Level 1A1 - Version 1 B-trees (B-link Trees)</a></h4>
+III.A.1. Disk Format: Level 1A1 - Version 1 B-trees</a></h4>
 
-    <p>Version 1 B-trees in HDF5 files an implementation of the B-link tree,
-      in which the sibling nodes at a particular level in the tree are stored
-      in a doubly-linked list, is described in the &ldquo;Efficient Locking for
-      Concurrent Operations on B-trees&rdquo; paper by Phillip Lehman and S. Bing Yao
-      as published in the <cite>ACM Transactions on Database Systems</cite>,
-      Vol. 6, No. 4, December 1981.</p>
+    <p>Version 1 B-trees in HDF5 files are an implementation of the 
+    B-link tree. The sibling nodes at a particular level in 
+    the tree are stored in a doubly-linked list. See the 
+    &ldquo;Efficient Locking for Concurrent Operations on B-trees&rdquo; 
+    paper by Phillip Lehman and S. Bing Yao as published in the 
+    <cite>ACM Transactions on Database Systems</cite>, Vol. 6, No. 4, 
+    December 1981.</p>
 
-    <p>The B-link trees implemented by the file format contain one more
-      key than the number of children.  In other words, each child
+    <p>The B-trees implemented by the file format contain one more
+      key than the number of children. In other words, each child
       pointer out of a B-tree node has a left key and a right key.
       The pointers out of internal nodes point to sub-trees while
       the pointers out of leaf nodes point to symbol nodes and 
@@ -1534,7 +1572,7 @@ III.A.1. Disk Format: Level 1A1 - Version 1 B-trees (B-link Trees)</a></h4>
     <div align="center">
       <table class="format">
         <caption>
-          B-link Tree Nodes
+            Layout: B-tree Nodes
         </caption>
 
         <tr>
@@ -1610,6 +1648,9 @@ III.A.1. Disk Format: Level 1A1 - Version 1 B-trees (B-link Trees)</a></h4>
     <br />
     <div align="center">
       <table class="desc">
+        <caption>
+            Fields: B-tree Nodes
+        </caption>
 	<tr>
           <th width="30%">Field Name</th>
           <th>Description</th>
@@ -1618,11 +1659,10 @@ III.A.1. Disk Format: Level 1A1 - Version 1 B-trees (B-link Trees)</a></h4>
         <tr>
           <td><p>Signature</p></td>
           <td>
-            <p>The ASCII character string &ldquo;<code>TREE</code>&rdquo; is 
-            used to indicate the
-            beginning of a B-link tree node.  This gives file
-            consistency checking utilities a better chance of
-            reconstructing a damaged file.
+            <p>The ASCII character string &ldquo;<code>TREE</code>&rdquo; 
+            is used to indicate the beginning of a B-tree node. This 
+            gives file consistency checking utilities a better chance 
+            of reconstructing a damaged file.
             </p>
           </td>
         </tr>
@@ -1630,7 +1670,7 @@ III.A.1. Disk Format: Level 1A1 - Version 1 B-trees (B-link Trees)</a></h4>
         <tr>
           <td><p>Node Type</p></td>
           <td>
-            <p>Each B-link tree points to a particular type of data.
+            <p>Each B-tree points to a particular type of data.
             This field indicates the type of data as well as
             implying the maximum degree <em>K</em> of the tree and
             the size of each Key field.
@@ -1707,11 +1747,12 @@ III.A.1. Disk Format: Level 1A1 - Version 1 B-trees (B-link Trees)</a></h4>
           <td><p>Keys and Child Pointers</p></td>
           <td>
             <p>Each tree has 2<em>K</em>+1 keys with 2<em>K</em>
-            child pointers interleaved between the keys.  The number
+            child pointers interleaved between the keys. The number
             of keys and child pointers actually containing valid
-            values is determined by the node&rsquo;s <em>Entries Used</em> field.
-            If that field is <em>N</em> then the B-link tree contains
-            <em>N</em> child pointers and <em>N</em>+1 keys.
+            values is determined by the node&rsquo;s <em>Entries 
+            Used</em> field. If that field is <em>N</em>, then the 
+            B-tree contains <em>N</em> child pointers and 
+            <em>N</em>+1 keys.
             </p>
           </td>
         </tr>
@@ -1770,8 +1811,8 @@ III.A.1. Disk Format: Level 1A1 - Version 1 B-trees (B-link Trees)</a></h4>
               <td>The offset of the 
                 chunk within the dataset where <i>D</i> is the number 
                 of dimensions of the dataset, and the last value is the
-                offset within the dataset&rsquo;s datatype and should always be
-                zero.  For example, if 
+                offset within the dataset&rsquo;s datatype and should 
+                always be zero. For example, if 
                 a chunk in a 3-dimensional dataset begins at the
                 position <code>[5,5,5]</code>, there will be three
                 such 64-bit values, each with the value of 
@@ -1834,7 +1875,7 @@ III.A.1. Disk Format: Level 1A1 - Version 1 B-trees (B-link Trees)</a></h4>
      &ldquo;Is the value described by key[<i>i</i>] contained in 
      child[<i>i</i>-1] or in child[<i>i</i>]?&rdquo;  
      The answer depends on the type of tree. 
-     In trees for groups (node type 0) the object described by 
+     In trees for groups (node type 0), the object described by 
      key[<i>i</i>] is the greatest object contained in 
      child[<i>i</i>-1] while in chunk trees (node type 1) the 
      chunk described by key[<i>i</i>] is the least chunk in 
@@ -1842,24 +1883,25 @@ III.A.1. Disk Format: Level 1A1 - Version 1 B-trees (B-link Trees)</a></h4>
 
     <p>That means that key[0] for group trees is sometimes unused; 
      it points to offset zero in the heap, which is always the 
-     empty string and compares as &ldquo;less-than&rdquo; any valid object name.</p>
+     empty string and compares as &ldquo;less-than&rdquo; any valid 
+     object name.</p>
 
     <p>And key[<i>N</i>] for chunk trees is sometimes unused; 
      it contains a chunk offset which compares as &ldquo;greater-than&rdquo; 
      any other chunk offset and has a chunk byte size of zero 
      to indicate that it is not actually allocated.</p>
 
-<br />
 <h4><a name="V2Btrees">
 III.A.2. Disk Format: Level 1A2 - Version 2 B-trees</a></h4>
 
-    <p>Version 2 (v2) B-trees are &ldquo;traditional&rdquo; B-trees, with one major difference.
-        Instead of just using a simple pointer (or address in the file) to a
-        child of an internal node, the pointer to the child node contains two
-        additional pieces of information: the number of records in the child
-        node itself, and the total number of records in the child node and
-        all its descendants.  Storing this additional information allows fast
-        array-like indexing to locate the n<sup>th</sup> record in the B-tree.</p>
+    <p>Version 2 (v2) B-trees are &ldquo;traditional&rdquo; B-trees 
+    with one major difference. Instead of just using a simple pointer 
+    (or address in the file) to a child of an internal node, the pointer 
+    to the child node contains two additional pieces of information: 
+    the number of records in the child node itself, and the total number 
+    of records in the child node and all its descendants. Storing this 
+    additional information allows fast array-like indexing to locate 
+    the n<sup>th</sup> record in the B-tree.</p>
 
     <p>The entry into a version 2 B-tree is a header which contains global
         information about the structure of the B-tree.  The <em>root node
@@ -1874,7 +1916,7 @@ III.A.2. Disk Format: Level 1A2 - Version 2 B-trees</a></h4>
     <div align="center">
       <table class="format">
         <caption>
-          Version 2 B-tree Header
+            Layout: Version 2 B-tree Header
         </caption>
 
         <tr>
@@ -1940,7 +1982,11 @@ III.A.2. Disk Format: Level 1A2 - Version 2 B-trees</a></h4>
     <br />
     <div align="center">
       <table class="desc">
-	<tr>
+        <caption>
+            Fields: Version 2 B-tree Header
+        </caption>
+
+    <tr>
           <th width="30%">Field Name</th>
           <th>Description</th>
         </tr>
@@ -1948,8 +1994,9 @@ III.A.2. Disk Format: Level 1A2 - Version 2 B-trees</a></h4>
         <tr>
           <td><p>Signature</p></td>
           <td>
-            <p>The ASCII character string &ldquo;<code>BTHD</code>&rdquo; is 
-            used to indicate the header of a version 2 (v2) B-link tree node.
+            <p>The ASCII character string &ldquo;<code>BTHD</code>&rdquo; 
+            is used to indicate the header of a version 2 (v2) B-tree 
+            node.
             </p>
           </td>
         </tr>
@@ -1974,8 +2021,9 @@ III.A.2. Disk Format: Level 1A2 - Version 2 B-trees</a></h4>
                 </tr>
                 <tr>
                     <td align="center">0</td>
-                    <td>A &ldquo;testing&rdquo; B-tree, this value should <em>not</em> be
-                        used for storing records in actual HDF5 files.
+                    <td>This B-tree is used for testing only. This 
+                    value should <em>not</em> be used for storing 
+                    records in actual HDF5 files.
                     </td>
                 </tr>
                 <tr>
@@ -2035,15 +2083,17 @@ III.A.2. Disk Format: Level 1A2 - Version 2 B-trees</a></h4>
     <p style="background-color:#ff9999">change for 1.10</p>
                 <tr style="background-color:#DDEEEE">
                     <td align="center">10</td>
-                    <td>This B-tree is used for indexing non-filtered dataset chunks
-                        with more than one unlimited maximum dimensions.
+                    <td>This B-tree is used for indexing chunks of 
+                    datasets with no filters and with more than one 
+                    dimension of unlimited extent.
                     </td>
                 </tr>
 
                 <tr style="background-color:#DDEEEE">
                     <td align="center">11</td>
-                    <td>This B-tree is used for indexing filtered dataset chunks
-                        with more than one one unlimited maximum dimensions.
+                    <td>This B-tree is used for indexing chunks of 
+                    datasets with filters and more than one dimension 
+                    of unlimited extent. 
                     </td>
                 </tr>
             </table></p>
@@ -2131,10 +2181,11 @@ III.A.2. Disk Format: Level 1A2 - Version 2 B-trees</a></h4>
 
     <br />
     <br />
+    <br />
     <div align="center">
       <table class="format">
         <caption>
-          Version 2 B-tree Internal Node
+            Layout: Version 2 B-tree Internal Node
         </caption>
 
         <tr>
@@ -2201,6 +2252,9 @@ III.A.2. Disk Format: Level 1A2 - Version 2 B-trees</a></h4>
     <br />
     <div align="center">
       <table class="desc">
+        <caption>
+            Fields: Version 2 B-tree Internal Node
+        </caption>
 	<tr>
           <th width="30%">Field Name</th>
           <th>Description</th>
@@ -2210,7 +2264,7 @@ III.A.2. Disk Format: Level 1A2 - Version 2 B-trees</a></h4>
           <td><p>Signature</p></td>
           <td>
             <p>The ASCII character string &ldquo;<code>BTIN</code>&rdquo; is 
-            used to indicate the internal node of a B-link tree.
+            used to indicate the internal node of a B-tree.
             </p>
           </td>
         </tr>
@@ -2359,10 +2413,11 @@ III.A.2. Disk Format: Level 1A2 - Version 2 B-trees</a></h4>
 
     <br />
     <br />
+    <br />
     <div align="center">
       <table class="format">
         <caption>
-          Version 2 B-tree Leaf Node
+            Layout: Version 2 B-tree Leaf Node
         </caption>
 
         <tr>
@@ -2389,6 +2444,9 @@ III.A.2. Disk Format: Level 1A2 - Version 2 B-trees</a></h4>
     <br />
     <div align="center">
       <table class="desc">
+        <caption>
+            Fields: Version 2 B-tree Leaf Node
+        </caption>
 	<tr>
           <th width="30%">Field Name</th>
           <th>Description</th>
@@ -2397,9 +2455,8 @@ III.A.2. Disk Format: Level 1A2 - Version 2 B-trees</a></h4>
         <tr>
           <td><p>Signature</p></td>
           <td>
-            <p>The ASCII character string &ldquo;<code>BTLF</code>&ldquo; is 
-                used to indicate the leaf node of a version 2 (v2) B-link 
-                tree.
+            <p>The ASCII character string &ldquo;<code>BTLF</code>&ldquo; 
+            is used to indicate the leaf node of a version 2 (v2) B-tree.
             </p>
           </td>
         </tr>
@@ -2444,14 +2501,16 @@ III.A.2. Disk Format: Level 1A2 - Version 2 B-trees</a></h4>
     </div>
 
     <br />
+    <br />
+    <br />
     <p>The record layout for each stored (in other words, non-testing) 
     B-tree type is as follows:</p>
     
     <div align="center">
       <table class="format">
         <caption>
-          Version 2 B-tree, Type 1 Record Layout - Indirectly Accessed, 
-          Non-filtered, &lsquo;Huge&rsquo; Fractal Heap Objects
+            Layout: Version 2 B-tree, Type 1 Record Layout - Indirectly 
+            Accessed, Non-filtered, &lsquo;Huge&rsquo; Fractal Heap Objects
         </caption>
 
         <tr>
@@ -2494,6 +2553,10 @@ III.A.2. Disk Format: Level 1A2 - Version 2 B-trees</a></h4>
     <br />
     <div align="center">
       <table class="desc">
+        <caption>
+            Fields: Version 2 B-tree, Type 1 Record Layout - Indirectly 
+            Accessed, Non-filtered, &lsquo;Huge&rsquo; Fractal Heap Objects
+        </caption>
 	<tr>
           <th width="30%">Field Name</th>
           <th>Description</th>
@@ -2528,11 +2591,12 @@ III.A.2. Disk Format: Level 1A2 - Version 2 B-trees</a></h4>
 
     <br />
     <br />
+    <br />
     <div align="center">
       <table class="format">
         <caption>
-          Version 2 B-tree, Type 2 Record Layout - Indirectly Accessed, 
-          Filtered, &lsquo;Huge&rsquo; Fractal Heap Objects
+            Layout: Version 2 B-tree, Type 2 Record Layout - Indirectly 
+            Accessed, Filtered, &lsquo;Huge&rsquo; Fractal Heap Objects
         </caption>
 
         <tr>
@@ -2581,6 +2645,10 @@ III.A.2. Disk Format: Level 1A2 - Version 2 B-trees</a></h4>
     <br />
     <div align="center">
       <table class="desc">
+        <caption>
+            Fields: Version 2 B-tree, Type 2 Record Layout - Indirectly 
+            Accessed, Filtered, &lsquo;Huge&rsquo; Fractal Heap Objects
+        </caption>
 	<tr>
           <th width="30%">Field Name</th>
           <th>Description</th>
@@ -2634,11 +2702,12 @@ III.A.2. Disk Format: Level 1A2 - Version 2 B-trees</a></h4>
 
     <br />
     <br />
+    <br />
     <div align="center">
       <table class="format">
         <caption>
-          Version 2 B-tree, Type 3 Record Layout - Directly Accessed, 
-          Non-filtered, &lsquo;Huge&rsquo; Fractal Heap Objects
+            Layout: Version 2 B-tree, Type 3 Record Layout - Directly 
+            Accessed, Non-filtered, &lsquo;Huge&rsquo; Fractal Heap Objects
         </caption>
 
         <tr>
@@ -2678,6 +2747,10 @@ III.A.2. Disk Format: Level 1A2 - Version 2 B-trees</a></h4>
     <br />
     <div align="center">
       <table class="desc">
+        <caption>
+            Fields: Version 2 B-tree, Type 3 Record Layout - Directly 
+            Accessed, Non-filtered, &lsquo;Huge&rsquo; Fractal Heap Objects
+        </caption>
         <tr>
           <th width="30%">Field Name</th>
           <th>Description</th>
@@ -2704,11 +2777,12 @@ III.A.2. Disk Format: Level 1A2 - Version 2 B-trees</a></h4>
 
     <br />
     <br />
+    <br />
     <div align="center">
       <table class="format">
         <caption>
-          Version 2 B-tree, Type 4 Record Layout - Directly Accessed, 
-          Filtered, &lsquo;Huge&rsquo; Fractal Heap Objects
+            Layout: Version 2 B-tree, Type 4 Record Layout - Directly 
+            Accessed, Filtered, &lsquo;Huge&rsquo; Fractal Heap Objects
         </caption>
 
         <tr>
@@ -2754,6 +2828,10 @@ III.A.2. Disk Format: Level 1A2 - Version 2 B-trees</a></h4>
     <br />
     <div align="center">
       <table class="desc">
+        <caption>
+            Fields: Version 2 B-tree, Type 4 Record Layout - Directly 
+            Accessed, Filtered, &lsquo;Huge&rsquo; Fractal Heap Objects
+        </caption>
 	<tr>
           <th width="30%">Field Name</th>
           <th>Description</th>
@@ -2799,10 +2877,12 @@ III.A.2. Disk Format: Level 1A2 - Version 2 B-trees</a></h4>
 
     <br />
     <br />
+    <br />
     <div align="center">
       <table class="format">
         <caption>
-          Version 2 B-tree, Type 5 Record Layout - Link Name for Indexed Group
+            Layout: Version 2 B-tree, Type 5 Record Layout - Link Name 
+            for Indexed Group
         </caption>
 
         <tr>
@@ -2829,6 +2909,10 @@ III.A.2. Disk Format: Level 1A2 - Version 2 B-trees</a></h4>
     <br />
     <div align="center">
       <table class="desc">
+        <caption>
+            Fields: Version 2 B-tree, Type 5 Record Layout - Link Name 
+            for Indexed Group
+        </caption>
 	<tr>
           <th width="30%">Field Name</th>
           <th>Description</th>
@@ -2857,11 +2941,12 @@ III.A.2. Disk Format: Level 1A2 - Version 2 B-trees</a></h4>
 
     <br />
     <br />
+    <br />
     <div align="center">
       <table class="format">
         <caption>
-          Version 2 B-tree, Type 6 Record Layout - Creation Order for 
-          Indexed Group
+            Layout: Version 2 B-tree, Type 6 Record Layout - Creation 
+            Order for Indexed Group
         </caption>
 
         <tr>
@@ -2886,6 +2971,10 @@ III.A.2. Disk Format: Level 1A2 - Version 2 B-trees</a></h4>
     <br />
     <div align="center">
       <table class="desc">
+        <caption>
+            Fields: Version 2 B-tree, Type 6 Record Layout - Creation 
+            Order for Indexed Group
+        </caption>
         <tr>
           <th width="30%">Field Name</th>
           <th>Description</th>
@@ -2912,11 +3001,12 @@ III.A.2. Disk Format: Level 1A2 - Version 2 B-trees</a></h4>
 
     <br />
     <br />
+    <br />
     <div align="center">
       <table class="format">
         <caption>
-          Version 2 B-tree, Type 7 Record Layout - Shared Object 
-          Header Messages (Sub-type 0 - Message in Heap)
+            Layout: Version 2 B-tree, Type 7 Record Layout - Shared 
+            Object Header Messages (Sub-type 0 - Message in Heap)
         </caption>
 
         <tr>
@@ -2945,6 +3035,10 @@ III.A.2. Disk Format: Level 1A2 - Version 2 B-trees</a></h4>
     <br />
     <div align="center">
       <table class="desc">
+        <caption>
+            Fields: Version 2 B-tree, Type 7 Record Layout - Shared 
+            Object Header Messages (Sub-type 0 - Message in Heap)
+        </caption>
         <tr>
           <th width="30%">Field Name</th>
           <th>Description</th>
@@ -3002,11 +3096,12 @@ III.A.2. Disk Format: Level 1A2 - Version 2 B-trees</a></h4>
 
     <br />
     <br />
+    <br />
     <div align="center">
       <table class="format">
         <caption>
-          Version 2 B-tree, Type 7 Record Layout - Shared Object 
-          Header Messages (Sub-type 1 - Message in Object Header)
+            Layout: Version 2 B-tree, Type 7 Record Layout - Shared 
+            Object Header Messages (Sub-type 1 - Message in Object Header)
         </caption>
 
         <tr>
@@ -3048,6 +3143,10 @@ III.A.2. Disk Format: Level 1A2 - Version 2 B-trees</a></h4>
     <br />
     <div align="center">
       <table class="desc">
+        <caption>
+            Fields: Version 2 B-tree, Type 7 Record Layout - Shared 
+            Object Header Messages (Sub-type 1 - Message in Object Header)
+        </caption>
         <tr>
           <th width="30%">Field Name</th>
           <th>Description</th>
@@ -3112,11 +3211,12 @@ III.A.2. Disk Format: Level 1A2 - Version 2 B-trees</a></h4>
 
     <br />
     <br />
+    <br />
     <div align="center">
       <table class="format">
         <caption>
-          Version 2 B-tree, Type 8 Record Layout - Attribute Name for 
-          Indexed Attributes
+            Layout: Version 2 B-tree, Type 8 Record Layout - Attribute 
+            Name for Indexed Attributes
         </caption>
 
         <tr>
@@ -3145,6 +3245,10 @@ III.A.2. Disk Format: Level 1A2 - Version 2 B-trees</a></h4>
     <br />
     <div align="center">
       <table class="desc">
+        <caption>
+            Fields: Version 2 B-tree, Type 8 Record Layout - Attribute 
+            Name for Indexed Attributes
+        </caption>
         <tr>
           <th width="30%">Field Name</th>
           <th>Description</th>
@@ -3187,11 +3291,12 @@ III.A.2. Disk Format: Level 1A2 - Version 2 B-trees</a></h4>
 
     <br />
     <br />
+    <br />
     <div align="center">
       <table class="format">
         <caption>
-          Version 2 B-tree, Type 9 Record Layout - Creation Order for 
-          Indexed Attributes
+            Layout: Version 2 B-tree, Type 9 Record Layout - Creation 
+            Order for Indexed Attributes
         </caption>
 
         <tr>
@@ -3217,6 +3322,10 @@ III.A.2. Disk Format: Level 1A2 - Version 2 B-trees</a></h4>
     <br />
     <div align="center">
       <table class="desc">
+        <caption>
+            Fields: Version 2 B-tree, Type 9 Record Layout - Creation 
+            Order for Indexed Attributes
+        </caption>
         <tr>
           <th width="30%">Field Name</th>
           <th>Description</th>
@@ -3249,13 +3358,16 @@ III.A.2. Disk Format: Level 1A2 - Version 2 B-trees</a></h4>
     </div>
 
     <br />
+    <br />
+    <br />
     <a name="V2BtType10">
     <p style="background-color:#ff9999">change for 1.10</p>
     <div align="center" style="background-color:#DDEEEE">
       <table class="format">
         <caption>
-          <a name="V2BtreesType10">
-          Version 2 B-tree, Type 10 Record Layout - Non-filtered Dataset Chunks</a>
+            <a name="V2BtreesType10">
+            Layout: Version 2 B-tree, Type 10 Record Layout - 
+            Non-filtered Dataset Chunks</a>
         </caption>
 
         <tr>
@@ -3302,6 +3414,10 @@ III.A.2. Disk Format: Level 1A2 - Version 2 B-trees</a></h4>
     <br />
     <div align="center" style="background-color:#DDEEEE">
       <table class="desc">
+        <caption>
+            Fields: Version 2 B-tree, Type 10 Record Layout - 
+            Non-filtered Dataset Chunks</a>
+        </caption>
 	<tr>
           <th width="30%">Field Name</th>
           <th>Description</th>
@@ -3331,12 +3447,15 @@ III.A.2. Disk Format: Level 1A2 - Version 2 B-trees</a></h4>
     </div>
 
     <br />
+    <br />
+    <br />
     <a name="V2BtType11">
     <div align="center" style="background-color:#DDEEEE">
       <table class="format">
         <caption>
-          <a name="V2BtreesType11">
-          Version 2 B-tree, Type 11 Record Layout - Filtered Dataset Chunks </a>
+            <a name="V2BtreesType11">
+            Layout: Version 2 B-tree, Type 11 Record Layout - Filtered 
+            Dataset Chunks </a>
         </caption>
 
         <tr>
@@ -3391,6 +3510,10 @@ III.A.2. Disk Format: Level 1A2 - Version 2 B-trees</a></h4>
     <br />
     <div align="center" style="background-color:#DDEEEE">
       <table class="desc">
+        <caption>
+            Fields: Version 2 B-tree, Type 11 Record Layout - Filtered 
+            Dataset Chunks </a>
+        </caption>
 	<tr>
           <th width="30%">Field Name</th>
           <th>Description</th>
@@ -3435,16 +3558,16 @@ III.A.2. Disk Format: Level 1A2 - Version 2 B-trees</a></h4>
       </table>
     </div>
 
-<br />
 <h3><a name="SymbolTable">
 III.B. Disk Format: Level 1B - Group Symbol Table Nodes</a></h3>
 
-    <p>A group is an object internal to the file that allows
-      arbitrary nesting of objects within the file (including other groups).
-      A group maps a set of link names in the group to a set of relative
-      file addresses of objects in the file.  Certain metadata for an object to
-      which the group points can be cached in the group&rsquo;s symbol table entry in
-      addition to being in the object&rsquo;s header.</p>
+    <p>A group is an object internal to the file that allows 
+    arbitrary nesting of objects within the file (including other 
+    groups). A group maps a set of link names in the group to a set 
+    of relative file addresses of objects in the file. Certain metadata 
+    for an object to which the group points can be cached in the 
+    group&rsquo;s symbol table entry in addition to being in the 
+    object&rsquo;s header.</p>
 
     <p>An HDF5 object name space can be stored hierarchically by
       partitioning the name into components and storing each
@@ -3453,17 +3576,17 @@ III.B. Disk Format: Level 1B - Group Symbol Table Nodes</a></h3>
       the next component.  The link for the last
       component points to the object being named.</p>
 
-    <p>One implementation of a  group is a collection of symbol table nodes
-      indexed by a B-link tree.  Each symbol table node contains entries
-      for one or more links.  If an attempt is made to add a link to an already
-      full symbol table node containing 2<em>K</em> entries, then the node is
-      split and one node contains <em>K</em> symbols and the other contains
-      <em>K</em>+1 symbols.</p>
+    <p>One implementation of a  group is a collection of symbol table 
+    nodes indexed by a B-tree. Each symbol table node contains entries 
+    for one or more links. If an attempt is made to add a link to an 
+    already full symbol table node containing 2<em>K</em> entries, then 
+    the node is split and one node contains <em>K</em> symbols and the 
+    other contains <em>K</em>+1 symbols.</p>
 
     <div align="center">
       <table class="format">
         <caption>
-          Symbol Table Node (A Leaf of a B-link Tree)
+            Layout: Symbol Table Node (A Leaf of a B-tree)
         </caption>
 
         <tr>
@@ -3492,6 +3615,9 @@ III.B. Disk Format: Level 1B - Group Symbol Table Nodes</a></h3>
     <br />
     <div align="center">
       <table class="desc">
+        <caption>
+            Fields: Symbol Table Node (A Leaf of a B-tree)
+        </caption>
         <tr>
           <th width="30%">Field Name</th>
           <th>Description</th>
@@ -3546,7 +3672,6 @@ III.B. Disk Format: Level 1B - Group Symbol Table Nodes</a></h3>
       </table>
     </div>
 
-<br />
 <h3><a name="SymbolTableEntry">
 III.C. Disk Format: Level 1C - Symbol Table Entry </a></h3>
 
@@ -3559,7 +3684,7 @@ III.C. Disk Format: Level 1C - Symbol Table Entry </a></h3>
     <div align="center">
       <table class="format">
         <caption>
-          Symbol Table Entry
+            Layout: Symbol Table Entry
         </caption>
 
         <tr>
@@ -3605,6 +3730,9 @@ III.C. Disk Format: Level 1C - Symbol Table Entry </a></h3>
     <br />
     <div align="center">
       <table class="desc">
+        <caption>
+            Fields: Symbol Table Entry
+        </caption>
         <tr>
           <th width="30%">Field Name</th>
           <th>Description</th>
@@ -3698,7 +3826,6 @@ III.C. Disk Format: Level 1C - Symbol Table Entry </a></h3>
       </table>
     </div>
 
-<br />
 <h4>Format of the Scratch-pad Space</h4>
 
     <p>The symbol table entry scratch-pad space is formatted
@@ -3716,7 +3843,7 @@ III.C. Disk Format: Level 1C - Symbol Table Entry </a></h3>
     <div align="center">
       <table class="format">
         <caption>
-          Object Header Scratch-pad Format
+            Layout: Object Header Scratch-pad Format
         </caption>
 
         <tr>
@@ -3750,6 +3877,9 @@ III.C. Disk Format: Level 1C - Symbol Table Entry </a></h3>
     <br />
     <div align="center">
       <table class="desc">
+        <caption>
+            Fields: Object Header Scratch-pad Format
+        </caption>
         <tr>
           <th width="30%">Field Name</th>
           <th>Description</th>
@@ -3777,6 +3907,8 @@ III.C. Disk Format: Level 1C - Symbol Table Entry </a></h3>
 
 
     <br />
+    <br />
+    <br />
     <p>If the Cache Type field contains the value two
       <code>(2)</code>, then the scratch-pad space
       contains cached metadata for a symbolic link
@@ -3785,7 +3917,7 @@ III.C. Disk Format: Level 1C - Symbol Table Entry </a></h3>
     <div align="center">
       <table class="format">
         <caption>
-          Symbolic Link Scratch-pad Format
+            Layout: Symbolic Link Scratch-pad Format
         </caption>
 
         <tr>
@@ -3804,6 +3936,9 @@ III.C. Disk Format: Level 1C - Symbol Table Entry </a></h3>
     <br />
     <div align="center">
       <table class="desc">
+        <caption>
+            Fields: Symbolic Link Scratch-pad Format
+        </caption>
         <tr>
           <th width="30%">Field Name</th>
           <th>Description</th>
@@ -3822,7 +3957,6 @@ III.C. Disk Format: Level 1C - Symbol Table Entry </a></h3>
       </table>
     </div>
 
-<br />
 <h3><a name="LocalHeap">
 III.D. Disk Format: Level 1D - Local Heaps</a></h3>
 
@@ -3837,7 +3971,7 @@ III.D. Disk Format: Level 1D - Local Heaps</a></h3>
     <div align="center">
       <table class="format">
         <caption>
-          Local Heap
+            Layout: Local Heap
         </caption>
 
         <tr>
@@ -3891,6 +4025,9 @@ III.D. Disk Format: Level 1D - Local Heaps</a></h3>
     <br />
     <div align="center">
       <table class="desc">
+        <caption>
+            Fields: Local Heap
+        </caption>
         <tr>
           <th width="30%">Field Name</th>
           <th>Description</th>
@@ -3964,7 +4101,6 @@ III.D. Disk Format: Level 1D - Local Heaps</a></h3>
 
     <p>Objects within a local heap should be aligned on an 8-byte boundary.</p>
 
-<br />
 <h3><a name="GlobalHeap">
 III.E. Disk Format: Level 1E - Global Heap</a></h3>
 
@@ -4023,7 +4159,7 @@ III.E. Disk Format: Level 1E - Global Heap</a></h3>
     <div align="center">
       <table class="format">
         <caption>
-          A Global Heap Collection
+            Layout: A Global Heap Collection
         </caption>
 
         <tr>
@@ -4082,6 +4218,9 @@ III.E. Disk Format: Level 1E - Global Heap</a></h3>
     <br />
     <div align="center">
       <table class="desc">
+        <caption>
+            Fields: A Global Heap Collection
+        </caption>
         <tr>
           <th width="30%">Field Name</th>
           <th>Description</th>
@@ -4148,10 +4287,11 @@ III.E. Disk Format: Level 1E - Global Heap</a></h3>
     
     <br />
     <br />
+    <br />
     <div align="center">
       <table class="format">
         <caption>
-          Global Heap Object
+            Layout: Global Heap Object
         </caption>
 
         <tr>
@@ -4194,6 +4334,9 @@ III.E. Disk Format: Level 1E - Global Heap</a></h3>
     <br />
     <div align="center">
       <table class="desc">
+        <caption>
+            Fields: Global Heap Object
+        </caption>
         <tr>
           <th width="30%">Field Name</th>
           <th>Description</th>
@@ -4254,6 +4397,8 @@ III.E. Disk Format: Level 1E - Global Heap</a></h3>
     </div>
 
     <br />
+    <br />
+    <br />
     <p>
     The format for the ID used to locate an object in the global heap is
     described here:</p>
@@ -4261,7 +4406,7 @@ III.E. Disk Format: Level 1E - Global Heap</a></h3>
     <div align="center">
       <table class="format">
         <caption>
-          Global Heap ID
+            Layout: Global Heap ID
         </caption>
 
         <tr>
@@ -4295,6 +4440,9 @@ III.E. Disk Format: Level 1E - Global Heap</a></h3>
     <br />
     <div align="center">
       <table class="desc">
+        <caption>
+            Fields: Global Heap ID
+        </caption>
         <tr>
           <th width="30%">Field Name</th>
           <th>Description</th>
@@ -4322,7 +4470,6 @@ III.E. Disk Format: Level 1E - Global Heap</a></h3>
     </div>
     
 
-<br />
 <h3><a name="FractalHeap">
 III.F. Disk Format: Level 1F - Fractal Heap</a></h3>
 
@@ -4433,7 +4580,7 @@ III.F. Disk Format: Level 1F - Fractal Heap</a></h3>
     <div align="center">
       <table class="format">
         <caption>
-          Fractal Heap Header
+            Layout: Fractal Heap Header
         </caption>
 
         <tr>
@@ -4581,6 +4728,9 @@ III.F. Disk Format: Level 1F - Fractal Heap</a></h3>
     <br />
     <div align="center">
       <table class="desc">
+        <caption>
+            Fields: Fractal Heap Header
+        </caption>
         <tr>
           <th width="40%">Field Name</th>
           <th>Description</th>
@@ -4905,10 +5055,11 @@ III.F. Disk Format: Level 1F - Fractal Heap</a></h3>
 
     <br />
     <br />
+    <br />
     <div align="center">
       <table class="format">
         <caption>
-          Fractal Heap Direct Block
+            Layout: Fractal Heap Direct Block
         </caption>
 
         <tr>
@@ -4960,6 +5111,9 @@ III.F. Disk Format: Level 1F - Fractal Heap</a></h3>
     <br />
     <div align="center">
       <table class="desc">
+        <caption>
+            Fields: Fractal Heap Direct Block
+        </caption>
 	<tr>
           <th width="30%">Field Name</th>
           <th>Description</th>
@@ -5034,10 +5188,11 @@ III.F. Disk Format: Level 1F - Fractal Heap</a></h3>
 
     <br />
     <br />
+    <br />
     <div align="center">
       <table class="format">
         <caption>
-          Fractal Heap Indirect Block
+            Layout: Fractal Heap Indirect Block
         </caption>
 
         <tr>
@@ -5141,6 +5296,9 @@ III.F. Disk Format: Level 1F - Fractal Heap</a></h3>
     <br />
     <div align="center">
       <table class="desc">
+        <caption>
+            Fields: Fractal Heap Indirect Block
+        </caption>
 	<tr>
           <th width="30%">Field Name</th>
           <th>Description</th>
@@ -5262,7 +5420,7 @@ III.F. Disk Format: Level 1F - Fractal Heap</a></h3>
             enough to store objects greater than 16 bytes or not.  If the
             heap ID length is 18 bytes or smaller, the &lsquo;normal&rsquo; tiny heap ID
             form is used.  If the heap ID length is greater than 18 bytes in
-            length, the &ldquo;extented&rdquo; form is used.  See format description below
+            length, the &ldquo;extended&rdquo; form is used.  See format description below
             for both sub-types.
             </p>
           </td>
@@ -5355,13 +5513,15 @@ III.F. Disk Format: Level 1F - Fractal Heap</a></h3>
     </div>
     
 
+<br />
     <p>The specific format for each type of heap ID is described below:
     </p>
 
     <div align="center">
       <table class="format">
-        <caption>Fractal Heap ID for Tiny Objects (Sub-type 1 - 
-        &lsquo;Normal&rsquo;)
+        <caption>
+            Layout: Fractal Heap ID for Tiny Objects (Sub-type 1 - 
+            &lsquo;Normal&rsquo;)
         </caption>
 
         <tr>
@@ -5386,6 +5546,10 @@ III.F. Disk Format: Level 1F - Fractal Heap</a></h3>
     <br />
     <div align="center">
       <table class="desc">
+        <caption>
+            Fields: Fractal Heap ID for Tiny Objects (Sub-type 1 - 
+            &lsquo;Normal&rsquo;)
+        </caption>
 	<tr>
           <th width="30%">Field Name</th>
           <th>Description</th>
@@ -5440,10 +5604,12 @@ III.F. Disk Format: Level 1F - Fractal Heap</a></h3>
 
     <br />
     <br />
+    <br />
     <div align="center">
       <table class="format">
-        <caption>Fractal Heap ID for Tiny Objects (Sub-type 2 - 
-        &lsquo;Extended&rsquo;)
+        <caption>
+            Layout: Fractal Heap ID for Tiny Objects (Sub-type 2 - 
+            &lsquo;Extended&rsquo;)
         </caption>
 
         <tr>
@@ -5469,6 +5635,10 @@ III.F. Disk Format: Level 1F - Fractal Heap</a></h3>
     <br />
     <div align="center">
       <table class="desc">
+        <caption>
+            Fields: Fractal Heap ID for Tiny Objects (Sub-type 2 - 
+            &lsquo;Extended&rsquo;)
+        </caption>
 	<tr>
           <th width="30%">Field Name</th>
           <th>Description</th>
@@ -5537,10 +5707,12 @@ III.F. Disk Format: Level 1F - Fractal Heap</a></h3>
 
     <br />
     <br />
+    <br />
     <div align="center">
       <table class="format">
-        <caption>Fractal Heap ID for Huge Objects (Sub-types 1 and 2): 
-        Indirectly Accessed, Non-filtered/Filtered
+        <caption>
+            Layout: Fractal Heap ID for Huge Objects (Sub-types 1 and 2): 
+            Indirectly Accessed, Non-filtered/Filtered
         </caption>
 
         <tr>
@@ -5552,7 +5724,8 @@ III.F. Disk Format: Level 1F - Fractal Heap</a></h3>
 
         <tr>
           <td>Version and Type</td>
-          <td colspan="3" bgcolor="#DDDDDD"><em>This space inserted only to align table nicely</em></td>
+          <td colspan="3" bgcolor="#DDDDDD"><em>This space inserted 
+          only to align table nicely</em></td>
         </tr>
 
         <tr>
@@ -5575,6 +5748,10 @@ III.F. Disk Format: Level 1F - Fractal Heap</a></h3>
     <br />
     <div align="center">
       <table class="desc">
+        <caption>
+            Fields: Fractal Heap ID for Huge Objects (Sub-types 1 and 2): 
+            Indirectly Accessed, Non-filtered/Filtered
+        </caption>
         <tr>
           <th width="30%">Field Name</th>
           <th>Description</th>
@@ -5627,10 +5804,12 @@ III.F. Disk Format: Level 1F - Fractal Heap</a></h3>
 
     <br />
     <br />
+    <br />
     <div align="center">
       <table class="format">
-        <caption>Fractal Heap ID for Huge Objects (Sub-type 3): 
-        Directly Accessed, Non-filtered
+        <caption>
+            Layout: Fractal Heap ID for Huge Objects (Sub-type 3): 
+            Directly Accessed, Non-filtered
         </caption>
 
         <tr>
@@ -5677,6 +5856,10 @@ III.F. Disk Format: Level 1F - Fractal Heap</a></h3>
     <br />
     <div align="center">
       <table class="desc">
+        <caption>
+            Fields: Fractal Heap ID for Huge Objects (Sub-type 3): 
+            Directly Accessed, Non-filtered
+        </caption>
         <tr>
           <th width="30%">Field Name</th>
           <th>Description</th>
@@ -5729,10 +5912,12 @@ III.F. Disk Format: Level 1F - Fractal Heap</a></h3>
 
     <br />
     <br />
+    <br />
     <div align="center">
       <table class="format">
-        <caption>Fractal Heap ID for Huge Objects (Sub-type 4): 
-        Directly Accessed, Filtered
+        <caption>
+            Layout: Fractal Heap ID for Huge Objects (Sub-type 4): 
+            Directly Accessed, Filtered
         </caption>
 
         <tr>
@@ -5787,6 +5972,10 @@ III.F. Disk Format: Level 1F - Fractal Heap</a></h3>
     <br />
     <div align="center">
       <table class="desc">
+        <caption>
+            Fields: Fractal Heap ID for Huge Objects (Sub-type 4): 
+            Directly Accessed, Filtered
+        </caption>
         <tr>
           <th width="30%">Field Name</th>
           <th>Description</th>
@@ -5853,9 +6042,11 @@ III.F. Disk Format: Level 1F - Fractal Heap</a></h3>
 
     <br />
     <br />
+    <br />
     <div align="center">
       <table class="format">
-        <caption>Fractal Heap ID for Managed Objects
+        <caption>
+            Layout: Fractal Heap ID for Managed Objects
         </caption>
 
         <tr>
@@ -5882,6 +6073,9 @@ III.F. Disk Format: Level 1F - Fractal Heap</a></h3>
     <br />
     <div align="center">
       <table class="desc">
+        <caption>
+            Fields: Fractal Heap ID for Managed Objects
+        </caption>
 	<tr>
           <th width="30%">Field Name</th>
           <th>Description</th>
@@ -5939,7 +6133,6 @@ III.F. Disk Format: Level 1F - Fractal Heap</a></h3>
       </table>
     </div>
 
-<br />
 <h3><a name="FreeSpaceManager">
 III.G. Disk Format: Level 1G - Free-space Manager</a></h3>
 
@@ -5973,7 +6166,7 @@ III.G. Disk Format: Level 1G - Free-space Manager</a></h3>
     <div align="center">
       <table class="format">
         <caption>
-          Free-space Manager Header
+            Layout: Free-space Manager Header
         </caption>
 
         <tr>
@@ -6067,6 +6260,9 @@ III.G. Disk Format: Level 1G - Free-space Manager</a></h3>
     <br />
     <div align="center">
       <table class="desc">
+        <caption>
+            Fields: Free-space Manager Header
+        </caption>
 	<tr>
           <th width="35%">Field Name</th>
           <th>Description</th>
@@ -6256,7 +6452,7 @@ III.G. Disk Format: Level 1G - Free-space Manager</a></h3>
     <div align="center">
       <table class="format">
         <caption>
-          Free-space Section List
+            Layout: Free-space Section List
         </caption>
 
         <tr>
@@ -6420,6 +6616,9 @@ III.G. Disk Format: Level 1G - Free-space Manager</a></h3>
     <br />
     <div align="center">
       <table class="desc">
+        <caption>
+            Fields: Free-space Section List
+        </caption>
 	<tr>
           <th width="35%">Field Name</th>
           <th>Description</th>
@@ -6597,7 +6796,7 @@ III.G. Disk Format: Level 1G - Free-space Manager</a></h3>
     <div align="center">
       <table class="format">
         <caption>
-          File&rsquo;s Section Data Record
+            Layout: File&rsquo;s Section Data Record
         </caption>
 
         <tr>
@@ -6608,10 +6807,11 @@ III.G. Disk Format: Level 1G - Free-space Manager</a></h3>
 
     <br />
     <br />
+    <br />
     <div align="center">
       <table class="format">
         <caption>
-          Fractal Heap &ldquo;Single&rdquo; Section Data Record
+            Layout: Fractal Heap &ldquo;Single&rdquo; Section Data Record
         </caption>
 
         <tr>
@@ -6622,24 +6822,29 @@ III.G. Disk Format: Level 1G - Free-space Manager</a></h3>
 
     <br />
     <br />
+    <br />
     <div align="center">
       <table class="format">
         <caption>
-          Fractal Heap &ldquo;First Row&rdquo; Section Data Record
+            Layout: Fractal Heap &ldquo;First Row&rdquo; Section Data 
+            Record
         </caption>
 
         <tr>
-          <td colspan="4"><em>Same format as &ldquo;indirect&rdquo; section data</em></td>
+          <td colspan="4"><em>Same format as &ldquo;indirect&rdquo; 
+          section data</em></td>
         </tr>
       </table>
     </div>
 
     <br />
     <br />
+    <br />
     <div align="center">
       <table class="format">
         <caption>
-          Fractal Heap &ldquo;Normal Row&rdquo; Section Data Record
+            Layout: Fractal Heap &ldquo;Normal Row&rdquo; Section Data 
+            Record
         </caption>
 
         <tr>
@@ -6650,10 +6855,12 @@ III.G. Disk Format: Level 1G - Free-space Manager</a></h3>
 
     <br />
     <br />
+    <br />
     <div align="center">
       <table class="format">
         <caption>
-          Fractal Heap &ldquo;Indirect&rdquo; Section Data Record
+            Layout: Fractal Heap &ldquo;Indirect&rdquo; Section 
+            Data Record
         </caption>
 
         <tr>
@@ -6682,6 +6889,10 @@ III.G. Disk Format: Level 1G - Free-space Manager</a></h3>
     <br />
     <div align="center">
       <table class="desc">
+        <caption>
+            Fields: Fractal Heap &ldquo;Indirect&rdquo; Section 
+            Data Record
+        </caption>
 	<tr>
           <th width="30%">Field Name</th>
           <th>Description</th>
@@ -6727,7 +6938,6 @@ III.G. Disk Format: Level 1G - Free-space Manager</a></h3>
       </table>
     </div>
 
-<br />
 <h3><a name="SOHMTable">
 III.H. Disk Format: Level 1H - Shared Object Header Message Table</a></h3>
 
@@ -6773,7 +6983,7 @@ III.H. Disk Format: Level 1H - Shared Object Header Message Table</a></h3>
     <div align="center">
       <table class="format">
         <caption>
-          Shared Object Header Message Table
+            Layout: Shared Object Header Message Table
         </caption>
 
         <tr>
@@ -6871,6 +7081,9 @@ III.H. Disk Format: Level 1H - Shared Object Header Message Table</a></h3>
     <br />
     <div align="center">
       <table class="desc">
+        <caption>
+            Fields: Shared Object Header Message Table
+        </caption>
 	<tr>
           <th width="35%">Field Name</th>
           <th>Description</th>
@@ -6976,7 +7189,7 @@ III.H. Disk Format: Level 1H - Shared Object Header Message Table</a></h3>
 	<tr>
 	  <td><p>v2 B-tree Cutoff for index #N</p></td>
 	  <td>
-            <p>This is is the cutoff value for the indexing of messages to 
+            <p>This is the cutoff value for the indexing of messages to 
 		switch from a v2 B-tree back to a list.  If the number of
                 messages is less than this value, the index should be a list.
             </p>
@@ -7031,7 +7244,7 @@ III.H. Disk Format: Level 1H - Shared Object Header Message Table</a></h3>
     <div align="center">
       <table class="format">
         <caption>
-          Shared Message Record List
+            Layout: Shared Message Record List
         </caption>
 
         <tr>
@@ -7070,6 +7283,9 @@ III.H. Disk Format: Level 1H - Shared Object Header Message Table</a></h3>
     <br />
     <div align="center">
       <table class="desc">
+        <caption>
+            Fields: Shared Message Record List
+        </caption>
 	<tr>
           <th width="30%">Field Name</th>
           <th>Description</th>
@@ -7116,7 +7332,8 @@ III.H. Disk Format: Level 1H - Shared Object Header Message Table</a></h3>
     <div align="center">
       <table class="format">
         <caption>
-          Shared Message Record for Messages Stored in a Fractal Heap
+            Layout: Shared Message Record for Messages Stored in a 
+            Fractal Heap
         </caption>
 
         <tr>
@@ -7148,6 +7365,10 @@ III.H. Disk Format: Level 1H - Shared Object Header Message Table</a></h3>
     <br />
     <div align="center">
       <table class="desc">
+        <caption>
+            Fields: Shared Message Record for Messages Stored in a 
+            Fractal Heap
+        </caption>
 	<tr>
           <th width="30%">Field Name</th>
           <th>Description</th>
@@ -7191,10 +7412,12 @@ III.H. Disk Format: Level 1H - Shared Object Header Message Table</a></h3>
 
     <br />
     <br />
+    <br />
     <div align="center">
       <table class="format">
         <caption>
-          Shared Message Record for Messages Stored in an Object Header
+            Layout: Shared Message Record for Messages Stored in an 
+            Object Header
         </caption>
 
         <tr>
@@ -7239,6 +7462,10 @@ III.H. Disk Format: Level 1H - Shared Object Header Message Table</a></h3>
     <br />
     <div align="center">
       <table class="desc">
+        <caption>
+            Fields: Shared Message Record for Messages Stored in an 
+            Object Header
+        </caption>
 	<tr>
           <th width="30%">Field Name</th>
           <th>Description</th>
@@ -7289,8 +7516,6 @@ III.H. Disk Format: Level 1H - Shared Object Header Message Table</a></h3>
       </table>
     </div>
 
-<br />
-<hr />
 <h2><a name="DataObject">
 IV. Disk Format: Level 2 - Data Objects </a></h2>
 
@@ -7308,7 +7533,6 @@ IV. Disk Format: Level 2 - Data Objects </a></h2>
       &ldquo;metadata&rdquo; used to describe or annotate each object.
     </p>
 
-<br />
 <h3><a name="ObjectHeader">
 IV.A. Disk Format: Level 2A - Data Object Headers</a></h3>
 
@@ -7331,11 +7555,11 @@ IV.A. Disk Format: Level 2A - Data Object Headers</a></h3>
       the majority of the metadata about the object.
     </p>
 
-<br />
 <h3><a name="ObjectHeaderPrefix">
 IV.A.1. Disk Format: Level 2A1 - Data Object Header Prefix</a></h3>
 
-<br />
+
+
 <h4><a name="V1ObjectHeaderPrefix">
 IV.A.1.a. Version 1 Data Object Header Prefix</a></h4>
 
@@ -7345,9 +7569,9 @@ IV.A.1.a. Version 1 Data Object Header Prefix</a></h4>
 
     <div align="center">
       <table class="format">
-	<caption>
-	  Version 1 Object Header
-	</caption>
+    <caption>
+        Layout: Version 1 Object Header
+    </caption>
 
 	<tr>
 	  <th>byte</th>
@@ -7407,6 +7631,9 @@ IV.A.1.a. Version 1 Data Object Header Prefix</a></h4>
     <br />
     <div align="center">
       <table class="desc">
+    <caption>
+        Fields: Version 1 Object Header
+    </caption>
 	<tr>
           <th width="30%">Field Name</th>
           <th>Description</th>
@@ -7574,7 +7801,6 @@ IV.A.1.a. Version 1 Data Object Header Prefix</a></h4>
       </table>
     </div>
 
-<br />
 <h4><a name="V2ObjectHeaderPrefix">
 IV.A.1.b. Version 2 Data Object Header Prefix</a></h4>
 
@@ -7589,9 +7815,9 @@ IV.A.1.b. Version 2 Data Object Header Prefix</a></h4>
 
     <div align="center">
       <table class="format">
-	<caption>
-	  Version 2 Object Header
-	</caption>
+    <caption>
+        Layout: Version 2 Object Header
+    </caption>
 
 	<tr>
 	  <th>byte</th>
@@ -7682,6 +7908,9 @@ IV.A.1.b. Version 2 Data Object Header Prefix</a></h4>
     <br />
     <div align="center">
       <table class="desc">
+    <caption>
+        Fields: Version 2 Object Header
+    </caption>
 	<tr>
           <th width="30%">Field Name</th>
           <th>Description</th>
@@ -7948,7 +8177,6 @@ IV.A.1.b. Version 2 Data Object Header Prefix</a></h4>
     </p>
 
 
-<br />
 <h3><a name="ObjectHeaderMessages">
 IV.A.2. Disk Format: Level 2A2 - Data Object Header Messages</a></h3>
 
@@ -7974,9 +8202,9 @@ IV.A.2. Disk Format: Level 2A2 - Data Object Header Messages</a></h3>
 
     <div align="center">
       <table class="format">
-	<caption>
-	  Shared Message (Version 1)
-	</caption>
+    <caption>
+        Layout: Shared Message (Version 1)
+    </caption>
 
 	<tr>
 	  <th width="25%">byte</th>
@@ -8015,6 +8243,9 @@ IV.A.2. Disk Format: Level 2A2 - Data Object Header Messages</a></h3>
     <br />
     <div align="center">
       <table class="desc">
+    <caption>
+        Fields: Shared Message (Version 1)
+    </caption>
 	<tr>
           <th width="30%">Field Name</th>
           <th>Description</th>
@@ -8074,11 +8305,13 @@ IV.A.2. Disk Format: Level 2A2 - Data Object Header Messages</a></h3>
 
     <br />
     <br />
+    <br />
     <div align="center">
       <table class="format">
-	<caption>
-	  Shared Message (Version 2)
-	</caption>
+???????
+    <caption>
+        Layout: Shared Message (Version 2)
+    </caption>
 
 	<tr>
 	  <th width="25%">byte</th>
@@ -8112,6 +8345,9 @@ IV.A.2. Disk Format: Level 2A2 - Data Object Header Messages</a></h3>
     <br />
     <div align="center">
       <table class="desc">
+    <caption>
+        Fields: Shared Message (Version 2)
+    </caption>
 	<tr>
           <th width="30%">Field Name</th>
           <th>Description</th>
@@ -8165,11 +8401,12 @@ IV.A.2. Disk Format: Level 2A2 - Data Object Header Messages</a></h3>
 
     <br />
     <br />
+    <br />
     <div align="center">
       <table class="format">
-	<caption>
-	  Shared Message (Version 3)
-	</caption>
+    <caption>
+        Layout: Shared Message (Version 3)
+    </caption>
 
 	<tr>
 	  <th width="25%">byte</th>
@@ -8193,6 +8430,9 @@ IV.A.2. Disk Format: Level 2A2 - Data Object Header Messages</a></h3>
     <br />
     <div align="center">
       <table class="desc">
+    <caption>
+        Fields: Shared Message (Version 3)
+    </caption>
 	<tr>
           <th width="30%">Field Name</th>
           <th>Description</th>
@@ -8275,7 +8515,6 @@ IV.A.2. Disk Format: Level 2A2 - Data Object Header Messages</a></h3>
     <p>The following is a list of currently defined header messages:
     </p>
 
-<br />
 <h4><a name="NILMessage">IV.A.2.a. The NIL Message</a></h4>
 
     <!-- start msgdesc table -->
@@ -8295,7 +8534,6 @@ IV.A.2. Disk Format: Level 2A2 - Data Object Header Messages</a></h3>
     <!-- end msgdesc table -->
     
 
-<br />
 <h4><a name="DataspaceMessage">IV.A.2.b. The Dataspace Message</a></h4>
 
     <!-- start msgdesc table -->
@@ -8323,9 +8561,9 @@ IV.A.2. Disk Format: Level 2A2 - Data Object Header Messages</a></h3>
     
     <div align="center">
       <table class="format">
-	<caption>
-	  Dataspace Message - Version 1
-	</caption>
+    <caption>
+        Layout: Dataspace Message - Version 1
+    </caption>
 
 	<tr>
 	  <th>byte</th>
@@ -8388,6 +8626,9 @@ IV.A.2. Disk Format: Level 2A2 - Data Object Header Messages</a></h3>
     <br />
     <div align="center">
       <table class="desc">
+    <caption>
+        Fields: Dataspace Message - Version 1
+    </caption>
 	<tr>
           <th width="30%">Field Name</th>
           <th>Description</th>
@@ -8477,9 +8718,9 @@ IV.A.2. Disk Format: Level 2A2 - Data Object Header Messages</a></h3>
 
     <div align="center">
       <table class="format">
-	<caption>
-	  Dataspace Message - Version 2
-	</caption>
+    <caption>
+        Layout: Dataspace Message - Version 2
+    </caption>
 
 	<tr>
 	  <th>byte</th>
@@ -8529,6 +8770,9 @@ IV.A.2. Disk Format: Level 2A2 - Data Object Header Messages</a></h3>
     <br />
     <div align="center">
       <table class="desc">
+    <caption>
+        Fields: Dataspace Message - Version 2
+    </caption>
 	<tr>
           <th width="30%">Field Name</th>
           <th>Description</th>
@@ -8627,7 +8871,6 @@ IV.A.2. Disk Format: Level 2A2 - Data Object Header Messages</a></h3>
     
 
 <!--
-<br />
 <h4><a name="DataSpaceMessage">Header Message Name: Complex Dataspace (Fiber Bundle?)</a></h4>
 
     <!-- start msgdesc table --
@@ -8657,7 +8900,7 @@ IV.A.2. Disk Format: Level 2A2 - Data Object Header Messages</a></h3>
       <table border cellpadding="4" width="80%">
 	<caption align="bottom">
 	  <b>HDF5 Dataspace Message Layout</b>
-	</caption>
+    </caption>
 
 	<tr align="center">
 	  <th width="25%">byte</th>
@@ -8691,7 +8934,7 @@ IV.A.2. Disk Format: Level 2A2 - Data Object Header Messages</a></h3>
 	      <table border cellpadding="4" width="80%">
 		<caption align="bottom">
 		  <b>HDF5 Mesh-type Layout</b>
-		</caption>
+	    </caption>
 
 		<tr align="center">
 		  <th width="25%">byte</th>
@@ -8783,7 +9026,7 @@ IV.A.2. Disk Format: Level 2A2 - Data Object Header Messages</a></h3>
 	      <table border cellpadding="4" width="80%">
 		<caption align="bottom">
 		  <b>HDF5 Dataspace Embedded Dimensionality Information</b>
-		</caption>
+	    </caption>
 
 		<tr align="center">
 		  <th width="25%">byte</th>
@@ -8839,7 +9082,7 @@ IV.A.2. Disk Format: Level 2A2 - Data Object Header Messages</a></h3>
       <table border cellpadding="4" width="80%">
 	<caption align="bottom">
 	  <b>HDF5 Dataspace Structured/Regular Grid Information</b>
-	</caption>
+    </caption>
 
 	<tr align="center">
 	  <th width="25%">byte</th>
@@ -8893,7 +9136,7 @@ IV.A.2. Disk Format: Level 2A2 - Data Object Header Messages</a></h3>
       <table border cellpadding="4" width="80%">
 	<caption align="bottom">
 	  <b>HDF5 Dataspace Structured/Irregular Grid Information</b>
-	</caption>
+    </caption>
 
 	<tr align="center">
 	  <th width="25%">byte</th>
@@ -8931,7 +9174,7 @@ IV.A.2. Disk Format: Level 2A2 - Data Object Header Messages</a></h3>
       <table border cellpadding="4" width="80%">
 	<caption align="bottom">
 	  <b>HDF5 Dataspace Unstructured Grid Information</b>
-	</caption>
+    </caption>
 
 	<tr align="center">
 	  <th width="25%">byte</th>
@@ -8953,7 +9196,6 @@ IV.A.2. Disk Format: Level 2A2 - Data Object Header Messages</a></h3>
     </center>
 -->
 
-<br />
 <h4><a name="LinkInfoMessage">IV.A.2.c. The Link Info Message</a></h4>
 
     <!-- start msgdesc table -->
@@ -8978,9 +9220,9 @@ IV.A.2. Disk Format: Level 2A2 - Data Object Header Messages</a></h3>
     
     <div align="center">
       <table class="format">
-	<caption>
-	  Link Info
-	</caption>
+    <caption>
+        Layout: Link Info
+    </caption>
 
 	<tr>
 	  <th width="25%">byte</th>
@@ -9027,6 +9269,9 @@ IV.A.2. Disk Format: Level 2A2 - Data Object Header Messages</a></h3>
     <br />
     <div align="center">
       <table class="desc">
+    <caption>
+        Fields: Link Info
+    </caption>
 	<tr>
           <th width="30%">Field Name</th>
           <th>Description</th>
@@ -9122,7 +9367,6 @@ IV.A.2. Disk Format: Level 2A2 - Data Object Header Messages</a></h3>
     </div>
 
 
-<br />
 <h4><a name="DatatypeMessage">IV.A.2.d. The Datatype Message</a></h4>
 
     <!-- start msgdesc table -->
@@ -9156,9 +9400,9 @@ IV.A.2. Disk Format: Level 2A2 - Data Object Header Messages</a></h3>
     
     <div align="center">
       <table class="format">
-	<caption>
-	  Datatype Message
-	</caption>
+    <caption>
+        Layout: Datatype Message
+    </caption>
 
 	<tr>
 	  <th width="25%">byte</th>
@@ -9187,6 +9431,9 @@ IV.A.2. Disk Format: Level 2A2 - Data Object Header Messages</a></h3>
     <br />
     <div align="center">
       <table class="desc">
+    <caption>
+        Fields: Datatype Message
+    </caption>
 	<tr>
           <th width="30%">Field Name</th>
           <th>Description</th>
@@ -9344,9 +9591,9 @@ IV.A.2. Disk Format: Level 2A2 - Data Object Header Messages</a></h3>
 
     <div align="center">
       <table class="desc">
-	<caption>
-	  Fixed-point Bit Field Description
-	</caption>
+    <caption>
+        Bits: Fixed-point Bit Field Description
+    </caption>
 
 	<tr>
 	  <th width="10%">Bits</th>
@@ -9383,9 +9630,9 @@ IV.A.2. Disk Format: Level 2A2 - Data Object Header Messages</a></h3>
     <br />
     <div align="center">
       <table class="format">
-	<caption>
-	  Fixed-point Property Description
-	</caption>
+    <caption>
+        Layout: Fixed-point Property Description
+    </caption>
 
 	<tr>
 	  <th width="25%">Byte</th>
@@ -9404,6 +9651,9 @@ IV.A.2. Disk Format: Level 2A2 - Data Object Header Messages</a></h3>
     <br />
     <div align="center">
       <table class="desc">
+    <caption>
+        Fields: Fixed-point Property Description
+    </caption>
 	<tr>
           <th width="30%">Field Name</th>
           <th>Description</th>
@@ -9442,9 +9692,9 @@ IV.A.2. Disk Format: Level 2A2 - Data Object Header Messages</a></h3>
 
     <div align="center">
       <table class="desc">
-	<caption>
-	  Floating-point Bit Field Description
-	</caption>
+    <caption>
+        Bits: Floating-point Bit Field Description
+    </caption>
 
 	<tr>
 	  <th width="10%">Bits</th>
@@ -9558,9 +9808,9 @@ IV.A.2. Disk Format: Level 2A2 - Data Object Header Messages</a></h3>
     <br />
     <div align="center">
       <table class="format">
-	<caption>
-	  Floating-point Property Description
-	</caption>
+    <caption>
+        Layout: Floating-point Property Description
+    </caption>
 
 	<tr>
 	  <th width="25%">Byte</th>
@@ -9590,6 +9840,9 @@ IV.A.2. Disk Format: Level 2A2 - Data Object Header Messages</a></h3>
     <br />
     <div align="center">
       <table class="desc">
+    <caption>
+        Fields: Floating-point Property Description
+    </caption>
 	<tr>
           <th width="30%">Field Name</th>
           <th>Description</th>
@@ -9666,9 +9919,9 @@ IV.A.2. Disk Format: Level 2A2 - Data Object Header Messages</a></h3>
     
     <div align="center">
       <table class="desc">
-	<caption>
-	  Time Bit Field Description
-	</caption>
+    <caption>
+        Bits: Time Bit Field Description
+    </caption>
 
 	<tr>
 	  <th width="10%">Bits</th>
@@ -9691,9 +9944,9 @@ IV.A.2. Disk Format: Level 2A2 - Data Object Header Messages</a></h3>
     <br />
     <div align="center">
       <table class="format">
-	<caption>
-	  Time Property Description
-	</caption>
+    <caption>
+        Layout: Time Property Description
+    </caption>
 
 	<tr>
 	  <th width="25%">Byte</th>
@@ -9709,6 +9962,9 @@ IV.A.2. Disk Format: Level 2A2 - Data Object Header Messages</a></h3>
     <br />
     <div align="center">
       <table class="desc">
+    <caption>
+        Fields: Time Property Description
+    </caption>
 	<tr>
           <th width="30%">Field Name</th>
           <th>Description</th>
@@ -9732,9 +9988,9 @@ IV.A.2. Disk Format: Level 2A2 - Data Object Header Messages</a></h3>
     
     <div align="center">
       <table class="desc">
-	<caption>
-	  String Bit Field Description
-	</caption>
+    <caption>
+        Bits: String Bit Field Description
+    </caption>
 
 	<tr>
 	  <th width="10%">Bits</th>
@@ -9836,9 +10092,9 @@ IV.A.2. Disk Format: Level 2A2 - Data Object Header Messages</a></h3>
     
     <div align="center">
       <table class="desc">
-	<caption>
-	  Bitfield Bit Field Description
-	</caption>
+    <caption>
+        Bits: Bitfield Bit Field Description
+    </caption>
 
 	<tr>
 	  <th width="10%">Bits</th>
@@ -9869,9 +10125,9 @@ IV.A.2. Disk Format: Level 2A2 - Data Object Header Messages</a></h3>
     <br />
     <div align="center">
       <table class="format">
-	<caption>
-	  Bit Field Property Description
-	</caption>
+    <caption>
+        Layout: Bit Field Property Description
+    </caption>
 
 	<tr>
 	  <th width="25%">Byte</th>
@@ -9890,6 +10146,9 @@ IV.A.2. Disk Format: Level 2A2 - Data Object Header Messages</a></h3>
     <br />
     <div align="center">
       <table class="desc">
+    <caption>
+        Fields: Bit Field Property Description
+    </caption>
 	<tr>
           <th width="30%">Field Name</th>
           <th>Description</th>
@@ -9922,9 +10181,9 @@ IV.A.2. Disk Format: Level 2A2 - Data Object Header Messages</a></h3>
     
     <div align="center">
       <table class="desc">
-	<caption>
-	  Opaque Bit Field Description
-	</caption>
+    <caption>
+        Bits: Opaque Bit Field Description
+    </caption>
 
 	<tr>
 	  <th width="10%">Bits</th>
@@ -9946,9 +10205,9 @@ IV.A.2. Disk Format: Level 2A2 - Data Object Header Messages</a></h3>
     <br />
     <div align="center">
       <table class="format">
-	<caption>
-	  Opaque Property Description
-	</caption>
+    <caption>
+        Layout: Opaque Property Description
+    </caption>
 
 	<tr>
 	  <th width="25%">Byte</th>
@@ -9967,6 +10226,9 @@ IV.A.2. Disk Format: Level 2A2 - Data Object Header Messages</a></h3>
     <br />
     <div align="center">
       <table class="desc">
+    <caption>
+        Fields: Opaque Property Description
+    </caption>
 	<tr>
           <th width="30%">Field Name</th>
           <th>Description</th>
@@ -9989,9 +10251,9 @@ IV.A.2. Disk Format: Level 2A2 - Data Object Header Messages</a></h3>
     
     <div align="center">
       <table class="desc">
-	<caption>
-	  Compound Bit Field Description
-	</caption>
+    <caption>
+        Bits: Compound Bit Field Description
+    </caption>
 
 	<tr>
 	  <th width="10%">Bits</th>
@@ -10029,9 +10291,9 @@ IV.A.2. Disk Format: Level 2A2 - Data Object Header Messages</a></h3>
     
     <div align="center">
       <table class="format">
-	<caption>
-	  Compound Properties Description for Datatype Version 1
-	</caption>
+    <caption>
+        Layout: Compound Properties Description for Datatype Version 1
+    </caption>
 
 	<tr>
 	  <th width="25%">Byte</th>
@@ -10087,6 +10349,9 @@ IV.A.2. Disk Format: Level 2A2 - Data Object Header Messages</a></h3>
     <br />
     <div align="center">
       <table class="desc">
+    <caption>
+        Fields: Compound Properties Description for Datatype Version 1
+    </caption>
 	<tr>
           <th width="30%">Field Name</th>
           <th>Description</th>
@@ -10156,11 +10421,12 @@ IV.A.2. Disk Format: Level 2A2 - Data Object Header Messages</a></h3>
 
     <br />
     <br />
+    <br />
     <div align="center">
       <table class="format">
-	<caption>
-	  Compound Properties Description for Datatype Version 2
-	</caption>
+    <caption>
+        Layout: Compound Properties Description for Datatype Version 2
+    </caption>
 
 	<tr>
 	  <th width="25%">Byte</th>
@@ -10187,6 +10453,9 @@ IV.A.2. Disk Format: Level 2A2 - Data Object Header Messages</a></h3>
     <br />
     <div align="center">
       <table class="desc">
+    <caption>
+        Fields: Compound Properties Description for Datatype Version 2
+    </caption>
 	<tr>
           <th width="30%">Field Name</th>
           <th>Description</th>
@@ -10224,11 +10493,12 @@ IV.A.2. Disk Format: Level 2A2 - Data Object Header Messages</a></h3>
 
     <br />
     <br />
+    <br />
     <div align="center">
       <table class="format">
-	<caption>
-	  Compound Properties Description for Datatype Version 3
-	</caption>
+    <caption>
+        Layout: Compound Properties Description for Datatype Version 3
+    </caption>
 
 	<tr>
 	  <th width="25%">Byte</th>
@@ -10255,6 +10525,9 @@ IV.A.2. Disk Format: Level 2A2 - Data Object Header Messages</a></h3>
     <br />
     <div align="center">
       <table class="desc">
+    <caption>
+        Fields: Compound Properties Description for Datatype Version 3
+    </caption>
 	<tr>
           <th width="30%">Field Name</th>
           <th>Description</th>
@@ -10292,9 +10565,9 @@ IV.A.2. Disk Format: Level 2A2 - Data Object Header Messages</a></h3>
     
     <div align="center">
       <table class="desc">
-	<caption>
-	  Reference Bit Field Description
-	</caption>
+    <caption>
+        Bits: Reference Bit Field Description
+    </caption>
 
 	<tr>
 	  <th width="10%">Bits</th>
@@ -10352,9 +10625,9 @@ IV.A.2. Disk Format: Level 2A2 - Data Object Header Messages</a></h3>
     
     <div align="center">
       <table class="desc">
-	<caption>
-	  Enumeration Bit Field Description
-	</caption>
+    <caption>
+        Bits: Enumeration Bit Field Description
+    </caption>
 
 	<tr>
 	  <th width="10%">Bits</th>
@@ -10378,9 +10651,10 @@ IV.A.2. Disk Format: Level 2A2 - Data Object Header Messages</a></h3>
     <br />
     <div align="center">
       <table class="format">
-	<caption>
-	  Enumeration Property Description for Datatype Versions 1 and 2
-	</caption>
+    <caption>
+        Layout: Enumeration Property Description for Datatype Versions 
+        1 and 2
+    </caption>
 
 	<tr>
 	  <th width="25%">Byte</th>
@@ -10407,6 +10681,10 @@ IV.A.2. Disk Format: Level 2A2 - Data Object Header Messages</a></h3>
     <br />
     <div align="center">
       <table class="desc">
+    <caption>
+        Fields: Enumeration Property Description for Datatype Versions 
+        1 and 2
+    </caption>
 	<tr>
           <th width="30%">Field Name</th>
           <th>Description</th>
@@ -10447,11 +10725,12 @@ IV.A.2. Disk Format: Level 2A2 - Data Object Header Messages</a></h3>
 
     <br />
     <br />
+    <br />
     <div align="center">
       <table class="format">
-	<caption>
-	  Enumeration Property Description for Datatype Version 3
-	</caption>
+    <caption>
+        Layout: Enumeration Property Description for Datatype Version 3
+    </caption>
 
 	<tr>
 	  <th width="25%">Byte</th>
@@ -10478,6 +10757,9 @@ IV.A.2. Disk Format: Level 2A2 - Data Object Header Messages</a></h3>
     <br />
     <div align="center">
       <table class="desc">
+    <caption>
+        Fields: Enumeration Property Description for Datatype Version 3
+    </caption>
 	<tr>
           <th width="30%">Field Name</th>
           <th>Description</th>
@@ -10523,9 +10805,9 @@ IV.A.2. Disk Format: Level 2A2 - Data Object Header Messages</a></h3>
     
     <div align="center">
       <table class="desc">
-	<caption>
-	  Variable-length Bit Field Description
-	</caption>
+    <caption>
+        Bits: Variable-length Bit Field Description
+    </caption>
 
 	<tr>
 	  <th width="10%">Bits</th>
@@ -10669,7 +10951,7 @@ IV.A.2. Disk Format: Level 2A2 - Data Object Header Messages</a></h3>
     <div align="center">
       <table class="format">
         <caption>
-          Variable-length Property Description
+            Layout: Variable-length Property Description
         </caption>
 
         <tr>
@@ -10689,6 +10971,9 @@ IV.A.2. Disk Format: Level 2A2 - Data Object Header Messages</a></h3>
     <br />
     <div align="center">
       <table class="desc">
+        <caption>
+            Fields: Variable-length Property Description
+        </caption>
 	<tr>
           <th width="10%">Field Name</th>
           <th>Description</th>
@@ -10726,7 +11011,7 @@ IV.A.2. Disk Format: Level 2A2 - Data Object Header Messages</a></h3>
     <div align="center">
       <table class="format">
         <caption>
-          Array Property Description for Datatype Version 2
+            Layout: Array Property Description for Datatype Version 2
         </caption>
 
         <tr>
@@ -10771,6 +11056,9 @@ IV.A.2. Disk Format: Level 2A2 - Data Object Header Messages</a></h3>
     <br />
     <div align="center">
       <table class="desc">
+        <caption>
+            Fields: Array Property Description for Datatype Version 2
+        </caption>
 	<tr>
           <th width="30%">Field Name</th>
           <th>Description</th>
@@ -10824,10 +11112,12 @@ IV.A.2. Disk Format: Level 2A2 - Data Object Header Messages</a></h3>
     </div>
 
     <br />
+    <br />
+    <br />
     <div align="center">
       <table class="format">
         <caption>
-          Array Property Description for Datatype Version 3
+            Layout: Array Property Description for Datatype Version 3
         </caption>
 
         <tr>
@@ -10862,6 +11152,9 @@ IV.A.2. Disk Format: Level 2A2 - Data Object Header Messages</a></h3>
     <br />
     <div align="center">
       <table class="desc">
+        <caption>
+            Fields: Array Property Description for Datatype Version 3
+        </caption>
 	<tr>
           <th width="30%">Field Name</th>
           <th>Description</th>
@@ -10902,7 +11195,6 @@ IV.A.2. Disk Format: Level 2A2 - Data Object Header Messages</a></h3>
 
     
 
-<br />
 <h4><a name="OldFillValueMessage">IV.A.2.e. The Data Storage - 
 Fill Value (Old) Message</a></h4>
 
@@ -10936,9 +11228,9 @@ Fill Value (Old) Message</a></h4>
     
     <div align="center">
       <table class="format">
-	<caption>
-	  Fill Value Message (Old)
-	</caption>
+    <caption>
+        Layout: Fill Value Message (Old)
+    </caption>
 
 	<tr>
 	  <th width="25%">byte</th>
@@ -10960,6 +11252,9 @@ Fill Value (Old) Message</a></h4>
     <br />
     <div align="center">
       <table class="desc">
+    <caption>
+        Fields: Fill Value Message (Old)
+    </caption>
 	<tr>
           <th width="30%">Field Name</th>
           <th>Description</th>
@@ -10985,7 +11280,6 @@ Fill Value (Old) Message</a></h4>
     </div>
     
 
-<br />
 <h4><a name="FillValueMessage">IV.A.2.f. The Data Storage - 
 Fill Value Message</a></h4>
 
@@ -11010,9 +11304,9 @@ Fill Value Message</a></h4>
     
     <div align="center">
       <table class="format">
-	<caption>
-	  Fill Value Message - Versions 1 and 2
-	</caption>
+    <caption>
+        Layout: Fill Value Message - Versions 1 and 2
+    </caption>
 
 	<tr>
 	  <th width="25%">byte</th>
@@ -11041,6 +11335,9 @@ Fill Value Message</a></h4>
     <br />
     <div align="center">
       <table class="desc">
+    <caption>
+        Fields: Fill Value Message - Versions 1 and 2
+    </caption>
 	<tr>
           <th width="30%">Field Name</th>
           <th>Description</th>
@@ -11205,11 +11502,13 @@ Fill Value Message</a></h4>
     </div>
 
     <br />
+    <br />
+    <br />
     <div align="center">
       <table class="format">
-	<caption>
-	  Fill Value Message - Version 3
-	</caption>
+    <caption>
+        Layout: Fill Value Message - Version 3
+    </caption>
 
 	<tr>
 	  <th width="25%">byte</th>
@@ -11237,6 +11536,9 @@ Fill Value Message</a></h4>
     <br />
     <div align="center">
       <table class="desc">
+    <caption>
+        Layout: Fill Value Message - Version 3
+    </caption>
 	<tr>
           <th width="30%">Field Name</th>
           <th>Description</th>
@@ -11352,7 +11654,6 @@ Fill Value Message</a></h4>
     </div>
     
 
-<br />
 <h4><a name="LinkMessage">IV.A.2.g. The Link Message</a></h4>
 
     <!-- start msgdesc table -->
@@ -11379,9 +11680,9 @@ Fill Value Message</a></h4>
     
     <div align="center">
       <table class="format">
-	<caption>
-	  Link Message
-	</caption>
+    <caption>
+        Layout: Link Message
+    </caption>
 
 	<tr>
 	  <th width="25%">byte</th>
@@ -11416,6 +11717,9 @@ Fill Value Message</a></h4>
     <br />
     <div align="center">
       <table class="desc">
+    <caption>
+        Fields: Link Message
+    </caption>
 	<tr>
           <th width="30%">Field Name</th>
           <th>Description</th>
@@ -11676,7 +11980,6 @@ Fill Value Message</a></h4>
       </table>
     </div>
 
-<br />
 <h4><a name="ExternalFileListMessage">IV.A.2.h. The Data Storage - 
 External Data Files Message</a></h4>
 
@@ -11704,9 +12007,9 @@ External Data Files Message</a></h4>
     
     <div align="center">
       <table class="format">
-	<caption>
-	  External File List Message
-	</caption>
+    <caption>
+        Layout: External File List Message
+    </caption>
 
 	<tr>
 	  <th width="25%">byte</th>
@@ -11749,6 +12052,9 @@ External Data Files Message</a></h4>
     <br />
     <div align="center">
 	<table class="desc">
+    <caption>
+        Fields: External File List Message
+    </caption>
 	  <tr>
 	    <th width="30%">Field Name</th>
 	    <th>Description</th>
@@ -11814,11 +12120,13 @@ External Data Files Message</a></h4>
     </div>
 
     <br />
+    <br />
+    <br />
     <div align="center">
       <table class="format">
-	<caption>
-	  External File List Slot 
-	</caption>
+    <caption>
+        Layout: External File List Slot 
+    </caption>
 
 	<tr>
 	  <th width="25%">byte</th>
@@ -11855,6 +12163,9 @@ External Data Files Message</a></h4>
     <br />
     <div align="center">
 	<table class="desc">
+    <caption>
+        Fields: External File List Slot 
+    </caption>
 	  <tr>
 	    <th width="30%">Field Name</th>
 	    <th>Description</th>
@@ -11908,7 +12219,6 @@ External Data Files Message</a></h4>
     </div>
     
 
-<br />
 <h4><a name="LayoutMessage">IV.A.2.i. The Data Layout Message</a></h4>
 
 <p style="background-color:#ff9999">change for 1.10</p>
@@ -11935,7 +12245,7 @@ External Data Files Message</a></h4>
         <li>Chunked: The array domain is regularly decomposed into 
         chunks, and each chunk is allocated and stored separately. This 
         layout supports arbitrary element traversals, compression, 
-        encryption, and checksums. (these features are described 
+        encryption, and checksums (these features are described 
         in other messages). The message stores the size of a chunk 
         instead of the size of the entire array; the storage size of 
         the entire array can be calculated by traversing the chunk index
@@ -11956,9 +12266,9 @@ External Data Files Message</a></h4>
     
     <div align="center">
       <table class="format">
-	<caption>
-	  Data Layout Message (Versions 1 and 2)
-	</caption>
+    <caption>
+        Layout: Data Layout Message (Versions 1 and 2)
+    </caption>
 
 	<tr>
 	  <th width="25%">byte</th>
@@ -12026,6 +12336,9 @@ External Data Files Message</a></h4>
     <br />
     <div align="center">
       <table class="desc">
+    <caption>
+        Fields: Data Layout Message (Versions 1 and 2)
+    </caption>
 	<tr>
 	  <th width="30%">Field Name</th>
 	  <th>Description</th>
@@ -12163,9 +12476,9 @@ External Data Files Message</a></h4>
     
     <div align="center">
       <table class="format">
-	<caption>
-	  <b>Data Layout Message (Version 3)</b>
-	</caption>
+    <caption>
+        Layout: Data Layout Message (Version 3)
+    </caption>
 
 	<tr>
 	  <th width="25%">byte</th>
@@ -12189,6 +12502,9 @@ External Data Files Message</a></h4>
     <br />
     <div align="center">
       <table class="desc">
+    <caption>
+        Fields: Data Layout Message (Version 3)
+    </caption>
 	<tr>
 	  <th width="30%">Field Name</th>
 	  <th>Description</th>
@@ -12265,9 +12581,9 @@ External Data Files Message</a></h4>
     
     <div align="center">
       <table class="format">
-	<caption>
-	  Compact Storage Property Description
-	</caption>
+    <caption>
+        Layout: Compact Storage Property Description
+    </caption>
 
 	<tr>
 	  <th width="25%">byte</th>
@@ -12290,6 +12606,9 @@ External Data Files Message</a></h4>
     <br />
     <div align="center">
       <table class="desc">
+    <caption>
+        Fields: Compact Storage Property Description
+    </caption>
 	<tr>
           <th width="30%">Field Name</th>
           <th>Description</th>
@@ -12313,15 +12632,15 @@ External Data Files Message</a></h4>
 
     <br />
     <a name="ContiguousStorage"></a>
-    <p>Class-specific information for contiguous storage (layout class 1):  (Note: The dimensionality information
-       is in the Dataspace message)</p>
+    <p>Class-specific information for contiguous storage (layout class 1):  
+    (Note: The dimensionality information is in the Dataspace message)</p>
 
     
     <div align="center">
       <table class="format">
-	<caption>
-	  Contiguous Storage Property Description
-	</caption>
+    <caption>
+        Layout: Contiguous Storage Property Description
+    </caption>
 
 	<tr>
 	  <th width="25%">byte</th>
@@ -12360,6 +12679,9 @@ External Data Files Message</a></h4>
     <br />
     <div align="center">
       <table class="desc">
+    <caption>
+        Fields: Contiguous Storage Property Description
+    </caption>
 	<tr>
           <th width="30%">Field Name</th>
           <th>Description</th>
@@ -12389,9 +12711,9 @@ External Data Files Message</a></h4>
     
     <div align="center">
       <table class="format">
-	<caption>
-	  Chunked Storage Property Description
-	</caption>
+    <caption>
+        Layout: Chunked Storage Property Description
+    </caption>
 
 	<tr>
 	  <th width="25%">byte</th>
@@ -12445,6 +12767,9 @@ External Data Files Message</a></h4>
     <br />
     <div align="center">
       <table class="desc">
+    <caption>
+        Fields: Chunked Storage Property Description
+    </caption>
 	<tr>
           <th width="30%">Field Name</th>
           <th>Description</th>
@@ -12495,9 +12820,9 @@ External Data Files Message</a></h4>
     <br />
     <div align="center" style="background-color:#DDEEEE">
       <table class="format">
-	<caption>
-	  <b>Data Layout Message (Version 4)</b>
-	</caption>
+    <caption>
+        Layout: Data Layout Message (Version 4)
+    </caption>
 
 	<tr>
 	  <th width="25%">byte</th>
@@ -12521,6 +12846,9 @@ External Data Files Message</a></h4>
     <br />
     <div align="center" style="background-color:#DDEEEE">
       <table class="desc">
+    <caption>
+        Fields: Data Layout Message (Version 4)
+    </caption>
 	<tr>
 	  <th width="30%">Field Name</th>
 	  <th>Description</th>
@@ -12620,14 +12948,14 @@ External Data Files Message</a></h4>
 
     <br />
     <a name="ChunkedStorage"></a>
-    <p style="background-color:#DDEEEE">Class-specific information for chunked storage (layout class 2):
+    <p style="background-color:#DDEEEE">Class-specific information 
+    for chunked storage (layout class 2):</p>
 
-    <br />
     <div align="center" style="background-color:#DDEEEE">
       <table class="format">
-	<caption>
-	  Chunked Storage Property Description
-	</caption>
+    <caption>
+        Layout: Chunked Storage Property Description
+    </caption>
 
 	<tr>
 	  <th width="25%">byte</th>
@@ -12678,6 +13006,9 @@ External Data Files Message</a></h4>
     <br />
     <div align="center" style="background-color:#DDEEEE">
       <table class="desc">
+    <caption>
+        Fields: Chunked Storage Property Description
+    </caption>
 	<tr>
           <th width="30%">Field Name</th>
           <th>Description</th>
@@ -12850,20 +13181,20 @@ External Data Files Message</a></h4>
     <br />
 
 <ol>
-
-<li>
+    <li style="background-color:#DDEEEE">
     <a name="IndexInfoSingle">
-    <p style="background-color:#DDEEEE">Index-specific information for <i>Single Chunk</i>:
-</li>
-The following information exists only when the chunk is filtered i.e.
-when DONT_FILTER_PARTIAL_BOUND_CHUNKS (bit 0) is enabled in the field <em>flags</em>.
-<p>
-    <br />
+    Index-specific information for <i>Single Chunk</i>:
+    </li>
+    
+    <p>The following information exists only when the chunk is filtered. 
+    In other words, when <code>DONT_FILTER_PARTIAL_BOUND_CHUNKS</code> 
+    (bit 0) is enabled in the field <em>flags</em>.</p>
+    
     <div align="center" style="background-color:#DDEEEE">
       <table class="format">
-	<caption>
-	  Single Chunk Indexing Information
-	</caption>
+    <caption>
+        Layout: Single Chunk Indexing Information
+    </caption>
 
 	<tr>
 	  <th width="25%">byte</th>
@@ -12881,21 +13212,24 @@ when DONT_FILTER_PARTIAL_BOUND_CHUNKS (bit 0) is enabled in the field <em>flags<
 	</tr>
 
       </table>
-    </div>
 
       <table class="note">
         <tr>
-            <td>&nbsp;</td>
-            <td>
+            <td width="60%">&nbsp;</td>
+            <td width="40%">
             (Items marked with an &lsquo;L&rsquo; in the above table are
             of the size specified in the <a href="#SizeOfLengthsV0">Size 
             of Lengths</a> field in the superblock.)
             </td></tr>
       </table>
+    </div>
 
     <br />
     <div align="center" style="background-color:#DDEEEE">
       <table class="desc">
+    <caption>
+        Fields: Single Chunk Indexing Information
+    </caption>
 	<tr>
           <th width="30%">Field Name</th>
           <th>Description</th>
@@ -12903,15 +13237,13 @@ when DONT_FILTER_PARTIAL_BOUND_CHUNKS (bit 0) is enabled in the field <em>flags<
 
 	<tr>
 	  <td>Size of filtered chunk</td>
-	  <td><p>This field is the size of a filtered chunk. <p>
-              </p>
+	  <td><p>This field is the size of a filtered chunk.</p>
           </td>
 	</tr>
 
 	<tr>
 	  <td>Filters for chunk</td>
-	  <td><p>This field contains filters for the chunk. <p>
-              </p>
+	  <td><p>This field contains filters for the chunk.</p>
           </td>
 	</tr>
       </table>
@@ -12920,18 +13252,16 @@ when DONT_FILTER_PARTIAL_BOUND_CHUNKS (bit 0) is enabled in the field <em>flags<
 
     <br />
 
-<li>
+<li style="background-color:#DDEEEE">
     <a name="IndexInfoImplicit">
-    <p style="background-color:#DDEEEE">Index-specific information for 
-    <i>Implicit</i>:
+    Index-specific information for <i>Implicit</i>:
 </li>
 
-    <br />
     <div align="center" style="background-color:#DDEEEE">
       <table class="format">
-	<caption>
-	  Implicit Indexing Information
-	</caption>
+    <caption>
+        Layout: Implicit Indexing Information
+    </caption>
 
 	<tr>
 	  <th width="25%">byte</th>
@@ -12941,24 +13271,24 @@ when DONT_FILTER_PARTIAL_BOUND_CHUNKS (bit 0) is enabled in the field <em>flags<
 	</tr>
 
 	<tr>
-          <td colspan="4" bgcolor="#DDDDDD"><em>No specific indexing information</em></td>
+          <td colspan="4" bgcolor="#DDDDDD">
+          <em>No specific indexing information</em></td>
 	</tr>
 
       </table>
     </div>
 
     <br />
- <li>
+<li style="background-color:#DDEEEE">
     <a name="IndexInfoFixed">
-    <p style="background-color:#DDEEEE">Index-specific information for <i>Fixed Array</i>:
+    Index-specific information for <i>Fixed Array</i>:
 </li>
 
-    <br />
     <div align="center" style="background-color:#DDEEEE">
       <table class="format">
-	<caption>
-	  Fixed Array Indexing Information
-	</caption>
+    <caption>
+        Layout: Fixed Array Indexing Information
+    </caption>
 
 	<tr>
 	  <th width="25%">byte</th>
@@ -12978,6 +13308,9 @@ when DONT_FILTER_PARTIAL_BOUND_CHUNKS (bit 0) is enabled in the field <em>flags<
     <br />
     <div align="center" style="background-color:#DDEEEE">
       <table class="desc">
+    <caption>
+        Fields: Fixed Array Indexing Information
+    </caption>
 	<tr>
           <th width="30%">Field Name</th>
           <th>Description</th>
@@ -12996,17 +13329,16 @@ when DONT_FILTER_PARTIAL_BOUND_CHUNKS (bit 0) is enabled in the field <em>flags<
     </p>
 
     <br />
-<li>
+<li style="background-color:#DDEEEE">
     <a name="IndexInfoExtensible">
-    <p style="background-color:#DDEEEE">Index-specific information for <i>Extensible Array</i>:
+    Index-specific information for <i>Extensible Array</i>:
 </li>
 
-    <br />
     <div align="center" style="background-color:#DDEEEE">
       <table class="format">
-	<caption>
-	  Extensible Array Indexing Information
-	</caption>
+    <caption>
+        Layout: Extensible Array Indexing Information
+    </caption>
 
 	<tr>
 	  <th width="25%">byte</th>
@@ -13032,6 +13364,9 @@ when DONT_FILTER_PARTIAL_BOUND_CHUNKS (bit 0) is enabled in the field <em>flags<
     <br />
     <div align="center" style="background-color:#DDEEEE">
       <table class="desc">
+    <caption>
+        Fields: Extensible Array Indexing Information
+    </caption>
 	<tr>
           <th width="30%">Field Name</th>
           <th>Description</th>
@@ -13080,18 +13415,17 @@ when DONT_FILTER_PARTIAL_BOUND_CHUNKS (bit 0) is enabled in the field <em>flags<
     </div>
     </p>
     <br />
-<li>
+    
+<li style="background-color:#DDEEEE">
     <a name="IndexInfoV2Btrees">
-    <p style="background-color:#DDEEEE">Index-specific information for <i>Version 2 B-tree</i>:
+    Index-specific information for <i>Version 2 B-tree</i>:
 </li>
-</ol>
 
-    <br />
     <div align="center" style="background-color:#DDEEEE">
       <table class="format">
-	<caption>
-	  Version 2 B-tree Indexing Information
-	</caption>
+    <caption>
+        Layout: Version 2 B-tree Indexing Information
+    </caption>
 
 	<tr>
 	  <th width="25%">byte</th>
@@ -13107,7 +13441,8 @@ when DONT_FILTER_PARTIAL_BOUND_CHUNKS (bit 0) is enabled in the field <em>flags<
 	<tr>
 	  <td>Split Percent</td>
 	  <td>Merge Percent</td>
-          <td colspan="2" bgcolor="#DDDDDD"><em>This space inserted only to align table nicely</em></td>
+          <td colspan="2" bgcolor="#DDDDDD">
+          <em>This space inserted only to align table nicely</em></td>
 	</tr>
       </table>
     </div>
@@ -13115,6 +13450,9 @@ when DONT_FILTER_PARTIAL_BOUND_CHUNKS (bit 0) is enabled in the field <em>flags<
     <br />
     <div align="center" style="background-color:#DDEEEE">
       <table class="desc">
+    <caption>
+        Fields: Version 2 B-tree Indexing Information
+    </caption>
 	<tr>
           <th width="30%">Field Name</th>
           <th>Description</th>
@@ -13138,17 +13476,20 @@ when DONT_FILTER_PARTIAL_BOUND_CHUNKS (bit 0) is enabled in the field <em>flags<
 	</tr>
       </table>
     </div>
-    </p>
+    </ol>
+
+
 
     <br />
     <a name="VirtualStorage"></a>
-    <p style="background-color:#DDEEEE">Class-specific information for virtual storage (layout class 3):
+    <p style="background-color:#DDEEEE">
+    Class-specific information for virtual storage (layout class 3):</p>
    
     <div align="center" style="background-color:#DDEEEE">
       <table class="format">
-	<caption>
-	  Virtual Storage Property Description
-	</caption>
+    <caption>
+        Layout: Virtual Storage Property Description
+    </caption>
 
 	<tr>
 	  <th width="25%">byte</th>
@@ -13181,6 +13522,9 @@ when DONT_FILTER_PARTIAL_BOUND_CHUNKS (bit 0) is enabled in the field <em>flags<
     <br />
     <div align="center">
       <table class="desc">
+    <caption>
+        Fields: Virtual Storage Property Description
+    </caption>
 	<tr>
           <th width="30%">Field Name</th>
           <th>Description</th>
@@ -13200,10 +13544,11 @@ when DONT_FILTER_PARTIAL_BOUND_CHUNKS (bit 0) is enabled in the field <em>flags<
 	</tr>
       </table>
     </div>
-<p>
-See <a href="#AppendixD">Appendix D: Virtual Dataset/Global Heap???</a>.
 
-<br />
+<p>See <a href="#AppendixD">Appendix D: Virtual Dataset Global Heap 
+Block</a>.</p>
+
+
 <h4><a name="BogusMessage">IV.A.2.j. The Bogus Message</a></h4>
 
     <!-- start msgdesc table -->
@@ -13225,9 +13570,9 @@ See <a href="#AppendixD">Appendix D: Virtual Dataset/Global Heap???</a>.
     
     <div align="center">
       <table class="format">
-	<caption>
-	  Bogus Message
-	</caption>
+    <caption>
+        Layout: Bogus Message
+    </caption>
 
 	<tr>
 	  <th width="25%">byte</th>
@@ -13245,6 +13590,9 @@ See <a href="#AppendixD">Appendix D: Virtual Dataset/Global Heap???</a>.
     <br />
     <div align="center">
       <table class="desc">
+    <caption>
+        Fields: Bogus Message
+    </caption>
 	<tr>
 	  <th width="30%">Field Name</th>
 	  <th>Description</th>
@@ -13259,7 +13607,6 @@ See <a href="#AppendixD">Appendix D: Virtual Dataset/Global Heap???</a>.
       </table>
     </div>
     
-<br />
 <h4><a name="GroupInfoMessage">IV.A.2.k. The Group Info Message
 </a></h4>
 
@@ -13287,9 +13634,9 @@ See <a href="#AppendixD">Appendix D: Virtual Dataset/Global Heap???</a>.
     
     <div align="center">
       <table class="format">
-	<caption>
-	  Group Info Message
-	</caption>
+    <caption>
+        Layout: Group Info Message
+    </caption>
 
 	<tr>
 	  <th width="25%">byte</th>
@@ -13318,6 +13665,9 @@ See <a href="#AppendixD">Appendix D: Virtual Dataset/Global Heap???</a>.
     <br />
     <div align="center">
       <table class="desc">
+    <caption>
+        Fields: Group Info Message
+    </caption>
 	<tr>
           <th width="30%">Field Name</th>
           <th>Description</th>
@@ -13398,7 +13748,6 @@ See <a href="#AppendixD">Appendix D: Virtual Dataset/Global Heap???</a>.
     </div>
 <!--    </p> -->
     
-<br />
 <h4><a name="FilterMessage">IV.A.2.l. The Data Storage - Filter 
 Pipeline Message</a></h4>
 
@@ -13428,9 +13777,9 @@ Pipeline Message</a></h4>
     
     <div align="center">
       <table class="format">
-	<caption>
-	  Filter Pipeline Message - Version 1
-	</caption>
+    <caption>
+        Layout: Filter Pipeline Message - Version 1
+    </caption>
 
 	<tr>
 	  <th width="25%">byte</th>
@@ -13458,6 +13807,9 @@ Pipeline Message</a></h4>
     <br />
     <div align="center">
       <table class="desc">
+    <caption>
+        Fields: Filter Pipeline Message - Version 1
+    </caption>
 	<tr>
           <th width="30%">Field Name</th>
           <th>Description</th>
@@ -13485,11 +13837,13 @@ Pipeline Message</a></h4>
     </div>
 
     <br />
+    <br />
+    <br />
     <div align="center">
       <table class="format">
-	<caption>
-	  Filter Description
-	</caption>
+    <caption>
+        Layout: Filter Description - Version 1
+    </caption>
 
 	<tr>
 	  <th width="25%">byte</th>
@@ -13525,6 +13879,9 @@ Pipeline Message</a></h4>
     <br />
     <div align="center">
       <table class="desc">
+    <caption>
+        Fields: Filter Description - Version 1
+    </caption>
 	<tr>
           <th width="30%">Field Name</th>
           <th>Description</th>
@@ -13686,11 +14043,13 @@ Pipeline Message</a></h4>
     </div>
 
     <br />
+    <br />
+    <br />
     <div align="center">
       <table class="format">
-	<caption>
-	  Filter Pipeline Message - Version 2
-	</caption>
+    <caption>
+        Layout: Filter Pipeline Message - Version 2
+    </caption>
 
 	<tr>
 	  <th width="25%">byte</th>
@@ -13714,6 +14073,9 @@ Pipeline Message</a></h4>
     <br />
     <div align="center">
       <table class="desc">
+    <caption>
+        Fields: Filter Pipeline Message - Version 2
+    </caption>
 	<tr>
           <th width="30%">Field Name</th>
           <th>Description</th>
@@ -13741,11 +14103,13 @@ Pipeline Message</a></h4>
     </div>
 
     <br />
+    <br />
+    <br />
     <div align="center">
       <table class="format">
-	<caption>
-	  Filter Description
-	</caption>
+    <caption>
+        Layout: Filter Description - Version 2
+    </caption>
 
 	<tr>
 	  <th width="25%">byte</th>
@@ -13777,6 +14141,9 @@ Pipeline Message</a></h4>
     <br />
     <div align="center">
       <table class="desc">
+    <caption>
+        Fields: Filter Description - Version 2
+    </caption>
 	<tr>
           <th width="30%">Field Name</th>
           <th>Description</th>
@@ -13942,7 +14309,6 @@ Pipeline Message</a></h4>
       </table>
     </div>
     
-<br />
 <h4><a name="AttributeMessage">IV.A.2.m. The Attribute Message</a></h4>
 
     <!-- start msgdesc table -->
@@ -13980,9 +14346,9 @@ Pipeline Message</a></h4>
     
     <div align="center">
       <table class="format">
-	<caption>
-	  Attribute Message (Version 1)
-	</caption>
+    <caption>
+        Layout: Attribute Message (Version 1)
+    </caption>
 
 	<tr>
 	  <th width="25%">byte</th>
@@ -14023,6 +14389,9 @@ Pipeline Message</a></h4>
     <br />
     <div align="center">
       <table class="desc">
+    <caption>
+        Fields: Attribute Message (Version 1)
+    </caption>
 	<tr>
           <th width="30%">Field Name</th>
           <th>Description</th>
@@ -14107,11 +14476,13 @@ Pipeline Message</a></h4>
     </div>
 
     <br />
+    <br />
+    <br />
     <div align="center">
       <table class="format">
-	<caption>
-	  Attribute Message (Version 2)
-	</caption>
+    <caption>
+        Layout: Attribute Message (Version 2)
+    </caption>
 
 	<tr align="center">
 	  <th width="25%">byte</th>
@@ -14152,6 +14523,9 @@ Pipeline Message</a></h4>
     <br />
     <div align="center">
       <table class="desc">
+    <caption>
+        Fields: Attribute Message (Version 2)
+    </caption>
 	<tr>
           <th width="30%">Field Name</th>
           <th>Description</th>
@@ -14270,11 +14644,13 @@ Pipeline Message</a></h4>
     </div>
 
     <br />
+    <br />
+    <br />
     <div align="center">
       <table class="format">
-	<caption>
-	  Attribute Message (Version 3)
-	</caption>
+    <caption>
+        Layout: Attribute Message (Version 3)
+    </caption>
 
 	<tr align="center">
 	  <th width="25%">byte</th>
@@ -14320,6 +14696,9 @@ Pipeline Message</a></h4>
     <br />
     <div align="center">
       <table class="desc">
+    <caption>
+        Fields: Attribute Message (Version 3)
+    </caption>
 	<tr>
           <th width="30%">Field Name</th>
           <th>Description</th>
@@ -14460,7 +14839,6 @@ Pipeline Message</a></h4>
       </table>
     </div>
     
-<br />
 <h4><a name="CommentMessage">IV.A.2.n. The Object Comment 
 Message</a></h4>
 
@@ -14485,9 +14863,9 @@ Message</a></h4>
     
     <div align="center">
       <table class="format">
-	<caption>
-	  Name Message
-	</caption>
+    <caption>
+        Layout: Object Comment Message
+    </caption>
 
 	<tr>
 	  <th width="25%">byte</th>
@@ -14505,6 +14883,9 @@ Message</a></h4>
     <br />
     <div align="center">
       <table class="desc">
+    <caption>
+        Fields: Object Comment Message
+    </caption>
 	<tr>
           <th width="30%">Field Name</th>
           <th>Description</th>
@@ -14517,7 +14898,6 @@ Message</a></h4>
       </table>
     </div>
     
-<br />
 <h4><a name="OldModificationTimeMessage">IV.A.2.o. The Object 
 Modification Time (Old) Message</a></h4>
 
@@ -14549,9 +14929,9 @@ Modification Time (Old) Message</a></h4>
     
     <div align="center">
       <table class="format">
-	<caption>
-	  Modification Time Message
-	</caption>
+    <caption>
+        Layout: Modification Time Message
+    </caption>
 
 	<tr>
 	  <th width="25%">byte</th>
@@ -14584,6 +14964,9 @@ Modification Time (Old) Message</a></h4>
     <br />
     <div align="center">
       <table class="desc">
+    <caption>
+        Fields: Modification Time Message
+    </caption>
 	<tr>
           <th width="30%">Field Name</th>
           <th>Description</th>
@@ -14635,7 +15018,6 @@ Modification Time (Old) Message</a></h4>
       </table>
     </div>
     
-<br />
 <h4><a name="SOHMTableMessage">IV.A.2.p. The Shared Message Table 
 Message</a></h4>
 
@@ -14661,9 +15043,9 @@ Message</a></h4>
     
     <div align="center">
       <table class="format">
-	<caption>
-	  Shared Message Table Message
-	</caption>
+    <caption>
+        Layout: Shared Message Table Message
+    </caption>
 
 	<tr>
 	  <th width="25%">byte</th>
@@ -14704,6 +15086,9 @@ Message</a></h4>
     <br />
     <div align="center">
       <table class="desc">
+    <caption>
+        Fields: Shared Message Table Message
+    </caption>
 	<tr>
           <th width="30%">Field Name</th>
           <th>Description</th>
@@ -14730,7 +15115,6 @@ Message</a></h4>
       </table>
     </div>
     
-<br />
 <h4><a name="ContinuationMessage">IV.A.2.q. The Object Header 
 Continuation Message</a></h4>
 
@@ -14756,7 +15140,7 @@ Continuation Message</a></h4>
     <div align="center">
       <table class="format">
         <caption>
-          Object Header Continuation Message
+            Layout: Object Header Continuation Message
         </caption>
 
         <tr>
@@ -14797,6 +15181,9 @@ Continuation Message</a></h4>
     <br />
     <div align="center">
       <table class="desc">
+        <caption>
+            Fields: Object Header Continuation Message
+        </caption>
         <tr>
           <th width="30%">Field Name</th>
           <th>Description</th>
@@ -14837,9 +15224,9 @@ Continuation Message</a></h4>
     </p>
     <div align="center">
       <table class="format">
-	<caption>
-	  Version 2 Object Header Continuation Block
-	</caption>
+    <caption>
+        Layout: Version 2 Object Header Continuation Block
+    </caption>
 
 	<tr>
 	  <th>byte</th>
@@ -14898,6 +15285,9 @@ Continuation Message</a></h4>
     <br />
     <div align="center">
       <table class="desc">
+    <caption>
+        Fields: Version 2 Object Header Continuation Block
+    </caption>
 	<tr>
           <th width="30%">Field Name</th>
           <th>Description</th>
@@ -14977,7 +15367,6 @@ Continuation Message</a></h4>
       </table>
     </div>
     
-<br />
 <h4><a name="SymbolTableMessage">IV.A.2.r. The Symbol Table 
 Message</a></h4>
 
@@ -15002,7 +15391,7 @@ Message</a></h4>
     <div align="center">
       <table class="format">
         <caption>
-          <b>Symbol Table Message</b>
+            Layout: Symbol Table Message
         </caption>
 
         <tr>
@@ -15037,6 +15426,9 @@ Message</a></h4>
     <br />
     <div align="center">
       <table class="desc">
+        <caption>
+            Fields: Symbol Table Message
+        </caption>
         <tr>
           <th width="30%">Field Name</th>
           <th>Description</th>
@@ -15056,7 +15448,6 @@ Message</a></h4>
       </table>
     </div>
     
-<br />
 <h4><a name="ModificationTimeMessage">IV.A.2.s. The Object 
 Modification Time Message</a></h4>
 
@@ -15081,9 +15472,9 @@ Modification Time Message</a></h4>
     
     <div align="center">
       <table class="format">
-	<caption>
-	  Modification Time Message
-	</caption>
+    <caption>
+        Layout: Modification Time Message
+    </caption>
 
 	<tr>
 	  <th width="25%">byte</th>
@@ -15106,6 +15497,9 @@ Modification Time Message</a></h4>
     <br />
     <div align="center">
       <table class="desc">
+    <caption>
+        Fields: Modification Time Message
+    </caption>
 	<tr>
           <th width="30%">Field Name</th>
           <th>Description</th>
@@ -15144,7 +15538,6 @@ Modification Time Message</a></h4>
       </table>
     </div>
     
-<br />
 <h4><a name="BtreeKValuesMessage">IV.A.2.t. The B-tree 
 &lsquo;K&rsquo; Values Message</a></h4>
 
@@ -15169,9 +15562,9 @@ Modification Time Message</a></h4>
     
     <div align="center">
       <table class="format">
-	<caption>
-	  B-tree &lsquo;K&rsquo; Values Message
-	</caption>
+    <caption>
+        Layout: B-tree &lsquo;K&rsquo; Values Message
+    </caption>
 
 	<tr>
 	  <th width="25%">byte</th>
@@ -15196,6 +15589,9 @@ Modification Time Message</a></h4>
     <br />
     <div align="center">
       <table class="desc">
+    <caption>
+        Fields: B-tree &lsquo;K&rsquo; Values Message
+    </caption>
 	<tr>
           <th width="30%">Field Name</th>
           <th>Description</th>
@@ -15239,7 +15635,6 @@ Modification Time Message</a></h4>
       </table>
     </div>
     
-<br />
 <h4><a name="DrvInfoMessage">IV.A.2.u. The Driver Info 
 Message</a></h4>
 
@@ -15261,7 +15656,7 @@ Message</a></h4>
       &ldquo;Disk Format: Level 0C - Superblock Extension&rdquo;</a> 
       section for more information. For more information on the fields 
       in the driver info message, see the <a href="#DriverInfo"> 
-      &ldquo;Disk Format : Level 0B - File Driver Info&rdquo;</a> 
+      &ldquo;Disk Format: Level 0B - File Driver Info&rdquo;</a> 
       section; those who use the multi and family file drivers will 
       find this section particularly helpful.</td></tr>
     <tr><td colspan="2"><b>Format of Data:</b> See the tables 
@@ -15271,9 +15666,9 @@ Message</a></h4>
     
     <div align="center">
       <table class="format">
-	<caption>
-	  Driver Info Message
-	</caption>
+    <caption>
+        Layout: Driver Info Message
+    </caption>
 
 	<tr>
 	  <th width="25%">byte</th>
@@ -15305,6 +15700,9 @@ Message</a></h4>
     <br />
     <div align="center">
       <table class="desc">
+    <caption>
+        Fields: Driver Info Message
+    </caption>
 	<tr>
           <th width="30%">Field Name</th>
           <th>Description</th>
@@ -15340,7 +15738,6 @@ Message</a></h4>
       </table>
     </div>
     
-<br />
 <h4><a name="AinfoMessage">IV.A.2.v. The Attribute Info 
 Message</a></h4>
 
@@ -15365,9 +15762,9 @@ Message</a></h4>
     
     <div align="center">
       <table class="format">
-	<caption>
-	  Attribute Info Message
-	</caption>
+    <caption>
+        Layout: Attribute Info Message
+    </caption>
 
 	<tr>
 	  <th width="25%">byte</th>
@@ -15408,6 +15805,9 @@ Message</a></h4>
     <br />
     <div align="center">
       <table class="desc">
+    <caption>
+        Fields: Attribute Info Message
+    </caption>
 	<tr>
           <th width="30%">Field Name</th>
           <th>Description</th>
@@ -15483,7 +15883,6 @@ Message</a></h4>
       </table>
     </div>
     
-<br />
 <h4><a name="RefCountMessage">IV.A.2.w. The Object Reference 
 Count Message</a></h4>
 
@@ -15507,9 +15906,9 @@ Count Message</a></h4>
     
     <div align="center">
       <table class="format">
-	<caption>
-	  Object Reference Count
-	</caption>
+    <caption>
+        Layout: Object Reference Count
+    </caption>
 
 	<tr>
 	  <th width="25%">byte</th>
@@ -15532,6 +15931,9 @@ Count Message</a></h4>
     <br />
     <div align="center">
       <table class="desc">
+    <caption>
+        Fields: Object Reference Count
+    </caption>
 	<tr>
           <th width="30%">Field Name</th>
           <th>Description</th>
@@ -15595,9 +15997,9 @@ Message</a></h4>
     
     <div align="center">
       <table class="format">
-	<caption>
-	  File Space Info
-	</caption>
+    <caption>
+        Layout: File Space Info
+    </caption>
 
 	<tr>
 	  <th width="25%">byte</th>
@@ -15839,9 +16241,6 @@ for the last field).  </p>
 
 
 
-<br />
-<br />
-<hr />
 <h2><a name="AppendixA">
 V. Appendix A: Definitions</a></h2>
 
@@ -15874,9 +16273,6 @@ this section.</p>
 
 
 
-<br />
-<br />
-<hr />
 <h2><a name="AppendixB">
 VI. Appendix B: File Memory Allocation Types</a></h2>
 
@@ -15921,6 +16317,7 @@ VI. Appendix B: File Memory Allocation Types</a></h2>
       </table>
     </div>
     
+    <br />
 <p>There are other file memory allocation types that are mapped to the
 above six basic allocation types because they are similar in nature.
 The mapping is listed in the following table:
@@ -15965,7 +16362,9 @@ The mapping is listed in the following table:
       </table>
     </div>
     
-<p>Allocation types that are mapped to basic allocation types are described below:
+    <br />
+<p>Allocation types that are mapped to basic allocation types are 
+described below:
 </p>
     
     <div align="center">
@@ -16014,54 +16413,67 @@ The mapping is listed in the following table:
 	</tr>
       </table>
     </div>
-    <br />
+
 
 
 <br />
-<hr />
 <p style="background-color:#ff9999">change for 1.10</p>
 <h2><a name="AppendixC"> VII. Appendix C</a>: 
-Types of Indexes for Dataset Chunks</h3>
-For an HDF5 file without the latest format enabled,
-the library uses the
-<a href="#V1Btrees">Version 1 B-tree</a> to index dataset chunks.
-<p>
-For an HDF5 file with the latest format enabled, the library uses one of the following five indexing types
-depending on a chunked dataset's dimension specification and the way it is extended.
+Types of Indexes for Dataset Chunks</h2>
+
+<p>For an HDF5 file without the latest format enabled, the library 
+uses the <a href="#V1Btrees">Version 1 B-tree</a> to index dataset 
+chunks.</p>
+
+<p>For an HDF5 file with the latest format enabled, the library uses 
+one of the following five indexing types depending on a chunked 
+dataset&rsquo;s dimension specification and the way it is extended.
 </p>
 
     <a name="SingleChunk">
     <h3>VII.C.1. Single Chunk index</h3>
-    The <i>Single Chunk</i> index is used when the dataset fulfills the following conditions:
+    
+    <p>The <i>Single Chunk</i> index is used when the dataset fulfills 
+    the following conditions:</p>
+    
     <ul>
-    <li>the current, maximum and chunk dimension sizes are all the same</li>
+    <li>the current, maximum, and chunk dimension sizes are all the same</li>
     <li>filtered or non-filtered</li>
     </ul>
-    <p>
-    The dataset has only one chunk and the address
-    of the single chunk is stored in the version 4 <i>Data Layout</i> message.
-    See <a href="#ChunkedStorage">Chunked Storage Property Description</i></a>.
+    
+    <p>The dataset has only one chunk and the address of the single 
+    chunk is stored in the version 4 <i>Data Layout</i> message. 
+    See <a href="#ChunkedStorage">Chunked Storage Property 
+    Description</i></a>.</p>
 
     <a name="Implicit">
     <h3>VII.C.2. Implicit index</h3>
-    The <i>Implicit</i> index is used when the dataset fulfills the following conditions:
+    
+    <p>The <i>Implicit</i> index is used when the dataset fulfills 
+    the following conditions:</p>
+    
     <ul>
     <li>fixed maximum dimension sizes</li>
     <li>non-filtered only</li>
     <li>the timing for the space allocation of the dataset chunks is H5P_ALLOC_TIME_EARLY</li>
     </ul>
-    <p>
-    Since the dataset's dimension sizes are known and storage space is to be allocated early,
-    an array of dataset chunks are allocated based on the maximum dimension sizes when the dataset is created.
-    The base address of the array is stored in the version 4 <i>Data Layout</i> message.
-    See <a href="#ChunkedStorage">Chunked Storage Property Description</i></a>.
-    <p>
-    When accessing a dataset chunk with a specified offset, the address of the chunk in the array is computed as below:
-    <p>
-	<em>base address + (size of a chunk in bytes * chunk index associated with the offset)</em>
-    <p>
-    A chunk index starts at 0 and increases according to the
-    fastest changing dimension, then the next fastest, etc.
+    
+    <p>Since the dataset's dimension sizes are known and storage space 
+    is to be allocated early, an array of dataset chunks are allocated 
+    based on the maximum dimension sizes when the dataset is created. 
+    The base address of the array is stored in the version 4 
+    <i>Data Layout</i> message. See 
+    <a href="#ChunkedStorage">Chunked Storage Property Description</i></a>.
+    </p>
+    
+    <p>When accessing a dataset chunk with a specified offset, the 
+    address of the chunk in the array is computed as below:</p>
+    
+    <p><em>base address + (size of a chunk in bytes * chunk index 
+    associated with the offset)</em></p>
+    
+    <p>A chunk index starts at 0 and increases according to the 
+    fastest changing dimension, then the next fastest, and so on.
     <a name="ChunkIndex"></a>
     The chunk index for a dataset chunk offset is computed as below:
     <ol>
@@ -16117,44 +16529,48 @@ depending on a chunked dataset's dimension specification and the way it is exten
 
     <a name="FixedArray">
     <h3>VII.C.3. Fixed Array index</h3>
-    The <i>Fixed Array</i> index is used when the dataset fulfills the following conditions:
+    <p>The <i>Fixed Array</i> index is used when the dataset fulfills 
+    the following conditions:</p>
     <ul>
     <li>fixed maximum dimension sizes</li>
     <li>filtered or non-filtered</li>
     </ul>
-    <p>
-    Since the maximum number of chunks is known, 
-    an array of disk addresses based on the maximum # of chunks are allocated
-    when data is written to the dataset.
-    To access a dataset chunk with a specified offset,
-    the <a href="#ChunkIndex">chunk index</i></a>
-    associated with the offset is
-    calculated.  The index is mapped into the array to locate the disk address for the chunk.
-    </p>
-    The Fixed Array index structure provides space and speed improvements in locating chunks 
-    over index structures that handle more dynamic data accesses like
-    Version 2 B-trees index.
-    The entry into the Fixed Array is the Fixed Array header which contains metadata about the
-    elements stored in the array.  The header contains a pointer to a Data Block which stores 
-    the array of elements that describe the dataset chunks.
-    For improved efficiency, the array will be divided into multiple pages if
-    the number of elements exceeds a threshold value. 
-    The space for the Data Block and possibly Data Block pages are allocated as a single contiguous
-    block of space.
-    <p>
-    The content of the Data Block depends on whether paging is activated or not.  When paging
-    is not used, elements that describe the chunks are stored in the Data Block.
-    If paging is turned on, the Data Block contains a bitmap indicating which pages are initialized.
-    Then subsequent Data Block pages will contain the elements that describe the chunks.
-    <p>
-    An element describes either a filterd or non-filtered dataset chunk.  The formats
-    for both element types are described below.
+    
+    <p>Since the maximum number of chunks is known, an array of 
+    in-file-on-disk addresses based on the maximum number of chunks are 
+    allocated when data is written to the dataset. To access a dataset 
+    chunk with a specified offset, the 
+    <a href="#ChunkIndex">chunk index</i></a> associated with the offset 
+    is calculated. The index is mapped into the array to locate the 
+    disk address for the chunk.</p>
+    
+    <p>The Fixed Array index structure provides space and speed 
+    improvements in locating chunks over index structures that handle 
+    more dynamic data accesses like a Version 2 B-trees index. The 
+    entry into the Fixed Array is the Fixed Array header which contains 
+    metadata about the elements stored in the array. The header contains 
+    a pointer to a Data Block which stores the array of elements that 
+    describe the dataset chunks. For greater efficiency, the array 
+    will be divided into multiple pages if the number of elements 
+    exceeds a threshold value. The space for the Data Block and possibly 
+    Data Block pages are allocated as a single contiguous block of 
+    space.</p>
+    
+    <p>The content of the Data Block depends on whether paging is 
+    activated or not. When paging is not used, elements that describe 
+    the chunks are stored in the Data Block. If paging is turned on, 
+    the Data Block contains a bitmap indicating which pages are 
+    initialized. Then subsequent Data Block pages will contain the 
+    elements that describe the chunks.</p>
+    
+    <p>An entry describes either a filtered or non-filtered dataset 
+    chunk.  The formats for both element types are described below.
     </p>
     <br />
     <div align="center">
       <table class="format">
         <caption>
-          Fixed Array Header
+            Layout: Fixed Array Header
         </caption>
 
         <tr>
@@ -16211,6 +16627,9 @@ depending on a chunked dataset's dimension specification and the way it is exten
     <br />
     <div align="center">
       <table class="desc">
+        <caption>
+            Fields: Fixed Array Header
+        </caption>
 	<tr>
           <th width="40%">Field Name</th>
           <th>Description</th>
@@ -16249,12 +16668,12 @@ depending on a chunked dataset's dimension specification and the way it is exten
 
                     <tr>
                       <td align="center"><code>0</code></td>
-                      <td>Dataset chunks without fliters
+                      <td>Non-filtered dataset chunks
                       </td>
                     </tr>
                     <tr>
                       <td align="center"><code>1</code></td>
-                      <td>Dataset chunks with filters
+                      <td>Filtered dataset chunks
                       </td>
                     </tr>
                     <tr>
@@ -16278,8 +16697,8 @@ depending on a chunked dataset's dimension specification and the way it is exten
 	<tr>
 	  <td>Page Bits</td>
 	  <td>
-            <p>This is the number of bits needed to stored the maximum number
-	    of elements in a data block page.</p>
+            <p>This is the number of bits needed to store the maximum 
+            number of elements in a data block page.</p>
           </td>
 	</tr>
 	
@@ -16309,10 +16728,12 @@ depending on a chunked dataset's dimension specification and the way it is exten
     </div>
 
     <br />
+    <br />
+    <br />
     <div align="center">
       <table class="format">
         <caption>
-          Fixed Array Data Block
+            Layout: Fixed Array Data Block
         </caption>
 
         <tr>
@@ -16365,6 +16786,9 @@ depending on a chunked dataset's dimension specification and the way it is exten
     <br />
     <div align="center">
       <table class="desc">
+        <caption>
+            Fields: Fixed Array Data Block
+        </caption>
 	<tr>
           <th width="40%">Field Name</th>
           <th>Description</th>
@@ -16403,12 +16827,12 @@ depending on a chunked dataset's dimension specification and the way it is exten
 
                     <tr>
                       <td align="center"><code>0</code></td>
-                      <td>Dataset chunks without fliters
+                      <td>Non-filtered dataset chunks
                       </td>
                     </tr>
                     <tr>
                       <td align="center"><code>1</code></td>
-                      <td>Dataset chunks with filters
+                      <td>Filtered dataset chunks
                       </td>
                     </tr>
                     <tr>
@@ -16475,10 +16899,12 @@ depending on a chunked dataset's dimension specification and the way it is exten
     </div>
 
     <br />
+    <br />
+    <br />
     <div align="center">
       <table class="format">
         <caption>
-          Fixed Array Data Block Page
+            Layout: Fixed Array Data Block Page
         </caption>
 
         <tr>
@@ -16502,6 +16928,9 @@ depending on a chunked dataset's dimension specification and the way it is exten
     <br />
     <div align="center">
       <table class="desc">
+        <caption>
+            Fields: Fixed Array Data Block Page
+        </caption>
 	<tr>
           <th width="40%">Field Name</th>
           <th>Description</th>
@@ -16544,12 +16973,14 @@ depending on a chunked dataset's dimension specification and the way it is exten
     </div>
 
     <br />
+    <br />
+    <br />
     <a name="FaNonFilterChunk"></a>
     <div align="center">
       <table class="format">
-	<caption>
-	  Data Block Element for Non-filtered Dataset Chunk
-	</caption>
+    <caption>
+        Layout: Data Block Element for Non-filtered Dataset Chunk
+    </caption>
 
 	<tr>
 	  <th width="25%">byte</th>
@@ -16578,6 +17009,9 @@ depending on a chunked dataset's dimension specification and the way it is exten
     <br />
     <div align="center">
       <table class="desc">
+    <caption>
+        Fields: Data Block Element for Non-filtered Dataset Chunk
+    </caption>
 	<tr>
           <th width="30%">Field Name</th>
           <th>Description</th>
@@ -16595,12 +17029,14 @@ depending on a chunked dataset's dimension specification and the way it is exten
 <!--    </p> -->
 
     <br />
+    <br />
+    <br />
     <a name="FaFilterChunk"></a>
     <div align="center">
       <table class="format">
-	<caption>
-	  Data Block Element for Filtered Dataset Chunk
-	</caption>
+    <caption>
+        Layout: Data Block Element for Filtered Dataset Chunk
+    </caption>
 
 	<tr>
 	  <th width="25%">byte</th>
@@ -16638,6 +17074,9 @@ depending on a chunked dataset's dimension specification and the way it is exten
     <br />
     <div align="center">
       <table class="desc">
+    <caption>
+        Fields: Data Block Element for Filtered Dataset Chunk
+    </caption>
 	<tr>
           <th width="30%">Field Name</th>
           <th>Description</th>
@@ -16672,50 +17111,59 @@ depending on a chunked dataset's dimension specification and the way it is exten
 
     <a name="ExtensibleArray">
     <h3>VII.C.4. Extensible Array index</h3>
-    The <i>Extensible Array</i> index is used when the dataset fulfills the following conditions:
+    
+    <p>The <i>Extensible Array</i> index is used when the dataset 
+    fulfills the following conditions:</p>
+    
     <ul>
-    <li>only 1 unlimited maximum dimension sizes</li>
+    <li>only one dimension of unlimited extent</li>
     <li>filtered or non-filtered</li>
     </ul>
-    The Extensible Array is a data structure that is used as a chunk index in
-    datasets where the dataspace has a single unlimited dimension. In 
-    other words, one dimension is set to <code>H5S_UNLIMITED</code> 
-    and the other dimensions are any number of fixed-size dimensions. 
-    The idea behind the extensible array is that a particular data object can
-    be located via a lightweight indexing structure of fixed depth for a given
-    address space. This indexing structure requires only a few (2-3) file operations
-    per element lookup and gives good cache performance. Unlike the B-tree structure,
-    the extensible array is optimized for appends. Where a B-tree would always add at
-    the rightmost node under these circumstances, either creating a deep tree 
-    (version 1) or requiring expensive rebalances to correct (version 2), 
-    the extensible array has already mapped out a pre-balanced internal structure. 
-    This idealized internal structure is instantiated as needed when chunk records 
-    are inserted into the structure.
-    </p>
-    A description of the logic that leads to the present implementation of the
-    extensible array can be found at <a href="https://svn.hdfgroup.org/hdf5doc/trunk/projects/1_10_alpha/ReviseChunks/skip_lists">
+    
+    <p>The Extensible Array is a data structure that is used as a 
+    chunk index in datasets where the dataspace has a single 
+    unlimited dimension. In other words, one dimension is set to 
+    <code>H5S_UNLIMITED</code> and the other dimensions are any number 
+    of fixed-size dimensions. The idea behind the extensible array is 
+    that a particular data object can be located via a lightweight 
+    indexing structure of fixed depth for a given address space. This 
+    indexing structure requires only a few (2-3) file operations per 
+    element lookup and gives good cache performance. Unlike the B-tree 
+    structure, the extensible array is optimized for appends. Where a 
+    B-tree would always add at the rightmost node under these 
+    circumstances, either creating a deep tree (version 1) or requiring 
+    expensive rebalances to correct (version 2), the extensible array 
+    has already mapped out a pre-balanced internal structure. This 
+    optimized internal structure is instantiated as needed when chunk 
+    records are inserted into the structure.</p>
+    
+    <p>A description of the rationale that leads to the present 
+    implementation of the extensible array can be found at 
+    <a href="https://svn.hdfgroup.org/hdf5doc/trunk/projects/1_10_alpha/ReviseChunks/skip_lists">
     https://svn.hdfgroup.org/hdf5doc/trunk/projects/1_10_alpha/ReviseChunks/skip_lists</a>.
-
-    The current implementation differs from the data structure described in that
-    link in some ways, but the basic idea is the same.</p>
     </p>
-    An Extensible Array consists of a Header, an Index Block, Superblocks, Data Blocks,
-    and (optional) Data Block Pages.
-    The general scheme
-    is that the index block is used to reference a superblock, which is, in turn, used to
-    reference the data block page where the chunk information is stored.
-    The data blocks will be paged for efficiency when their size passes a threshold value.
-    These pages are laid out contiguously on the disk after the data block, are initialized
-    as needed, and are tracked via bitmaps stored in the superblock.
-    The number of super and data blocks/pages in a chunk index varies as they are 
-    allocated as needed and the first
-    few are (conceptually) stored in parent elements as an optimization.
-    <br />
-    <br />
+    
+    <p>The current implementation differs from the data structure 
+    described in that reference in some ways, but the basic idea is the 
+    same.</p>
+    
+    <p>An Extensible Array consists of a Header, an Index Block, 
+    Superblocks, Data Blocks,and (optional) Data Block Pages. The 
+    general scheme is that the index block is used to reference a 
+    superblock, which is, in turn, used to reference the data block 
+    page where the chunk information is stored. The data blocks will 
+    be paged for efficiency when their size passes a threshold value. 
+    These pages are laid out contiguously on the disk after the data 
+    block, are initialized as needed, and are tracked via bitmaps 
+    stored in the superblock. The number of super and data blocks/pages 
+    in a chunk index varies as they are allocated as needed and the 
+    first few are (conceptually) stored in parent elements as an 
+    optimization.</p>
+    
     <div align="center">
       <table class="format">
         <caption>
-          Extensible Array Header
+            Layout: Extensible Array Header
         </caption>
 
         <tr>
@@ -16794,6 +17242,9 @@ depending on a chunked dataset's dimension specification and the way it is exten
     <br />
     <div align="center">
       <table class="desc">
+        <caption>
+            Fields: Extensible Array Header
+        </caption>
 	<tr>
           <th width="40%">Field Name</th>
           <th>Description</th>
@@ -16832,12 +17283,12 @@ depending on a chunked dataset's dimension specification and the way it is exten
 
                     <tr>
                       <td align="center"><code>0</code></td>
-                      <td>Dataset chunks without fliters
+                      <td>Non-filtered dataset chunks
                       </td>
                     </tr>
                     <tr>
                       <td align="center"><code>1</code></td>
-                      <td>Dataset chunks with filters
+                      <td>Filtered dataset chunks
                       </td>
                     </tr>
                     <tr>
@@ -16882,7 +17333,7 @@ depending on a chunked dataset's dimension specification and the way it is exten
 	</tr>
 
 	<tr>
-	  <td>Super Bllk Min Data Ptrs</td>
+	  <td>Super Blk Min Data Ptrs</td>
 	  <td>
 	    <p>This field is the minimum number of data block pointers for a 
 	    superblock.
@@ -16966,10 +17417,12 @@ depending on a chunked dataset's dimension specification and the way it is exten
     </div>
 
     <br />
+    <br />
+    <br />
     <div align="center">
       <table class="format">
         <caption>
-          Extensible Array Index Block
+            Layout: Extensible Array Index Block
         </caption>
 
         <tr>
@@ -17026,6 +17479,9 @@ depending on a chunked dataset's dimension specification and the way it is exten
     <br />
     <div align="center">
       <table class="desc">
+        <caption>
+            Fields: Extensible Array Index Block
+        </caption>
 	<tr>
           <th width="40%">Field Name</th>
           <th>Description</th>
@@ -17064,12 +17520,12 @@ depending on a chunked dataset's dimension specification and the way it is exten
 
                     <tr>
                       <td align="center"><code>0</code></td>
-                      <td>Dataset chunks without fliters
+                      <td>Non-filtered dataset chunks
                       </td>
                     </tr>
                     <tr>
                       <td align="center"><code>1</code></td>
-                      <td>Dataset chunks with filters
+                      <td>Filtered dataset chunks
                       </td>
                     </tr>
                     <tr>
@@ -17147,10 +17603,12 @@ depending on a chunked dataset's dimension specification and the way it is exten
     </div>
 
     <br />
+    <br />
+    <br />
     <div align="center">
       <table class="format">
         <caption>
-          Extensible Array Superblock
+            Layout: Extensible Array Superblock
         </caption>
 
         <tr>
@@ -17207,6 +17665,9 @@ depending on a chunked dataset's dimension specification and the way it is exten
     <br />
     <div align="center">
       <table class="desc">
+        <caption>
+            Fields: Extensible Array Superblock
+        </caption>
 	<tr>
           <th width="40%">Field Name</th>
           <th>Description</th>
@@ -17245,12 +17706,12 @@ depending on a chunked dataset's dimension specification and the way it is exten
 
                     <tr>
                       <td align="center"><code>0</code></td>
-                      <td>Dataset chunks without fliters
+                      <td>Non-filtered dataset chunks
                       </td>
                     </tr>
                     <tr>
                       <td align="center"><code>1</code></td>
-                      <td>Dataset chunks with filters
+                      <td>Filtered dataset chunks
                       </td>
                     </tr>
                     <tr>
@@ -17308,10 +17769,12 @@ depending on a chunked dataset's dimension specification and the way it is exten
     </div>
 
     <br />
+    <br />
+    <br />
     <div align="center">
       <table class="format">
         <caption>
-          Extensible Array Data Block
+            Layout: Extensible Array Data Block
         </caption>
 
         <tr>
@@ -17364,6 +17827,9 @@ depending on a chunked dataset's dimension specification and the way it is exten
     <br />
     <div align="center">
       <table class="desc">
+        <caption>
+            Fields: Extensible Array Data Block
+        </caption>
 	<tr>
           <th width="40%">Field Name</th>
           <th>Description</th>
@@ -17402,12 +17868,12 @@ depending on a chunked dataset's dimension specification and the way it is exten
 
                     <tr>
                       <td align="center"><code>0</code></td>
-                      <td>Dataset chunks without fliters
+                      <td>Non-filtered dataset chunks
                       </td>
                     </tr>
                     <tr>
                       <td align="center"><code>1</code></td>
-                      <td>Dataset chunks with filters
+                      <td>Filtered dataset chunks
                       </td>
                     </tr>
                     <tr>
@@ -17474,11 +17940,14 @@ depending on a chunked dataset's dimension specification and the way it is exten
 
       </table>
     </div>
-          <br />
+    
+    <br />
+    <br />
+    <br />
     <div align="center">
       <table class="format">
         <caption>
-          Extensible Array Data Block Page
+            Layout: Extensible Array Data Block Page
         </caption>
 
         <tr>
@@ -17502,6 +17971,9 @@ depending on a chunked dataset's dimension specification and the way it is exten
     <br />
     <div align="center">
       <table class="desc">
+        <caption>
+            Fields: Extensible Array Data Block Page
+        </caption>
 	<tr>
           <th width="40%">Field Name</th>
           <th>Description</th>
@@ -17545,12 +18017,14 @@ depending on a chunked dataset's dimension specification and the way it is exten
     </div>
 
     <br />
+    <br />
+    <br />
     <a name="EaNonFilterChunk"></a>
     <div align="center">
       <table class="format">
-	<caption>
-	  Data Block Element for Non-filtered Dataset Chunk
-	</caption>
+    <caption>
+        Layout: Data Block Element for Non-filtered Dataset Chunk
+    </caption>
 
 	<tr>
 	  <th width="25%">byte</th>
@@ -17580,6 +18054,9 @@ depending on a chunked dataset's dimension specification and the way it is exten
     <br />
     <div align="center">
       <table class="desc">
+    <caption>
+        Fields: Data Block Element for Non-filtered Dataset Chunk
+    </caption>
 	<tr>
           <th width="30%">Field Name</th>
           <th>Description</th>
@@ -17597,12 +18074,14 @@ depending on a chunked dataset's dimension specification and the way it is exten
     </p>
 
     <br />
+    <br />
+    <br />
     <a name="EaFilterChunk"></a>
     <div align="center">
       <table class="format">
-	<caption>
-	  Data Block Element for Filtered Dataset Chunk
-	</caption>
+    <caption>
+        Layout: Data Block Element for Filtered Dataset Chunk
+    </caption>
 
 	<tr>
 	  <th width="25%">byte</th>
@@ -17640,6 +18119,9 @@ depending on a chunked dataset's dimension specification and the way it is exten
     <br />
     <div align="center">
       <table class="desc">
+    <caption>
+        Fields: Data Block Element for Filtered Dataset Chunk
+    </caption>
 	<tr>
           <th width="30%">Field Name</th>
           <th>Description</th>
@@ -17686,7 +18168,6 @@ depending on a chunked dataset's dimension specification and the way it is exten
     The tree type <a href="#V2BtType10">10</a> and <a href="#V2BtType11">11</a> record layouts are 
     for indexing dataset chunks.
 
-<br />
 
 <p style="background-color:#ff9999">change for 1.10</p>
 <h2><a name="AppendixD"> VII. Appendix D</a>: Virtual Dataset Global Heap Block</h2>
@@ -17696,7 +18177,7 @@ WORK IN PROGRESS
     <div align="center">
       <table class="format">
         <caption>
-          Virtual Dataset Global Heap Block
+            Layout: Virtual Dataset Global Heap Block
         </caption>
 
         <tr>
@@ -17772,6 +18253,9 @@ WORK IN PROGRESS
     <br />
     <div align="center">
       <table class="desc">
+        <caption>
+            Fields: Virtual Dataset Global Heap Block
+        </caption>
 	<tr>
           <th width="40%">Field Name</th>
           <th>Description</th>
@@ -17865,12 +18349,14 @@ WORK IN PROGRESS
     </div>
 
     <br />
+    <br />
+    <br />
     <a name="SelNONE">
     <div align="center">
       <table class="format">
-	<caption>
-	  Selection for H5S_SEL_NONE
-	</caption>
+    <caption>
+        Layout: Selection for H5S_SEL_NONE
+    </caption>
 
 	<tr>
 	  <th width="25%">byte</th>
@@ -17898,6 +18384,9 @@ WORK IN PROGRESS
     <br />
     <div align="center">
       <table class="desc">
+    <caption>
+        Fields: Selection for H5S_SEL_NONE
+    </caption>
 	<tr>
           <th width="30%">Field Name</th>
           <th>Description</th>
@@ -17917,12 +18406,14 @@ WORK IN PROGRESS
     </div>
 
     <br />
+    <br />
+    <br />
     <a name="SelPOINTS">
     <div align="center">
       <table class="format">
-	<caption>
-	  Selection for H5S_SEL_POINTS
-	</caption>
+    <caption>
+        Layout: Selection for H5S_SEL_POINTS
+    </caption>
 
 	<tr>
 	  <th width="25%">byte</th>
@@ -17983,6 +18474,9 @@ WORK IN PROGRESS
     <br />
     <div align="center">
       <table class="desc">
+    <caption>
+        Fields: Selection for H5S_SEL_POINTS
+    </caption>
 	<tr>
           <th width="30%">Field Name</th>
           <th>Description</th>
@@ -18002,12 +18496,14 @@ WORK IN PROGRESS
     </div>
 
     <br />
+    <br />
+    <br />
     <a name="SelALL">
     <div align="center">
       <table class="format">
-	<caption>
-	  Selection for H5S_SEL_ALL
-	</caption>
+    <caption>
+        Layout: Selection for H5S_SEL_ALL
+    </caption>
 
 	<tr>
 	  <th width="25%">byte</th>
@@ -18035,6 +18531,9 @@ WORK IN PROGRESS
     <br />
     <div align="center">
       <table class="desc">
+    <caption>
+        Fields: Selection for H5S_SEL_ALL
+    </caption>
 	<tr>
           <th width="30%">Field Name</th>
           <th>Description</th>
