@@ -341,11 +341,11 @@ div {   page-break-inside:avoid;
       <li><a href="#AppendixC" style="background-color:#DDEEEE">
       Appendix C: Types of Indexes for Dataset Chunks</a></li><font size="-1">
 	<ol type="1">
-	  <li><a href="#SingleChunk">Appendix C1: Single Chunk index</a></li>
-	  <li><a href="#Implicit">Appendix C2: Implicit index</a></li>
-	  <li><a href="#FixedArray">Appendix C3: Fixed Array index</a></li>
-	  <li><a href="#ExtensibleArray">Appendix C4: Extensible Array index</a></li>
-	  <li><a href="#AppendV2Btrees">Appendix C5: Version 2 B-trees index</a></li>
+	  <li><a href="#SingleChunk">Appendix C1: Single Chunk Index</a></li>
+	  <li><a href="#Implicit">Appendix C2: Implicit Index</a></li>
+	  <li><a href="#FixedArray">Appendix C3: Fixed Array Index</a></li>
+	  <li><a href="#ExtensibleArray">Appendix C4: Extensible Array Index</a></li>
+	  <li><a href="#AppendV2Btrees">Appendix C5: Version 2 B-trees Index</a></li>
 	</ol>
         </font>
       <li><a href="#AppendixD" style="background-color:#DDEEEE">
@@ -16450,14 +16450,13 @@ dataset&rsquo;s dimension specification and the way it is extended.
 </p>
 
     <a name="SingleChunk">
-    <h3>VII.C.1. Single Chunk index</h3>
+    <h3>VII.C.1. Single Chunk Index</h3></a>
     
-    <p>The <i>Single Chunk</i> index is used when the dataset fulfills 
-    the following conditions:</p>
+    <p>The <i>Single Chunk</i> index can be used when the dataset fulfills 
+    the following condition:</p>
     
     <ul>
     <li>the current, maximum, and chunk dimension sizes are all the same</li>
-    <li>filtered or non-filtered</li>
     </ul>
     
     <p>The dataset has only one chunk and the address of the single 
@@ -16466,15 +16465,16 @@ dataset&rsquo;s dimension specification and the way it is extended.
     Description</i></a>.</p>
 
     <a name="Implicit">
-    <h3>VII.C.2. Implicit index</h3>
+    <h3>VII.C.2. Implicit Index</h3></a>
     
-    <p>The <i>Implicit</i> index is used when the dataset fulfills 
+    <p>The <i>Implicit</i> index can be used when the dataset fulfills 
     the following conditions:</p>
     
     <ul>
     <li>fixed maximum dimension sizes</li>
-    <li>non-filtered only</li>
-    <li>the timing for the space allocation of the dataset chunks is H5P_ALLOC_TIME_EARLY</li>
+    <li>no filter applied to the dataset</li>
+    <li>the timing for the space allocation of the dataset chunks is 
+    <code>H5P_ALLOC_TIME_EARLY</code></li>
     </ul>
     
     <p>Since the dataset's dimension sizes are known and storage space 
@@ -16488,25 +16488,28 @@ dataset&rsquo;s dimension specification and the way it is extended.
     <p>When accessing a dataset chunk with a specified offset, the 
     address of the chunk in the array is computed as below:</p>
     
-    <p><em>base address + (size of a chunk in bytes * chunk index 
-    associated with the offset)</em></p>
+    <p><code>base address + (size of a chunk in bytes * chunk index 
+    associated with the offset)</code></p>
     
     <p>A chunk index starts at 0 and increases according to the 
     fastest changing dimension, then the next fastest, and so on.
     <a name="ChunkIndex"></a>
     The chunk index for a dataset chunk offset is computed as below:
     <ol>
-    <li>Calculate the scaled offset for each dimension in <em>scaled_offset</em>: 
+    <li>Calculate the scaled offset for each dimension in 
+    <code>scaled_offset</code>: 
         <br /> <br />
-	<em>scaled_offset = chunk_offset/chunk_dims</em></li>
+	<code>scaled_offset = chunk_offset/chunk_dims</code></li>
         <br />
-    <li>Calculate the # of chunks for each dimension in <em>nchunks</em>: 
+    <li>Calculate the # of chunks for each dimension in 
+    <code>nchunks</code>: 
         <br /> <br />
-	<em>nchunks = (curr_dims + chunk_dims - 1)/chunk_dims</em></li>
+	<code>nchunks = (curr_dims + chunk_dims - 1)/chunk_dims</code></li>
         <br />
-    <li>Calculate the down chunks for each dimension in <em>down_chunks</em>:
+    <li>Calculate the down chunks for each dimension in 
+    <code>down_chunks</code>:
         <br /> <br />
-	<em>
+	<code>
 	/* n is the # of dimensions */
 	<p>
 	for(i = (int)(n-1), acc = 1; i >= 0; i--) {
@@ -16516,43 +16519,45 @@ dataset&rsquo;s dimension specification and the way it is extended.
 	    acc *= nchunks[i];
 	<p>
 	} 
-	</em>
+	</code>
         <br />
     </li>
-    <li>Calculate the chunk index in <em>chunk_index</em>:
+    <li>Calculate the chunk index in <code>chunk_index</code>:
         <br /> <br />
-	<em>
+	<code>
 	/* n is the # of dimensions */
 	<p>
 	for(u = 0, chunk_index = 0; u < n; u++)
 	<p>
 	    chunk_index += down_chunks[u] * scaled_offset[u];
-	</em>
+	</code>
         <br />
     </li>
     </ol>
     <p>
-    For example, for a 2-dimensional dataset with <em>curr_dims[4,5]</em> and <em>chunk_dims[3,2]</em>,
-    there will be a total of 6 chunks, with 3 chunks in the fastest changing dimension and
-    2 chunks in the slowest changing dimension.  SEE DIAGRAM (Mark is helping with this).
-    The chunk index for the chunk offset <em>[3, 2]</em>
+    For example, for a 2-dimensional dataset with 
+    <code>curr_dims[4,5]</code> and <code>chunk_dims[3,2]</code>,
+    there will be a total of 6 chunks, with 3 chunks in the fastest 
+    changing dimension and 2 chunks in the slowest changing dimension. 
+    ??????? SEE DIAGRAM (Mark is helping with this).
+    The chunk index for the chunk offset <code>[3,2]</code>
     is computed as below:
     <ol>
-    <em>
+    <code>
     <li>scaled_offset[0] = 1, scaled_offset[1] = 1</li>
     <li>nchunks[0] = 2, nchunks[1] = 3</li>
     <li>down_chunks[0] = 3, down_chunks[1] = 1</li>
     <li>chunk_index = 4</li>
-    </em>
+    </code>
     </ol>
 
     <a name="FixedArray">
-    <h3>VII.C.3. Fixed Array index</h3>
-    <p>The <i>Fixed Array</i> index is used when the dataset fulfills 
-    the following conditions:</p>
+    <h3>VII.C.3. Fixed Array Index</h3></a>
+    
+    <p>The <i>Fixed Array</i> index can be used when the dataset fulfills 
+    the following condition:</p>
     <ul>
     <li>fixed maximum dimension sizes</li>
-    <li>filtered or non-filtered</li>
     </ul>
     
     <p>Since the maximum number of chunks is known, an array of 
@@ -16567,20 +16572,20 @@ dataset&rsquo;s dimension specification and the way it is extended.
     improvements in locating chunks over index structures that handle 
     more dynamic data accesses like a Version 2 B-trees index. The 
     entry into the Fixed Array is the Fixed Array header which contains 
-    metadata about the elements stored in the array. The header contains 
-    a pointer to a Data Block which stores the array of elements that 
-    describe the dataset chunks. For greater efficiency, the array 
-    will be divided into multiple pages if the number of elements 
+    metadata about the entries stored in the array. The 
+    header contains a pointer to a Data Block which stores the array 
+    of entries that describe the dataset chunks. For greater efficiency, 
+    the array will be divided into multiple pages if the number of entries 
     exceeds a threshold value. The space for the Data Block and possibly 
-    Data Block pages are allocated as a single contiguous block of 
+    Data Block Pages are allocated as a single contiguous block of 
     space.</p>
     
     <p>The content of the Data Block depends on whether paging is 
     activated or not. When paging is not used, elements that describe 
     the chunks are stored in the Data Block. If paging is turned on, 
     the Data Block contains a bitmap indicating which pages are 
-    initialized. Then subsequent Data Block pages will contain the 
-    elements that describe the chunks.</p>
+    initialized. Then subsequent Data Block Pages will contain the 
+    entries that describe the chunks.</p>
     
     <p>An entry describes either a filtered or non-filtered dataset 
     chunk.  The formats for both element types are described below.
@@ -16606,16 +16611,18 @@ dataset&rsquo;s dimension specification and the way it is extended.
         <tr>
           <td>Version</td>
           <td>Client ID</td>
-          <td>Element Size</td>
+          <td>Entry Size</td>
           <td>Page Bits</td>
         </tr>
 
         <tr>
-          <td colspan="4"><br />Max Num Elements<sup>L</sup><br /><br /></td>
+          <td colspan="4"><br />Max Num 
+          Entries<sup>L</sup><br /><br /></td>
         </tr>
           
         <tr>
-          <td colspan="4"><br />Data Block Address<sup>O</sup><br /><br /></td>
+          <td colspan="4"><br />Data Block 
+          Address<sup>O</sup><br /><br /></td>
         </tr>
 
         <tr>
@@ -16696,7 +16703,7 @@ dataset&rsquo;s dimension specification and the way it is extended.
                     </tr>
                     <tr>
                       <td align="center"><code>2+</code></td>
-                      <td>Reserved.
+                      <td>Reserved
                       </td>
                     </tr>
                 </table>
@@ -16705,9 +16712,9 @@ dataset&rsquo;s dimension specification and the way it is extended.
         </tr>
 
         <tr>
-          <td><p>Element Size</p></td>
+          <td><p>Entry Size</p></td>
 	  <td>
-	    <p>This is the size in bytes of an element in the Fixed Array.
+	    <p>This is the size in bytes of an entry in the Fixed Array.
             </p>
 	  </td>
         </tr>
@@ -16716,15 +16723,16 @@ dataset&rsquo;s dimension specification and the way it is extended.
 	  <td><p>Page Bits</p></td>
 	  <td>
             <p>This is the number of bits needed to store the maximum 
-            number of elements in a data block page.</p>
+            number of entries in a 
+            <a href="#FADataBlockPage">data block page.</a></p>
           </td>
 	</tr>
 	
 	<tr>
-	  <td><p>Max Num Elements</p></td>
+	  <td><p>Max Num Entries</p></td>
 	  <td>
-	    <p>This is the maximum number of elements in the Fixed Array.
-	    </p>
+	    <p>This is the maximum number of entries in the Fixed 
+        Array.</p>
 	  </td>
 	</tr>
 
@@ -16738,7 +16746,7 @@ dataset&rsquo;s dimension specification and the way it is extended.
         <tr>
           <td><p>Checksum</p></td>
           <td>
-            <p>This is the checksum for the header.</p>
+            <p>The checksum for the header.</p>
           </td>
         </tr>
 
@@ -16923,8 +16931,8 @@ dataset&rsquo;s dimension specification and the way it is extended.
     <br />
     <div align="center">
       <table class="format">
-        <caption>
-            Layout: Fixed Array Data Block Page
+        <caption><a name="FADataBlockPage">
+            Layout: Fixed Array Data Block Page</a>
         </caption>
 
         <tr>
@@ -17131,17 +17139,16 @@ dataset&rsquo;s dimension specification and the way it is extended.
     </div>
 
     <a name="ExtensibleArray">
-    <h3>VII.C.4. Extensible Array index</h3>
+    <h3>VII.C.4. Extensible Array Index</h3></a>
     
-    <p>The <i>Extensible Array</i> index is used when the dataset 
-    fulfills the following conditions:</p>
+    <p>The <i>Extensible Array</i> index can be used when the dataset 
+    fulfills the following condition:</p>
     
     <ul>
     <li>only one dimension of unlimited extent</li>
-    <li>filtered or non-filtered</li>
     </ul>
     
-    <p>The Extensible Array is a data structure that is used as a 
+    <p>The Extensible Array (EA) is a data structure that is used as a 
     chunk index in datasets where the dataspace has a single 
     unlimited dimension. In other words, one dimension is set to 
     <code>H5S_UNLIMITED</code> and the other dimensions are any number 
@@ -18185,9 +18192,9 @@ dataset&rsquo;s dimension specification and the way it is extended.
     </div>
 
     <a name="AppendV2Btrees">
-    <h3>VII.C.5. Version 2 B-trees index</h3>
+    <h3>VII.C.5. Version 2 B-trees Index</h3></a>
     <p> 
-    The <i>Version 2 B-trees</i> index is used when the dataset fulfills 
+    The <i>Version 2 B-trees</i> index can be used when the dataset fulfills 
     the following conditions:
     <ul>
     <li>more than 1 unlimited maximum dimension sizes</li>
