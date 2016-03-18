@@ -1,0 +1,219 @@
+
+
+<!--
+  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+  * Copyright by The HDF Group.                                               *
+  * All rights reserved.                                                      *
+  *                                                                           *
+  * This file is part of HDF5.  The full HDF5 copyright notice, including     *
+  * terms governing use, modification, and redistribution, is contained in    *
+  * the files COPYING and Copyright.html.  COPYING can be found at the root   *
+  * of the source code distribution tree; Copyright.html can be found at the  *
+  * root level of an installed copy of the electronic HDF5 document set and   *
+  * is linked from the top-level documents page.  It can also be found at     *
+  * http://www.hdfgroup.org/HDF5/doc/Copyright.html.  If you do not have      *
+  * access to either file, you may request a copy from help@hdfgroup.org.     *
+  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+ -->
+
+
+<!--__ ***********************************************************  -->
+<!--__ Do not alter the next line; it is used by the PDF generator. -->
+<!--__ ***********************************************************  -->
+<!-- NEW PAGE -->
+<!-- HEADER RIGHT "H5Pset_coll_metadata_read" -->
+
+<hr />
+<dl>
+
+<dt><div align="right"><font color="999999" size="-1"><i>
+    Last modified: 18 March 2016
+    </i></font></div></dt>
+    <br />
+
+<dt><strong>Name:</strong> 
+    <a name="Property-SetAllCollMetadataOps">H5Pset_all_coll_metadata_ops</a>
+    </dt>
+    <br />
+
+<dt><strong>Signature:</strong>
+    <dd><code><em>herr_t</em> H5Pset_all_coll_metadata_ops(
+              <em>hid_t</em> accpl_id,
+              <em>hbool_t</em> is_collective
+        )</code>
+    </dd></dt>
+    <br />
+
+<dt><strong>Purpose:</strong>
+    <dd>Sets metadata I/O mode for read operations to collective 
+        or independent (default).
+    </dd></dt>
+    <br />
+
+<dt><strong>Description:</strong>
+    <dd><code>H5Pset_all_coll_metadata_ops</code> sets the metadata I/O mode
+        for read operations in the access property list <code>accpl</code>.  
+        </p>
+        <p>
+        When engaging in parallel I/O, all metadata write operations 
+        must be collective.
+        If <code>is_collective</code> is <code>TRUE</code>, this property 
+        specifies that the HDF5 Library will perform all metadata read 
+        operations collectively;
+        if <code>is_collective</code> is <code>FALSE</code>, such operations 
+        may be performed independently. 
+        </p>
+        <p>
+        Users must be aware that several HDF5 operations can potentially issue 
+        metadata reads.  These include opening a dataset, datatype, or group; 
+        reading an attribute; or issuing a <i>get info</i> call such as
+        getting information for a group with <code>H5Gget_info</code>.
+        Collective I/O requirements must be kept in mind when issuing such calls 
+        in the context of parallel I/O.
+        </p>
+        <p>
+        If this property is set to true on a file access property list 
+        that is used in creating or opening a file, then the HDF5 Library 
+        will assume that all metadata read operations issued on that 
+        file identifier will be issued collectively from all ranks 
+        irrespective of the individual setting of a particular operation. 
+        If this assumption is not adhered to, corruption will be introduced 
+        in the metadata cache and HDF5&rsquo;s behavior will be undefined.
+        </p>
+        <p>
+        Alternatively, a user may wish to avoid setting this property globally 
+        on the file access property list, and individually set it on 
+        particular object access property lists 
+        (dataset, group, link, datatype, attribute access property lists) 
+        for certain operations. This will indicate that only the operations 
+        issued with such an access property list will be called collectively 
+        and other operations may potentially be called independently. 
+        There are, however, several HDF5 operations that can issue 
+        metadata reads but have no property list in their function signatures 
+        to allow passing the collective requirement property. 
+        For those operations, the only option is to set the 
+        global collective requirement property on the file access property list;
+        otherwise the metadata reads that can be triggered from those 
+        operations will be done independently by each process.
+        </p>
+        <p>
+        Functions that do not accommodate an access property list
+        but that might issue metadata reads are listed in
+        &ldquo;<a href="MetadataRead_NoAccesPList.html">Functions
+        with No Access Property List Parameter that May Generate Metadata
+        Reads</a>.&rdquo;
+        </p>
+    </dd></dt>
+
+<dt><strong>Warning:</strong>
+    <dd>As noted above, corruption will be introduced into the metadata cache 
+        and HDF5 Library behavior will be undefined when both of the following 
+        conditions exist:
+        <ul>
+            <li>A file is created or opened with a file access property list 
+                in which the collective metadata I/O property is set to 
+                <code>TRUE</code>.
+            <li>Any function is called that triggers 
+                an independent metadata read while
+                the file remains open with that file access property list.
+        </ul>
+        <p>
+        An approach that avoids this corruption risk is described above.
+        </p>
+    </dd></dt>
+    <br />
+
+<!--
+<dt><strong>Note:</strong>
+    <dd>
+    </dd></dt>
+    <br />
+-->
+    
+<dt><strong>Parameters:</strong>
+    <dd><table width="100%">
+        <tr>
+            <td valign="top" width="15%"><code><em>hid_t</em> accpl_id</code></td>
+            <td width="5%"><code>&nbsp;</code></td>
+            <td valign="top">IN: File, group, dataset, datatype, link,
+               or attribute access property list identifier</td>
+        </tr><tr>
+            <td valign="top"><code><em>hbool_t</em>&nbsp;is_collective</code></td>
+            <td><code>&nbsp;</code></td>
+            <td valign="top">IN: Boolean value indicating whether 
+                metadata reads are collective (<code>TRUE</code>) 
+                or independent (<code>FALSE</code>)
+                <br />
+                <i>Default mode: Independent (</i><code>FALSE</code><i>)
+                </i></td>
+        </tr>
+        </table></dd>
+    </dt>
+    <br />
+    
+<dt><strong>Returns:</strong>
+    <dd>Returns a non-negative value if successful;
+        otherwise returns a negative value.</dd>
+    </dt>
+    <br />
+
+<dt><strong>Fortran Interface:</strong> h5pset_all_coll_metadata_ops_f
+    <dd>
+
+        <?php include("H5P/h5pset_all_coll_metadata_ops_f.htm"); ?>
+
+        </dd>
+    </dt>
+    <br />
+
+<dt><strong>See Also:</strong></dt>
+    <table width="100%" border="0">
+    <tr><td width="50%"align="left" valign="top">
+        <ul>
+          <li><a href=
+              "H5Pset_coll_metadata_write.htm">H5Pset_coll_metadata_write</a></li>
+          <li><a href=
+              "H5Pget_coll_metadata_write.htm">H5Pget_coll_metadata_write</a></li>
+        </ul>
+    </td><td width="50%"align="left" valign="top">
+        <ul>
+<!--
+          <li><a href="H5Pset_all_coll_metadata_ops.htm">H5Pset_all_coll_metadata_ops</a></li>
+-->
+          <li><a href="H5Pget_all_coll_metadata_ops.htm">H5Pget_all_coll_metadata_ops</a></li>
+        </ul>
+    </td></tr>
+    <tr><td colspan="2" align="left">
+        &nbsp; 
+        <ul>
+          <li>&ldquo;<a href="MetadataRead_NoAccesPList.html">Functions
+              with No Access Property List Parameter that May Generate 
+              Metadata Reads</a>&rdquo;</li>
+        </ul>
+    </td></tr>
+    </table>
+    <br />
+
+<dt><strong>History:</strong></dt>
+    <dd>
+    <table width="90%">
+    <tr>
+        <td valign="top" align="left" width="10%">
+        <strong>Release</strong>&nbsp;&nbsp;&nbsp;&nbsp;</td>
+        <td valign="top" align="left">
+        <strong>Change</strong></td>
+    </tr><tr>
+        <td valign="top">1.10.0</td>
+        <td valign="top">
+        C function and Fortran wrapper introduced with this release.</td>
+    </tr>
+    </table>
+    </dd>
+
+</dl>
+<br />
+<br />
+<br />
+
+
+
