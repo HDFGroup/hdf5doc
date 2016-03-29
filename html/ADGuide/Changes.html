@@ -249,6 +249,28 @@ This section lists interface-level changes and
 other user-visible changes in behavior 
 in the transition from HDF5 Release 1.8.16 to Release 1.10.0.
 
+    <h3>Changed Type</h3>
+        <dir>
+        <dl>    
+            <dt><code>hid_t</code>
+                <dd>Changed from a 32-bit to a 64-bit value.
+                    <p />
+                    <code>hid_t</code> is the type is used for all 
+                    HDF5 identifiers.  This change, which is necessary
+                    to accomodate the capacities of modern computing systems,
+                    therefore affects all HDF5 applications.
+                    If an application has been using HDF5&rsquo;s
+                    <code>hid_t</code> the type, recompilation will normally
+                    be sufficient to take advantage of HDF5 Release 1.10.0.
+                    If an application uses an integer type instead of 
+                    HDF5&rsquo;s <code>hid_t</code> type, 
+                    those identifiers must be changed to a 64-bit type
+                    when the application is ported to the 1.10.x series.
+            </dt>
+        </dl>
+        </dir>
+
+
     <h3>New Features and Feature Sets</h3>
         <dir>
         <dl>    
@@ -280,6 +302,7 @@ in the transition from HDF5 Release 1.8.16 to Release 1.10.0.
         </dl>
         </dir>
 
+
 <!--
     <h3>New and Changed Functions, Classes, Subroutines, Wrappers, 
         and Macros</h3>
@@ -291,6 +314,7 @@ in the transition from HDF5 Release 1.8.16 to Release 1.10.0.
         </dl>
         </dir>
 -->
+
 
     <h3>New Features, including associated C Functions and Fortran Wrappers</h3>
         <dir>
@@ -1299,6 +1323,31 @@ in the transition from HDF5 Release 1.8.16 to Release 1.10.0.
                 </dt>
 
 
+            <p />
+            <dt>Additional New Functions</a>:
+                <br />&nbsp;
+                <dd>The following new functions appear in HDF5 Release 1.10.0 
+                    but are not yet documented:
+                    <pre>
+    H5Dformat_convert
+    H5Dget_chunk_index_type
+ 
+    H5FDlock
+    H5FDunlock
+ 
+    H5Fformat_convert
+ 
+    H5LDget_dset_dims
+    H5LDget_dset_elmts
+    H5LDget_gset_type_size
+</pre>
+                
+
+
+<!-- start nested table -->
+<!-- end nested table -->
+
+<!-- "NEW FEATURE" TEMPLATE
 <font color="brown">
             <p />
             <dt><a href="/HDF5/docNewFeatures/NewFeaturesAnotherFeatureDocs.html">Another
@@ -1307,7 +1356,7 @@ in the transition from HDF5 Release 1.8.16 to Release 1.10.0.
                 <dd>
                 Placeholder for additional features.
 
-
+-->
 <!-- start nested table -->
 <!-- end nested table -->
 
@@ -1317,6 +1366,182 @@ in the transition from HDF5 Release 1.8.16 to Release 1.10.0.
 </font>
 
 
+        </dl>
+        </dir>
+
+
+    <h3>New and Changed Elements of the Packet Table (H5PT)
+        High-level API</h3>
+        <dir>
+        <dl>    
+            <dt><strong>In the C Interface</strong>
+                <dd>
+                <dl>
+                <dt>Replacement functions:
+                    <dd><dl><dt><code>H5PTcreate</code> 
+                            <dd>Takes a property list identifier to provide 
+                                flexibility on creation properties. </dd>
+                            <dd><code>H5PTcreate_fl</code> has been
+                                removed.</dd>
+                            </dt>
+                        </dl>
+                    <dd><dl><dt><code>H5PTfree_vlen_buff</code> 
+                            <dd>Replaces <code>H5PTfree_vlen_readbuff</code>.
+                                </dd>
+                            </dt>
+                        </dl>
+                    </dd>
+                    </dt>
+                <p />
+                <dt>New functions: 
+                    <dd>Two accessor functions have been added. 
+                        <dl><dt><code>H5PTget_dataset</code>
+                            <dd>Returns the identifier of the dataset 
+                                associated a packet table.</dd>
+                            <dt><code>H5PTget_type</code></dt>
+                            <dd>Returns the identifier of the datatype 
+                                used by a packet table.</dd>
+                            <dt><code>H5PTis_varlen</code></dt>
+                            <dd>Determines whether a type is 
+                                variable-length.</dd>
+                            </dt>
+                        </dl>
+                    </dd>
+                    </dt>
+                </dl>
+                </dd>
+                </dt>
+ 
+            <p />
+            <dt><strong>In the C++ Interface</strong>
+                <dd>
+                <dl>
+                <dt>Overloaded constructor
+                    <dd>An overloaded constructor has been added.
+                        <dl><dt><code>FL_PacketTable</code> 
+                            <dd>Takes a property list identifier to provide 
+                                flexibility on creation properties.>/dd>
+                            </dt>
+                            <dt><code>H5PTfree_vlen_buff</code> 
+                            <dd>Replaces <code>H5PTfree_vlen_readbuff</code>.
+                                </dd>
+                            </dt>
+                        </dl>
+                    </dd>
+                    </dt>
+                <p />
+                <dt>Accessor wrappers
+                    <dd>Two accessor wrappers are added to class 
+                        <code>PacketTable</code>.
+                        <dl><dt><code>PacketTable::GetDataset()</code>
+                            <dd>Returns the identifier of the dataset 
+                                associated a packet table.</dd>
+                            <dt><code>PacketTable::GetDatatype()</code></dt>
+                            <dd>Returns the identifier of the datatype 
+                                used by a packet table.</dd>
+                            </dt>
+                        </dl>
+                    </dd>
+                    </dt>
+                <p />
+                <dt>Other wrappers
+                    <dd><dl><dt><code>PacketTable::FreeBuff()</code> 
+                            <dd>Replaces 
+                                <code>VL_PacketTable::FreeReadBuff()</code>.
+                                </dd>
+                            </dt>
+                            <dt><code>PacketTable::IsVariableLength()</code> 
+                            <dd>Replaces 
+                                <code>VL_PacketTable::IsVariableLength()</code>.
+                                </dd>
+                            </dt>
+                        </dl>
+                    </dd>
+                    </dt>
+                <p />
+                <dt>Overloaded functions: 
+                    <dd>Where a member functions has a <code>char*</code>
+                        as an argument, 
+                        an overloaded functions has been added to provide 
+                        the <code>const char*</code> argument.
+                    </dd>
+                    <dd>The existing version will be deprecated in a 
+                        future release.
+                    </dd>
+                </dl>
+                </dd>
+                </dt>
+
+        </dir>
+
+
+    <h3>Java Interface Changes</h3>
+        <dir>
+        <dl>    
+            <dt><strong>Integration into Main HDF5 Library</strong>
+                <dd>The Java HDF5 JNI library has been integrated into 
+                    the HDF5 repository.
+                    <dl><dt>Configure option:
+                        <dd><code>--enable-java</code></dd>
+                        </dt>
+                        <dt>CMake option:
+                        <dd><code>HDF5_BUILD_JAVA:BOOL=ON</code></dd> 
+                        </dt>
+                    </dl>
+                    <p />
+                    Prior to the 1.10.x series, the HDF5 Java tools 
+                    were built from an independent repository and were 
+                    not as fully integrated with HDF5.
+                    were built from an independent repository and were 
+                    not as fully integrated with HDF5.
+                </dd>
+            </dt>
+            <p />
+            <dt><strong>Package Hierarchy Change</strong>
+                <dd>The package hierarchy has changed to
+                    <code>hdf.hdflib.hdf5</code>.
+                    <p />
+                    Prior to the 1.10.x series, the hierarchy was 
+                    <code>ncsa.hdf.hdflib.hdf5</code>.
+                </dd>
+            </dt>
+            <p />
+            <dt><strong>New Java APIs</strong>
+                <dd>A number of new APIs have been added in the Java
+                    interface, including APIs for the VDS and SWMR features.
+                </dd>
+            </dt>
+        </dl>
+        </dir>
+
+
+<!--
+    <h3>New and Changed Functions, Classes, Subroutines, Wrappers, 
+        and Macros</h3>
+    <h3>New and Changed Whatevers</h3>
+        <dir>
+        <dl>    
+            <dt><strong></strong>
+                <dd>
+                </dd>
+            </dt>
+        </dl>
+        </dir>
+
+
+-->
+
+
+    <h3>Functions with Changed Behavior</h3>
+        <dir>
+        <dl>    
+            <dt><code><strong>H5Lexists</strong></code>
+                <dd>The behavior of this function has changed in this release.
+                    When testing the pathname <code>/</code>
+                    (a slash representing the root of an HDF5 file)
+                    <code>H5Lexists</code> now returns successfully 
+                    with the value <code>1</code> (one).
+                </dd>
         </dl>
         </dir>
 
@@ -2076,7 +2301,7 @@ Release to Release for HDF5 Releases 1.4.0 through 1.6.10</a>&rdquo;.
 <!-- Created: Spring 1999 -->
 <!-- hhmts start -->
 <hr />
-Last modified: 25 March 2016
+Last modified: 30 March 2016
 <!-- hhmts end -->
 <br />
 <br />
