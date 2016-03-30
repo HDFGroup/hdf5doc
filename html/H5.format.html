@@ -348,8 +348,7 @@ div {   page-break-inside:avoid;
 	  <li><a href="#AppendV2Btrees">Appendix C5: Version 2 B-trees Index</a></li>
 	</ol>
         </font>
-      <li><a href="#AppendixD" style="background-color:#DDEEEE">
-      Appendix D: Virtual Dataset Global Heap Block</a></li>
+      <li><a href="#AppendixD"> Appendix D: Global Heap Block For Virtual Dataset</a></li>
     </ol>
 </td></tr>
 </table>
@@ -13553,7 +13552,9 @@ External Data Files Message</a></h4>
 	<tr>
 	  <td><p>Address</p></td>
 	  <td><p>This is the address of the global heap collection where
-            the VDS mapping entries are stored.</p></td>
+            the VDS mapping entries are stored.
+	    See <a href="#AppendixD">Appendix D: Global Heap Block For Virtual Dataset</a>.
+	    </p></td>
 	</tr>
 
 	<tr>
@@ -13564,10 +13565,6 @@ External Data Files Message</a></h4>
 	</tr>
       </table>
     </div>
-
-<p>See <a href="#AppendixD">Appendix D: Virtual Dataset Global Heap 
-Block</a>.</p>
-
 
 <h4><a name="BogusMessage">IV.A.2.j. The Bogus Message</a></h4>
 
@@ -18211,16 +18208,13 @@ dataset&rsquo;s dimension specification and the way it is extended.
 
 
 <p style="background-color:#ff9999">change for 1.10</p>
-<h2><a name="AppendixD"> VII. Appendix D</a>: Virtual Dataset Global 
-Heap Block</h2>
-
-<p>WORK IN PROGRESS</p>
+<h2><a name="AppendixD"> VII. Appendix D</a>: Global Heap Block For Virtual Dataset</h2>
 
     <br />
     <div align="center">
       <table class="format">
         <caption>
-            Layout: Virtual Dataset Global Heap Block
+          Layout: Global Heap Block For Virtual Dataset
         </caption>
 
         <tr>
@@ -18241,8 +18235,7 @@ Heap Block</h2>
         </tr>
 
         <tr>
-          <td colspan="4"><br />Source Filename #1 <em>(variable 
-          size)</em><br /><br /></td>
+          <td colspan="4"><br />Source Filename #1<br /><em>(variable size)</em><br /><br /></td>
         </tr>
 
         <tr>
@@ -18306,7 +18299,7 @@ Heap Block</h2>
     <div align="center">
       <table class="desc">
         <caption>
-            Fields: Virtual Dataset Global Heap Block
+          Fields: Global Heap Block For Virtual Dataset
         </caption>
 	<tr>
           <th width="40%">Field Name</th>
@@ -18316,7 +18309,7 @@ Heap Block</h2>
         <tr>
           <td><p>Version</p></td>
           <td>
-            <p>This document describes version 0.</p>
+            <p>This is the version number for the block and the value is 0.</p>
           </td>
         </tr>
 
@@ -18329,23 +18322,85 @@ Heap Block</h2>
         <tr>
           <td><p>Source Filename #n</p></td>
 	  <td>
-	    <p>The source file name where the source dataset is located.
+	    <p>This is the source file name where the source dataset is located.
             </p>
 	  </td>
         </tr>
 
 	<tr>
 	  <td><p>Source Dataset #n</p></td>
-	  <td><p>The source dataset name that is mapped to the 
+	  <td><p>This is the source dataset name that is mapped to the 
       virtual dataset.</p></td>
 	</tr>
 	
 	<tr>
 	  <td><p>Source Selection #n</p></td>
 	  <td>
-	    <p>Th dataspace selection in the source dataset that 
-        is mapped to the virtual selection. There are four types of 
-        selection:
+	    <p>This is the <a href="#DataspaceSEL">dataspace selection</a> in the source dataset that is 
+	       mapped to the virtual selection.
+	    </p>
+	  </td>
+	</tr>
+
+	<tr>
+	  <td>Virtual Selection #n</td>
+	  <td>
+	    <p>This is the <a href="#DataspaceSEL">dataspace selection</a> in the virtual dataset that is 
+		mapped to the source selection.
+	    </p>
+	  </td>
+	</tr>
+
+        <tr>
+          <td>Checksum</td>
+          <td>
+            <p>This is the checksum for the block.</p>
+          </td>
+        </tr>
+
+      </table>
+    </div>
+
+    <br />
+    <a name="DataspaceSEL">
+    <div align="center">
+      <table class="format">
+	<caption>
+	  Layout: Dataspace Selection
+	</caption>
+
+	<tr>
+	  <th width="25%">byte</th>
+	  <th width="25%">byte</th>
+	  <th width="25%">byte</th>
+	  <th width="25%">byte</th>
+	</tr>
+
+	<tr>
+	  <td colspan="4">Selection Type</td>
+	</tr>
+	<tr>
+          <td colspan="4"><br /><br />Selection Info<br />(<em>variable size</em>)<br /><br /></td>
+        </tr>
+
+      </table>
+    </div>
+
+    <br />
+    <div align="center">
+      <table class="desc">
+	<caption>
+	  Fields: Dataspace Selection
+	</caption>
+	<tr>
+          <th width="30%">Field Name</th>
+          <th>Description</th>
+	</tr>
+
+	<tr>
+	  <td><p>Selection Type</p></td>
+	  <td>
+	    <p>There are 4 types of selection:
 	      <table class="list">
 		<tr>
 		  <th width="20%" align="center">Value</th>
@@ -18354,51 +18409,71 @@ Heap Block</h2>
 
 		<tr>
 		  <td align="center"><code>0</code></td>
-		  <td><a href="#SelNONE">H5S_SEL_NONE</a>: Nothing selected
+		  <td>H5S_SEL_NONE: Nothing selected
                   </td>
 		</tr>
 
 		<tr>
 		  <td align="center"><code>1</code></td>
-		  <td><a href="#SelPOINTS">H5S_SEL_POINTS</a>: Sequence of points selected
+		  <td>H5S_SEL_POINTS: Sequence of points selected
                   </td>
 		</tr>
 
 		<tr>
 		  <td align="center"><code>2</code></td>
-		  <td>H5S_SEL_HYPERSLABS: Hyperslab selected
+		  <td>H5S_SEL_HYPER: Hyperslab selected
                   </td>
 		</tr>
 
 		<tr>
 		  <td align="center"><code>3</code></td>
-		  <td><a href="#SelALL">H5S_SEL_ALL</a>: Entire extent selected
+		  <td>H5S_SEL_ALL: Entire extent selected
                   </td>
 		</tr>
 	      </table>
           </td>
 
-	    </p>
-	  </td>
 	</tr>
 
 	<tr>
-	  <td><p>Virtual Selection #n</p></td>
+	  <td><p>Selection Info</p></td>
 	  <td>
-	    <p>The dataspace selection in the virtual dataset that is 
-        mapped to the source selection.</p>
-	  </td>
-	</tr>
+	    <p>
+	      <table class="list">
+		<tr>
+		  <th width="20%" align="center">Value</th>
+		  <th width="80%" align="left">Description</th>
+		</tr>
+		<tr>
+		  <td align="center"><code>0</code></td>
+		  <td><a href="#SelNONE">H5S_SEL_NONE</a>
+                  </td>
+		</tr>
 
-        <tr>
-          <td><p>Checksum</p></td>
-          <td>
-            <p>The checksum for the block.</p>
+		<tr>
+		  <td align="center"><code>1</code></td>
+		  <td><a href="#SelPOINTS">H5S_SEL_POINTS</a>
+                  </td>
+		</tr>
+
+		<tr>
+		  <td align="center"><code>2</code></td>
+		  <td><a href="#SelHYPER">H5S_SEL_HYPER</a>
+                  </td>
+		</tr>
+
+		<tr>
+		  <td align="center"><code>3</code></td>
+		  <td><a href="#SelALL">H5S_SEL_ALL</a>
+                  </td>
+		</tr>
+	      </table>
           </td>
-        </tr>
 
+	</tr>
       </table>
     </div>
+
 
     <br />
     <br />
@@ -18406,9 +18481,9 @@ Heap Block</h2>
     <a name="SelNONE">
     <div align="center">
       <table class="format">
-    <caption>
-        Layout: Selection for H5S_SEL_NONE
-    </caption>
+	<caption>
+	  Layout: Selection Info for H5S_SEL_NONE
+	</caption>
 
 	<tr>
 	  <th width="25%">byte</th>
@@ -18417,17 +18492,11 @@ Heap Block</h2>
 	  <th width="25%">byte</th>
 	</tr>
 
-	<tr>
-	  <td colspan="4">Selection Type</td>
-	</tr>
 	<tr>
 	  <td colspan="4">Version</td>
 	</tr>
 	<tr>
-	  <td colspan="4">Reserved <em>(zero)</em></td>
-	</tr>
-	<tr>
-	  <td colspan="4">Reserved <em>(zero)</em></td>
+	  <td colspan="4"><br />Reserved<em>(zero, 8 bytes)</em><br /><br /></td>
 	</tr>
 
       </table>
@@ -18436,36 +18505,28 @@ Heap Block</h2>
     <br />
     <div align="center">
       <table class="desc">
-    <caption>
-        Fields: Selection for H5S_SEL_NONE
-    </caption>
+	<caption>
+        Fields: Selection Info for H5S_SEL_NONE
+	</caption>
 	<tr>
           <th width="30%">Field Name</th>
           <th>Description</th>
 	</tr>
 
 	<tr>
-	  <td><p>Selection Type</p></td>
-	  <td><p>This is 0 for H5S_SEL_NONE
-	  </td>
-	</tr>
-
-	<tr>
 	  <td><p>Version</p></td>
-	  <td><p>This is version 1.</p></td>
+	  <td><p>This is the version number for the H5S_SEL_NONE Selection Info and the value is 1.</p></td>
 	</tr>
       </table>
     </div>
 
     <br />
-    <br />
-    <br />
     <a name="SelPOINTS">
     <div align="center">
       <table class="format">
-    <caption>
-        Layout: Selection for H5S_SEL_POINTS
-    </caption>
+	<caption>
+	  Layout: Selection Info for H5S_SEL_POINTS
+	</caption>
 
 	<tr>
 	  <th width="25%">byte</th>
@@ -18474,15 +18535,13 @@ Heap Block</h2>
 	  <th width="25%">byte</th>
 	</tr>
 
-	<tr>
-	  <td colspan="4">Selection Type</td>
-	</tr>
 	<tr>
 	  <td colspan="4">Version</td>
 	</tr>
 	<tr>
-	  <td colspan="4">Reserved <em>(zero)</em></td>
+          <td colspan="4">Reserved <em>(zero)</em></td>
 	</tr>
+
 	<tr>
 	  <td colspan="4">Length</td>
 	</tr>
@@ -18493,31 +18552,25 @@ Heap Block</h2>
 	  <td colspan="4">Num Points</td>
 	</tr>
 	<tr>
-	  <td colspan="4">Point #1_1</td>
+	  <td colspan="4">Point #1: coordinate #1</td>
 	</tr>
 	<tr>
 	  <td colspan="4">.<br />.<br />.<br /></td>
 	</tr>
 	<tr>
-	  <td colspan="4">Point #1_rank</td>
-	</tr>
-	<tr>
-	  <td colspan="4">Point #2_1</td>
+	  <td colspan="4">Point #1: coordinate #u</td>
 	</tr>
 	<tr>
 	  <td colspan="4">.<br />.<br />.<br /></td>
 	</tr>
 	<tr>
-	  <td colspan="4">Point #2_rank</td>
+	  <td colspan="4">Point #n: coordinate #1</td>
 	</tr>
 	<tr>
 	  <td colspan="4">.<br />.<br />.<br /></td>
 	</tr>
 	<tr>
-	  <td colspan="4">Point #n_1</td>
-	</tr>
-	<tr>
-	  <td colspan="4">Point #n_rank</td>
+	  <td colspan="4">Point #n: coordinate #u</td>
 	</tr>
 
       </table>
@@ -18526,36 +18579,51 @@ Heap Block</h2>
     <br />
     <div align="center">
       <table class="desc">
-    <caption>
-        Fields: Selection for H5S_SEL_POINTS
-    </caption>
+	<caption>
+	    Fields: Selection Info for H5S_SEL_POINTS
+	</caption>
 	<tr>
           <th width="30%">Field Name</th>
           <th>Description</th>
 	</tr>
 
 	<tr>
-	  <td><p>Selection Type</p></td>
-	  <td><p>This is 1 for H5S_SEL_POINTS
-	  </td>
+	  <td><p>Version</p></td>
+	  <td><p>This is the version number for the H5S_SEL_POINTS Selection Info and the value is 1.</p></td>
 	</tr>
 
 	<tr>
-	  <td><p>Version</p></td>
-	  <td><p>Version 1.</p></td>
+	  <td><p>Length</p></td>
+	  <td><p>This is the size in bytes from <em>Length</em> to the end of the Selection Info.</td>
+	</tr>
+
+	<tr>
+	  <td><p>Rank</p></td>
+	  <td><p>This field is the number of dimensions.</p></td>
+	</tr>
+	<tr>
+	  <td><p>Num Points</p></td>
+	  <td><p>This field is the number of points in the selection.</p></td>
+	</tr>
+	<tr>
+	  <td><p>Point #n: coordinate #u</p></td>
+	  <td><p>This is the array of points in the selection.  
+		<br />	
+		The points selected are #1 to #n where n is <em>Num Points</em>. 
+		<br />	
+		The list of coordinates for each point are
+	        #1 to #u where u is <em>Rank</em>.</p></td>
 	</tr>
       </table>
     </div>
 
     <br />
-    <br />
-    <br />
-    <a name="SelALL">
+    <a name="SelHYPER">
     <div align="center">
       <table class="format">
-    <caption>
-        Layout: Selection for H5S_SEL_ALL
-    </caption>
+	<caption>
+	  Layout: Selection Info for H5S_SEL_HYPER
+	</caption>
 
 	<tr>
 	  <th width="25%">byte</th>
@@ -18564,18 +18632,137 @@ Heap Block</h2>
 	  <th width="25%">byte</th>
 	</tr>
 
-	<tr>
-	  <td colspan="4">Selection Type</td>
-	</tr>
 	<tr>
 	  <td colspan="4">Version</td>
 	</tr>
 	<tr>
-	  <td colspan="4">Reserved <em>(zero)</em></td>
+          <td colspan="4"><br /><br />Hyperslab Selection Info<br /> (<em>variable size</em>)<br /><br /></td>
+        </tr>
+
+      </table>
+    </div>
+
+    <br />
+    <div align="center">
+      <table class="desc">
+	<caption>
+	    Fields: Selection Info for H5S_SEL_HYPER
+	</caption>
+	<tr>
+          <th width="30%">Field Name</th>
+          <th>Description</th>
+	</tr>
+
+	<tr>
+	  <td><p>Version</p></td>
+	  <td><p>This is the version number for the H5S_SEL_HYPER Selection Info.
+	    The value is either 1 or 2.</p></td>
+	</tr>
+
+	<tr>
+	  <td><p>Hyperslab Selection Info</p></td>
+	  <td><p>Depending on <em>version</em>:
+	      <table class="list">
+		<tr>
+		  <th width="20%" align="center">Version</th>
+		  <th width="80%" align="left">Description</th>
+		</tr>
+
+		<tr>
+		  <td align="center"><code>1</code></td>
+		  <td><a href="#SelHYPERV1">Version 1 hyperslab selection info</a> for dataspace without H5S_UNLIMITED
+                  </td>
+		</tr>
+
+		<tr>
+		  <td align="center"><code>2</code></td>
+		  <td><a href="#SelHYPERV2">Version 2 hyperslab selection info</a> for dataspace with H5S_UNLIMITED
+                  </td>
+		</tr>
+
+	      </table>
+	  </td>
+	</tr>
+
+      </table>
+    </div>
+
+    <br />
+    <a name="SelHYPERV1">
+    <div align="center">
+      <table class="format">
+	<caption>
+	  Layout: Version 1 Hyperslab Selection Info
+	</caption>
+
+	<tr>
+	  <th width="25%">byte</th>
+	  <th width="25%">byte</th>
+	  <th width="25%">byte</th>
+	  <th width="25%">byte</th>
+	</tr>
+
+	<tr>
+          <td colspan="4">Reserved</td>
 	</tr>
 	<tr>
-	  <td colspan="4">Reserved <em>(zero)</em></td>
+	  <td colspan="4">Length</td>
 	</tr>
+	<tr>
+	  <td colspan="4">Rank</td>
+	</tr>
+	<tr>
+	  <td colspan="4">Num Blocks</td>
+	</tr>
+	<tr>
+	  <td colspan="4"><br />Start offset #1 for block #1 <em>(8 bytes)</em><br /><br /></td>
+        </tr>
+	<tr>
+	  <td colspan="4">.<br />.<br />.<br /></td>
+	</tr>
+	<tr>
+	  <td colspan="4"><br />Start offset #n for block #1 <em>(8 bytes)</em><br /><br /></td>
+        </tr>
+
+	<tr>
+	  <td colspan="4"><br />End offset #1 for block #1 <em>(8 bytes)</em><br /><br /></td>
+        </tr>
+	<tr>
+	  <td colspan="4">.<br />.<br />.<br /></td>
+	</tr>
+	<tr>
+	  <td colspan="4"><br />End offset #n for block #1 <em>(8 bytes)</em><br /><br /></td>
+        </tr>
+
+	<tr>
+	  <td colspan="4">.<br />.<br />.<br /></td>
+	</tr>
+	<tr>
+	  <td colspan="4">.<br />.<br />.<br /></td>
+	</tr>
+	<tr>
+	  <td colspan="4">.<br />.<br />.<br /></td>
+	</tr>
+
+	<tr>
+	  <td colspan="4"><br />Start offset #1 for block #u <em>(8 bytes)</em><br /><br /></td>
+        </tr>
+	<tr>
+	  <td colspan="4">.<br />.<br />.<br /></td>
+	</tr>
+	<tr>
+	  <td colspan="4"><br />Start offset #n for block #u <em>(8 bytes)</em><br /><br /></td>
+        </tr>
+
+	<tr>
+	  <td colspan="4"><br />End offset #1 for block #u <em>(8 bytes)</em><br /><br /></td>
+        </tr>
+	<tr>
+	  <td colspan="4">.<br />.<br />.<br /></td>
+	</tr>
+	<tr>
+	  <td colspan="4"><br />End offset #n for block #u <em>(8 bytes)</em><br /><br /></td>
+        </tr>
 
       </table>
     </div>
@@ -18584,7 +18771,7 @@ Heap Block</h2>
     <div align="center">
       <table class="desc">
     <caption>
-        Fields: Selection for H5S_SEL_ALL
+        Fields: Version 1 Hyperslab Selection Info
     </caption>
 	<tr>
           <th width="30%">Field Name</th>
@@ -18592,14 +18779,188 @@ Heap Block</h2>
 	</tr>
 
 	<tr>
-	  <td><p>Selection Type</p></td>
-	  <td><p>This is 3 for H5S_SEL_ALL
-	  </td>
+	  <td><p>Length</p></td>
+	  <td><p>This is the size in bytes from the field <em>Length</em> to the end of the Selection Info.</td>
+	</tr>
+
+	<tr>
+	  <td><p>Rank</p></td>
+	  <td><p>This is the number of dimensions in the dataspace.</p></td>
+	</tr>
+
+	<tr>
+	  <td><p>Num Blocks</p></td>
+	  <td><p>This is the number of blocks in the selection.</p></td>
+	</tr>
+
+	<tr>
+	  <td><p>Start offset #n for block #u</p></td>
+	  <td><p>This is the offset #n of the starting element in block #u.
+		<br />#n is from 1 to <em>Rank</em>.
+		<br />#u is from 1 to <em>Num Blocks</em> moving from the fastest changing dimension to 
+		the slowest changing dimension.
+	    </p></td>
+	</tr>
+
+	<tr>
+	  <td><p>End offset #n for block #u</p></td>
+	  <td><p>This is the offset #n of the ending element in block #u.
+		<br />#n is from 1 to <em>Rank</em>.
+		<br />#u is from 1 to <em>Num Blocks</em> moving from the fastest changing dimension to 
+		the slowest changing dimension.
+	    </p></td>
+	</tr>
+
+      </table>
+    </div>
+
+    <br />
+    <a name="SelHYPERV2">
+    <div align="center">
+      <table class="format">
+	<caption>
+	  Layout: Version 2 Hyperslab Selection Info
+	</caption>
+
+	<tr>
+	  <th width="25%">byte</th>
+	  <th width="25%">byte</th>
+	  <th width="25%">byte</th>
+	  <th width="25%">byte</th>
+	</tr>
+
+	<tr>
+	  <td>flags</td>
+          <td colspan="3" bgcolor="#DDDDDD"><em>This space inserted only to align table nicely</em></td>
+	</tr>
+	<tr>
+	  <td colspan="4">Length</td>
+	</tr>
+	<tr>
+	  <td colspan="4">Rank</td>
+	</tr>
+	<tr>
+	  <td colspan="4"><br />Start #1 <em>(8 bytes)</em><br /><br /></td>
+        </tr>
+	<tr>
+	  <td colspan="4"><br />Stride #1 <em>(8 bytes)</em><br /><br /></td>
+        </tr>
+	<tr>
+	  <td colspan="4"><br />Count #1 <em>(8 bytes)</em><br /><br /></td>
+        </tr>
+	<tr>
+	  <td colspan="4"><br />Block #1 <em>(8 bytes)</em><br /><br /></td>
+        </tr>
+	<tr>
+	  <td colspan="4">.<br />.<br />.<br /></td>
+	</tr>
+	<tr>
+	  <td colspan="4"><br />Start #n <em>(8 bytes)</em><br /><br /></td>
+        </tr>
+
+	<tr>
+	  <td colspan="4"><br />Stride #n <em>(8 bytes)</em><br /><br /></td>
+        </tr>
+	<tr>
+	  <td colspan="4"><br />Count #n <em>(8 bytes)</em><br /><br /></td>
+        </tr>
+	<tr>
+	  <td colspan="4"><br />Block #n <em>(8 bytes)</em><br /><br /></td>
+        </tr>
+
+      </table>
+    </div>
+
+    <br />
+    <div align="center">
+      <table class="desc">
+    <caption>
+	Fields: Version 2 Hyperslab Selection Info
+    </caption>
+	<tr>
+          <th width="30%">Field Name</th>
+          <th>Description</th>
+	</tr>
+
+	<tr>
+	  <td><p>Length</p></td>
+	  <td><p>This is the size in bytes from the field <em>Length</em> to the end of the Selection Info.</td>
+	</tr>
+
+	<tr>
+	  <td><p>Rank</p></td>
+	  <td><p>This is the number of dimensions in the dataspace.</td>
+	</tr>
+
+	<tr>
+	  <td><p>Start #n</p></td>
+	  <td><p>This field specifies the offset of the starting element in the block.
+	    #n is from 1 to <em>Rank</em>.
+	    </p></td>
+	</tr>
+
+	<tr>
+	  <td><p>Stride #n</p></td>
+	  <td><p>This field specifies the number of elements to move in each dimension.
+	    #n is from 1 to <em>Rank</em>.
+	  </p></td>
+	</tr>
+
+	<tr>
+	  <td><p>Count #n</p></td>
+	  <td><p>This field specifies the number of blocks to select in each dimension.
+	    #n is from 1 to <em>Rank</em>.
+	  </p></td>
+	</tr>
+
+	<tr>
+	  <td><p>Block #n</p></td>
+	  <td><p>This field specifies the size (in elements) of each block in each dimension. 
+	    #n is from 1 to <em>Rank</em>.
+	    </p></td>
+	</tr>
+      </table>
+    </div>
+
+    <br />
+    <a name="SelALL">
+    <div align="center">
+      <table class="format">
+	<caption>
+	  Layout: Selection Info for H5S_SEL_ALL
+	</caption>
+
+	<tr>
+	  <th width="25%">byte</th>
+	  <th width="25%">byte</th>
+	  <th width="25%">byte</th>
+	  <th width="25%">byte</th>
+	</tr>
+
+	<tr>
+	  <td colspan="4">Version</td>
+	</tr>
+	<tr>
+	  <td colspan="4"><br />Reserved <em>(zero, 8 bytes)</em><br /><br /></td>
+	</tr>
+
+      </table>
+    </div>
+
+    <br />
+    <div align="center">
+      <table class="desc">
+	<caption>
+	    Fields: Selection Info for H5S_SEL_ALL
+	</caption>
+	<tr>
+          <th width="30%">Field Name</th>
+          <th>Description</th>
 	</tr>
 
 	<tr>
 	  <td><p>Version</p></td>
-	  <td><p>Version 1.</p></td>
+	  <td><p>This is the version number for the H5S_SEL_ALL Selection Info and the value is 1.</p></td>
 	</tr>
       </table>
     </div>
