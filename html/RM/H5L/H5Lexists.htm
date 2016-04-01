@@ -23,7 +23,7 @@
 <hr>
 <dl>
 <dt><div align=right><font color=999999 size=-1><i>
-    Last modified: 10 December 2015
+    Last modified: 1 April 2016
     </i></font></div>
 
   <dt><strong>Name:</strong> <a name="Link-Exists">H5Lexists</a>
@@ -91,14 +91,51 @@
         For instance, if <code>datasetD</code> were in 
         <code>/group1/group2/softlink_to_group3</code>, the first call to
         <code>H5Lexists</code> would have <code>name</code> set to 
-        <code>/group1</code>.
+        <code>/group1</code>.</p>
         <p>
         Note that this is an outline and does not include all 
-        necessary details.  Depending on circumstances, for example, 
+        necessary details. Depending on circumstances, for example, 
         you may need to verify that an intermediate link points to 
-        a group and that a soft link points to an existing target.
+        a group and that a soft link points to an existing target.</p>
 
-  <p>
+<dt><strong>Note on Behavior Change:</strong>
+    <dd>
+        The behavior of <code>H5Lexists</code> was changed 
+        in the 1.10.0 release in the case where the root group, 
+        &ldquo;/&rdquo;, is the name of the link. This change is 
+        described below:
+        <br />
+        <ol>
+        <li>
+        Let &lsquo;file&rsquo; denote a valid HDF5 file identifier, 
+        and let &lsquo;lapl&rsquo; denote a valid link access property 
+        list identifier. A call to <code>H5Lexists</code> with arguments 
+        &lsquo;file&rsquo;, &ldquo;/&rdquo;, and &lsquo;lapl&rsquo; 
+        returns a positive value; in other words, 
+        <code>H5Lexists(file, "/", lapl)</code> returns a positive value. 
+        In HDF5 version 1.8.16, this function returns 0.
+        </li>
+        <li>
+        Let &lsquo;root&rsquo; denote a valid HDF5 group identifier 
+        that refers to the root group of an HDF5 file, and let 
+        &lsquo;lapl&rsquo; denote a valid link access property list 
+        identifier. A call to <code>H5Lexists</code> with arguments 
+        &lsquo;root&rsquo;, &ldquo;/&rdquo;, and &lsquo;lapl&rsquo; 
+        returns a positive value; in other words, 
+        <code>H5Lexists(root, "/", lapl)</code> returns a postive value. 
+        In HDF5 version 1.8.16, this function returns 0.
+        </li>
+        </ol>
+        <br />
+        Note that the function accepts link names <em>and</em> path 
+        names. This is potentially misleading to callers, and we plan 
+        to separate the functionality for link names and path names in 
+        a future release.
+        <br />
+        </dd></dt>
+        
+
+  <br />
   <dt><strong>Parameters:</strong>
     <dd><table>
       <tr>
@@ -124,7 +161,7 @@
         <br />
         Returns 0 if the link does not exist.
         <br />
-        Returns a negative value when when the function fails and may 
+        Returns a negative value when the function fails and may 
         return a negative value if the link does not exist. See 
         &ldquo;Failure Modes&rdquo; below.
         </dd>
@@ -170,6 +207,12 @@ END SUBROUTINE h5lexists_f
             <strong>Release</strong>&nbsp;&nbsp;&nbsp;&nbsp;</td>
           <td valign="top" align="left">
             <strong>C</strong></td></tr>
+        <tr>
+          <td valign="top">1.10.0</td>
+          <td valign="top">
+            Function behavior changed in this release. See the 
+            &ldquo;Note on Behavior Change&rdquo; section above.
+            </td></tr>
         <tr>
           <td valign="top">1.8.0</td>
           <td valign="top">
