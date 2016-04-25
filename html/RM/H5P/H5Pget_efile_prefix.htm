@@ -27,7 +27,7 @@
 <dl>
 
 <dt><div align="right"><font color="999999" size="-1"><i>
-    Last modified: 19 April 2016
+    Last modified: 25 April 2016
     </i></font></div></dt>
     <br />
 
@@ -52,22 +52,50 @@
 
 <dt><strong>Description:</strong>
     <dd><code>H5Pget_efile_prefix</code> retrieves the 
-        file system path prefix that is being used
-        to locate external files associated with 
-        a dataset that uses external storage.
+        file system path prefix for locating external files associated with
+        a dataset that uses external storage. This will be the value
+        set with <code>H5Pset_efile_prefix</code> or the HDF5 Library&rsquo;s
+        default.
+        </p>
+        <p>
+        If no prefix is set in the environment variable
+        <code>HDF5_EXTFILE_PREFIX</code>, the prefix returned by
+        <code>H5Pget_efile_prefix</code> will be the one used by HDF5
+        to locate external storage.
+        </p>
+        <p>
+        The value of <code>size</code> is the size in bytes of the prefix, 
+        including the <code>NULL</code> terminator. 
+        If the size is unknown, a preliminary <code>H5Pget_elink_prefix</code>
+        call with the pointer <code>prefix</code> set to <code>NULL</code> 
+        will return the size of the prefix without the <code>NULL</code> 
+        terminator.
+        In the subsequent call to get the actual prefix, <code>size</code> 
+        must be set to that value plus one (<code>1</code>).
         </p>
         <p>
         See <a href="#Property-SetEfilePrefix">
         <code>H5Pset_efile_prefix</code></a> for a more complete description 
-        of the file location behavior.
+        of file location behavior.
     </dd></dt>
     <br />
 
-<dt><strong>Note:</strong>
+<dt><strong>Notes:</strong>
     <dd>The buffer for the <code>prefix</code> string must be allocated 
         by the caller.  The appropriate size can be determined by calling 
         the function with <code>prefix</code> set to <code>NULL</code>. 
         The call will return the buffer size in bytes via the return value.
+        </p>
+        <p>
+        A prefix set in the <code>HDF5_EXTFILE_PREFIX</code>
+        environment variable overrides any prefix set via 
+        <code>H5Pset_efile_prefix</code>.  
+        In such a situation, the prefix set in <code>HDF5_EXTFILE_PREFIX</code>
+        will be used rather than any value returned by 
+        <code>H5Pget_efile_prefix</code>.
+        <code>H5Pget_efile_prefix</code>, being a property function,
+        examines only the property list; it is unaware of the 
+        environment variable and thus cannot return its setting.
     </dd></dt>
     <br />
     
