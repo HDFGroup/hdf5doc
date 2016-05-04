@@ -5,5 +5,5 @@ var searchData=
   ['exception',['Exception',['../class_h5_1_1_exception.html',1,'H5']]],
   ['exception',['Exception',['../class_h5_1_1_exception.html#a0f4ddd03c9177ca8c318f17e588cd713',1,'H5::Exception::Exception(const H5std_string &amp;func_name, const H5std_string &amp;message=DEFAULT_MSG)'],['../class_h5_1_1_exception.html#a9c0bba82658e1022a9c784c9364bd068',1,'H5::Exception::Exception()'],['../class_h5_1_1_exception.html#abc3b9e76dbfbdc6fc7939c67d3cfe72b',1,'H5::Exception::Exception(const Exception &amp;orig)']]],
   ['extend',['extend',['../class_h5_1_1_data_set.html#adc3d4552c2486453b51b9c6cdbf02efd',1,'H5::DataSet']]],
-  ['extentcopy',['extentCopy',['../class_h5_1_1_data_space.html#a8e744978be229fa68c46db8eafe54e33',1,'H5::DataSpace::extentCopy(const DataSpace &amp;dest_space) const '],['../class_h5_1_1_data_space.html#af1bafda4d3c9ac76bacb1cd5bcc12381',1,'H5::DataSpace::extentCopy(DataSpace &amp;dest_space) const ']]]
+  ['extentcopy',['extentCopy',['../class_h5_1_1_data_space.html#a8e744978be229fa68c46db8eafe54e33',1,'H5::DataSpace']]]
 ];
