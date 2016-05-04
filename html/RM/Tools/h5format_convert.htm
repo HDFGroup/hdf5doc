@@ -26,7 +26,7 @@
 <dl>
 
 <dt><div align="right"><font color="999999" size="-1"><i>
-    Last modified: 28 January 2016
+    Last modified: 4 May 2016
     </i></font></div></dt>
 
   <dt><strong>Tool Name:</strong> 
@@ -38,38 +38,45 @@
     <br />
 
   <dt><strong>Purpose:</strong></dt>
-    <dd>Converts the indexing of chunked datasets from 1.10.x types to 
-    the 1.8.x version 1 B-tree indexing type.</dd>
+    <dd>Converts the layout format version and chunked indexing types 
+    of datasets created with a 1.10.x version of the library so that 
+    applications built with a 1.8.x version of the library can access 
+    these datasets.</dd>
     <br />
 
-  <dt><strong>Motivation:</strong></dt>
-    <dd>The indexing possibilities of chunked datasets was expanded 
-    in 1.10.x versions of the HDF5 Library. This tool 
-    can be used to convert chunked datasets made with 1.10.x versions 
-    of the library to the 1.8.x chunked dataset index format. </dd>
+  <dt><strong>Motivation: </strong></dt>
+    <dd>
+    When datasets are created in a 1.10.x HDF5 file accessed with the 
+    latest format, the library will use the latest layout format version 
+    for the datasets. This will allow users to take advantage of new 
+    features such as virtual storage and the latest index types for 
+    chunked datasets. However, applications built with 1.8.x versions 
+    of the library will not be able to access these datasets.</dd>
     <br />
 
   <dt><strong>Description:</strong></dt>
     <dd>When run, the tool will investigate datasets in 
-    the file <code><em>file_name</em></code>. The tool will convert 
-    chunked datasets whose indexing type is not version 1 B-tree 
-    to version 1 B-tree. The tool will not change any dataset that is 
-    not chunked or its indexing type is already version 1 B-tree. If 
-    errors are encountered, no further conversion will be performed, 
+    the file <code><em>file_name</em></code>. It will convert 
+    datasets as follows:
+    <p>
+    <ol type="a">
+    <li>A chunked dataset: convert the chunk indexing type to version 
+    1 B-tree if the type is not already a version 1 B-tree</li>
+    <li>A compact or contiguous dataset: downgrade the layout version 
+    to 3 if the layout version is not already version 3</li>
+    <li>A virtual dataset: no action</li>
+    </ol>
+    <p>
+    If errors are encountered, no further conversion will be performed, 
     and the tool will exit with failure. 
     </dd>
     <br />
 
-
-
-  <dt><strong>Options and Parameters:
-  </strong>
-  </dt>
+  <dt><strong>Options and Parameters: </strong></dt>
 
     <dd><strong>Options:</strong></dd>
-    <dd>
-    <br />
 
+    <dd>
     <table width="100%" cellpadding="5">
     <tr valign="top">
     <td><strong>Short and Long Forms</strong>
@@ -102,10 +109,9 @@
         <code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code></td>
     <td>This is the name including its path of the 
         dataset to be converted (the links from the root group to the 
-        dataset). When the dataset is not chunked or the indexing 
-        type is already version 1 B-tree, the tool will not perform any 
-        conversion and will exit with success. Only one dataset can be 
-        specified with this option each time the tool is run. 
+        dataset). If no conversion is needed,
+        the tool will exit with success.
+        Only one dataset can be specified with this option each time the tool is run. 
         If this option is not used, the tool will attempt to convert 
         every dataset in <code><em>file_name</em></code>.
     </td></tr>
