@@ -1,4 +1,4 @@
-&nbsp;</dd><html>
+<html>
 
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
@@ -124,6 +124,7 @@ The following functions are part of the HDF5 Packet Table API.&nbsp; </p>
     <td width="50%" valign="top">
       <p align="left"><i>Creation and Opening</i>
       <ul>
+        <li><a href="#H5PTcreate">H5PTcreate</a></li>
         <li><a href="#H5PTcreate_fl">H5PTcreate_fl</a></li>
 <!--    <li><a href="#H5PTcreate_vl">H5PTcreate_vl</a></li>               -->
         <li><a href="#H5PTopen">H5PTopen</a></li>
@@ -146,22 +147,95 @@ The following functions are part of the HDF5 Packet Table API.&nbsp; </p>
       <ul>
         <li><a href="#H5PTread_packets">H5PTread_packets</a></li>
         <li><a href="#H5PTget_next">H5PTget_next</a></li>
+        <li><a href="#H5PTget_dataset">H5PTget_dataset</a></li>
+        <li><a href="#H5PTget_type">H5PTget_type</a></li>
 
       </ul>
       <p align="left"><i>Query</i>
       <ul>
         <li><a href="#H5PTget_num_packets">H5PTget_num_packets</a></li>
         <li><a href="#H5PTis_valid">H5PTis_valid</a></li>
-<!--    <li><a href="#H5PTis_varlen">H5PTis_varlen</a></li>               -->
+        <li><a href="#H5PTis_varlen">H5PTis_varlen</a></li>
       </ul>
-<!--  <p align="left"><i>Memory Management</i>
+      <p align="left"><i>Memory Management</i>
       <ul>
-        <li><a href="#H5PTfree_vlen_readbuff">H5PTfree_vlen_readbuff</a></li>
+        <li><a href="#H5PTfree_vlen_buff">H5PTfree_vlen_buff</a></li>
       </ul>
--->
+
     </td>
   </tr>
 </table>
+
+
+
+<br />
+<hr>
+<dl>
+  <dt style="background-color: #CCCCFF"><strong>Name:</strong> 
+  <a name="H5PTcreate">H5PTcreate</a> </dt>
+
+  <dt><strong>Signature:</strong> </dt>
+  <dl><dt><code><em>hid_t</em> H5PTcreate(<em>hid_t</em>  loc_id, 
+      <em>const char *</em> ptable_name, <em>hid_t</em> dtype_id, 
+      <em>hsize_t</em> chunk_size, <em>hid_t</em> plist_id)</code></dt>
+  </dl>
+
+  <dt><strong>Purpose:</strong> </dt>
+  <dd>Creates a packet table to store fixed-length or variable-length 
+  packets.</dd>
+
+  <dt><strong>Description:</strong> </dt>
+  <dd><code>H5PTcreate</code> creates and opens a packet table named 
+  <code>ptable_name</code> attached to the object specified by the 
+  identifier <code>loc_id</code>. The created packet table should be 
+  closed with <code>H5PTclose</code>, eventually. The datatype, 
+  <code>dtype_id</code>, may specify any datatype, including 
+  variable-length data. If <code>dtype_id</code> specifies a 
+  compound datatype, one or more fields in that compound type may be 
+  variable-length.</dd>
+
+  <dt><strong>Parameters:</strong> </dt>
+    <dl>
+    <dt><code><em>hid_t</em> loc_id</code> </dt>
+    <dd>IN: Identifier of the file or group to create the table within.</dd>
+    <dt><code><em>const char *</em> ptable_name</code> </dt>
+    <dd>IN: The name of the packet table to create.</dd>
+    <dt><code><em>hid_t</em> dtype_id</code> </dt>
+    <dd>IN: The datatype of the packet.</dd>
+    <dt><code><em>hsize_t</em> chunk_size</code> </dt>
+    <dd>IN: Chunk size, in number of table entries per chunk. Packet 
+    table datasets use HDF5 chunked storage to allow them to grow. 
+    This value allows the user to set the size of a chunk. The chunk 
+    size affects performance.</dd>
+    <dt><code><em>hid_t</em> plist_id</code> </dt>
+    <dd>IN: Identifier of the property list. Can be used to 
+    specify the compression of the packet table.</dd>
+  </dl>
+</dl>
+
+<dl>
+  <dt><strong>Returns:</strong> </dt>
+    <dd>Returns an identifier for the new packet table or 
+    <code>H5I_INVALID_HID</code> on error.</dd>
+</dl>
+
+<dl>
+<dt><strong>History:</strong></dt>
+    <dd>
+    <table width="90%">
+        <tr>
+          <td valign="top" align="left" width="15%">
+            <strong>Release</strong></td>
+          <td valign="top" align="left" width="85%">
+            <strong>Change</strong></td>
+        </tr>
+        <tr>
+          <td valign="top">1.10.0&nbsp;and&nbsp;1.8.17&nbsp;&nbsp;&nbsp;&nbsp;</td>
+          <td valign="top">Function introduced. </td>
+        </tr>
+        </table>
+    </dd>
+</dl>
 
 
 
@@ -169,14 +243,16 @@ The following functions are part of the HDF5 Packet Table API.&nbsp; </p>
 <!-- HEADER RIGHT " " -->
 <!-- NEW PAGE -->
 <!-- HEADER RIGHT "H5PTcreate_fl" -->
+<br />
 <hr>
 <dl>
-  <dt style="background-color: #CCCCFF"><strong>Name:</strong>        <a name="H5PTcreate_fl">H5PTcreate_fl</a> </dt>
+  <dt style="background-color: #CCCCFF"><strong>Name:</strong> 
+  <a name="H5PTcreate_fl">H5PTcreate_fl</a> </dt>
 
   <dt><strong>Signature:</strong> </dt>
-  <dl><dt> <em>hid_t</em>       H5PTcreate_fl( <em>hid_t</em>    loc_id,
-    <em>const char *</em>    dset_name, <em>hid_t</em> dtype_id, <em>hsize_t</em> 
-      chunk_size, <em>int</em> compression )</dt>
+  <dl><dt><code><em>hid_t</em> H5PTcreate_fl(<em>hid_t</em> loc_id,
+    <em>const char *</em> dset_name, <em>hid_t</em> dtype_id, 
+    <em>hsize_t</em> chunk_size, <em>int</em> compression)</code></dt>
 
   </dl>
   <dt><strong>Purpose:</strong> </dt>
@@ -196,19 +272,19 @@ The following functions are part of the HDF5 Packet Table API.&nbsp; </p>
   <dt><strong>Parameters:</strong> </dt>
 
     <dl>
-    <dt><em>hid_t</em> <code>loc_id</code> </dt>
+    <dt><code><em>hid_t</em> loc_id</code> </dt>
     <dd>IN: Identifier of the file or group to create the table within. </dd>
-    <dt><em>const char *</em> <code>dset_name</code> </dt>
+    <dt><code><em>const char *</em> dset_name</code> </dt>
     <dd>IN: The name of the dataset to create. </dd>
-    <dt><em>hid_t </em><code>dtype_id</code> </dt>
+    <dt><code><em>hid_t</em> dtype_id</code> </dt>
     <dd>IN: The datatype of a packet. </dd>
-    <dt><em>hsize_t </em><code>chunk_size</code> </dt>
+    <dt><code><em>hsize_t</em> chunk_size</code> </dt>
     <dd>IN: Chunk size, in number of table entries per chunk.
             <br>
             Packet table datasets use HDF5 chunked storage to allow them to grow.  
             This value allows the user to set the size of a chunk.  The chunk size
             affects performance. </dd>
-    <dt><em>int</em> <code>compression</code> </dt>
+    <dt><code><em>int</em> compression</code> </dt>
     <dd>IN: Compression level, 
             a value of <code>0</code> through <code>9</code>.
             Level <code>0</code> is faster but offers the least compression;
@@ -226,14 +302,15 @@ The following functions are part of the HDF5 Packet Table API.&nbsp; </p>
 <!-- HTMLdoc CODING                     NEW PAGE -->
 <!-- HTMLdoc CODING                     HEADER RIGHT "H5PTcreate_vl" -->
 <!--
+<br />
 <hr>
 <dl>
   <dt style="background-color: #CCCCFF"><strong>Name:</strong> <a name="H5PTcreate_vl">H5PTcreate_vl</a> </dt>
 
   <dt><strong>Signature:</strong> </dt>
-  <dl><dt> <em>hid_t</em>       H5PTcreate_vl( <em>hid_t</em>    loc_id,
+  <dl><dt><code><em>hid_t</em>       H5PTcreate_vl(<em>hid_t</em>    loc_id,
     <em>const char</em>    *dset_name, <em>hsize_t</em>
-      chunk_size )</dt>
+      chunk_size)</code></dt>
   </dl>
 
   <dt><strong>Purpose:</strong> </dt>
@@ -248,11 +325,11 @@ The following functions are part of the HDF5 Packet Table API.&nbsp; </p>
 
   <dt><strong>Parameters:</strong> </dt>
     <dl>
-    <dt><em>hid_t</em> <code>loc_id</code> </dt>
+    <dt><code><em>hid_t</em> loc_id</code> </dt>
     <dd>IN: Identifier of the file or group to create the table within. </dd>
-    <dt><em>const char *</em><code>dset_name</code> </dt>
+    <dt><code><em>const char *</em> dset_name</code> </dt>
     <dd>IN: The name of the dataset to create. </dd>
-    <dt><em>hsize_t </em><code>chunk_size</code> </dt>
+    <dt><code><em>hsize_t</em> chunk_size</code> </dt>
     <dd>IN: Chunk size, in number of table entries per chunk.
             <br>
             Packet table datasets use HDF5 chunked storage to allow them to grow.  
@@ -269,13 +346,14 @@ The following functions are part of the HDF5 Packet Table API.&nbsp; </p>
   
   <!-- NEW PAGE -->
 <!-- HEADER RIGHT "H5PTopen" -->
+<br />
 <hr>
 <dl>
   <dt style="background-color: #CCCCFF"><strong>Name:</strong> <a name="H5PTopen">H5PTopen</a> </dt>
 
   <dt><strong>Signature:</strong> </dt>
-  <dl><dt> <em>hid_t</em>       H5PTopen( <em>hid_t</em>    loc_id,
-    <em>const char</em>    *dset_name )</dt>
+  <dl><dt><code><em>hid_t</em> H5PTopen(<em>hid_t</em> loc_id, 
+    <em>const char</em> *dset_name)</code></dt>
 
   </dl>
   <dt><strong>Purpose:</strong> </dt>
@@ -290,9 +368,10 @@ The following functions are part of the HDF5 Packet Table API.&nbsp; </p>
 
   <dt><strong>Parameters:</strong> </dt>
     <dl>
-    <dt><em>hid_t</em> <code>loc_id</code> </dt>
-    <dd>IN: Identifier of the file or group within which the packet table can be found. </dd>
-    <dt><em>const char *</em><code>dset_name</code> </dt>
+    <dt><code><em>hid_t</em> loc_id</code> </dt>
+    <dd>IN: Identifier of the file or group within which the packet 
+    table can be found. </dd>
+    <dt><code><em>const char *</em> dset_name</code> </dt>
     <dd>IN: The name of the packet table to open. </dd>
   </dl>
 </dl>
@@ -304,12 +383,14 @@ The following functions are part of the HDF5 Packet Table API.&nbsp; </p>
 
 <!-- NEW PAGE -->
 <!-- HEADER RIGHT "H5PTclose" -->
+<br />
 <hr>
 <dl>
   <dt style="background-color: #CCCCFF"><strong>Name:</strong> <a name="H5PTclose">H5PTclose</a> </dt>
 
   <dt><strong>Signature:</strong> </dt>
-  <dl><dt> <em>herr_t</em>       H5PTclose( <em>hid_t</em>  table_id )</dt>
+  <dl><dt><code><em>herr_t</em> H5PTclose(<em>hid_t</em>  table_id)
+  </code></dt>
   </dl>
 
   <dt><strong>Purpose:</strong> </dt>
@@ -321,7 +402,7 @@ The following functions are part of the HDF5 Packet Table API.&nbsp; </p>
 
   <dt><strong>Parameters:</strong> </dt>
     <dl>
-    <dt><em>hid_t</em> <code>table_id</code> </dt>
+    <dt><code><em>hid_t</em> table_id</code> </dt>
     <dd>IN: Identifier of packet table to be closed. </dd>
   </dl>
 </dl>
@@ -333,13 +414,14 @@ The following functions are part of the HDF5 Packet Table API.&nbsp; </p>
 
 <!-- NEW PAGE -->
 <!-- HEADER RIGHT "H5PTappend" -->
+<br />
 <hr>
 <dl>
   <dt style="background-color: #CCCCFF"><strong>Name:</strong> <a name="H5PTappend">H5PTappend</a> </dt>
 
   <dt><strong>Signature:</strong> </dt>
-  <dl><dt> <em>herr_t</em>       H5PTappend( <em>hid_t</em>  table_id, 
-    <em>size_t</em>   nrecords,    <em>const void</em> *data)</dt>
+  <dl><dt><code><em>herr_t</em>       H5PTappend(<em>hid_t</em>  table_id, 
+    <em>size_t</em>   nrecords,    <em>const void</em> *data)</code></dt>
   </dl>
 
   <dt><strong>Purpose:</strong> </dt>
@@ -355,11 +437,12 @@ The following functions are part of the HDF5 Packet Table API.&nbsp; </p>
 
   <dt><strong>Parameters:</strong> </dt>
     <dl>
-    <dt><em>hid_t</em> <code>table_id</code> </dt>
-    <dd>IN: Identifier of packet table to which packets should be appended. </dd>
-    <dt><em>size_t</em> <code>nrecords</code> </dt>
+    <dt><code><em>hid_t</em> table_id</code> </dt>
+    <dd>IN: Identifier of packet table to which packets should be 
+    appended. </dd>
+    <dt><code><em>size_t</em> nrecords</code> </dt>
     <dd>IN: Number of packets to be appended. </dd>
-    <dt><em>const void *</em><code>data</code> </dt>
+    <dt><code><em>const void *</em> data</code> </dt>
     <dd>IN: Buffer holding data to write. </dd>
   </dl>
 </dl>
@@ -371,12 +454,14 @@ The following functions are part of the HDF5 Packet Table API.&nbsp; </p>
 
 <!-- NEW PAGE -->
 <!-- HEADER RIGHT "H5PTcreate_index" -->
+<br />
 <hr>
 <dl>
   <dt style="background-color: #CCCCFF"><strong>Name:</strong> <a name="H5PTcreate_index">H5PTcreate_index</a> </dt>
 
   <dt><strong>Signature:</strong> </dt>
-  <dl><dt> <em>herr_t</em>    H5PTcreate_index( <em>hid_t</em>  table_id)</dt>
+  <dl><dt><code><em>herr_t</em> H5PTcreate_index(<em>hid_t</em> table_id)
+  </code></dt>
   </dl>
 
   <dt><strong>Purpose:</strong> </dt>
@@ -393,7 +478,7 @@ The following functions are part of the HDF5 Packet Table API.&nbsp; </p>
 
   <dt><strong>Parameters:</strong> </dt>
     <dl>
-    <dt><em>hid_t</em> <code>table_id</code> </dt>
+    <dt><code><em>hid_t</em> table_id</code> </dt>
     <dd>IN: Identifier of packet table whose index should be initialized. </dd>
   </dl>
 </dl>
@@ -405,13 +490,15 @@ The following functions are part of the HDF5 Packet Table API.&nbsp; </p>
 
 <!-- NEW PAGE -->
 <!-- HEADER RIGHT "H5PTset_index" -->
+<br />
 <hr>
 <dl>
-  <dt style="background-color: #CCCCFF"><strong>Name:</strong> <a name="H5PTset_index">H5PTset_index</a> </dt>
+  <dt style="background-color: #CCCCFF"><strong>Name:</strong> 
+  <a name="H5PTset_index">H5PTset_index</a> </dt>
 
   <dt><strong>Signature:</strong> </dt>
-  <dl><dt> <em>herr_t</em>       H5PTset_index( <em>hid_t</em>  table_id, 
-    <em>hsize_t</em>   pt_index)</dt>
+  <dl><dt><code><em>herr_t</em> H5PTset_index(<em>hid_t</em> table_id, 
+    <em>hsize_t</em> pt_index)</code></dt>
   </dl>
 
   <dt><strong>Purpose:</strong> </dt>
@@ -425,9 +512,9 @@ The following functions are part of the HDF5 Packet Table API.&nbsp; </p>
 
   <dt><strong>Parameters:</strong> </dt>
     <dl>
-    <dt><em>hid_t</em> <code>table_id</code> </dt>
+    <dt><code><em>hid_t</em> table_id</code> </dt>
     <dd>IN: Identifier of packet table whose index is to be set. </dd>
-    <dt><em>hsize_t</em> <code>index</code> </dt>
+    <dt><code><em>hsize_t</em> index</code> </dt>
     <dd>IN: The packet to which the index should point. </dd>
   </dl>
 </dl>
@@ -439,14 +526,15 @@ The following functions are part of the HDF5 Packet Table API.&nbsp; </p>
 
 <!-- NEW PAGE -->
 <!-- HEADER RIGHT "H5PTread_packets" -->
+<br />
 <hr>
 <dl>
   <dt style="background-color: #CCCCFF"><strong>Name:</strong> <a name="H5PTread_packets">H5PTread_packets</a> </dt>
 
   <dt><strong>Signature:</strong> </dt>
-  <dl><dt> <em>herr_t</em>       H5PTread_packets( <em>hid_t</em>  table_id, 
-    <em>hsize_t</em>   start,  <em>size_t</em>   nrecords,
-    <em>void* data</em>)</dt>
+  <dl><dt><code><em>herr_t</em> H5PTread_packets(<em>hid_t</em> table_id, 
+    <em>hsize_t</em> start, <em>size_t</em> nrecords, 
+    <em>void* data</em>)</code></dt>
   </dl>
 
   <dt><strong>Purpose:</strong> </dt>
@@ -460,20 +548,20 @@ The following functions are part of the HDF5 Packet Table API.&nbsp; </p>
       For a packet table holding variable-length records, the data returned
       in the buffer will be in form of <code>hvl_t</code> structs, each
       containing the length of the data and a pointer to it in memory.
-<!--
+
       The memory used by this data must be freed using 
-      <code>H5PTfree_vlen_readbuff</code>. 
--->
+      <code>H5PTfree_vlen_buff</code>. 
+
 
   <dt><strong>Parameters:</strong> </dt>
     <dl>
-    <dt><em>hid_t</em> <code>table_id</code> </dt>
+    <dt><code><em>hid_t</em> table_id</code> </dt>
     <dd>IN: Identifier of packet table to read from. </dd>
-    <dt><em>hsize_t</em> <code>start</code> </dt>
+    <dt><code><em>hsize_t</em> start</code> </dt>
     <dd>IN: Packet to start reading from. </dd>
-    <dt><em>size_t</em> <code>nrecords</code> </dt>
+    <dt><code><em>size_t</em> nrecords</code> </dt>
     <dd>IN: Number of packets to be read. </dd>
-    <dt><em>void *</em><code>data</code> </dt>
+    <dt><code><em>void *</em> data</code> </dt>
     <dd>OUT: Buffer into which to read data. </dd>
   </dl>
 </dl>
@@ -485,13 +573,15 @@ The following functions are part of the HDF5 Packet Table API.&nbsp; </p>
 
 <!-- NEW PAGE -->
 <!-- HEADER RIGHT "H5PTget_next" -->
+<br />
 <hr>
 <dl>
-  <dt style="background-color: #CCCCFF"><strong>Name:</strong> <a name="H5PTget_next">H5PTget_next</a> </dt>
+  <dt style="background-color: #CCCCFF"><strong>Name:</strong> 
+  <a name="H5PTget_next">H5PTget_next</a> </dt>
 
   <dt><strong>Signature:</strong> </dt>
-  <dl><dt> <em>herr_t</em>       H5PTget_next( <em>hid_t</em>  table_id, 
-    <em>size_t</em>   nrecords,  <em>void</em> *data)</dt>
+  <dl><dt><code><em>herr_t</em> H5PTget_next(<em>hid_t</em>  table_id, 
+    <em>size_t</em> nrecords, <em>void</em> *data)</code></dt>
   </dl>
 
   <dt><strong>Purpose:</strong> </dt>
@@ -505,22 +595,22 @@ The following functions are part of the HDF5 Packet Table API.&nbsp; </p>
       <code>H5PTcreate_index</code>.
       <code>data</code> is a buffer into which the data should 
       be read.
-      <P>
+      <p>
       For a packet table holding variable-length records, the data returned
       in the buffer will be in form of a <code>hvl_t</code> struct
       containing the length of the data and a pointer to it in memory.
-<!--
+
       The memory used by this data must be freed using 
-      <code>H5PTfree_vlen_readbuff</code>. 
--->
+      <code>H5PTfree_vlen_buff</code>. 
+
 
   <dt><strong>Parameters:</strong> </dt>
     <dl>
-    <dt><em>hid_t</em> <code>table_id</code> </dt>
+    <dt><code><em>hid_t</em> table_id</code> </dt>
     <dd>IN: Identifier of packet table to read from. </dd>
-    <dt><em>size_t</em> <code>nrecords</code> </dt>
+    <dt><code><em>size_t</em> nrecords</code> </dt>
     <dd>IN: Number of packets to be read. </dd>
-    <dt><em>void *</em><code>data</code> </dt>
+    <dt><code><em>void *</em> data</code> </dt>
     <dd>OUT: Buffer into which to read data. </dd>
   </dl>
 </dl>
@@ -530,15 +620,124 @@ The following functions are part of the HDF5 Packet Table API.&nbsp; </p>
   <dd>Returns a non-negative value if successful, otherwise returns a negative value.</dd>
 </dl>
 
+
+
+<br />
+<hr>
+<dl>
+  <dt style="background-color: #CCCCFF"><strong>Name:</strong> 
+    <a name="H5PTget_dataset">H5PTget_dataset</a> </dt>
+
+  <dt><strong>Signature:</strong> </dt>
+  <dl><dt><code><em>hid_t</em> H5PTget_dataset(<em>hid_t</em> table_id)
+  </code></dt>
+  </dl>
+
+  <dt><strong>Purpose:</strong> </dt>
+  <dd>Returns the backend dataset of this packet table.</dd>
+
+  <dt><strong>Description:</strong> </dt>
+  <dd><code>H5PTget_dataset</code> returns the identifier of the 
+  dataset storing the packet table <code>table_id</code>. This dataset 
+  identifier will be closed by <code>H5PTclose</code>.
+  </dd>
+
+  <dt><strong>Parameters:</strong> </dt>
+    <dl>
+    <dt><code><em>hid_t</em> table_id</code> </dt>
+    <dd>IN: Identifier of the packet table.</dd>
+  </dl>
+</dl>
+
+<dl>
+  <dt><strong>Returns:</strong> </dt>
+  <dd>Returns a dataset identifier or <code>H5I_INVALID_HID</code> 
+  on error.</dd>
+</dl>
+
+<dl>
+<dt><strong>History:</strong></dt>
+    <dd>
+    <table width="90%">
+        <tr>
+          <td valign="top" align="left" width="15%">
+            <strong>Release</strong></td>
+          <td valign="top" align="left" width="85%">
+            <strong>Change</strong></td>
+        </tr>
+        <tr>
+          <td valign="top">1.10.0&nbsp;and&nbsp;1.8.17&nbsp;&nbsp;&nbsp;&nbsp;</td>
+          <td valign="top">Function introduced.</td>
+        </tr>
+        </table>
+    </dd>
+</dl>
+
+
+
+<br />
+<hr>
+<dl>
+  <dt style="background-color: #CCCCFF"><strong>Name:</strong> 
+    <a name="H5PTget_type">H5PTget_type</a> </dt>
+
+  <dt><strong>Signature:</strong> </dt>
+  <dl><dt><code><em>hid_t</em> H5PTget_type(<em>hid_t</em> table_id)
+  </code></dt>
+  </dl>
+
+  <dt><strong>Purpose:</strong> </dt>
+  <dd>Returns the backend datatype of this packet table.</dd>
+
+  <dt><strong>Description:</strong> </dt>
+  <dd><code>H5PTget_type</code> returns the identifier of the 
+  datatype used by the packet table <code>table_id</code>. This datatype 
+  identifier will be closed by <code>H5PTclose</code>.
+  </dd>
+
+  <dt><strong>Parameters:</strong> </dt>
+    <dl>
+    <dt><code><em>hid_t</em> table_id</code> </dt>
+    <dd>IN: Identifier of the packet table.</dd>
+  </dl>
+</dl>
+
+<dl>
+  <dt><strong>Returns:</strong> </dt>
+  <dd>Returns a datatype identifier or <code>H5I_INVALID_HID</code> 
+  on error.</dd>
+</dl>
+
+<dl>
+<dt><strong>History:</strong></dt>
+    <dd>
+    <table width="90%">
+        <tr>
+          <td valign="top" align="left" width="15%">
+            <strong>Release</strong></td>
+          <td valign="top" align="left" width="85%">
+            <strong>Change</strong></td>
+        </tr>
+        <tr>
+          <td valign="top">1.10.0&nbsp;and&nbsp;1.8.17&nbsp;&nbsp;&nbsp;&nbsp;</td>
+          <td valign="top">Function introduced.</td>
+        </tr>
+        </table>
+    </dd>
+</dl>
+
+
+
 <!-- NEW PAGE -->
 <!-- HEADER RIGHT "H5PTget_num_packets" -->
+<br />
 <hr>
 <dl>
   <dt style="background-color: #CCCCFF"><strong>Name:</strong> <a name="H5PTget_num_packets">H5PTget_num_packets</a> </dt>
 
   <dt><strong>Signature:</strong> </dt>
-  <dl><dt> <em>herr_t</em>       H5PTget_num_packets( <em>hid_t</em>  table_id, 
-    <em>hsize_t *</em>  nrecords)</dt>
+  <dl><dt><code><em>herr_t</em> H5PTget_num_packets(<em>hid_t</em>  
+  table_id, <em>hsize_t *</em> nrecords)</code></dt>
   </dl>
 
   <dt><strong>Purpose:</strong> </dt>
@@ -551,9 +750,9 @@ The following functions are part of the HDF5 Packet Table API.&nbsp; </p>
 
   <dt><strong>Parameters:</strong> </dt>
     <dl>
-    <dt><em>hid_t</em> <code>table_id</code> </dt>
+    <dt><code><em>hid_t</em> table_id</code> </dt>
     <dd>IN: Identifier of packet table to query. </dd>
-    <dt><em>hsize_t</em> <code>nrecords</code> </dt>
+    <dt><code><em>hsize_t</em> nrecords</code> </dt>
     <dd>OUT: Number of packets in packet table. </dd>
   </dl>
 </dl>
@@ -565,12 +764,14 @@ The following functions are part of the HDF5 Packet Table API.&nbsp; </p>
 
 <!-- NEW PAGE -->
 <!-- HEADER RIGHT "H5PTis_valid" -->
+<br />
 <hr>
 <dl>
   <dt style="background-color: #CCCCFF"><strong>Name:</strong> <a name="H5PTis_valid">H5PTis_valid</a> </dt>
 
   <dt><strong>Signature:</strong> </dt>
-  <dl><dt> <em>herr_t</em>       H5PTis_valid( <em>hid_t</em>  table_id)</dt>
+  <dl><dt><code><em>herr_t</em> H5PTis_valid(<em>hid_t</em>  table_id)
+  </code></dt>
   </dl>
 
   <dt><strong>Purpose:</strong> </dt>
@@ -583,7 +784,7 @@ The following functions are part of the HDF5 Packet Table API.&nbsp; </p>
 
   <dt><strong>Parameters:</strong> </dt>
     <dl>
-    <dt><em>hid_t</em> <code>table_id</code> </dt>
+    <dt><code><em>hid_t</em> table_id</code> </dt>
     <dd>IN: Identifier to query. </dd>
   </dl>
 </dl>
@@ -595,13 +796,15 @@ The following functions are part of the HDF5 Packet Table API.&nbsp; </p>
 
 <!-- HTMLdoc CODING                       NEW PAGE -->
 <!-- HTMLdoc CODING                       HEADER RIGHT "H5PTis_varlen" -->
-<!--
+
+<br />
 <hr>
 <dl>
   <dt style="background-color: #CCCCFF"><strong>Name:</strong> <a name="H5PTis_varlen">H5PTis_varlen</a> </dt>
 
   <dt><strong>Signature:</strong> </dt>
-  <dl><dt> <em>herr_t</em>       H5PTis_varlen( <em>hid_t</em>  table_id)</dt>
+  <dl><dt><code><em>herr_t</em> H5PTis_varlen(<em>hid_t</em> table_id)
+  </code></dt>
   </dl>
 
   <dt><strong>Purpose:</strong> </dt>
@@ -616,7 +819,7 @@ The following functions are part of the HDF5 Packet Table API.&nbsp; </p>
 
   <dt><strong>Parameters:</strong> </dt>
     <dl>
-    <dt><em>hid_t</em> <code>table_id</code> </dt>
+    <dt><code><em>hid_t</em> table_id</code> </dt>
     <dd>IN: Packet table to query. </dd>
   </dl>
 </dl>
@@ -625,18 +828,37 @@ The following functions are part of the HDF5 Packet Table API.&nbsp; </p>
   <dt><strong>Returns:</strong> </dt>
   <dd>Returns 1 for a variable-length packet table, 0 for fixed-length, or a negative value on error.</dd>
 </dl>
--->
+
+<dl>
+<dt><strong>History:</strong></dt>
+    <dd>
+    <table width="90%">
+        <tr>
+          <td valign="top" align="left" width="15%">
+            <strong>Release</strong></td>
+          <td valign="top" align="left" width="85%">
+            <strong>Change</strong></td>
+        </tr>
+        <tr>
+          <td valign="top">1.10.0&nbsp;and&nbsp;1.8.17&nbsp;&nbsp;&nbsp;&nbsp;</td>
+          <td valign="top">Function re-introduced. Function had been 
+          removed in 1.8.3.</td>
+        </tr>
+        </table>
+    </dd>
+</dl>
 
 <!-- HTMLdoc CODING                       NEW PAGE -->
-<!-- HTMLdoc CODING                       HEADER RIGHT "H5PTfree_vlen_readbuff" -->
-<!--
+<!-- HTMLdoc CODING                       HEADER RIGHT "H5PTfree_vlen_buff" -->
+
+<br />
 <hr>
 <dl>
-  <dt style="background-color: #CCCCFF"><strong>Name:</strong> <a name="H5PTfree_vlen_readbuff">H5PTfree_vlen_readbuff</a> </dt>
+  <dt style="background-color: #CCCCFF"><strong>Name:</strong> <a name="H5PTfree_vlen_buff">H5PTfree_vlen_buff</a> </dt>
 
   <dt><strong>Signature:</strong> </dt>
-  <dl><dt> <em>herr_t</em>       H5PTfree_vlen_readbuff( <em>hid_t</em>  table_id,
-      <em>hsize_t</em> bufflen,    <em>void *</em> buff)</dt>
+  <dl><dt><code><em>herr_t</em> H5PTfree_vlen_buff(<em>hid_t</em>  table_id,
+      <em>hsize_t</em> bufflen,    <em>void *</em> buff)</code></dt>
   </dl>
 
   <dt><strong>Purpose:</strong> </dt>
@@ -644,17 +866,17 @@ The following functions are part of the HDF5 Packet Table API.&nbsp; </p>
 
   <dt><strong>Description:</strong> </dt>
   <dd>When variable-length packets are read, memory is automatically allocated
-      to hold them, and must be freed.  <code>H5PTfree_vlen_readbuff</code>
+      to hold them, and must be freed.  <code>H5PTfree_vlen_buff</code>
       frees this memory, and should be called whenever packets are read
       from a variable-length packet table. &nbsp;</dd>
 
   <dt><strong>Parameters:</strong> </dt>
     <dl>
-    <dt><em>hid_t</em> <code>table_id</code> </dt>
+    <dt><code><em>hid_t</em> table_id</code> </dt>
     <dd>IN: Packet table whose memory should be freed. </dd>
-    <dt><em>hsize_t</em> <code>bufflen</code> </dt>
+    <dt><code><em>hsize_t</em> bufflen</code> </dt>
     <dd>IN: Size of <code>buff</code>. </dd>
-    <dt><em>void *</em> <code>buff</code> </dt>
+    <dt><code><em>void *</em> buff</code> </dt>
     <dd>IN: Buffer that was used to read in variable-length packets. </dd>
   </dl>
 </dl>
@@ -663,7 +885,30 @@ The following functions are part of the HDF5 Packet Table API.&nbsp; </p>
   <dt><strong>Returns:</strong> </dt>
   <dd>Returns a non-negative value on success or a negative value on error.</dd>
 </dl>
--->
+
+<dl>
+<dt><strong>History:</strong></dt>
+    <dd>
+    <table width="90%">
+        <tr>
+          <td valign="top" align="left" width="15%">
+            <strong>Release</strong></td>
+          <td valign="top" align="left" width="85%">
+            <strong>Change</strong></td>
+        </tr>
+        <tr>
+          <td valign="top">1.10.0&nbsp;and&nbsp;1.8.17&nbsp;&nbsp;&nbsp;&nbsp;</td>
+          <td valign="top">Function re-introduced. Function had been 
+          removed in 1.8.3.</td>
+        </tr>
+        </table>
+    </dd>
+</dl>
+
+
+<br />
+<br />
+<br />
 
 <!-- #BeginLibraryItem "/ed_libs/NavBar_RMHL.lbi" -->
 <hr>
@@ -723,7 +968,7 @@ In the
 <!--
 document.writeln(' \
 <address> \
-  Last modified: 12 February 2013 <br> \
+  Last modified: 9 May 2016 <br> \
 </address> \
 ');
 -->
