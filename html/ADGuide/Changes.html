@@ -241,38 +241,163 @@ in the transition from HDF5 Release 1.8.16 to Release 1.8.17.
             <dt><strong>In the C Interface (main library)</strong>
                 </dt>
 
-
-            <dt>The following new C functions enable setting a 
-                relative path for raw data files 
+            <dt>The following new C functions and environment variable 
+                enable setting a relative path for raw data files 
                 associated with datasets using external storage:
+                <dir><table border="0">
+                     <tr valign="top">
+                         <td>Functions:</td>
+                         <td><a href="../RM/RM_H5P.html#Property-SetEfilePrefix">
+                             <code>H5Pset_efile_prefix</code></a>
+                             <br />
+                             <a href="../RM/RM_H5P.html#Property-GetEfilePrefix">
+                             <code>H5Pget_efile_prefix</code></a>
+                             <br />&nbsp;
+                         </td></tr>
+                     <tr valign="middle">
+                         <td>Environment&nbsp;variable:&nbsp;&nbsp;&nbsp;</td>
+                         <td><a href="../RM/RM_H5P.html#Property-SetEfilePrefix">
+                             <code>HDF5_EXTFILE_PREFIX</code></a>
+                         </td></tr>
+                     </table>
+                </dir>
                 </dt>
-            <dd><li><a href="../RM/RM_H5P.html#Property-SetEfilePrefix">
-                    <code>H5Pset_efile_prefix</code></a></li>
-                <li><a href="../RM/RM_H5P.html#Property-GetEfilePrefix">
-                    <code>H5Pget_efile_prefix</code></a></li>
-            <dt>And a related environment variable:
-            <dd><li><a href="../RM/RM_H5P.html#Property-SetEfilePrefix">
-                    <code>HDF5_EXTFILE_PREFIX</code></a></li>
-                </dd>
+
 
 
             <p />
             <dt><strong>In the C High-Level Interface</strong>
                 </dt>
 
-
-            <dt>The following new C function replaces an older function:
+            <dt>The following new functions have been added in the
+                Packet Table (H5PT) high-level interface:
+                <dir><code>H5PTcreate</code>
+                    <br>
+                    <code>H5PTset_dataset</code>
+                    <br>
+                    <code>H5PTset_type</code>
+                </dir> 
+                </dt> 
+            <dt><code>H5PTcreate</code> replaces <code>H5PTcreate_fl</code>,
+                which is deprecated and may be removed in a future release.
                 </dt>
-            <dd><li><code>H5PTcreate</code>
-                    replaces <code>H5PTcreate_fl</code>.</li> 
-<!--
-            <dd><li><a href="../HL/RM_H5PT.html#H5PT.create">
-                    <code>H5PTcreate</code></a>
-                    replaces <code>H5PTcreate_fl</code>.</li> 
--->
-                <li><code>H5PTcreate_fl</code> is deprecated 
-                    and may be removed in a future release.</li>
+            <p />
+            <dt>The following functions were previously removed from the 
+                library distribution but are once again publicly available.
+                </dt>
+                <dir><dl>
+                <dt>Reinstated in its original form:
+                <dir><code>H5PTis_varlen</code>
+                </dir>
+                </dt>
+                <dt>An updated form of <code>H5PTfree_vlen_readbuff</code>
+                reinstated as: 
+                <dir><code>H5PTfree_vlen_buff</code>
+                </dir>
+                </dt>
+                </dl></dir>
+
+
+
+            <p />
+            <dt><strong>In the C++ Interface (main library wrappers)</strong>
+                </dt>
+
+            <dt>New member function added in <code>DSetCreatPropList</code>:
+                </dt>
+
+                <dd><code>DSetCreatPropList::setNbit()</code>
+                    was added to set up N-bit compression for a dataset.
+                    </dd>
+
+
+            <p />
+            <dt>New overloaded <code>const</code> member functions added in 
+                <code>ArrayType</code>:
+                </dt>
+
+                <dd>The following functions were added to provide const versions; 
+                    the non-const versions have been marked deprecated.
+                    <pre>
+    ArrayType::getArrayNDims() const
+    ArrayType::getArrayDims() const
+                    </pre>
+                    
+            <dt>In-memory array information, <code>ArrayType::rank</code>
+                and <code>ArrayType::dimensions</code>, have been removed. 
+                This is an implementation detail and should not affect 
+                applications.
+                </dt>
+
+
+
+            <p />
+            <dt><strong>In the C++ High-Level Interface</strong>
+                </dt>
+
+            <dt>New constructor added in <code>FL_PacketTable</code>:
+                </dt>
+
+                <dd>An overloaded constructor has been added to 
+                    <code>FL_PacketTable</code>. The function now takes 
+                    a property list identifier to provide flexibility 
+                    on creation properties such as compression.
+                    <pre>
+    FL_PacketTable(hid_t fileID, const char* name, hid_t dtypeID,
+                   hsize_t chunkSize = 0, hid_t plistID = H5P_DEFAULT)
+                    </pre>
                 </dd>
+
+
+            <dt>New member functions added in <code>PacketTable</code>:
+                </dt>
+
+                <dd>Two accessor wrappers were added to class 
+                    <code>PacketTable</code>.
+                    <dir>
+                    <p />
+                    <code>PacketTable::GetDataset()</code> returns the 
+                    identifier of the dataset associated with the 
+                    packet table.
+                    <p />
+                    <code>PacketTable::GetDatatype()</code> returns the 
+                    identifier of the datatype that the packet table uses.
+                    </dir>
+                </dd>
+
+
+            <dt>New member functions added with a <code>char*</code> 
+                argument:
+                </dt>
+
+                <dd>Overloaded functions have been added to provide a 
+                    <code>const char*</code> argument.
+                    The existing versions of these functions will be 
+                    deprecated in future releases. 
+                    <p />
+                    This also removes the following warning:
+                    <pre>
+    deprecated conversion from string constant to "char*" [-Wwrite-strings]
+                    </pre>
+                </dd>
+
+
+            <dt>Ifdef blocks removed:
+                </dt>
+
+                <dd>The <code>#ifdef VLPT_REMOVED</code> blocks have been 
+                    removed from the packet table library source code 
+                    except for the following functions:
+                    <p />
+                    <code>VL_PacketTable::IsVariableLength()</code>
+                    was moved to <code>PacketTable</code>.
+                    <p />
+                    <code>VL_PacketTable::FreeReadBuff()</code>
+                    is now <code>PacketTable::FreeBuff()</code>.
+                </dd>
+
+
+
         </dl>    
         </dir>
 
@@ -697,7 +822,7 @@ Release to Release for HDF5 Releases 1.4.0 through 1.6.10</a>&rdquo;.
 <!-- Created: Spring 1999 -->
 <!-- hhmts start -->
 <hr />
-Last modified: 3 May 2016
+Last modified: 10 May 2016
 <!-- hhmts end -->
 <br />
 <br />
