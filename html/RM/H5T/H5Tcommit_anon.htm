@@ -1,0 +1,168 @@
+
+
+<!--
+  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+  * Copyright by The HDF Group.                                               *
+  * Copyright by the Board of Trustees of the University of Illinois.         *
+  * All rights reserved.                                                      *
+  *                                                                           *
+  * This file is part of HDF5.  The full HDF5 copyright notice, including     *
+  * terms governing use, modification, and redistribution, is contained in    *
+  * the files COPYING and Copyright.html.  COPYING can be found at the root   *
+  * of the source code distribution tree; Copyright.html can be found at the  *
+  * root level of an installed copy of the electronic HDF5 document set and   *
+  * is linked from the top-level documents page.  It can also be found at     *
+  * http://hdfgroup.org/HDF5/doc/Copyright.html.  If you do not have          *
+  * access to either file, you may request a copy from help@hdfgroup.org.     *
+  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+ -->
+
+
+<!-- NEW PAGE -->
+<!-- HEADER RIGHT "H5Tcommit_anon" -->
+<hr>
+<dl>
+<dt><div align=right><font color=999999 size=-1><i>
+    Last modified: 26 August 2013
+    </i></font></div>
+
+<dt><strong>Name:</strong> <a name="Datatype-CommitAnon">H5Tcommit_anon</a>
+<dt><strong>Signature:</strong>
+    <dd><em>herr_t</em> <code>H5Tcommit_anon</code>(
+        <em>hid_t</em> <code>loc_id</code>,
+        <em>hid_t</em> <code>dtype_id</code>,
+        <em>hid_t</em> <code>tcpl_id</code>,
+        <em>hid_t</em> <code>tapl_id</code>
+    )
+
+        <p>
+<dt><strong>Purpose:</strong>
+    <dd>Commits a transient datatype to a file, creating a new named datatype, 
+        but does not link it into the file structure.
+
+        <p>
+<dt><strong>Description:</strong>
+    <dd><code>H5Tcommit_anon</code> commits a transient datatype 
+        (not immutable) to a file, turning it into a named datatype
+        with the specified creation and property lists.  
+        With default property lists, <code>H5P_DEFAULT</code>,
+        <code>H5Tcommit_anon</code> provides similar functionality 
+        to that of <code>H5Tcommit</code>, with the differences 
+        described below.
+        <p>
+        The datatype access property list identifier, <code>tapl_id</code>,
+        is provided for future functionality and is not used at this time.
+        This parameter should always be passed as the value 
+        <code>H5P_DEFAULT</code>.
+        <p>
+        Note that <code>H5Tcommit_anon</code> does not link this 
+        newly-committed datatype into the file.  
+        After the <code>H5Tcommit_anon</code> call, 
+        the datatype identifier <code>dtype_id</code> 
+        <i>must</i> be linked into the HDF5 file structure 
+        with <a href="RM_H5O.html#Object-Link"><code>H5Olink</code></a>
+        or it will be deleted from the file when the file is closed.
+        <p>
+        The differences between this function and 
+        <a href="#Datatype-Commit"><code>H5Tcommit</code></a> are as follows:
+        <ul>
+          <li><code>H5Tcommit_anon</code> explicitly includes property 
+            lists, which provides for greater control of the creation process 
+            and of the properties of the new named datatype.
+            <code>H5Tcommit</code> always uses default properties.
+          <li><code>H5Tcommit_anon</code> neither provides the new 
+            named datatype&rsquo;s name nor links it into the HDF5 file 
+            structure; those actions must be performed separately through a 
+            call to 
+            <a href="RM_H5O.html#Object-Link"><code>H5Olink</code></a>,
+            which offers greater control over linking.
+        </ul>
+        <p>
+        This function will not accept a datatype that cannot actually
+        hold data.  This currently includes
+        compound datatypes with no fields and
+        enumerated datatypes with no members.
+
+        <p>
+<dt><strong>Parameters:</strong>
+    <dd><table>
+        <tr>
+          <td valign="top"><em>hid_t</em> <code>loc_id</code></td>
+          <td valign="top">IN: A file or group identifier specifying the file
+              in which the new named datatype is to be created.</td></tr>
+        <tr>
+          <td valign="top"><em>hid_t</em> <code>dtype_id</code></td>
+          <td valign="top">IN: A datatype identifier.</td></tr>
+        <tr>
+          <td valign="top"><em>hid_t</em> <code>tcpl_id</code></td>
+          <td valign="top">IN: A datatype creation property list 
+              identifier.
+              <br>
+              (<code>H5P_DEFAULT</code> for the default property list.)
+              </td></tr>
+        <tr>
+          <td valign="top"><em>hid_t</em>&nbsp;<code>tapl_id&nbsp;&nbsp;&nbsp;&nbsp;</code></td>
+          <td valign="top">IN: A datatype access property list identifier.
+             <br>
+             <i>Currently unused; should always be passed as the 
+             value</i> <code>H5P_DEFAULT</code>.</td></tr>
+    </table></dd>
+
+        <p>
+<dt><strong>Returns:</strong>
+    <dd>Returns a non-negative value if successful;
+        otherwise returns a negative value.
+
+        <p>
+<dt><strong>Fortran90 Interface:</strong> h5tcommit_anon_f
+    <dd><pre>
+SUBROUTINE h5tcommit_anon_f(loc_id, dtype_id, hdferr, tcpl_id, tapl_id)
+  IMPLICIT NONE
+  INTEGER(HID_T), INTENT(IN) :: loc_id ! A file or group identifier specifying 
+                                       ! the file in which the new named 
+                                       ! datatype is to be created.
+  INTEGER(HID_T), INTENT(IN) :: dtype_id  
+                                       ! Datatype identifier 
+  INTEGER, INTENT(OUT) :: hdferr       ! Error code
+                                       ! 0 on success and -1 on failure
+</pre>
+<!-- NEW PAGE -->
+<pre>
+  INTEGER(HID_T), OPTIONAL, INTENT(IN) :: tcpl_id 
+                                       ! A datatype creation property 
+                                       ! list identifier.
+                                       !  H5P_DEFAULT_F = default property list
+  INTEGER(HID_T), OPTIONAL, INTENT(IN) :: tapl_id 
+                                       ! A datatype access property list id
+END SUBROUTINE h5tcommit_anon_f
+    </pre></dd>
+		
+        <p>
+<dt><strong>See Also:</strong>
+    <dd><a href="RM_H5O.html#Object-Link"><code>H5Olink</code></a>
+        <br>
+        <a href="RM_H5T.html#Datatype-Commit"><code>H5Tcommit</code></a> 
+
+        <p>
+<dt><strong>History:</strong>
+    <dd><table width="90%">
+        <tr>
+          <td valign="top" align="left" width="10%">
+            <strong>Release</strong>&nbsp;&nbsp;&nbsp;&nbsp;</td>
+          <td valign="top" align="left">
+            <strong>C</strong></td></tr>
+        <tr>
+          <td valign="top">1.8.7</td>
+          <td valign="top">
+            Function modified in this release to reject
+            datatypes that will not accomodate actual data, such as 
+            a compound datatype with no fields or 
+            an enumerated datatype with no members.</td></tr>
+        <tr>
+          <td valign="top">1.8.0</td>
+          <td valign="top">
+            Function introduced in this release.</td></tr>
+    </table></dd>
+</dl>
+
+

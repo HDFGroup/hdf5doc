@@ -1,0 +1,165 @@
+
+
+<!--
+  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+  * Copyright by The HDF Group.                                               *
+  * Copyright by the Board of Trustees of the University of Illinois.         *
+  * All rights reserved.                                                      *
+  *                                                                           *
+  * This file is part of HDF5.  The full HDF5 copyright notice, including     *
+  * terms governing use, modification, and redistribution, is contained in    *
+  * the files COPYING and Copyright.html.  COPYING can be found at the root   *
+  * of the source code distribution tree; Copyright.html can be found at the  *
+  * root level of an installed copy of the electronic HDF5 document set and   *
+  * is linked from the top-level documents page.  It can also be found at     *
+  * http://hdfgroup.org/HDF5/doc/Copyright.html.  If you do not have          *
+  * access to either file, you may request a copy from help@hdfgroup.org.     *
+  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+ -->
+
+
+<!-- NEW PAGE -->
+<!-- HEADER RIGHT "H5Olink" -->
+<hr>
+<dl>
+
+  <dt><div align=right><font color=999999 size=-1><i>
+      Last modified: 23 August 2013
+      </i></font></div>
+
+  <dt><strong>Name:</strong> <a name="Object-Link">H5Olink</a> 
+  <dt><strong>Signature:</strong> 
+    <dd><em>herr_t</em> <code>H5Olink</code>( 
+      <em>hid_t</em> <code>object_id</code>, 
+      <em>hid_t</em> <code>new_loc_id</code>, 
+      <em>const char *</em><code>new_link_name</code>, 
+      <em>hid_t</em> <code>lcpl</code>, 
+      <em>hid_t</em> <code>lapl</code> 
+      )
+
+      <p></p>
+  <dt><strong>Purpose:</strong> 
+    <dd>Creates a hard link to an object in an HDF5 file. 
+
+      <p>
+  <dt><strong>Description:</strong> 
+    <dd><code>H5Olink</code> creates a new hard link to an object in 
+      an HDF5 file.
+      <p>
+      <code>new_loc_id</code> and <code>new_name</code> specify the 
+      location and name of the new link while <code>object_id</code>
+      identifies the object that the link points to.
+      <p>
+      <code>H5Olink</code> is designed for two purposes:
+      <table>
+        <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;</td><td>
+          <li>To create the first hard link to an object that has just 
+              been created with 
+              <a href="RM_H5D.html#Dataset-CreateAnon"><code>H5Dcreate_anon</code></a>, 
+              <a href="RM_H5G.html#Group-CreateAnon"><code>H5Gcreate_anon</code></a>, 
+              or
+              <a href="RM_H5T.html#Datatype-CommitAnon"><code>H5Tcommit_anon</code></a>.
+        </td></tr>
+        <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;</td><td>
+            <li>To add additional structure to an existing file so that, 
+                for example, an object can be shared among multiple groups.
+        </td></tr>
+      </table>
+      <p>
+      <code>lcpl</code> and <code>lapl</code> are the
+      link creation and access property lists associated with the 
+      new link.
+
+      <p>
+  <dt><strong>Parameters:</strong> 
+    <dd><table>
+      <tr>
+        <td valign="top"><em>hid_t</em> <code>object_id</code></td> 
+        <td valign="top">IN: Object to be linked.</td></tr>
+      <tr>
+        <td valign="top"><em>hid_t</em> <code>new_loc_id</code></td> 
+        <td valign="top">IN: File or group identifier specifying location 
+            at which object is to be linked.</td></tr>
+      <tr>
+        <td valign="top"><em>const&nbsp;char</em>&nbsp;<code>*new_link_name&nbsp;&nbsp;&nbsp;&nbsp;</code></td> 
+        <td valign="top">IN: Name of link to be created, relative to 
+            <code>new_loc_id</code>.</td></tr>
+      <tr>
+        <td valign="top"><em>hid_t</em> <code>lcpl_id</code></td> 
+        <td valign="top">IN: Link creation property list identifier.</td></tr>
+      <tr>
+        <td valign="top"><em>hid_t</em> <code>lapl_id</code></td> 
+        <td valign="top">IN: Link access property list identifier.</td></tr>
+    </table>
+
+      <p>
+  <dt><strong>Example:</strong> 
+    <dd>To create a new link to an object 
+      while simultaneously creating missing intermediate groups:<br>
+      Suppose that an application must create the group <code>C</code> 
+      with the path <code>/A/B01/C</code> but may not know at run time 
+      whether the groups <code>A</code> and <code>B01</code> exist. 
+      The following code ensures that those groups are created 
+      if they are missing:
+<pre>
+    hid_t lcpl_id = H5Pcreate(H5P_LINK_CREATE);  
+                                       /* Creates a link creation property
+                                       * list (LCPL).                     */
+    int status = H5Pset_create_intermediate_group(lcpl_id, TRUE);
+                                       /* Sets "create missing intermediate
+                                        * groups" property in that LCPL.  */
+    hid_t gid  = H5Gcreate_anon(file_id, H5P_DEFAULT, H5P_DEFAULT);
+                                       /* Creates a group without linking 
+                                        * it into the file structure.     */
+    status     = H5Olink(obj_id, file_id, "/A/B01/C", lcpl_id, H5P_DEFAULT);
+                                       /* Links group into file structure.*/
+</pre>
+      <p>
+      Note that unless the object is intended to be temporary, 
+      the <code>H5Olink</code> call is mandatory if an object created 
+      with one of the <code>H5*create_anon</code> functions 
+      (or with <code>H5Tcommit_anon</code>)
+      is to be retained in the file; 
+      without an <code>H5Olink</code> call, the object will not be linked into 
+      the HDF5 file structure and will be deleted when the file is closed.
+
+      <p>
+  <dt><strong>Returns:</strong> 
+    <dd>Returns a non-negative value if successful; otherwise returns a negative 
+    value. 
+      <p>
+
+  <p>
+  <dt><strong>Fortran90 Interface:</strong> h5olink_f
+    <dd>
+
+        <?php include("H5O/h5olink_f_F90.htm"); ?>
+		
+<p>
+<dt><strong>See Also:</strong>
+    <dd><a href="RM_H5D.html#Dataset-CreateAnon"><code>H5Dcreate_anon</code></a>
+        <br> 
+        <a href="RM_H5G.html#Group-CreateAnon"><code>H5Gcreate_anon</code></a>
+        <br> 
+        <a href="RM_H5T.html#Datatype-CommitAnon"><code>H5Tcommit_anon</code></a>
+
+<p>
+<dt><strong>History:</strong>
+    <dd><table width="90%">
+        <tr>
+          <td valign="top" align="left" width="10%">
+              <strong>Release</strong>&nbsp;&nbsp;&nbsp;&nbsp;</td>
+          <td valign="top" align="left">
+              <strong>C</strong></td></tr>
+        <tr>
+          <td valign="top">1.8.1</td>
+          <td valign="top">
+            Fortran subroutine introduced in this release.</td></tr>
+        <tr>
+          <td valign="top">1.8.0</td>
+          <td valign="top">
+              Function introduced in this release.</td></tr>
+    </table>
+</dl>
+
+

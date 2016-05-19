@@ -1,0 +1,185 @@
+
+
+<!--
+  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+  * Copyright by The HDF Group.                                               *
+  * Copyright by the Board of Trustees of the University of Illinois.         *
+  * All rights reserved.                                                      *
+  *                                                                           *
+  * This file is part of HDF5.  The full HDF5 copyright notice, including     *
+  * terms governing use, modification, and redistribution, is contained in    *
+  * the files COPYING and Copyright.html.  COPYING can be found at the root   *
+  * of the source code distribution tree; Copyright.html can be found at the  *
+  * root level of an installed copy of the electronic HDF5 document set and   *
+  * is linked from the top-level documents page.  It can also be found at     *
+  * http://hdfgroup.org/HDF5/doc/Copyright.html.  If you do not have          *
+  * access to either file, you may request a copy from help@hdfgroup.org.     *
+  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+ -->
+
+
+<!-- NEW PAGE -->
+<!-- HEADER RIGHT "H5Tcommit2" -->
+<hr>
+<dl>
+
+  <dt><div align=right><font color=999999 size=-1><i>
+      Last modified: 20 March 2012
+      </i></font></div>
+
+  <dt><strong>Name:</strong> <a name="Datatype-Commit2">H5Tcommit2</a>
+  <dt><strong>Signature:</strong>
+    <dd><em>herr_t</em> <code>H5Tcommit2</code>(
+            <em>hid_t</em> <code>loc_id</code>, 
+            <em>const char *</em><code>name</code>, 
+            <em>hid_t</em> <code>dtype_id</code>, 
+            <em>hid_t</em> <code>lcpl_id</code>, 
+            <em>hid_t</em> <code>tcpl_id</code>, 
+            <em>hid_t</em> <code>tapl_id</code>
+    )
+
+  <p>
+  <dt><strong>Purpose:</strong>
+    <dd>Commits a transient datatype, linking it into the file 
+        and creating a new committed datatype.
+
+  <p>
+  <dt><strong>Motivation:</strong>
+    <dd>Committed datatypes can be used 
+        to save space in a file where many datasets or attributes 
+        use the same datatype or
+        to avoid defining a complex compound datatype more than once.
+        Committed datatypes can also be used to ensure that 
+        multiple instances of the same datatype are truly identical.
+  <p>
+  <dt><strong>Description:</strong>
+    <dd><code>H5Tcommit2</code> saves a transient datatype 
+        as an immutable committed datatype in a file.
+	The datatype specified by <code>dtype_id</code>
+	is committed to the file 
+	with the name <code>name</code> at the location 
+	specified by <code>loc_id</code> and with the
+	datatype creation and access property lists
+	<code>tcpl_id</code> and <code>tapl_id</code>,
+	respectively.
+        <p>
+        <code>loc_id</code> may be a file identifier, 
+        or a group identifier within that file.
+        <code>name</code> may be either an absolute path in the file
+	or a relative path from <code>loc_id</code> naming the 
+	newly-commited datatype.
+        <p>
+        The link creation property list, <code>lcpl_id</code>,
+        governs creation of the link(s) by which the new committed datatype
+        is accessed and the creation of any intermediate groups that 
+        may be missing. 
+        <p>
+        Once commited, this datatype may be used to define the 
+	datatype of any other dataset or attribute in the file.  
+        <p>
+        This function will not accept a datatype that cannot actually
+        hold data.  This currently includes
+        compound datatypes with no fields and
+        enumerated datatypes with no members.
+<!--
+FOR "FULL AND FINAL" FIX, 
+ADD FULL EXPLANATION IN H5Tcreate_enum AND H5Tcreate
+THAT HDF5 DOES NOT ALLOW THE USE OF UNUSABLE DATATYPES, AS DEFINED BELOW.
+
+ONE FIRST CREATES A COMPOUND OR AN ENUM THEN POPULATES IT; ONLY THEN
+CAN THE DATATYPE BE COMMITTED OR USED TO CREATE A DATASET OR ATTRIBUTE.
+
+ALSO NOTE IN H5Tcreate THAT AN ENUM WILL BE A NATIVE INTEGER TYPE.
+
+ADD POINTERS FROM H5Tcommit*, H5Dcreate*, and H5Acreate* TO THE
+H5Tcreate_enum AND H5Tcreate EXPLANATIONS.
+IN H5Tcommit1, H5Tcommit2, & H5Tcommit_anon, THAT LINK WILL REPLACE THE 
+ABOVE PARAGRAPH.
+
+QUESTIONS FOR QK:  
+    1) CAN ENUM BE ANY SIZE NATIVE INTEGER (E.G., LONG LONG)?
+    2) WHAT IS THE DIFFERENCE BETWEEN THESE TWO FUNCTIONS?
+            H5Tcreate (H5T_ENUM, <size>)
+            H5Tenum_create (<datatype>)
+
+ADD HISTORY SECTIONS TO DATASET AND ATTRIBUTE CREATE FUNCTIONS 
+THAT HDF5 WAS MODIFIED IN 1.4.? (1.4.0?) TO NOT ACCEPT 'UNUSABLE' DTYPEs.
+
+        HDF5 does not support the use of datatypes that are constructed 
+        such that they will not accomodate actual data.  
+        For example, any <code>H5Tcommit*</code>, <code>H5Dcreate*</code>,
+        or <code>H5Acreate*</code> command will fail 
+        if the specified datatype is 
+        a compound datatype with no fields or 
+        an enumerated datatype with no members.
+-->
+        <p>
+        Committed datatypes are sometimes referred to as named datatypes.
+
+  <p>
+  <dt><strong>Parameters:</strong>
+    <dd><table>
+       <tr>
+        <td valign="top"><em>hid_t</em> <code>loc_id</code>
+        </td>
+        <td valign="top">IN: Location identifier
+        </td></tr>
+      <tr>
+        <td valign="top"><em>const&nbsp;char&nbsp;*</em><code>name</code>&nbsp;&nbsp;&nbsp;&nbsp;
+        </td>
+        <td valign="top">IN: Name given to committed datatype 
+        </td></tr>
+      <tr>
+        <td valign="top"><em>hid_t</em> <code>dtype_id</code>
+        </td>
+        <td valign="top">IN: Identifier of datatype to be committed
+            and, upon function&rsquo;s return, 
+            identifier for the committed datatype
+        </td></tr>
+      <tr>
+        <td valign="top"><em>hid_t</em> <code>lcpl_id</code>
+        </td>
+        <td valign="top">IN: Link creation property list
+        </td></tr>
+      <tr>
+        <td valign="top"><em>hid_t</em> <code>tcpl_id</code>
+        </td>
+        <td valign="top">IN: Datatype creation property list
+        </td></tr>
+      <tr>
+        <td valign="top"><em>hid_t</em> <code>tapl_id</code>
+        </td>
+        <td valign="top">IN: Datatype access property list
+        </td></tr>
+    </table>
+  <p>
+  <dt><strong>Returns:</strong>
+    <dd>Returns a non-negative value if successful;
+        otherwise returns a negative value.
+  <p>
+  <dt><strong>Fortran90 Interface:</strong>  
+      <dd>See listing under 
+          <a href="RM_H5T.html#Datatype-Commit"><code>H5Tcommit</code></a>.
+  <p>
+  <dt><strong>History:</strong>
+    <dd><table width="90%">
+        <tr>
+          <td valign="top" align="left" width="10%">
+            <strong>Release</strong>&nbsp;&nbsp;&nbsp;&nbsp;</td>
+          <td valign="top" align="left">
+            <strong>C</strong></td></tr>
+        <tr>
+          <td valign="top">1.8.0</td>
+          <td valign="top">
+            Function introduced in this release.</td></tr>
+        <tr>
+          <td valign="top">1.8.7</td>
+          <td valign="top">
+            Function modified in this release to reject
+            datatypes that will not accomodate actual data, such as 
+            a compound datatype with no fields or 
+            an enumerated datatype with no members.</td></tr>
+    </table>
+</dl>
+
+

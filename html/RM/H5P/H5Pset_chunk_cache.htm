@@ -1,0 +1,250 @@
+
+
+<!--
+  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+  * Copyright by The HDF Group.                                               *
+  * Copyright by the Board of Trustees of the University of Illinois.         *
+  * All rights reserved.                                                      *
+  *                                                                           *
+  * This file is part of HDF5.  The full HDF5 copyright notice, including     *
+  * terms governing use, modification, and redistribution, is contained in    *
+  * the files COPYING and Copyright.html.  COPYING can be found at the root   *
+  * of the source code distribution tree; Copyright.html can be found at the  *
+  * root level of an installed copy of the electronic HDF5 document set and   *
+  * is linked from the top-level documents page.  It can also be found at     *
+  * http://hdfgroup.org/HDF5/doc/Copyright.html.  If you do not have          *
+  * access to either file, you may request a copy from help@hdfgroup.org.     *
+  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+ -->
+
+
+<!-- NEW PAGE -->
+<!-- HEADER RIGHT "H5Pset_chunk_cache" -->
+<hr>
+<dl>
+
+  <dt><div align=right><font color=999999 size=-1><i>
+      Last modified: 4 November 2014
+      </i></font></div>
+
+  <dt><strong>Name:</strong> <a name="Property-SetChunkCache">H5Pset_chunk_cache</a>
+
+  <dt><strong>Signature:</strong>
+    <dd><em>herr_t </em><code>H5Pset_chunk_cache</code>(
+            <em>hid_t </em><code>dapl_id</code>,
+            <em>size_t </em><code>rdcc_nslots</code>,
+            <em>size_t </em><code>rdcc_nbytes</code>,
+            <em>double </em><code>rdcc_w0</code>
+        )
+
+  <p>
+  <dt><strong>Purpose:</strong>
+    <dd>Sets the raw data chunk cache parameters.
+
+  <p>
+  <dt><strong>Motivation:</strong>
+    <dd><code>H5Pset_chunk_cache</code> is used to adjust the chunk 
+    cache parameters on a per-dataset basis, as opposed to a global 
+    setting for the file using <code>H5Pset_cache</code>.  The optimum 
+    chunk cache parameters may vary widely with different data layout 
+    and access patterns, so for optimal performance they must be set 
+    individually for each dataset. It may also be beneficial to reduce 
+    the size of the chunk cache for datasets whose performance is not 
+    important in order to save memory space.
+
+  <p>
+  <dt><strong>Description:</strong>
+    <dd><code>H5Pset_chunk_cache</code> 
+      sets the number of elements, the total number of bytes, and the preemption
+      policy value in the raw data chunk cache on a dataset access property
+      list.  After calling this function, the values set in the property list
+      will override the values in the file&#39;s file access property list.
+      <p>
+      The raw data chunk cache inserts chunks into the cache by first computing
+      a hash value using the address of a chunk, then using that hash value as
+      the chunk&#39;s index into the table of cached chunks.  The size of this
+      hash table, i.e., and the number of possible hash values, is determined by
+      the <code>rdcc_nslots</code> parameter.  If a different chunk in the cache
+      has the same hash value, this causes a collision, which reduces
+      efficiency. If inserting the chunk into cache would cause the cache to be
+      too big, then the cache is pruned according to the <code>rdcc_w0</code>
+      parameter.
+
+  <p>
+  <dt><strong>Parameters:</strong>
+    <dd>
+    <table>
+      <tr valign="top">
+        <td><em>hid_t </em><code>dapl_id</code>
+            </td><td>&nbsp;&nbsp;&nbsp;&nbsp;</td>
+        <td>IN: Dataset access property list identifier.
+            </td></tr>
+      <tr valign="top">
+        <td><em>size_t&nbsp;</em><code>rdcc_nslots</code>
+            </td><td>&nbsp;</td>
+        <td>IN:The number of chunk slots in the raw data chunk cache for this
+            dataset.  Increasing this value reduces the number of cache
+            collisions, but slightly increases the memory used.  Due to the
+            hashing strategy, this value should ideally be a prime number.  As a
+            rule of thumb, this value should be at least 10 times the number of
+            chunks that can fit in <code>rdcc_nbytes</code> bytes.  For maximum
+            performance, this value should be set approximately 100 times that
+            number of chunks.
+            <p>
+            The default value is <code>521</code>.  If the value passed is
+            <code>H5D_CHUNK_CACHE_NSLOTS_DEFAULT</code>, then the property will
+            not be set on <code>dapl_id</code> and the parameter will come from
+            the file access property list used to open the file.
+            </td></tr>
+      <tr valign="top">
+        <td><em>size_t </em><code>rdcc_nbytes</code>
+            </td><td>&nbsp;</td>
+        <td>IN: The total size of the raw data chunk cache for this dataset.  In
+            most cases increasing this number will improve performance, as long
+            as you have enough free memory.
+            <p>
+            The default size is 1 MB.  If the value passed is
+            <code>H5D_CHUNK_CACHE_NBYTES_DEFAULT</code>, then the property will
+            not be set on <code>dapl_id</code> and the parameter will come from
+            the file access property list.
+            </td></tr>
+      <tr valign="top">
+        <td><em>double </em><code>rdcc_w0</code>
+            </td><td>&nbsp;</td>
+        <td>IN: The chunk preemption policy for this dataset.  This must be
+            between <code>0</code> and <code>1</code> inclusive and indicates
+            the weighting according to which chunks which have been fully read
+            or written are penalized when determining which chunks to flush from
+            cache.  A value of <code>0</code> means fully read or written chunks
+            are treated no differently than other chunks (the preemption is
+            strictly LRU) while a value of <code>1</code> means fully read or
+            written chunks are always preempted before other chunks.  If your
+            application only reads or writes data once, this can be safely set
+            to <code>1</code>.  Otherwise, this should be set lower, depending
+            on how often you re-read or re-write the same data.
+            <p>
+            The default value is <code>0.75</code>.  If the value passed is
+            <code>H5D_CHUNK_CACHE_W0_DEFAULT</code>, then the property will not
+            be set on <code>dapl_id</code> and the parameter will come from the
+            file access property list.
+            </td></tr>
+    </table>
+
+  <br />
+  <dt><strong>Returns:</strong></dt>
+    <dd>Returns a non-negative value if successful;
+        otherwise returns a negative value.</dd>
+
+  <br />
+  <dt><strong>Example Usage:</strong></dt>
+
+    <dd>The following code sets the chunk cache to use a hash table with 12421
+        elements and a maximum size of 16 MB, while using the preemption policy
+        specified for the entire file:<br />
+<dir><pre>
+<code>H5Pset_chunk_cache(dapl_id, 12421, 16*1024*1024, H5D_CHUNK_CACHE_W0_DEFAULT);</code>
+</pre></dir></dd>
+
+
+
+
+<dt><strong>Usage Notes:</strong>
+    <dd>The chunk cache size is a property for accessing a dataset and 
+    is not stored with a dataset or a file. To guarantee 
+    the same chunk cache settings each time <code>H5Dopen</code> is 
+    called, call <code>H5Dopen</code> with a dataset 
+    access property list (<code>H5Dopen(<em>hid_t</em> loc_id, 
+    <em>const char</em> *name, <em>hid_t</em> dapl_id))</code> where 
+    the chunk cache size is set by calling <code>H5Pset_chunk_cache</code> 
+    for that property list. The property list can be used for multiple 
+    accesses in the same application. <br /><br />
+    
+    For files where the same chunk cache size will be appropriate for 
+    all or most datasets, <code>H5Pset_cache</code> can be called with 
+    a file access property list to set the chunk cache size for accessing 
+    all datasets in the file. <br /><br />
+    
+    Both methods can be used in combination, in which case the chunk cache 
+    size set by <code>H5Pset_cache</code> will apply except for specific 
+    datasets where <code>H5Dopen</code> is called with dataset property 
+    list with the chunk cache size set by <code>H5Pset_chunk_cache</code>.
+    <br /><br />
+    In the absence of any cache settings, <code>H5Dopen</code> will by 
+    default create a 1 MB chunk cache for the opened dataset. If this 
+    size happens to be appropriate, no call will be needed to either 
+    function to set the chunk cache size.<br /><br />
+    
+    It is also possible that a change in access pattern for later access 
+    to a dataset will change the appropriate chunk cache size. For more 
+    detailed information on chunks, chunk caching, and performance 
+    pitfalls, see 
+    <a href="http://www.hdfgroup.org/HDF5/doc/Advanced/Chunking/index.html">
+    &ldquo;Chunking in HDF5&rdquo;</a>.
+    
+    
+    
+    
+    </dd>
+
+
+
+<br />
+
+
+
+    <dt><strong>Fortran90 Interface:</strong> h5pset_chunk_cache_f
+    <dd>
+    <pre>
+SUBROUTINE h5pset_chunk_cache_f(dapl_id, rdcc_nslots, rdcc_nbytes, rdcc_w0, hdferr)
+  IMPLICIT NONE
+  INTEGER(HID_T), INTENT(IN) :: dapl_id      ! Dataset access property list 
+                                             ! identifier.
+  INTEGER(SIZE_T), INTENT(IN) :: rdcc_nslots ! The number of chunk slots in the 
+                                             ! raw data chunk cache for this 
+                                             ! dataset.
+  INTEGER(SIZE_T), INTENT(IN) :: rdcc_nbytes ! The total size of the raw data 
+                                             ! chunk cache for this dataset.
+  REAL, INTENT(IN) :: rdcc_w0                ! The chunk preemption policy for 
+                                             ! this dataset.
+  INTEGER, INTENT(OUT) :: hdferr             ! Error code
+                                             ! 0 on success and -1 on failure
+END SUBROUTINE h5pset_chunk_cache_f
+    </pre>
+
+  <p>
+  <dt><strong>See Also:</strong></dt>
+    <dd><a href="RM_H5P.html#Property-GetChunkCache">
+        <code>H5Pget_chunk_cache</code></a>
+        <br />
+        <a href="RM_H5P.html#Property-SetCache">
+        <code>H5Pset_cache</code></a>
+        <br />
+        <a href="http://www.hdfgroup.org/HDF5/doc/Advanced/Chunking/index.html">
+        &ldquo;Chunking in HDF5&rdquo;</a>
+        </dd>
+        <p>
+
+  <p>
+  <dt><strong>History:</strong>
+    <dd><table width="90%">
+        <tr>
+          <td valign="top" align="left" width="10%">
+            <strong>Release</strong>&nbsp;&nbsp;&nbsp;&nbsp;</td>
+          <td valign="top" align="left">
+            <strong>Change</strong></td>
+        </tr>
+
+        <tr>
+          <td valign="top">1.8.3</td>
+          <td valign="top">
+            C function introduced in this release.</td>
+        </tr>
+
+        </tr>
+        </table>
+</dl>
+<br />
+<br />
+<br />
+
+

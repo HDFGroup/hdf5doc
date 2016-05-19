@@ -1,0 +1,183 @@
+<html>
+<head>
+<title>HDF5-HL Packet Table</title>
+</head>
+<body bgcolor="#FFFFFF">
+
+
+<!--
+  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+  * Copyright by The HDF Group.                                               *
+  * Copyright by the Board of Trustees of the University of Illinois.         *
+  * All rights reserved.                                                      *
+  *                                                                           *
+  * This file is part of HDF5.  The full HDF5 copyright notice, including     *
+  * terms governing use, modification, and redistribution, is contained in    *
+  * the files COPYING and Copyright.html.  COPYING can be found at the root   *
+  * of the source code distribution tree; Copyright.html can be found at the  *
+  * root level of an installed copy of the electronic HDF5 document set and   *
+  * is linked from the top-level documents page.  It can also be found at     *
+  * http://hdfgroup.org/HDF5/doc/Copyright.html.  If you do not have          *
+  * access to either file, you may request a copy from help@hdfgroup.org.     *
+  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+ -->
+
+
+
+<hr>
+<table cellspacing=0 cellpadding=0 border=0 width=98%>
+<tr><td valign=top align=left>
+<a href="index.html"> HDF5&nbsp;High Level APIs</a>
+</td>
+<td valign=top align=right>
+</td></tr>
+</table>
+<hr>
+
+<h1 align=center>HDF5-HL Packet Table<br>
+Use Cases</h1>
+
+<h4>General Use Case:</h4>
+
+<ol>
+<li>Create/Open HDF5 File</li>
+<li>Create/Open packet table</li>
+ <ul>
+ <li>Create fixed-length packet table</li>
+ <li>Open packet table</li>
+ </ul>
+<li>Perform operations on packet table (as many as desired)</li>
+ <ul>
+ <li>Append Packets</li>
+ <li>Read Packets</li>
+  <ul>
+  <li>Read packets starting from index</li>
+   <ul>
+   <li>Set/reset index</li>
+   </ul>
+  <li>Read packets from any location</li>
+  </ul>
+ <li>Query packet table</li>
+  <ul>
+  <li>Query whether packet table identifier is valid</li>
+  <li>Query number of packets in packet table</li>
+  </ul>
+ </ul>
+<li>Close packet table</li>
+<li>Close HDF5 File</li>
+</ol>
+
+<br />
+<br />
+<h5>Writing one kind of data to a fixed-length packet table</h5>
+
+<p>An experimenter wants to store data from a single kind of sensor in a
+Packet Table. First, she must create or load an HDF5 datatype representing
+a &quot;packet&quot; of her data. This can be any valid HDF5 datatype,
+though it is likely to be a compound datatype, since each packet corresponds
+to a horizontal entry in a table. If the experimenter has used HDF5 in the
+past, she may have already created a datatype representing her data and
+can simply load it from a file.  This step is covered in more detail in
+the HDF5 User&rsquo;s Guide.<br>
+The experimenter then creates the packet table. She must specify the
+location (file or group identifier), name, and datatype of the new packet
+table. Her function call might look like this:</p>
+
+<p><code>hid_t ptable_id= H5PTcreate_fl( file_id, &quot;/trial1&quot;, datatype_id, 500 );</code></p>
+
+<p>The last argument is the &quot;chunk size,&quot; which affects how
+HDF5 stores data in the file; the experimenter may fine-tune this number
+later. Chunked storage is discussed in more detail in the HDF5 User's
+Guide.<br>
+Now the experimenter starts the experiment itself. Each time a sensor
+takes a reading, the data is stored in a buffer, which the experimenter
+uses to create an entry in the packet table:</p>
+
+<p><code>ret_value= H5PTappend( ptable_id, 1, &amp;(dataBuffer) );</code></p>
+
+<p>The above statement executes inside a loop and is called to add a new
+packet every time a new sensor reading is placed in the data buffer.<br>
+When the experiment is over, the experimenter closes the packet table.</p>
+
+<p><code>ret_value= H5PTclose( ptable_id );</code></p>
+
+<p>She may also wish the close the HDF5 file if she is done accessing it.
+
+<br />
+<br />
+<h5>Reading data from a fixed-length packet table</h5>
+
+<p>An analyst wants to read from a fixed-length packet table like the one
+created by the experimenter above.<br>
+First, he must open the packet table. To do this, he needs to know its
+location and name.</p>
+
+<p><code>hid_t ptable_id= H5PTopen( file_id, &quot;/trial1&quot; );</code></p>
+
+<p>Once the packet table is open, the analyst wants to discover how many
+packets it contains.</p>
+
+<p><code>hsize_t num_packets;<br>
+ret_value= H5PTget_num_packets( ptable_id, &amp;num_packets );</code></p>
+
+<p>The analyst then begins to read records one-by-one from the beginning
+of the packet table. He sets the packet table's index to the first packet.</p>
+
+<p><code>ret_value= H5PTcreate_index( ptable_id );</code></p>
+
+<p>Then, he creates a for-loop to read each packet into a buffer and
+perform his analysis on it.</p>
+
+<p><code>for(int x=0; x&lt;num_packets; x++) {<br>
+&nbsp;&nbsp;&nbsp;ret_value= H5PTget_next( ptable_id, 1, &amp;(readBuffer) );<br>
+&nbsp;&nbsp;&nbsp;// Perform analysis on readBuffer<br>
+}</code></p>
+
+<p>The analyst may want to read several packets into a larger buffer, and
+start from an arbitrary index without losing his place in the table. To
+read twenty packets starting from packet number 400, he uses the following
+call:</p>
+
+<p><code>ret_value= H5PTread_packets( ptable_id, 400, 20, &amp;(bigReadBuffer) ); </code></p>
+
+<p>Finally, the analyst closes the packet table.</p>
+
+<p><code>ret_value= H5PTclose(ptable_id);</code></p>
+
+<p>He may also wish to close the HDF5 file, or he may go on to examine
+other objects in the same file.
+
+<br />
+<br />
+<h5>Handling an unknown packet table identifier</h5>
+
+<p>A function receives an identifier from another location in the program
+and the programmer wishes to confirm that it is the packet table she
+is expecting.</p>
+
+<p>First, she checks that it is in fact a packet table and that it has been
+opened.</p>
+
+<p><code>ret_value= H5PTis_valid( ptable_id );</code></p>
+
+<p>If the identifier does not refer to an open packet table, the return
+value will be negative.</p>
+
+<p>The programmer may need to remember to close the packet table, depending
+on the semantics of the application.</p>
+
+<br />
+<hr />
+
+<table width=100% border=0>
+<tr><td align=left valign=top>
+    <address>The HDF Group Help Desk: 
+    <img src="../Graphics/help.png" align=top height=16></address>
+    <p>Last modified: 24 April 2005</p>
+    <p>Last modified: 13 March 2015: Removed mention of variable-length 
+    packet tables.</p>
+</td></tr>
+</table>
+
+</body>
+</html>

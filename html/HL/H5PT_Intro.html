@@ -1,0 +1,275 @@
+<html>
+<head><title>
+Intro to HDF5 Packet Table API
+</title></head>
+<body bgcolor="#FFFFFF">
+
+
+<!--
+  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+  * Copyright by The HDF Group.                                               *
+  * Copyright by the Board of Trustees of the University of Illinois.         *
+  * All rights reserved.                                                      *
+  *                                                                           *
+  * This file is part of HDF5.  The full HDF5 copyright notice, including     *
+  * terms governing use, modification, and redistribution, is contained in    *
+  * the files COPYING and Copyright.html.  COPYING can be found at the root   *
+  * of the source code distribution tree; Copyright.html can be found at the  *
+  * root level of an installed copy of the electronic HDF5 document set and   *
+  * is linked from the top-level documents page.  It can also be found at     *
+  * http://hdfgroup.org/HDF5/doc/Copyright.html.  If you do not have          *
+  * access to either file, you may request a copy from help@hdfgroup.org.     *
+  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+ -->
+
+
+
+<hr>
+<table cellspacing=0 cellpadding=0 border=0 width=98%>
+<tr><td valign=top align=left>
+<a href="index.html"> HDF5&nbsp;High Level APIs</a>
+</td>
+<td valign=top align=right>
+</td></tr>
+</table>
+<hr>
+
+<center><h1>Introduction to the<br>HDF5 Packet Table API</h1></center>
+
+<center>Originally published as "NCSA Technical Report: HDF5 Packet Table API"<br>
+A Joint Project between Boeing and University of Illinois<br>
+February 2005<br>
+Mike Folk, Quincey Koziol, James Laird, Elena Pourmal, NCSA, Univ. of Illinois<br>
+John Wegener, George Lewandowski, Joe Turner, Rodney Davis, Boeing Flight<br>
+Test Instrumentation   
+</center>
+
+<h2>Introduction</h2>
+
+<p>The proliferation of sensors and other instruments introduces enormous challenges 
+to data management.  Even for a single event, incoming synchronized time-sequenced 
+data can have many sources, and the number of incoming data streams, as well as the 
+types of data, can be large.  In Boeing's flight test data applications, for instance, 
+data arrives from test aircraft, voice communications, video, ground, satellite tracking, 
+and other sources.  This data must be gathered, integrated, processed, visualized, 
+and archived.  Similar scenarios exist for many different applications, such as environmental 
+monitoring, vehicle testing, and medicine.
+
+<p>The collection and storing of these kinds of data historically have been reduced to 
+unique in-house implementations.  There is surprisingly little sharing of these infrastructure 
+technologies even within an application area, let alone across application domains, 
+resulting in frequent and costly re-invention of the same technologies.
+
+<p>HDF5 provides, in a single package, many of the capabilities that otherwise have to 
+be developed from scratch.  HDF5 can store virtually any kind of scientific or engineering 
+data and to mix any number of objects of different types in a single container.  
+HDF5 can support different access patterns, simplified data integration, datatype 
+translation, fast I/O, and visualization and analysis software.
+
+<h2>Using the HDF5 Packet Table</h2> 
+
+<p>The following example describes the typical use of the HDF5 Packet Table API.
+
+<p><strong>Writing homogeneous, fixed-sized packets of instrument data</strong>.  
+An experimenter wants to store measurements from a fixed number of sensors.  
+All measurements taken at the same time are collected and transmitted in a "packet", 
+including a time stamp.  The packet contents are to be saved as a record in a table. 
+(Figure 1.) To do this, the experimenter can create an HDF5 datatype representing a 
+fixed-size "packet" of data in an HDF5 file.  This can be any atomic HDF5 datatype, 
+or it could be a compound datatype.  Each packet corresponds to a fixed-length 
+horizontal entry, or "record," in a table.
+
+<table border="1">
+  <tr>
+    <td align="center"><img src="Images/PTintro_Fig1.jpg"></td>
+  </tr>
+  <tr align="left">
+    <td><strong>Figure 1</strong>. Fixed length packet example.</td>
+  </tr>
+</table>
+
+<h2>HDF5 Packet library for flight test data</h2>
+
+<p>Boeing's Flight Test Instrumentations Group and the HDF5 development group at the 
+University of Illinois have developed a library that is particularly suited for "packet" 
+data, data that arrives in streams of packets from instruments at 
+potentially very high speeds.
+
+<p>A key to a general-purpose packet I/O library is that, at a certain 
+level, all packet data falls into simple structural categories that can 
+be handled by fixed-length packets. In this scenario, every record to 
+be stored is of the same length.</p>
+
+<p>The Packet Table implementation includes a C API, as well as prototype 
+C++ wrapper objects, which are described in the Packet Table Reference 
+Manual.</p>
+
+<p><strong>HDF5 "Table" vs. "Packet" APIs</strong>.  The HDF5 packet API is similar to 
+but separate from the HDF5 "Table" API, whose prefix is H5TB.  The H5TB Table is designed 
+to be as high-level as possible, adding attributes and abstracting away much of HDF5's 
+internal workings.  In contrast, the Packet Table API, whose prefix is H5PT, is a lower-level 
+approach, designed to maximize throughput (as is needed in real-time applications).  
+The Packet Table thus provides bare-bones table functionality with essentially no overhead.
+
+<h2>Programming with the Packet library</h2>
+
+<p>Packet Tables have states, and must be opened and closed like HDF5 objects.  
+Thus the Packet Table programming model is similar to that for working with other types 
+of HDF5 objects:
+
+<ol>
+  <li>An HDF5 file is created or opened.
+  <li>The location of the object of interest is obtained.
+  <li>The Packet Table is created or opened using the Packet Table API.
+  <li>Operations are carried out on the Packet Table.
+  <li>The Packet Table is closed
+  <li>Other relevant objects are closed as necessary.
+</ol>
+
+<p>The Packet Table API covers steps 3-5.  See the HDF5 documentation for information on 
+how to do the other steps.
+
+<p>The following operations can be performed on Packet Tables:
+
+<ol type="1">
+  <li>Create and open Packet Table
+    <ol type="a">
+	  <li>Create packet table with fixed-size record
+	</ol>
+  <li>Close Packet Table
+  <li>Write and read Packet Table
+    <ol type="a">
+	  <li>Append packet(s)
+      <li>Position pointer for read operation
+      <li>Read packet(s) starting at specified position in the table
+	</ol>
+  <li>Query properties of Packet Table
+    <ol type="a">
+	  <li>Number of packets in the Packet Table
+      <li>If an HDF5 object is a Packet Table
+	</ol>
+</ol>
+
+<p>Packet Table APIs implement those operations. Full descriptions of Packet Table 
+APIs can be found on the <a href="RM_H5PT.html">H5PT: HDF5 Packet Table</a> page
+of the <a href="../RM/RM_H5Front.html"><cite>HDF5 Reference Manual</cite></a>.
+
+
+<h2>Example</h2>
+
+<p>The example below demonstrates the use of the C language version of 
+the Packet Table API to create a packet table with fixed-length 
+records and to perform writes and reads. 
+(<a href="Examples/ptExampleFL.c">C sample program</a>) 
+(<a href="Examples/ptcppExampleFL.cpp">C++ sample program</a>)</p>
+
+<br />
+
+<pre>
+#include "H5PT.h"
+#include &lt;stdlib.h&gt;
+
+/*-------------------------------------------------------------------------
+ * Packet Table Fixed-Length Example
+ *
+ * Example program that creates a packet table and performs
+ * writes and reads.
+ *
+ *-------------------------------------------------------------------------
+ */
+
+int main(void)
+{
+ hid_t          fid;        /* File identifier */
+ hid_t          ptable;     /* Packet table identifier */
+
+ herr_t         err;        /* Function return status */
+ hsize_t        count;      /* Number of records in the table */
+
+ int            x;          /* Loop variable */
+
+    /* Buffers to hold data */
+ int writeBuffer[5];
+ int readBuffer[5];
+
+   /* Initialize buffers */
+ for(x=0; x&lt;5; x++)
+ {
+     writeBuffer[x]=x;
+     readBuffer[x] = -1;
+ }
+
+    /* Create a file using default properties */
+ fid=H5Fcreate("packet_table_FLexample.h5",H5F_ACC_TRUNC,H5P_DEFAULT,H5P_DEFAULT);
+
+    /* Create a fixed-length packet table within the file */
+    /* This table's "packets" will be simple integers. */
+ ptable = H5PTcreate_fl(fid, "Packet Test Dataset", H5T_NATIVE_INT, 1);
+ if(ptable == H5I_INVALID_HID)
+     goto out;
+
+    /* Write one packet to the packet table */
+ err = H5PTappend(ptable, 1, &(writeBuffer[0]) );
+ if(err < 0)
+     goto out;
+
+    /* Write several packets to the packet table */
+ err = H5PTappend(ptable, 4, &(writeBuffer[1]) );
+ if(err < 0)
+     goto out;
+
+    /* Get the number of packets in the packet table.  This should be five. */
+ err = H5PTget_num_packets(ptable, &count);
+ if(err < 0)
+     goto out;
+
+ printf("Number of packets in packet table after five appends: %d\n", count);
+
+    /* Initialize packet table's "current record" */
+ err = H5PTcreate_index(ptable);
+ if(err < 0)
+     goto out;
+
+    /* Iterate through packets, read each one back */
+ for(x=0; x&lt;5; x++)
+ {
+    err = H5PTget_next(ptable, 1, &amp;(readBuffer[x]) );
+    if(err < 0)
+        goto out;
+
+    printf("Packet %d's value is %d\n", x, readBuffer[x]);
+ }
+ 
+    /* Close the packet table */
+ err = H5PTclose(ptable);
+ if(err < 0)
+     goto out;
+
+    /* Close the file */
+ H5Fclose(fid);
+
+ return 0;
+
+ out: /* An error has occurred.  Clean up and exit. */
+    H5PTclose(ptable);
+    H5Fclose(fid);
+    return -1;
+}</pre>
+
+<br />
+<hr />
+
+<table width=100% border=0>
+<tr><td align=left valign=top>
+    <address>
+    The HDF Group Help Desk: <img src="../Graphics/help.png" align=top height=16>
+    </address>
+    Last modified: 13 January 2011<br />
+    Last modified: 18 January 2012: Corrected links only.<br />
+    Last modified: 13 March 2015: Removed mention of variable-length 
+    packet tables.
+</td></tr>
+</table>
+
+</body>
+</html>

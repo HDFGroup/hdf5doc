@@ -1,0 +1,166 @@
+
+
+<!--
+  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+  * Copyright by The HDF Group.                                               *
+  * All rights reserved.                                                      *
+  *                                                                           *
+  * This file is part of HDF5.  The full HDF5 copyright notice, including     *
+  * terms governing use, modification, and redistribution, is contained in    *
+  * the files COPYING and Copyright.html.  COPYING can be found at the root   *
+  * of the source code distribution tree; Copyright.html can be found at the  *
+  * root level of an installed copy of the electronic HDF5 document set and   *
+  * is linked from the top-level documents page.  It can also be found at     *
+  * http://www.hdfgroup.org/HDF5/doc/Copyright.html.  If you do not have      *
+  * access to either file, you may request a copy from help@hdfgroup.org.     *
+  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+ -->
+
+
+<!--__ ***********************************************************  -->
+<!--__ Do not alter the next line; it is used by the PDF generator. -->
+<!--__ ***********************************************************  -->
+<!-- NEW PAGE -->
+<!-- HEADER RIGHT "H5Pset_mdc_log_options" -->
+
+<hr />
+<dl>
+
+<dt><div align="right"><font color="999999" size="-1"><i>
+    Last modified: 7 December 2015
+    </i></font></div></dt>
+    <br />
+
+<dt><strong>Name:</strong> 
+    <a name="Property-SetMdcLogOptions">H5Pset_mdc_log_options</a></dt>
+    <br />
+
+<dt><strong>Signature:</strong></dt>
+    <dd><code><em>herr_t</em> H5Pset_mdc_log_options(
+              <em>hid_t</em> fapl_id, 
+              <em>hbool_t</em> is_enabled, 
+              <em>char</em> *location, 
+              <em>hbool_t</em> start_on_access
+        )</code></dd>
+    <br />
+
+<dt><strong>Purpose:</strong></dt>
+    <dd>Sets metadata cache logging options.</dd>
+    <br />
+
+<dt><strong>Description:</strong></dt>
+    <dd>The metadata cache is a central part of the HDF5 library 
+    through which all <em>file metadata</em> reads and writes take 
+    place. File metadata is normally invisible to the user and is used 
+    by the library for purposes such as locating and indexing data. 
+    File metadata should not be confused with <em>user metadata</em>, 
+    which consists of attributes created by users and attached to 
+    HDF5 objects such as datasets via H5A API calls. 
+    
+    <p>Due to the complexity of the cache, a trace/logging feature has 
+    been created that can be used by HDF5 developers for debugging and 
+    performance analysis. The functions that control this functionality 
+    will normally be of use to a very limited number of developers 
+    outside of The HDF Group. The functions have been documented to help 
+    users create logs that can be sent with bug reports.</p>
+    
+    <p>Control of the log functionality is straightforward. Logging is 
+    enabled via the <code>H5Pset_mdc_log_options()</code> function, 
+    which will modify the file access property list used to open or create 
+    a file. This function has a flag that determines whether logging 
+    begins at file open or starts in a paused state. Log messages can 
+    then be controlled via the <code>H5Fstart/stop_logging()</code> 
+    functions. <code>H5Pget_mdc_log_options()</code> can be used to 
+    examine a file access property list, and 
+    <code>H5Fget_mdc_logging_status()</code> will return the current 
+    state of the logging flags.</p>
+    
+    <p>The log format is described in the 
+    <a href="Design-MetadataCache-Logging-THG20140224-v4.pdf">
+    <em>Metadata Cache Logging</em></a> document.</p></dd>
+    <br />
+
+<dt><strong>Notes:</strong></dt>
+    <dd>Logging is disabled by default.
+    
+    <p>When enabled and currently logging, the overhead of the logging 
+    feature will almost certainly be significant.</p>
+    
+    <p>The log file is currently manipulated using the C standard 
+    library&rsquo;s buffered I/O calls (for example, fprintf) regardless 
+    of the virtual file driver (VFD) used. Log events are flushed 
+    immediately after the write call.</p>
+    
+    <p>On Windows, the location parameter must be an ASCII string since 
+    the Windows standard C library&rsquo;s I/O functions cannot handle 
+    UTF-8 file names. </p>
+    
+    <p>The log file will be created when the HDF5 file is opened or 
+    created regardless of the value of the <code>start_on_access</code> 
+    parameter. The log file will stay open as long as the HDF5 file is open.
+    </p></dd>
+    <br />
+
+
+
+<dt><strong>Parameters:</strong></dt>
+    <dd>
+    <table width="100%">
+      <tr valign="top">
+        <td width="15%"><code><em>hid_t</em> fapl_id</code>&nbsp;</td>
+        <td width="85%">IN: File access property list identifier.
+            </td></tr>
+      <tr valign="top">
+        <td><code><em>hbool_t</em> is_enabled</code>&nbsp;</td>
+        <td>IN: Whether logging is enabled.</td></tr>
+      <tr valign="top">
+        <td><code><em>char</em> *location</code>&nbsp;</td>
+        <td>IN: Location of log in UTF-8/ASCII (file path/name)
+            (On Windows, this must be ASCII).</td></tr>
+      <tr valign="top">
+        <td><code><em>hbool_t</em>&nbsp;start_on_access&nbsp;&nbsp;</code>&nbsp;
+            </td>
+        <td>IN: Whether the logging will begin as soon as the file 
+            is opened or created.</td></tr>
+    </table>
+    </dd>
+    <br />
+
+<dt><strong>Returns:</strong></dt>
+    <dd>Returns a non-negative value if successful. 
+    Otherwise returns a negative value.</dd>
+    <br />
+
+<dt><strong>Fortran Interface:</strong></dt>
+    <dd>None</dd>
+    <br />
+
+<dt><strong>See Also:</strong></dt>
+    <ul>
+      <li><a href="H5Pget_mdc_log_options.htm">H5Pget_mdc_log_options</a></li>
+      <li><a href="H5Fstart_mdc_logging.htm">H5Fstart_mdc_logging</a></li>
+      <li><a href="H5Fstop_mdc_logging.htm">H5Fstop_mdc_logging</a></li>
+      <li><a href="H5Pget_mdc_logging_status.htm">H5Pget_mdc_logging_status</a></li>
+    </ul>
+    <br />
+
+<dt><strong>History:</strong></dt>
+    <dd><table width="90%">
+        <tr>
+          <td valign="top" align="left" width="10%">
+          <strong>Release</strong></td>
+          <td valign="top" align="left" width="90%">
+          <strong>Change</strong></td></tr>
+        <tr>
+          <td valign="top">1.10.0</td>
+          <td valign="top">
+          C function introduced with this release. </td></tr>
+        </table></dd>
+
+</dl>
+<br />
+<br />
+<br />
+
+
+

@@ -1,0 +1,175 @@
+
+
+<!--
+  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+  * Copyright by The HDF Group.                                               *
+  * Copyright by the Board of Trustees of the University of Illinois.         *
+  * All rights reserved.                                                      *
+  *                                                                           *
+  * This file is part of HDF5.  The full HDF5 copyright notice, including     *
+  * terms governing use, modification, and redistribution, is contained in    *
+  * the files COPYING and Copyright.html.  COPYING can be found at the root   *
+  * of the source code distribution tree; Copyright.html can be found at the  *
+  * root level of an installed copy of the electronic HDF5 document set and   *
+  * is linked from the top-level documents page.  It can also be found at     *
+  * http://hdfgroup.org/HDF5/doc/Copyright.html.  If you do not have          *
+  * access to either file, you may request a copy from help@hdfgroup.org.     *
+  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+ -->
+
+
+<!-- NEW PAGE -->
+<!-- HEADER RIGHT "H5Adelete_by_idx" -->
+<hr>
+<dl>
+  <dt><strong>Name:</strong> <a name="Annot-DeleteByIdx">H5Adelete_by_idx</a>
+  <dt><strong>Signature:</strong>
+    <dd><em>herr_t</em> <code>H5Adelete_by_idx</code>(
+            <em>hid_t</em> <code>loc_id</code>, 
+            <em>const char *</em><code>obj_name</code>, 
+            <em>H5_index_t</em> <code>idx_type</code>, 
+            <em>H5_iter_order_t</em> <code>order</code>, 
+            <em>hsize_t</em> <code>n</code>, 
+            <em>hid_t</em> <code>lapl_id</code>
+    )
+  <p>
+  <dt><strong>Purpose:</strong>
+    <dd>Deletes an attribute from an object according to index order.
+  <p>
+  <dt><strong>Description:</strong>
+    <dd><code>H5Adelete_by_idx</code> removes an attribute, specified by its
+      location in an index, from an object.
+      <p>
+      The object from which the attribute is to be removed 
+      is specified by a location identifier and name,
+      <code>loc_id</code> and <code>obj_name</code>, respectively.
+      If <code>loc_id</code> fully specifies the object from which the 
+      attribute is to be removed, <code>obj_name</code> should be 
+      <code>'.'</code> (a dot).
+      <p>
+      The attribute to be removed is specified by 
+      a position in an index, <code>n</code>.
+      The type of index is specified by <code>idx_type</code> and may be
+      <code>H5_INDEX_NAME</code>, for an alpha-numeric index by name, or
+      <code>H5_INDEX_CRT_ORDER</code>, for an index by creation order.
+      The order in which the index is to be traversed is specified by 
+      <code>order</code> and may be 
+      <code>H5_ITER_INC</code> (increment) for top-down iteration,
+      <code>H5_ITER_DEC</code> (decrement) for bottom-up iteration, or
+      <code>H5_ITER_NATIVE</code>, in which case HDF5 will iterate in the 
+      fastest-available order.
+      For example, if <code>idx_type</code>, <code>order</code>, and 
+      <code>n</code> are set to <code>H5_INDEX_NAME</code>, 
+      <code>H5_ITER_INC</code>, and <code>5</code>, respectively,
+      the fifth attribute by alpha-numeric order of attribute names 
+      will be removed.
+      <p>
+      For a discussion of <code>idx_type</code> and <code>order</code>, 
+      the valid values of those parameters, and
+      the use of <code>n</code>,
+      see the description of <a href="#Annot-Iterate2">H5Aiterate2</a
+      ><p>
+      The link access property list, <code>lapl_id</code>, 
+      may provide information regarding the properties of links
+      required to access the object, <code>obj_name</code>.
+      See &ldquo;Link Access Properties&rdquo; in the 
+      <a href ="RM_H5P.html">H5P</a> APIs.
+  <p>
+  <dt><strong>Parameters:</strong>
+    <dd><table>
+      <tr>
+        <td valign="top"><em>hid_t</em> <code>loc_id</code>
+        </td>
+        <td valign="top">IN: Location or object identifier; 
+            may be dataset or group
+        </td></tr>
+      <tr>
+        <td valign="top"><em>const char *</em><code>obj_name</code>
+        </td>
+        <td valign="top">IN: Name of object, relative to location, 
+            from which attribute is to be removed
+        </td></tr>
+      <tr>
+        <td valign="top"><em>H5_index_t</em> <code>idx_type</code>
+        </td>
+        <td valign="top">IN: Type of index 
+        </td></tr>
+      <tr>
+        <td valign="top"><em>H5_iter_order_t</em>&nbsp;<code>order</code>&nbsp;&nbsp;&nbsp;&nbsp;
+        </td>
+        <td valign="top">IN: Order in which to iterate over index
+        </td></tr>
+      <tr>
+        <td valign="top"><em>hsize_t</em> <code>n</code>
+        </td>
+        <td valign="top">IN: Offset within index
+        </td></tr>
+      <tr>
+        <td valign="top"><em>hid_t</em> <code>lapl_id</code>
+        </td>
+        <td valign="top">IN: Link access property list
+        </td></tr>
+    </table>
+  <p>
+  <dt><strong>Returns:</strong>
+    <dd>Returns a non-negative value if successful;
+        otherwise returns a negative value.
+  <p>
+  <dt><strong>Fortran90 Interface:</strong> h5adelete_by_idx_f
+    <dd>
+    <pre>
+SUBROUTINE h5adelete_by_idx_f(loc_id, obj_name, idx_type, order, n,  hdferr, &
+     lapl_id)
+  IMPLICIT NONE
+  INTEGER(HID_T),INTENT(IN) :: loc_id 
+                            ! Identifer for object to which 
+                            ! attribute is attached
+  CHARACTER(LEN=*),INTENT(IN) :: obj_name 
+                            ! Name of object, relative to location,
+                            ! from which attribute is to be removed
+  INTEGER, INTENT(IN) :: idx_type       
+                            ! Type of index; Possible values are:
+                            !  H5_INDEX_UNKNOWN_F     - Unknown index type
+                            !    H5_INDEX_NAME_F      - Index on names
+                            !    H5_INDEX_CRT_ORDER_F - Index on creation order
+                            !    H5_INDEX_N_F	      - Number of indices defined
+  INTEGER, INTENT(IN) :: order            
+                            ! Order in which to iterate over index:
+                            !    H5_ITER_UNKNOWN_F  - Unknown order
+                            !    H5_ITER_INC_F      - Increasing order
+                            !    H5_ITER_DEC_F      - Decreasing order
+                            !    H5_ITER_NATIVE_F   - No particular order, 
+                            !                         whatever is fastest
+                            !    H5_ITER_N_F	    - Number of iteration orders
+  INTEGER(HSIZE_T), INTENT(IN) :: n      
+                            ! Offset within index
+  INTEGER, INTENT(OUT) :: hdferr       
+                            ! Error code:
+                            ! 0 on success and -1 on failure
+  INTEGER(HID_T), OPTIONAL, INTENT(IN) :: lapl_id  
+                            ! Link access property list  
+END SUBROUTINE h5adelete_by_idx_f 
+    </pre>
+
+        <!--<dt><strong>Non-C API(s):</strong>
+    	<dd>
+        
+        <img src="Graphics/Java.gif"> 
+        <img src="Graphics/C++.gif">
+        -->
+  <p>
+  <dt><strong>History:</strong>
+    <dd><table width="90%">
+        <tr>
+          <td valign="top" align="left" width="10%">
+            <strong>Release</strong>&nbsp;&nbsp;&nbsp;&nbsp;</td>
+          <td valign="top" align="left">
+            <strong>C</strong></td></tr>
+        <tr>
+          <td valign="top">1.8.0</td>
+          <td valign="top">
+            Function introduced in this release.</td></tr>
+    </table>
+</dl>
+
+

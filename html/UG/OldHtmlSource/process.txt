@@ -1,0 +1,530 @@
+
+================================================================================
+Process for Creating PDF Version of the HDF5 User's Guide (UG) from Source Files
+================================================================================
+
+                                               Last modified: 19 November 2010
+
+A PDF version of the HDF5 User's Guide (UG) is created from the HTML source at 
+each release of the HDF5 Library. The process uses HTMLdoc (a PDF conversion 
+tool) and Adobe Acrobat Pro.  This document describes the process in detail 
+for the UG. The process for the HDF5 Reference Manual (RM) is very similar 
+and is described in a separate document.
+
+
+
+The HDF5 User's Guide
+-------------------------
+1.  Check out a fresh working copy of the minor release branch specifically
+    for this task. For example:
+      svn checkout https://svn.hdfgroup.uiuc.edu/hdf5doc/branches/hdf5_1_8_4  \
+          hdf5_1_8_4-PDFs
+
+    11.15.2010, MEE: my original was hdf5_1_8, and my working copy was 
+    hdf5_1_8_6_PDF_MEE. The 1.8.6 release branch is made from the 1.8 branch
+    and not from the the 1.8.5 branch.
+
+    Skip this step if you have already done it for the RM; you can use the 
+    same working copy for both documents.
+
+    The idea behind checking out a fresh copy is to work in files that can 
+    be deleted when completed. The changes that are made in this copy are
+    not changes that we want to keep. We may want to keep some. Keep track
+    of those changes and merge them into the trunk and 1.8 branch. 
+
+
+
+2.  Convert the '!-- FOR USE WITH...' flags from the electronic form to the 
+    print form. The two flags are listed below:
+
+         <!-- FOR USE WITH ELECTRONIC VERSION ---> 
+         <!-- FOR USE WITH PRINT VERSION ---> 
+
+    These flags operate in pairs: one is at the beginning of the section, and 
+    the other is at the end. 
+
+    Up to this point in the general process of updating the User’s Guide, 
+    you have been working in the electronic version. The print version has 
+    been commented out. To switch from electronic to print versions, go 
+    through these steps:
+
+    a. Change the electronic version flag by removing the trailing angle 
+       bracket from the first flag. The trailing angle bracket is the 
+       > characters. Before the change, the electronic flag will look like 
+       this: 
+
+       <!-- FOR USE WITH ELECTRONIC VERSION --->
+
+       After you remove the trailing angle bracket, the flag will look like 
+       this:
+
+       <!-- FOR USE WITH ELECTRONIC VERSION ---
+
+    b. Change the print version flag by adding a trailing angle bracket.
+
+    Check all the chapter files (03_DataModel.html and the others) for 
+    electronic and print sections. Change every section.
+
+    Note: there are lines in the files that have been commented out 
+    for various reasons. Check to make sure that the entire section
+    between the flags is commented out. In Notepad++, the commented
+    out section will turn green.
+
+
+
+3.  Use HTMLdoc to generate the content PDF file. 
+
+    To produce the entire UG PDF, two HTMLdoc book files are used. These 
+    book files are currently called H5_newUG.book and H5_newUG_Front.book 
+    and are located in the same directory as the chapter files. Each 
+    book file is a list of .html source files and some settings. 
+    H5_newUG.book holds the content files for the UG PDF. An example 
+    of one of those files is 04_ProgModel.html. H5_newUG.book is used 
+    by HTMLdoc to produce HDF5_UG_body.pdf. H5_newUG_Front.book has the 
+    "front matter" for the PDF. The front matter currently includes the 
+    title page, the table of contents, and the update status page.
+    
+    To generate HDF5_UG_body.pdf from H5_newUG.book, go through the 
+    following steps. 
+
+    a. Open HTMLdoc.
+    b. Click on the Open button. In the dialog box that opens, select 
+       H5_newUG.book from the PDF working directory.
+    c. Click the Generate button to produce a new PDF.
+    d. Open the PDF with Adobe Acrobat or Acrobat Reader. 
+
+    These steps assume that no changes need to be made to the book file.
+    If changes do need to be made, go through the various tabs, make the 
+    changes, click the Save button, and then generate and view the new 
+    PDF. The current settings in the various tabs are listed below.
+
+    Clicking the Generate button will produce a new copy of the PDF 
+    file. If the existing PDF file is open in Acrobat or Acrobat 
+    Reader, then a new file cannot be written to disk. An error message 
+    will be produced.
+    
+    If HTMLdoc finds errors, it will produce an error list. Example errors
+    are dangling html tags and unresolved links. Fix the errors, and then 
+    generate another file.
+
+    The current settings in the HTMLdoc tabs for H5_newUG.book are shown below.
+
+    The Input tab:
+      Document Type: Web Page
+      Input Files:
+        Part1SplitterPg.html
+        03_DataModel.html
+        04_ProgModel.html
+        Part2SplitterPg.html
+        08_TheFile.html
+        09_Groups.html
+        10_Datasets.hmtl
+        11_Datatypes.html
+        12_Dataspaces.hmtl
+        13_Attributes.html
+        13_ErrorHandling.html
+        Part3SplitterPg.html
+        17_Additional.html (change in 1.8.6. This file used to be 
+                            17_SpecialTopics.html, and Glossary 
+                            is now part of 17_Additional.html)
+      Logo Image: none
+      Title File/Image: none
+
+    The Output tab:
+      Output To: File
+      Output Path: HDF5_UG_body.pdf
+      Output Format: PDF
+      Output Options: JPEG Big Images
+      Compression (not critical, change at will): Slider right above 'Fast'
+      JPEG Quality (not critical, change at will): 60
+  
+    The Page tab:
+      Page Size: Letter, 2-Sided
+        Top: 0.50in, Left: 1.00in, Right: 0.50in, Bottom: 0.50in
+      Header: Blank, Blank, Blank
+      Header (1st Page): Blank, Blank, Blank
+      Footer: Blank, Blank, 1,2,3,...
+      Number Up: 1
+
+    The TOC tab: (currently grayed out)
+    
+    The Colors tab:
+      Body Color: Blank
+      Body Image: Blank
+      Text Color: Blank
+      Link Color: Blank
+      Link Style: Plain
+    
+    The Fonts tab:
+      Base Font Size: 11.0
+      Line Spacing: 1.2
+      Body Typeface: Times
+      Heading Typeface: Helvetica
+      Header/Footer Size: 10.0
+      Header/Footer Font: Helvetica
+      Character Set: iso-8859-1
+      Options: Do Not Check 'Embed Fonts'
+    
+    The PS tab: (currently grayed out)
+
+    The PDF tab:
+      PDF Version: 1.3
+      Page Mode: Document
+      Page Layout: Single
+      Page Effect: None
+      Options: Deselect 'Include Links'
+      
+    11.17.10, Deselect the Include Links checkbox to disable links in 
+    the UG. Currently, not all the links work. We make the PDF version
+    in case someone wants to print the UG on paper.
+
+    The Security tab:
+      Encryption: No
+
+    The Options tab:
+      HTML Editor: notepad.exe "%s" (default)
+      Browser Width: 680
+      GUI Options: Check all
+
+    11.16.10, The Options tab has four GUI Options: Tooltips, Modern Look, 
+    Strict HTML, and Error on Overflow. With Strict HTML selected, 
+    generating a PDF might produce errors. Fix the errors, and then 
+    generate another PDF. 
+
+
+
+4.  Scan for changes that should be made. 
+
+    At the end of the previous step, you opened with Acrobat Reader the 
+    HDF5_UG_body.pdf file. 
+    
+    a. Scan through the document page by page to verify that there are no 
+       elements that should have been eliminated via javascripts, swapped 
+       comment markup, or swapped DW library content.
+
+    b. Scan through again looking only for places where page breaks need to 
+       be added, removed, or relocated. After each <!-- NEW PAGE --> tag 
+       that you add or change, regenerate the PDF. 
+
+    c. When you are sure all the pagination is correct (don't forget to 
+       start each of the sections included in the Table of Contents on a 
+       recto), note page numbers for the beginning of each TOC entry.
+
+    Note the file and line number of each change you make. Make these 
+    changes in a file that can be committed to the trunk and main 
+    branch such as 1.8. Having the print version sections active
+    makes committing this set of files awkward.
+
+
+
+5.  Update the Table of Contents page numbers.
+
+    To update the Table of Contents page numbers, open H5_newUG_TOC.html, 
+    change the page number according to the numbers you collected 
+    in the previous step, and then save the file.
+
+
+
+6.  Prepare the front matter of the UG.
+
+    The front matter includes the title page, the table of contents, 
+    and any other preface-type pages. The current preface-type page 
+    is called UG_UpdateStatus.html. 
+    
+    To generate HDF5_UG_front.pdf from H5_newUG_Front.book, go through the 
+    following steps. 
+
+    a. Open HTMLdoc.
+    b. Click on the Open button. In the dialog box that opens, select 
+       H5_newUG_Front.book from the PDF working directory.
+    c. Click the Generate button to produce a new PDF.
+    d. Open the PDF with Adobe Acrobat or Acrobat Reader. 
+
+    These steps assume that no changes need to be made to the book file.
+    If changes do need to be made, go through the various tabs, make the 
+    changes, click the Save button, and then generate and view the new 
+    PDF. The current settings in the various tabs are listed below.
+
+    Clicking the Generate button will produce a new copy of the PDF 
+    file. If the existing PDF file is open in Acrobat or Acrobat 
+    Reader, then a new file cannot be written to disk. An error message 
+    will be produced.
+    
+    If HTMLdoc finds errors, it will produce an error list. Example errors
+    are dangling html tags and unresolved links. Fix the errors, and then 
+    generate another file.
+
+    The current settings in the HTMLdoc tabs for H5_newUG_Front.book 
+    are shown below.
+
+    The Input tab:
+      Document Type: Web Page
+      Input Files:
+        H5_newUG_Title.html
+        H5_newUG_TOC.html
+        UG_UpdateStatus.html
+      Logo Image: none
+      Title File/Image: none
+
+    The Output tab:
+      Output To: File
+      Output Path: H5_newUG_Front.pdf
+      Output Format: PDF
+      Output Options: JPEG Big Images
+      Compression (not critical, change at will): Slider right above 'Fast'
+      JPEG Quality (not critical, change at will): 60
+  
+    The Page tab:
+      Page Size: Letter, 2-Sided
+        Top: 0.50in, Left: 1.00in, Right: 0.50in, Bottom: 0.50in
+      Header: Blank, Blank, Blank
+      Header (1st Page): Blank, Blank, Blank
+      Footer: Blank, Blank, Blank
+      Number Up: 1
+
+    11.17.10, If at some point there is a Footer (1st Page), then we
+    should change the Footer right side value from Blank to i, ii, iii....
+      
+    The TOC tab: (currently grayed out)
+    
+    The Colors tab:
+      Everything Blank
+      Link Style: Plain
+    
+    The Fonts tab:
+      Base Font Size: 11.0
+      Line Spacing: 1.2
+      Body Typeface: Times
+      Heading Typeface: Helvetica
+      Header/Footer Size: 10.0
+      Header/Footer Font: Helvetica
+      Character Set: iso-8859-1
+      Options: Do Not Check 'Embed Fonts'
+
+    The PS tab: (currently grayed out)
+
+    The PDF tab:
+      PDF Version: 1.3
+      Page Mode: Document
+      Page Layout: Single
+      Page Effect: None
+      Options: Deselect 'Include Links'
+      
+    11.17.10, Deselect the Include Links checkbox to disable links in 
+    the UG. Currently, not all the links work. We make the PDF version
+    in case someone wants to print the UG on paper.
+
+    The Security tab:
+      Encryption: No
+
+    The Options tab:
+      HTML Editor: notepad.exe "%s" (default)
+      Browser Width: 680
+      GUI Options: Check all
+
+    11.16.10, The Options tab has four GUI Options: Tooltips, Modern Look, 
+    Strict HTML, and Error on Overflow. With Strict HTML selected, 
+    generating a PDF might produce errors. Fix the errors, and then 
+    generate another PDF. 
+           
+           
+           
+7.  Scan for changes that should be made. 
+
+    At the end of the previous step, you opened with Acrobat Reader the 
+    HDF5_UG_front.pdf file. 
+    
+    a. Scan through the document page by page to verify that there are no 
+       elements that should have been eliminated via javascripts, swapped 
+       comment markup, or swapped DW library content. Make sure each 
+       of the sections starts on a recto.
+
+    b. Scan through again looking only for places where page breaks need to 
+       be added, removed, or relocated. After each <!-- NEW PAGE --> tag 
+       that you add or change, regenerate the PDF. 
+
+
+
+8. Update the copyright and license page.
+
+    Currently, there are two ways to get an updated copyright and 
+    license page: ask Frank for the copy he made while updating the RM, 
+    or make the changes yourself.
+    
+    To make the changes yourself, go through the following steps:
+    
+    a. Edit html\Copyright.html. 
+      i. If needed, change the copyright year currently on line 24.
+      ii. Delete lines 127 - 141. These lines have unneeded footer
+          material. 
+    
+    b. Open PDF_CandL.book in HTMLdoc, and generate an updated page.
+    
+        PDF_C_and_L.book is located in the html/PSandPDF directory in 
+        the branch. 
+        
+        Copyright.html is located in the html directory in the branch.
+        
+        Adjust the font size if the copyright and license statement 
+        does not initially fit on one page.  To do this, adjust the settings 
+        in the Fonts tab until the information fits on one page.
+        
+        The output file is called HDF5_C&L.pdf and is located in the 
+        html/PSandPDF directory.
+
+
+
+9.  Combine the PDF files into a single file.
+
+    The combination file should be stored in the branch's html/PSandPDF 
+    directory.
+    
+    The file name should take the form of HDF5_UG_r###.pdf where ### 
+    is the software version number of this release.
+
+    Use Adobe Acrobat Pro to combine the previously generated PDFs. 
+    
+    Adobe Acrobat Pro is located on bangan. Use a remote access program
+    such as the Windows program called Remote Desktop Connection. Use 
+    the following steps to start up Acrobat on bangan:
+    
+        a. Start Remote Desktop Connection on your computer.
+        b. Use your Active Directory user name and password. 
+        c. Before connecting, mount your local drive. To do this, open
+           the Local Resources tab, click on the More button, select your 
+           local disk, and then click OK. This will allow you to work
+           on your files with Acrobat on bangan.
+        d. Click the Connect button.
+        e. On bangan, click Start > All Programs > Adobe Master 
+           Collection CS4 > Adobe Acrobat Pro 9 to open Acrobat.
+          
+        To close the remote connection to bangan, click on the x on the 
+        bar at the top of the bangan desktop.
+        
+    The goal of the next few steps is to combine the title page, the 
+    copyright and license page, the table of contents, and any 
+    preface-type material into a single, frontmatter file in a 
+    particular order. The process of combining PDF files brings some 
+    extra blank pages. The steps below will describe how to insert 
+    files and delete blank pages. The page order we are aiming toward 
+    is the following:
+    
+        Title page            (recto*)
+        Copyright page        (on the back of the title page)
+        TOC                   (starts on a recto; may be several pages)
+        Additional material   (starts on a recto; may be several pages)
+        
+        *Recto is a publishing term. Recto pages appear in a book on 
+        the right-hand side and are odd-numbered pages. Verso is the 
+        term for the back side of a recto page. Verso pages are 
+        left-handed, even-numbered pages.
+
+    Go through the following steps in Acrobat to combine the files:
+    
+        a. Open HDF5_UG_front.pdf.
+        b. In the menu, click on Document > Insert Pages > From File. 
+           This opens a dialog box where you can select the file you 
+           want to insert. Select HDF5_C&L.pdf.
+        c. The Insert Pages dialog box opens. Set Location to After, 
+           set Page to 2, and click OK. This will insert the copyright
+           page.
+        d. Since we want the copyright page on the back side of the 
+           title page, we need to delete blank pages. To delete a page,
+           click on Document > Delete Pages in the menu. This opens 
+           a dialog box where you can specify the page to be deleted. 
+           Enter a page, and then click OK. If you click on the blank
+           page that you want to delete before you open the dialog box, 
+           then that page number will appear in the dialog box.
+        e. Save the file as HDF5_UG_r###.pdf.
+        f. Delete any blank pages to get the pages in the order we 
+           want.
+        g. Save the file.
+        h. Insert HDF5_UG_body.pdf at the end of HDF5_UG_r###.pdf.
+        i. Delete any unwanted pages blank pages. Chapters should 
+           already be positioned to start on a recto.
+        j. Save the file.
+        k. Update the PDF bookmarks. The bookmarks come from the 
+           title-tagged text in each file. To open the Bookmarks pane, 
+           click on View > Navigation Panels > Booksmarks in the Acrobat 
+           menu.
+           
+           If the bookmark does not match the table of contents text, 
+           right click on it, and in the menu that opens, click on 
+           Rename, and then type in the new text. 
+           
+           If the file name is included in the bookmarks list, it can 
+           be removed by dragging and dropping the contents of the file 
+           above file name, and then using the right click menu to 
+           delete the bookmark.
+
+        11.18.10, Frank said he was able to move booksmarks around so 
+        that the file name the chapters come from can be removed from the 
+        list of bookmarks. He also added blanks to names he wanted indented
+        to give the illusion of a tree structure.
+        
+    Acrobat notes: 11.18.10, Frank had trouble a couple of years ago 
+    with Acrobat performing more than one operation at a time. I have 
+    not had that trouble. We suspect it could be a Mac issue. The 
+    following are some suggestions of his if Acrobat performs 
+    unevenly:
+    
+    -- Save the file and quit Acrobat after each "Insert pages" or 
+       "Delete pages" operation.  
+    -- If you get an error, try doing things in a different order; 
+       e.g., if you get an error inserting the body at the end of the
+       frontmatter, try inserting the frontmatter to the beginning of 
+       the body.
+
+
+
+10. Update this file.
+
+
+
+11. Commit the updated files.
+
+    11.17.10. Since August, I have been working in the 1.8.5 branch. I 
+    committed my changes to the 1.8.5 repository, and then merged the 
+    1.8.5 files into the trunk and the 1.8 branch. For this PDF version,
+    I checked out from the 1.8 branch another copy and labeled it 1.8.6
+    PDF. My actual copy is in C:\1 MEE\Working\hdf5_1_8_6_PDF_MEE\html\UG.
+    
+    The purpose of this PDF branch was to give me a copy to work in 
+    where I could make changes that I would not have to keep. These
+    changes are primarily to enable the print version sections and 
+    disable the electronic version sections. However, I found many 
+    things I wanted to change and keep. One example involves changing 
+    certain characters so they would be treated properly by HTML. I 
+    made the following changes: < to &lt;, > to &gt;, and & to &amp;.
+    To keep these non-print version changes, I need to go through the 
+    following commit/merge SVN process:
+    
+    a. Commit my PDF branch changes to the 1.8 branch. 
+       11.18.10, the UG/Images directory has some new pictures: 
+       ChunkingFig001.png to ChunkingFig007.png. Add these
+       pictures to the 1.8 branch and make sure to merge them
+       to the 1.8.6 branch and the trunk. Commit also the PDF output 
+       files in the html/PSandPDF directory.
+    b. Update my working copy of the 1.8 branch.
+    c. Edit my 1.8 files so that the electronic version sections are 
+       active and the print version sections are disabled.
+    d. Commit my 1.8 branch to the repository.
+    e. Merge and commit the changes from 1.8 to 1.8.6. Add the new
+       files from step a above.
+    f. Merge and commit the changes from 1.8 to the trunk. Add the new
+       files from step a above.
+
+    After I have committed my PDF branch changes to the 1.8 branch, 
+    I will not be able update my PDF branch from the repository. 
+    In other words, when I commit my PDF branch to the 1.8 branch, I 
+    am making my PDF branch read-only. I will make any future changes 
+    in the 1.8.6 branch. 
+    
+    In the future, I may not have to go through this process if I do not
+    have any changes to my future PDF branch outside of enabling the 
+    print version sections.
+
+
+
+
+

@@ -1,0 +1,154 @@
+
+
+<!--
+  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+  * Copyright by The HDF Group.                                               *
+  * Copyright by the Board of Trustees of the University of Illinois.         *
+  * All rights reserved.                                                      *
+  *                                                                           *
+  * This file is part of HDF5.  The full HDF5 copyright notice, including     *
+  * terms governing use, modification, and redistribution, is contained in    *
+  * the files COPYING and Copyright.html.  COPYING can be found at the root   *
+  * of the source code distribution tree; Copyright.html can be found at the  *
+  * root level of an installed copy of the electronic HDF5 document set and   *
+  * is linked from the top-level documents page.  It can also be found at     *
+  * http://hdfgroup.org/HDF5/doc/Copyright.html.  If you do not have          *
+  * access to either file, you may request a copy from help@hdfgroup.org.     *
+  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+ -->
+
+
+<!-- NEW PAGE -->
+<!-- HEADER RIGHT "H5Pset_type_conv_cb" -->
+<hr>
+<dl>
+  <dt><div align=right><font color=999999 size=-1><i>
+    Last modified: 22 August 2012
+      </i></font></div>
+
+  <dt><strong>Name:</strong> <a name="Property-SetTypeConvCb">H5Pset_type_conv_cb</a>
+  <dt><strong>Signature:</strong>
+    <dd><em>herr_t </em><code>H5Pset_type_conv_cb</code>(
+            <em>hid_t</em> <code>plist</code>,
+            <em>H5T_conv_except_func_t</em> <code>func</code>,
+            <em>void *</em><code>op_data</code>)
+
+  <p>
+  <dt><strong>Purpose:</strong>
+    <dd>Sets user-defined datatype conversion callback function.
+
+  <p>
+  <dt><strong>Description:</strong>
+    <dd><code>H5Pset_type_conv_cb</code> sets the user-defined 
+        datatype conversion callback function <code>func</code> in 
+        the dataset transfer property list <code>plist</code>. 
+        <p>The parameter <code>op_data</code> is a pointer to user-defined 
+        input data for the callback function and will be passed through 
+        to the callback function. 
+        <p>The callback function <code>func</code> defines the actions an 
+        application is to take when there is an exception during datatype 
+        conversion. The function prototype is as follows: 
+        <ul><dl>
+        <dt><code>typedef</code> 
+            <em>H5T_conv_ret_t</em> (<code>H5T_conv_except_func_t</code>) (
+                <em>H5T_conv_except_t</em> <code>except_type</code>, 
+                <em>hid_t </em><code>src_id</code>, 
+                <em>hid_t </em><code>dst_id</code>, 
+                <em>void *</em><code>src_buf</code>, 
+                <em>void *</em><code>dst_buf</code>, 
+                <em>void *</em><code>op_data</code>)</dt>
+        </dl></ul>
+
+        <p>
+        where 
+        <code>except_type</code> indicates what kind of exception has happened,
+        <code>src_id</code> and <code>dst_id</code> are the source and destination
+        datatype identifiers, <code>src_buf</code> and <code>dst_buf</code> 
+        are the source and destination data buffer, and 
+        <code>op_data</code> is the required input data for this callback 
+        function.
+
+      <p>Valid values for <code>except_type</code> are as follows:
+
+        <dir><dl>
+          <dt><code>H5T_CONV_EXCEPT_RANGE_HI</code></dt>  
+            <dd>Source value is positive and is too big to the destination.  
+                Overflow happens.</dd>
+          <dt><code>H5T_CONV_EXCEPT_RANGE_LOW</code></dt> 
+            <dd>Source value is negative and its magnitude is too big to 
+                the destination. Overflow happens.</dd>
+          <dt><code>H5T_CONV_EXCEPT_TRUNCATE</code></dt> 
+            <dd>Source is floating-point type and destination is integer.  
+                The floating-point number has fractional part.</dd>
+          <dt><code>H5T_CONV_EXCEPT_PRECISION</code></dt> 
+            <dd>Source is integer and destination is floating-point type.  
+                The mantissa of floating-point type is not big enough to 
+                hold all the digits of the integer.</dd>
+          <dt><code>H5T_CONV_EXCEPT_PINF</code></dt> 
+            <dd>Source is floating-point type and the value is positive 
+                infinity.</dd>
+          <dt><code>H5T_CONV_EXCEPT_NINF</code></dt> 
+            <dd>Source is floating-point type and the value is negative 
+                infinity.</dd>
+          <dt><code>H5T_CONV_EXCEPT_NAN</code></dt> 
+            <dd>Source is floating-point type and the value is NaN 
+                (not a number, including QNaN and SNaN).</dd>
+         </dl></dir>
+
+      <p>Valid callback function return values are <code>H5T_CONV_ABORT</code>, 
+        <code>H5T_CONV_UNHANDLED</code> and <code>H5T_CONV_HANDLED</code>.
+
+        
+        
+
+  <p>
+  <dt><strong>Programming Note for C++ Developers Using C Functions:</strong>
+    <dd>
+      <p>If a C routine that takes a function pointer as an argument is 
+      called from within C++ code, the C routine should be returned from 
+      normally. </p>
+
+      <p>Examples of this kind of routine include callbacks such as 
+      <code>H5Pset_elink_cb</code> and <code>H5Pset_type_conv_cb</code> 
+      and functions such as <code>H5Tconvert</code> and 
+      <code>H5Ewalk2</code>.</p>
+
+      <p>Exiting the routine in its normal fashion allows the HDF5 C 
+      Library to clean up its work properly. In other words, if the C++ 
+      application jumps out of the routine back to the C++ 
+      &ldquo;catch&rdquo; statement, the library is not given the 
+      opportunity to close any temporary data structures that were set 
+      up when the routine was called. The C++ application should save 
+      some state as the routine is started so that any problem that 
+      occurs might be diagnosed.</p>
+
+
+  <p>
+<!-- NEW PAGE -->
+  <dt><strong>Parameters:</strong>
+    <dd><table>
+        <tr>
+            <td valign="top"><em>hid_t</em> <code>plist</code></td>
+            <td valign="top">IN: Dataset transfer property list identifier.
+                </td></tr>
+        <tr>
+            <td valign="top"><em>H5T_conv_except_func_t</em>&nbsp;<code>func&nbsp;&nbsp;&nbsp;&nbsp;</code></td>
+            <td valign="top">IN: User-defined type conversion callback function.
+                </td></tr>
+        <tr>
+            <td valign="top"><em>void *</em><code>op_data</code></td>
+            <td valign="top">IN: User-defined input data for the callback function.
+                </td></tr>
+    </table>
+
+  <p>
+  <dt><strong>Returns:</strong>
+    <dd>Returns a non-negative value if successful;
+        otherwise returns a negative value.
+
+  <p>
+  <dt><strong>Fortran90 Interface:</strong> 
+    <dd>None.
+</dl>
+
+
