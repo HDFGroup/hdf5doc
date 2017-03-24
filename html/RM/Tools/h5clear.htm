@@ -37,18 +37,23 @@
     <dd><code>h5clear </code>[<code>-h </code>|<code> --help</code>]
     <dd><code>h5clear </code>[<code>-V </code>|<code> --version</code>]
 -->
-    <dd><code>h5clear <em>file</em></code></dd>
+    <dd><code>h5clear [<em>OPTIONS</em>] <em>file</em></code></dd>
 
     <br />
 <dt><strong>Purpose:</strong></dt>
-    <dd>To clear the <em>file consistency flags</em> field in the 
-    superblock of the <em>file</em> specified in the command line.</dd>
+    <dd>To clear the <code>status_flags</code>  field in the 
+    superblock of the file specified in the command line or to
+    remove the metadata cache image from the file.<dd>
 
     <br />
     
     <dt><strong>Description:</strong></dt>
-    <dd>With the implementation of file locking, the library uses the
-    <em>file consistency flags</em> field in the superblock to mark a 
+    <dd>The <code>h5clear</code> tool can either clear the
+    <code>status_flags</code> field in the superblock of the file or close
+    a metadata cache image in the specified file.
+    <p>
+    With the implementation of file locking, the library uses the
+    <code>status_flags</code> field in the superblock to mark a 
     file as in writing or SWMR writing mode when a file is opened. 
     The library will clear this field when the file closes. 
     <br />
@@ -58,11 +63,42 @@
     and this field will not be cleared as a result. An example would 
     be if an application program crashed. This situation will prevent 
     a user from opening the file. The <code>h5clear</code> tool will 
-    clear the <em>file consistency flags</em> field, and the user can 
+    clear the <code>status_flags</code> field, and the user can 
     then open the file.
+    <p>
+    When used to close a metadata cache image, <code>h5clear</code> will 
+    open the supplied HDF5 file in Read-Write (R/W) mode, check to see 
+    if it contains a cache image, and then close it.  If the file does
+    not contain a cache image, <code>h5clear</code> will generate a warning message 
+    to that effect.
     </dd>
+    <dd> 
+
     <br />
     
+<dt><strong>File Options:</strong></dt>
+    <dd><table border="0">
+        <tr valign="top" align="left">
+            <td><code>-h, --help</code></td>
+            <td>Print a usage message and exit</td>
+        </tr>
+        <tr valign="top" align="left">
+            <td><code>-V, --version</code></td>
+            <td>Print version number and exit</td>
+        </tr>
+        <tr valign="top" align="left">
+            <td><code>-s, --status</code></td>
+            <td>Clear the <code>status_flags</code> field in the file's superblock</td>
+        </tr>
+        <tr valign="top" align="left">
+            <td><code>-m, --image</code></td>
+            <td>Remove the metadata cache image from the file</td>
+        </tr>
+    </table></dd>
+
+
+
+
 <dt><strong>Exit Status:</strong></dt>
     <dd><table border="0">
         <tr valign="top" align="left">
@@ -84,6 +120,10 @@
           <td valign="top" align="left" width="90%">
             <strong>Change</strong></td></tr>
         <tr>
+          <td valign="top">1.10.1</td>
+          <td valign="top">
+            <code>-m</code>, <code>--image</code>  option added to remove the metadata cache image.</td></tr>
+            </td></tr>
           <td valign="top">1.10.0</td>
           <td valign="top">
             Tool introduced in this release.</td></tr>
