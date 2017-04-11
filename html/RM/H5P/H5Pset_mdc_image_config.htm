@@ -27,7 +27,7 @@
 <dl>
 
 <dt><div align="right"><font color="999999" size="-1"><i>
-    Last modified:  2016
+    Last modified:  2017
     </i></font></div></dt>
     <br />
 
@@ -54,7 +54,7 @@
         sets the metadata cache image option with configuration values specified by <code>config_ptr</code> 
         for the file access property list specified in  <code>plist_id</code>.
 <p>
-       H5AC_cache_image_config_t is defined as follows:
+       <code>H5AC_cache_image_config_t</code> is defined as follows:
        <pre>
         typedef struct H5AC_cache_image_config_t {
           int32_t         version;
@@ -64,8 +64,47 @@
         } H5AC_cache_image_config_t;
         </pre>
 
-    </dd></dt>
+<p>
+Where the fields of <code>H5AC_cache_image_config_t</code> should be initialized as follows:
 
+ <dd><table width="100%">
+        <tr>
+            <td valign="top"><code>version</code>:</td>
+            <td width="5%"><code>&nbsp;</code></td>
+            <td valign="top">Must be set to <code>H5AC__CURR_CACHE_IMAGE_CONFIG_VERSION</code>.
+            </td>
+        </tr>
+
+        <tr>
+           <td valign="top"><code>generate_image</code>:</td>
+           <td width="5%"><code>&nbsp;</code></td>
+           <td valign="top">Set to either <code>TRUE</code> or <code>FALSE</code> depending on whether a cache image is desired. 
+            </td>
+        </tr>
+
+        <tr>
+           <td valign="top"><code>save_resize_status</code>:</td>
+           <td width="5%"><code>&nbsp;</code></td>
+           <td valign="top">
+           Set to either <code>TRUE</code> or <code>FALSE</code> depending on whether the user wishes the 
+           metadata cache image resize configuration to be stored in the cache image and restored on file 
+           open.  Note: this field is ignored at present.
+           </td>
+        </tr>  
+        
+        <tr>
+           <td valign="top"><code>entry_ageout</code>:</td>
+           <td width="5%"><code>&nbsp;</code></td>
+           <td valign="top">
+           This field allows the user to specify the number of times a cache entry can appear in subsequent 
+           cache images (created in subsequent file closes) without being accessed. The default value is <code>-1</code>, which indicates 
+           that the entry may appear in an indefinitely long sequence of cache images. The maximum value is <code>100</code>.
+           Note: This field is ignored at present.
+           </td>
+         </tr>
+         </table>
+
+    </dd></dt>
 <!--
 <dt><strong>Note:</strong>
     <dd>
@@ -75,8 +114,27 @@
     
 <dt><strong>Limitations:</strong>
    <dd>
-    Creation of a cache image is turned off in parallel, and will fail silently. Files with cache images
-    can be read in parallel, although there are known issues with doing this.
+  While it is an obvious error to request a cache image when opening the file read only, it is not in general 
+  possible to test for this error in the <code>H5Pset_mdc_image_config()</code> call. Rather than fail the subsequent file 
+  open, the library silently ignores the file image request in this case.
+<p>
+ It is also an error to request a cache image on a file that does not support superblock extension messages 
+ (i.e. a superblock version less than <code>2</code>). As above, it is not always possible to detect this error 
+ in the <code>H5Pset_mdc_image_config()</code> call, and thus the request for a cache image will fail silently in this case as well.
+<p>
+ Creation of cache images is currently disabled in parallel -- as above, any request for a cache image in this context will fail silently.
+<p>
+ Files with cache images may be read in parallel applications, but note that the load of the cache image is a
+ collective operation triggered by the first operation that accesses metadata after file open (or, if 
+ persistent free space managers are enabled, on the first allocation or deallocation of file space, or read 
+ of file space manager status, whichever comes first).  Thus the parallel process may deadlock if any process does 
+ not participate in this access.
+<p>
+ In long sequences of file closes and opens, infrequently accessed metadata can accumulate in the cache 
+ image to the point where the cost of storing and restoring this metadata exceeds the benefit of retaining 
+ frequently used metadata in the cache image.  When implemented, the <code>entry_ageout</code> should address this problem.  
+ In the interim, not requesting a cache image every <code>n</code> file close/open cycles may be an acceptable 
+ work around.  The choice of <code>n</code> will be driven by application behavior, but <code>n = 10</code> seems a good starting point.
    </dd></dt>
    <br />
 
