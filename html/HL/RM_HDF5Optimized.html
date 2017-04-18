@@ -194,17 +194,17 @@ function only creates the table, it does not write data to it.</p>
 
   <p>
   <dt><strong>Purpose:</strong>
-    <dd>Writes a raw data chunk from a buffer directly to the file.
+    <dd>Writes a raw data chunk from a buffer directly to a dataset in a file.
     
   <p>
   <dt><strong>Description:</strong>
     <dd><code>H5DOwrite_chunk</code> writes a raw data chunk 
         as specified by its logical <code>offset</code>
         in a chunked dataset <code>dset_id</code> from
-        the application memory buffer <code>buf</code> to the file.
+        the application memory buffer <code>buf</code> to the dataset in the file.
         Typically, the data in <code>buf</code> is preprocessed in memory 
         by a custom transformation, such as compression. 
-        The data chunk will bypass the library&rsquo;s internal data 
+        The chunk will bypass the library&rsquo;s internal data 
         transfer pipeline, including filters, and 
         will be written directly to the file.
         <p>
@@ -218,24 +218,24 @@ function only creates the table, it does not write data to it.</p>
         A filter is skipped if the bit corresponding to the filter&rsquo;s 
         position in the pipeline 
         (<code>0&nbsp;&le;&nbsp;position&nbsp;&lt;&nbsp;32</code>) is turned on.
-        This mask is saved with the data chunk in the file. 
+        This mask is saved with the chunk in the file. 
         </p>
         <p>
         <code>offset</code> is an array specifying the logical position 
-        of the first element of the data chunk in the dataset&rsquo;s 
+        of the first element of the chunk in the dataset&rsquo;s 
         dataspace. The length of the offset array must equal the number 
         of dimensions, or rank, of the dataspace. 
         The values in <code>offset</code> must not exceed the dimension 
-        limits and must specify a point that falls on a data chunk boundary.
+        limits and must specify a point that falls on a dataset chunk boundary.
         </p>
         <p>
-        <code>data_size</code> is the size in bytes of the raw data chunk, 
+        <code>data_size</code> is the size in bytes of the chunk, 
         representing the number of bytes to be read from the buffer 
-        <code>buf</code>. If the data chunk has been precompressed, 
+        <code>buf</code>. If the chunk has been precompressed, 
         <code>data_size</code> should be the size of the compressed data.
         </p>
         <p>
-        <code>buf</code> is the memory buffer for the data chunk.
+        <code>buf</code> is the memory buffer containing data to be written to the chunk in the file.
 
   <p>
   <dt><strong>Parameters:</strong>
@@ -275,7 +275,7 @@ function only creates the table, it does not write data to it.</p>
           <td valign="top">
             <em>const void *</em><code>buf</code></td>
           <td valign="top">IN: Buffer containing data to be written 
-            to the file</td>
+            to the chunk</td>
         </tr>
       </table>
     </dd>
@@ -374,13 +374,13 @@ ret = compress2(z_dst, &z_dst_nbytes, z_src, z_src_nbytes, aggression);
 
 /* Check for various zlib errors */
 if(Z_BUF_ERROR == ret) {
-    HDfprintf(stderr, "overflow");
+    fprintf(stderr, "overflow");
     goto error;
 } else if(Z_MEM_ERROR == ret) {
-    HDfprintf(stderr, "deflate memory error");
+    fprintf(stderr, "deflate memory error");
     goto error;
 } else if(Z_OK != ret) {
-    HDfprintf(stderr, "other deflate error");
+    fprintf(stderr, "other deflate error");
     goto error;
 }
 
@@ -453,14 +453,14 @@ if(H5Dread(dataset, H5T_NATIVE_LONG, H5S_ALL, H5S_ALL, H5P_DEFAULT,
 
   <p>
   <dt><strong>Purpose:</strong>
-    <dd>Reads a raw data chunk directly from the file into a buffer.
+    <dd>Reads a raw data chunk directly from a dataset in a file into a buffer.
     
   <p>
   <dt><strong>Description:</strong>
     <dd><code>H5DOread_chunk</code> reads a raw data chunk 
         as specified by its logical <code>offset</code> in 
         a chunked dataset <code>dset_id</code>
-        from the file into the application memory buffer <code>buf</code>.
+        from the dataset in the file into the application memory buffer <code>buf</code>.
 
         The data in <code>buf</code> is read directly from the file
         bypassing the library&rsquo;s internal data 
@@ -478,23 +478,21 @@ if(H5Dread(dataset, H5T_NATIVE_LONG, H5S_ALL, H5S_ALL, H5P_DEFAULT,
         </p>
         <p>
         <code>offset</code> is an array specifying the logical position 
-        of the first element of the data chunk in the dataset&rsquo;s 
+        of the first element of the chunk in the dataset&rsquo;s 
         dataspace. The length of the offset array must equal the number 
         of dimensions, or rank, of the dataspace. 
         The values in <code>offset</code> must not exceed the dimension 
-        limits and must specify a point that falls on a data chunk boundary.
+        limits and must specify a point that falls on a dataset chunk boundary.
         </p>
         <p>
         <p>
-        <code>buf</code> is the memory buffer for the data chunk read from the dataset.
+        <code>buf</code> is the memory buffer containing the chunk read from the dataset in the file.
 
   <p>
   <dt><strong>Parameters:</strong>
     <dd>
       <table>
-        <tr>
-          <td valign="top">
-            <em>hid_t</em><code> dset_id</code></td>
+        <tr> <td valign="top"> <em>hid_t</em><code> dset_id</code></td>
           <td valign="top">IN: Identifier for the dataset to be read</td>
         </tr>
         <tr>
@@ -518,7 +516,7 @@ if(H5Dread(dataset, H5T_NATIVE_LONG, H5S_ALL, H5S_ALL, H5P_DEFAULT,
         <tr>
           <td valign="top">
             <em>void *</em><code>buf</code></td>
-          <td valign="top">IN: Buffer containing the data read</td>
+          <td valign="top">IN: Buffer containing the chunk read from the dataset</td>
         </tr>
       </table>
     </dd>
@@ -622,13 +620,13 @@ ret = compress2(z_dst, &z_dst_nbytes, z_src, z_src_nbytes, aggression);
 
 /* Check for various zlib errors */
 if(Z_BUF_ERROR == ret) {
-    HDfprintf(stderr, "overflow");
+    fprintf(stderr, "overflow");
     goto error;
 } else if(Z_MEM_ERROR == ret) {
-    HDfprintf(stderr, "deflate memory error");
+    fprintf(stderr, "deflate memory error");
     goto error;
 } else if(Z_OK != ret) {
-    HDfprintf(stderr, "other deflate error");
+    fprintf(stderr, "other deflate error");
     goto error;
 }
 
@@ -666,18 +664,17 @@ pt_readbuf = (const Bytef *)readbuf;
 if((status = H5DOread_chunk(dataset, H5P_DEFAULT, offset, &read_filter_mask, readbuf)) < 0)
     goto error;
 
-/*  ncompress(Bytef *dest, uLongf *destLen, const Bytef *source, uLong sourceLen) */
 ret = uncompress((Bytef *)read_dst_buf, (uLongf *)&buf_size, pt_readbuf, (uLong)read_chunk_nbytes);
 
 /* Check for various zlib errors */
 if(Z_BUF_ERROR == ret) {
-    HDfprintf(stderr, "error: not enough room in output buffer");
+    fprintf(stderr, "error: not enough room in output buffer");
     goto error;
 } else if(Z_MEM_ERROR == ret) {
-    HDfprintf(stderr, "error: not enough memory");
+    fprintf(stderr, "error: not enough memory");
     goto error;
 } else if(Z_OK != ret) {
-    HDfprintf(stderr, "error: corrupted input data");
+    fprintf(stderr, "error: corrupted input data");
     goto error;
 }
 
