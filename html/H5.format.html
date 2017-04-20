@@ -335,17 +335,15 @@ div {   page-break-inside:avoid;
                     Message</a></li>                         <!-- 0x0015 -->
                   <li><a href="#RefCountMessage">The Object Reference 
                     Count Message</a></li>                   <!-- 0x0016 -->
-<!-- Will be updated for release 1.10.1
-    <p style="background-color:#ff9999">change for 1.10.1</p>
                   <li><a href="#FsinfoMessage">The File Space Info 
-                    Message</a></li> -->                     <!-- 0x0017 -->
+                    Message</a></li>                         <!-- 0x0017 -->
                 </ol>
 	    </ol>
 	  <li><a href="#DataStorage">Disk Format: Level 2B - Data Object Data Storage</a></li>
 	</ol>
         </font>
       <li><a href="#AppendixA">Appendix A: Definitions</a></li>
-      <li><a href="#AppendixB">Appendix B: File Memory Allocation 
+      <li><a href="#AppendixB">Appendix B: File Space Allocation 
       Types</a></li>
       <li><a href="#AppendixC">
       Appendix C: Types of Indexes for Dataset Chunks</a></li><font size="-1">
@@ -514,12 +512,9 @@ div {   page-break-inside:avoid;
         &ldquo;The Data Layout Message&rdquo;</a> section was changed. 
         The name was changed, and <a href="#DataLayoutV4">version 4</a> 
         of the data layout message was added for the virtual type.</li>
-
-<!-- Will be updated for release 1.10.1
-        <li>In <a href="#FsinfoMessage">
-        &ldquo;The File Space Info Message&rdquo;</a> section, 
-        the header message type was changed.</li>
--->
+        <li>The <a href="#FsinfoMessage">
+        &ldquo;The File Space Info Message&rdquo;</a> header message
+        type was added.</li>
         <li><a href="#AppendixC">
         &ldquo;Appendix C: Types of Indexes for Dataset Chunks&rdquo;</a> 
         was added. Five indexing types were added.</li>
@@ -1525,11 +1520,9 @@ header which may hold the following messages:</p>
         See also the 
         <a href="#DriverInfo">&ldquo;Disk Format: Level 0B - File Driver 
         Info&rdquo;</a> section above.</li>
-<!-- Will be updated for release 1.10.1
 	<li>
 	<a href="#FsinfoMessage">File Space Info message</a> containing
 	information about file space handling in the file.</li>
--->
 	</ul>
 
 
@@ -16774,8 +16767,6 @@ Count Message</a></h4>
     
 <br />
 
-<!-- Will be updated for release 1.10.1
-
 <h4><a name="FsinfoMessage">IV.A.2.x. The File Space Info 
 Message</a></h4>
 
@@ -16783,35 +16774,112 @@ Message</a></h4>
     <table class="msgdesc">
     <tr><td colspan="2"><b>Header Message Name:</b> File Space 
       Info</td></tr>
-    <p style="background-color:#ff9999" align="left">change for 1.10</p>
-    <tr style="background-color:#DDEEEE"><td colspan="2"><b>Header 
-    Message Type:</b> 0x0017 WORK IN PROGRESS
-    </td></tr>
+    <tr><td colspan="2"><b>Header Message Type:</b> 0x0017</td></tr>
     <tr><td colspan="2"><b>Length:</b> Fixed</td></tr>
     <tr><td colspan="2"><b>Status:</b> Optional; may not be 
       repeated.</td></tr>
     <tr><td>
     <b>Description:</b></td>
-      <td>This message stores the file space management strategy (see 
-      description below) that the library uses in handling file space 
-      request for the file. It also contains the free-space section 
-      threshold used by the library&rsquo;s free-space managers for 
-      the file. If the strategy is 1, this message also contains the 
-      addresses of the file&rsquo;s free-space managers which track 
-      free space for each type of file space allocation. There are 
-      six basic types of file space allocation: superblock, B-tree, 
-      raw data, global heap, local heap, and object header. See the 
-      description of <a href="#FreeSpaceManager">Free-space 
-      Manager</a> as well the description of allocation types in 
-      <a href="#AppendixB">Appendix B</a>.</td></tr>
-    <tr><td colspan="2"><b>Format of Data:</b> See the tables 
+    <td>This message stores the file space management information
+    that the library uses in handling file space 
+    requests for the file. Version 0 of the message is used for release 1.10.0 only.
+    Version 1 of the message is used for release 1.10.1+.
+    There is no File Space Info message before release 1.10 as the library does
+    not track file space across multiple file opens.
+    <p>
+    Note that version 0 is deprecated starting release 1.10.1.
+    That means when the 1.10.1+ library opens an HDF5 file with a version 0 message,
+    the library will decode and map the message to version 1.
+    On file close, it will encode the message as a version 1 message.
+    <p>
+    The library uses the following three mechanisms to manage file space in an HDF5 file:
+    <ul>
+    <li> Free-space managers
+    <br> They track free-space sections of various sizes in the file that are not currently
+    allocated.  Each free-space manager corresponds to a file space type.
+    There are two main groups of file space types: metadata and raw data.
+    Metadata is further divided into five types: superblock, B-tree, global heap,
+    local heap, and object header.
+    See the description of <a href="#FreeSpaceManager">Free-space
+      Manager</a> as well the description of file space allocation types in
+      <a href="#AppendixB">Appendix B</a>
+    </li>
+    <li> Aggregators
+    <br> The library manages two aggregators, one for metadata and one for raw data.
+    Aggregator is a contiguous block of free-space in the file.
+    The size of each aggregator is tunable via public routines 
+    <code>H5Pset_meta_block_size</code> and <code>H5Pset_small_data_block_size</code> respectively.
+    </li>
+    <li> Virtual file drivers
+    <br> The library's virtual file driver interface dispatches requests for additional
+    space to the allocation routine of the file driver associated with the file.
+    For example, if the sec2 file driver is being used, its allocation routine will
+    increase the size of the file to service the requests.
+    </li>
+    </ul>
+    <p>
+    For release 1.10.0, the library derives the following four file space strategies
+    based on the mechanisms:
+        <ul>
+        <li>H5F_FILE_SPACE_ALL
+            <ul>
+            <li>Mechanisms used: free-space managers, aggregators, and virtual file drivers</li>
+            <li>Does not persist free-space across file opens</li>
+            <li>This strategy is the library default</li>
+            </ul>
+        </li>
+        <li>H5F_FILE_SPACE_ALL_PERSIST</li>
+            <ul>
+            <li>Mechanisms used: free-space managers, aggregators, and virtual file drivers</li>
+            <li>Persist free-space across file opens</li>
+            </ul>
+        <li>H5F_FILE_SPACE_AGGR_VFD</li>
+            <ul>
+            <li>Mechanisms used: aggregators and virtual file drivers</li>
+            <li>Does not persist free-space across file opens</li>
+            </ul>
+        <li>H5F_FILE_SPACE_VFD</li>
+            <ul>
+            <li>Mechanisms used: virtual file drivers</li>
+            <li>Does not persist free-space across file opens</li>
+            </ul>
+        </ul>
+    For release 1.10.1+, the free-space manager mechanism is modified to handle paged aggregation 
+    which aggregates small metadata and raw data allocations into constant-sized well-aligned pages
+    to allow efficient I/O accesses.
+    With the support of this feature, the library derives the following four file space strategies:
+        <ul>
+        <li>H5F_FSPACE_STRATEGY_FSM_AGGR </li>
+            <ul>
+            <li>Mechanisms used: free-space managers, aggregators, and virtual file drivers</li>
+            <li>This strategy is the library default</li>
+            </ul>
+        <li>H5F_FSPACE_STRATEGY_PAGE</li>
+            <ul>
+            <li>Mechanisms used: free-space managers with embedded paged aggregation and virtual file drivers</li>
+            </ul>
+        <li>H5F_FSPACE_STRATEGY_AGGR</li>
+            <ul>
+            <li>Mechanisms used: aggregators and virtual file drivers</li>
+            </ul>
+        <li>H5F_FSPACE_STRATEGY_NONE</li>
+            <ul>
+            <li>Mechanisms used: virtual file drivers</li>
+            </ul>
+        </ul>
+        The default is not persisting free-space across file opens for the above four strategies.
+        User can use the public routine <code>H5Pset_file_space_strategy</code> to request
+        persisting free-space.
+    </td></tr>
+    <p>
+    <tr><td colspan="2"><b>Format of Data:</b> See the tables
       below.</td></tr>
     </table></center>
-    
+    <p>
     <div align="center">
       <table class="format">
     <caption>
-        Layout: File Space Info
+        Layout: File Space Info - Version 0
     </caption>
 
 	<tr>
@@ -16827,22 +16895,22 @@ Message</a></h4>
           <td colspan="2">Threshold<sup>L</sup></td>
 	</tr>
 	<tr>
-	  <td colspan="4">Superblock Free-space Manager Address<sup>O</sup></td>
+	  <td colspan="4"><br />Free-space manager address<sup>O</sup> for H5FD_MEM_SUPER<br /><br /></td>
 	</tr>
 	<tr>
-	  <td colspan="4">B-tree Free-space Manager Address<sup>O</sup></td>
+	  <td colspan="4"><br />Free-space manager address<sup>0</sup> for H5FD_MEM_BTREE<br /><br /></td>
 	</tr>
 	<tr>
-	  <td colspan="4">Raw Data Free-space Manager Address<sup>O</sup></td>
+	  <td colspan="4"><br />Free-space manager address<sup>0</sup> for H5FD_MEM_DRAW<br /><br /></td>
 	</tr>
 	<tr>
-	  <td colspan="4">Global Heap Free-space Manager Address<sup>O</sup></td>
+	  <td colspan="4"><br />Free-space manager address<sup>0</sup> for H5FD_MEM_GHEAP<br /><br /></td>
 	</tr>
 	<tr>
-	  <td colspan="4">Local Heap Free-space Manager Address<sup>O</sup></td>
+	  <td colspan="4"><br />Free-space manager address<sup>0</sup> for H5FD_MEM_LHEAP<br /><br /></td>
 	</tr>
 	<tr>
-	  <td colspan="4">Object Header Free-space Manager Address<sup>O</sup></td>
+	  <td colspan="4"><br />Free-space manager address<sup>0</sup> for H5FD_MEM_OHDR<br /><br /></td>
 	</tr>
       </table>
 
@@ -16868,6 +16936,9 @@ Message</a></h4>
     <br />
     <div align="center">
       <table class="desc">
+    <caption>
+        Fields: File Space Info
+    </caption>
 	<tr>
           <th width="30%">Field Name</th>
           <th>Description</th>
@@ -16875,15 +16946,14 @@ Message</a></h4>
 
 	<tr>
 	  <td><p>Version</p></td>
-	  <td><p>This is the version number of this message. This document describes
-            version 0.</p>
+	  <td><p>This is version 0 of this message.</p>
 	  </td>
 	</tr>
 
 	<tr>
 	  <td><p>Strategy</p></td>
-	  <td><p>This is the  file space management strategy for the file.
-		 There are four types of strategies:
+	  <td><p>This is the file space strategy used to manage file space.
+		 There are four types:
             <table class="list">
                 <tr>
                   <th width="20%" align="center">Value</th>
@@ -16892,60 +16962,21 @@ Message</a></h4>
 
                 <tr>
                   <td align="center"><code>1</code></td>
-                  <td>With this strategy, the HDF5 Library&rsquo;s free-space managers track the
-		      free space that results from the manipulation of HDF5 objects
-		      in the HDF5 file.  The free space information is saved when the
-		      file is closed, and reloaded when the file is reopened.
-		    <br />
-		      When space is needed for file metadata or raw data, 
-		      the HDF5 Library first requests space from the library&rsquo;s free-space 
-		      managers. If the request is not satisfied, the library requests space 
-		      from the aggregators. If the request is still not satisfied, 
-		      the library requests space from the virtual file driver. 
-		      That is, the library will use all of the mechanisms for allocating
-		      space.
-                  </td>
+                  <td>H5F_FILE_SPACE_ALL_PERSIST</td>
                 </tr>
 
                 <tr>
                   <td align="center"><code>2</code></td>
-                  <td>This is the HDF5 Library&rsquo;s default file space management strategy. 
-		      With this strategy, the library&rsquo;s free-space managers track the free space
-		      that results from the manipulation of HDF5 objects in the HDF5 file.
-		      The free space information is NOT saved when the file is closed and
-		      the free space that exists upon file closing becomes unaccounted
-		      space in the file.
-		    <br />
-		      As with strategy #1, the library will try all of the mechanisms 
-		      for allocating space.  When space is needed for file metadata or 
-		      raw data, the library first requests space from the free-space
-		      managers.  If the request is not satisfied, the library requests
-		      space from the aggregators.  If the request is still not satisfied,
-		      the library requests space from the virtual file driver.
-                  </td>
+                  <td>H5F_FILE_SPACE_ALL</td>
                 </tr>
 
                 <tr>
                   <td align="center"><code>3</code></td>
-                  <td>With this strategy, the HDF5 Library does not track free space that results
-		      from the manipulation of HDF5 objects in the HDF5 file and
-		      the free space becomes unaccounted space in the file.
-		    <br />
-		      When space is needed for file metadata or raw data,
-		      the library first requests space from the aggregators. 
-		      If the request is not satisfied, the library requests space from 
-		      the virtual file driver. 
-                  </td>
+                  <td>H5F_FILE_SPACE_AGGR_VFD</td>
                 </tr>
                 <tr>
                   <td align="center"><code>4</code></td>
-                  <td>With this strategy, the HDF5 Library does not track free space that results
-		      from the manipulation of HDF5 objects in the HDF5 file and
-		      the free space becomes unaccounted space in the file.
-		    <br />
-		      When space is needed for file metadata or raw data,
-		      the library requests space from the virtual file driver. 
-                  </td>
+                  <td>H5F_FILE_SPACE_VFD</td>
                 </tr>
             </table></p>
 	  </td>
@@ -16953,64 +16984,253 @@ Message</a></h4>
 
 	<tr>
 	  <td><p>Threshold</p></td>
-	  <td><p>This is the free-space section threshold.
-	    The library&rsquo;s free-space managers will track only 
-        free-space sections with size greater than or equal to 
-        <em>threshold</em>. The default is to track free-space 
-        sections of all sizes.</p>
+	  <td><p>This is the smallest free-space section size that the
+	    free-space manager will track.
 	  </td>
 	</tr>
 	<tr>
-	  <td><p>Superblock Free-space Manager Address</p></td>
-	  <td><p>This is the address of the free-space manager for 
-        H5FD_MEM_SUPER allocation type.
+	  <td><p>Free-space manager addresses</p></td>
+	  <td><p>These are the six free-space manager addresses for the
+             six file space allocation types:
+                <ul>
+                <li>H5FD_MEM_SUPER</li>
+                <li>H5FD_MEM_BTREE</li>
+                <li>H5FD_MEM_DRAW</li>
+                <li>H5FD_MEM_GHEAP</li>
+                <li>H5FD_MEM_LHEAP</li>
+                <li>H5FD_MEM_OHDR</li>
+                </ul>
+            Note that these six fields exist only if the value for the field
+            &ldquo;<em>Strategy</em>&rdquo; is H5F_FILE_SPACE_ALL_PERSIST.
             </p>
 	  </td>
 	</tr>
 
-	<tr>
-	  <td><p>B-tree Free-space Manager Address</p></td>
-	  <td><p>This is the address of the free-space manager for 
-        H5FD_MEM_BTREE allocation type.
-            </p>
-	  </td>
-	</tr>
-
-	<tr>
-	  <td><p>Raw Data Free-space Manager Address</p></td>
-	  <td><p>This is the address of the free-space manager for 
-        H5FD_MEM_DRAW allocation type.
-            </p>
-	  </td>
-	</tr>
-
-	<tr>
-	  <td><p>Global Heap Free-space Manager Address</p></td>
-	  <td><p>This is the address of the free-space manager for 
-        H5FD_MEM_GHEAP allocation type.
-            </p>
-	  </td>
-	</tr>
-
-	<tr>
-	  <td><p>Local Heap Free-space Manager Address</p></td>
-	  <td><p>This is the address of the free-space manager for 
-        H5FD_MEM_LHEAP allocation type.
-            </p>
-	  </td>
-	</tr>
-
-	<tr>
-	  <td><p>Object Header Free-space Manager Address</p></td>
-	  <td><p>This is the address of the free-space manager for 
-        H5FD_MEM_OHDR allocation type.
-            </p>
-	  </td>
-	</tr>
       </table>
     </div>
     <br />
--->
+
+    <div align="center">
+      <table class="format">
+    <caption>
+        Layout: File Space Info - Version 1
+    </caption>
+
+	<tr>
+	  <th width="25%">byte</th>
+	  <th width="25%">byte</th>
+	  <th width="25%">byte</th>
+	  <th width="25%">byte</th>
+	</tr>
+
+	<tr>
+	  <td>Version</td>
+	  <td>Strategy</td>
+      <td>Persisting free-space</td>
+      <td colspan="3" bgcolor="#DDDDDD"><em>This space inserted only to  lign table nicely</em></td>
+	</tr>
+
+	<tr>
+      <td colspan="4">Free-space Section Threshold<sup>L</sup></td>
+	</tr>
+
+    <tr>
+      <td colspan="4">File Space Page Size</td>
+    </tr>
+
+    <tr>
+      <td colspan="2">Page-end Metadata threshold</td>
+      <td colspan="2" bgcolor="#DDDDDD"><em>This space inserted only to align table nicely</em></td>
+    </tr>
+
+    <tr>
+      <td colspan="4"><br />EOA<sup>0</sup><br /><br /></td>
+    </tr>
+
+	<tr>
+	  <td colspan="4"><br />Address<sup>O</sup> of small-sized free-space manager for H5FD_MEM_SUPER<br /><br /></td>
+	</tr>
+	<tr>
+	  <td colspan="4"><br />Address<sup>O</sup> of small-sized free-space manager for H5FD_MEM_BTREE<br /><br /></td>
+	</tr>
+	<tr>
+	  <td colspan="4"><br />Address<sup>O</sup> of small-sized free-space manager for H5FM_MEM_DRAW<br /><br /></td>
+	</tr>
+	<tr>
+	  <td colspan="4"><br />Address<sup>O</sup> of small-sized free-space manager for H5FD_MEM_GHEAP<br /><br /></td>
+	</tr>
+	<tr>
+	  <td colspan="4"><br />Address<sup>O</sup> of small-sized free-space manager for H5FD_MEM_LHEAP<br /><br /></td>
+	</tr>
+	<tr>
+	  <td colspan="4"><br />Address<sup>O</sup> of small-sized free-space manager for H5FD_MEM_OHDR<br /><br /></td>
+	</tr>
+	<tr>
+	  <td colspan="4"><br />Address<sup>O</sup> of large-sized free-space manager for H5FD_MEM_SUPER<br /><br /></td>
+	</tr>
+	<tr>
+	  <td colspan="4"><br />Address<sup>O</sup> of large-sized free-space manager for H5FD_MEM_BTREE<br /><br /></td>
+	</tr>
+	<tr>
+	  <td colspan="4"><br />Address<sup>O</sup> of large-sized free-space manager for H5FM_MEM_DRAW<br /><br /></td>
+	</tr>
+	<tr>
+	  <td colspan="4"><br />Address<sup>O</sup> of large-sized free-space manager for H5FD_MEM_GHEAP<br /><br /></td>
+	</tr>
+	<tr>
+	  <td colspan="4"><br />Address<sup>O</sup> of large-sized free-space manager for H5FD_MEM_LHEAP<br /><br /></td>
+	</tr>
+	<tr>
+	  <td colspan="4"><br />Address<sup>O</sup> of large-sized free-space manager for H5FD_MEM_OHDR<br /><br /></td>
+	</tr>
+      </table>
+
+      <table class="note">
+        <tr>
+            <td width="60%">&nbsp;</td>
+            <td width="40%">
+            (Items marked with an &lsquo;O&rsquo; in the above table are
+            of the size specified in the <a href="#SizeOfOffsetsV0">Size 
+            of Offsets</a> field in the superblock.)
+            </td></tr>
+        <tr>
+            <td>&nbsp;</td>
+            <td>
+            (Items marked with an &lsquo;L&rsquo; in the above table are
+            of the size specified in the <a href="#SizeOfLengthsV0">Size 
+            of Lengths</a> field in the superblock.)
+            </td></tr>
+      </table>
+
+    </div>
+
+    <br />
+    <div align="center">
+      <table class="desc">
+    <caption>
+        Fields: File Space Info
+    </caption>
+	<tr>
+          <th width="30%">Field Name</th>
+          <th>Description</th>
+	</tr>
+
+	<tr>
+	  <td><p>Version</p></td>
+	  <td><p>This is version 1 of this message.</p>
+	  </td>
+	</tr>
+
+	<tr>
+	  <td><p>Strategy</p></td>
+	  <td><p>This is the file space strategy used to manage file space.
+		 There are four types:
+            <table class="list">
+                <tr>
+                  <th width="20%" align="center">Value</th>
+                  <th width="80%" align="left">Description</th>
+                </tr>
+
+                <tr>
+                  <td align="center"><code>0</code></td>
+                  <td>H5F_FSPACE_STRATEGY_FSM_AGGR</td>
+                </tr>
+
+                <tr>
+                  <td align="center"><code>1</code></td>
+                  <td>H5F_FSPACE_STRATEGY_PAGE</td>
+                </tr>
+
+                <tr>
+                  <td align="center"><code>2</code></td>
+                  <td>H5F_FSPACE_STRATEGY_AGGR</td>
+                </tr>
+                <tr>
+                  <td align="center"><code>3</code></td>
+                  <td>H5F_FSPACE_STRATEGY_NONE</td>
+                </tr>
+            </table></p>
+	  </td>
+	</tr>
+
+	<tr>
+	  <td><p>Persisting free-space</p></td>
+	  <td><p>True or false in persisting free-space.
+	  </td>
+	</tr>
+
+	<tr>
+	  <td><p>Free-space Section Threshold</p></td>
+	  <td><p>This is the smallest free-space section size that the
+	    free-space manager will track.
+	  </td>
+	</tr>
+
+	<tr>
+	  <td><p>File space page size</p></td>
+	  <td><p>This is the file space page size, which is used when the paged aggregation feature 
+	    is enabled.
+	  </td>
+	</tr>
+
+	<tr>
+	  <td><p>Page-end metadata threshold</p></td>
+	  <td><p>This is the smallest free-space section size at the end of a page that
+        the free-space manager will track.  This is used when the paged aggregation feature
+	    is enabled.
+	  </td>
+	</tr>
+
+	<tr>
+	  <td><p>EOA</p></td>
+	  <td><p>The EOA before the allocation of free-space manager header and section info for the 
+        self-referential free-space managers when persisting free-space.
+        <br>
+        Note that self-referential free-space managers are managers that involve file space
+        allocation for the managers' free-space header and section info.
+	  </td>
+	</tr>
+
+	<tr>
+	  <td><p>Addresses of small-sized free-space managers</p></td>
+	  <td><p>These are the addresses of the six small-sized free-space managers for 
+             the six file space allocation types:
+            </p>
+                <ul>
+                <li>H5FD_MEM_SUPER</li>
+                <li>H5FD_MEM_BTREE</li>
+                <li>H5FD_MEM_DRAW</li>
+                <li>H5FD_MEM_GHEAP</li>
+                <li>H5FD_MEM_LHEAP</li>
+                <li>H5FD_MEM_OHDR</li>
+                </ul>
+            Note that these six fields exist only if the value for the field
+            &ldquo;<em>Persisting free-space</em>&rdquo; is true.
+            </ul>
+	  </td>
+	</tr>
+
+	<tr>
+	  <td><p>Addresses of large-sized free-space managers</p></td>
+	  <td><p>These are the addresses of the six large-sized free-space managers for 
+              the six file space allocation types:
+            </p>
+                <ul>
+                <li>H5FD_MEM_SUPER</li>
+                <li>H5FD_MEM_BTREE</li>
+                <li>H5FD_MEM_DRAW</li>
+                <li>H5FD_MEM_GHEAP</li>
+                <li>H5FD_MEM_LHEAP</li>
+                <li>H5FD_MEM_OHDR</li>
+                </ul>
+            Note that these six fields exist only if the value for the field
+            &ldquo;<em>Persisting free-space</em>&rdquo; is true.
+            </ul>
+	  </td>
+	</tr>
+
+      </table>
+    </div>
 
 <h3><a name="DataStorage">
 IV.B. Disk Format: Level 2B - Data Object Data Storage</a></h3>
@@ -17087,9 +17307,9 @@ this section.</p>
 
 
 <h2><a name="AppendixB">
-VI. Appendix B: File Memory Allocation Types</a></h2>
+VI. Appendix B: File Space Allocation Types</a></h2>
 
-<p>There are six basic types of file memory allocation as follows:
+<p>There are six basic types of file space allocation as follows:
 </p>
     <div align="center">
       <table class="desc">
@@ -17100,40 +17320,40 @@ VI. Appendix B: File Memory Allocation Types</a></h2>
 
 	<tr>
 	  <td>H5FD_MEM_SUPER</td>
-	  <td>File memory allocated for <em>Superblock.</em></td>
+	  <td>File space allocated for <em>Superblock.</em></td>
 	</tr>
 
 	<tr>
 	  <td>H5FD_MEM_BTREE</td>
-	  <td>File memory allocated for <em>B-tree.</em></td>
+	  <td>File space allocated for <em>B-tree.</em></td>
 	</tr>
 
 	<tr>
 	  <td>H5FD_MEM_DRAW</td>
-	  <td>File memory allocated for raw data.</td>
+	  <td>File space allocated for <em>raw data</em>.</td>
 	</tr>
 
 	<tr>
 	  <td>H5FD_MEM_GHEAP</td>
-	  <td>File memory allocated for <em>Global Heap.</em></td>
+	  <td>File space allocated for <em>Global Heap.</em></td>
 	</tr>
 
 	<tr>
 	  <td>H5FD_MEM_LHEAP</td>
-	  <td>File memory allocated for <em>Local Heap.</em></td>
+	  <td>File space allocated for <em>Local Heap.</em></td>
 	</tr>
 
 	<tr>
 	  <td>H5FD_MEM_OHDR</td>
-	  <td>File memory allocated for <em>Object Header.</em></td>
+	  <td>File space allocated for <em>Object Header.</em></td>
 	</tr>
       </table>
     </div>
     
     <br />
-<p>There are other file memory allocation types that are mapped to the
-above six basic allocation types because they are similar in nature.
-The mapping is listed in the following table:
+<p>There are other file space allocation types that are mapped to the
+above six basic types because they are similar in nature.
+The mapping and the corresponding description are listed in the following two tables:
 </p>
     
     <div align="center">
@@ -17176,8 +17396,6 @@ The mapping is listed in the following table:
     </div>
     
     <br />
-<p>Allocation types that are mapped to basic allocation types are 
-described below:
 </p>
     
     <div align="center">
@@ -17189,40 +17407,40 @@ described below:
 
 	<tr>
 	  <td>H5FD_MEM_FHEAP_HDR</td>
-	  <td>File memory allocated for <em>Fractal Heap Header.</em></td>
+	  <td>File space allocated for <em>Fractal Heap Header.</em></td>
 	</tr>
 
 	<tr>
 	  <td>H5FD_MEM_FHEAP_DBLOCK</td>
-	  <td>File memory allocated for <em>Fractal Heap Direct Blocks.</em></td>
+	  <td>File space allocated for <em>Fractal Heap Direct Blocks.</em></td>
 	</tr>
 
 	<tr>
 	  <td>H5FD_MEM_FHEAP_IBLOCK</td>
-	  <td>File memory allocated for <em>Fractal Heap Indirect Blocks.</em></td>
+	  <td>File space allocated for <em>Fractal Heap Indirect Blocks.</em></td>
 	</tr>
 
 	<tr>
 	  <td>H5FD_MEM_FHEAP_HUGE_OBJ</td>
-	  <td>File memory allocated for huge objects in the fractal heap.</td>
+	  <td>File space allocated for huge objects in the fractal heap.</td>
 	</tr>
 
 	<tr>
 	  <td>H5FD_MEM_FSPACE_HDR</td>
-	  <td>File memory allocated for <em>Free-space Manager Header.</em></td>
+	  <td>File space allocated for <em>Free-space Manager Header.</em></td>
 	</tr>
 
 	<tr>
 	  <td>H5FD_MEM_FSPACE_SINFO</td>
-	  <td>File memory allocated for <em>Free-space Section List</em> of the free-space manager.</td>
+	  <td>File space allocated for <em>Free-space Section List</em> of the free-space manager.</td>
 	</tr>
 	<tr>
 	  <td>H5FD_MEM_SOHM_TABLE</td>
-	  <td>File memory allocated for <em>Shared Object Header Message Table.</em></td>
+	  <td>File space allocated for <em>Shared Object Header Message Table.</em></td>
 	</tr>
 	<tr>
 	  <td>H5FD_MEM_SOHM_INDEX</td>
-	  <td>File memory allocated for <em>Shared Message Record List.</em></td>
+	  <td>File space allocated for <em>Shared Message Record List.</em></td>
 	</tr>
       </table>
     </div>
