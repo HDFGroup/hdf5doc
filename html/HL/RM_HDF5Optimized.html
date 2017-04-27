@@ -117,6 +117,7 @@ and are available any time the HDF5 High-level Library is available.
       <p align="left"><i>Dataset I/O Optimization</i>
       <ul>
         <li><a href="#H5DOwrite_chunk">H5DOwrite_chunk</a></li>
+        <li><a href="#H5DOread_chunk">H5DOread_chunk</a></li>
       </ul>
     </td>
 
@@ -154,6 +155,7 @@ function only creates the table, it does not write data to it.</p>
       <p align="left"><i>Dataset I/O Optimization</i>
       <ul>
         <li><a href="#H5DOwrite_chunk">h5dowrite_chunk_f</a></li>
+        <li><a href="#H5DOread_chunk">h5doread_chunk_f</a></li>
       </ul>
 
     </td>
@@ -193,22 +195,21 @@ function only creates the table, it does not write data to it.</p>
 
   <p>
   <dt><strong>Purpose:</strong>
-    <dd>Writes a raw data chunk from a buffer directly to a dataset.
+    <dd>Writes a raw data chunk from a buffer directly to a dataset in a file.
     
   <p>
   <dt><strong>Description:</strong>
     <dd><code>H5DOwrite_chunk</code> writes a raw data chunk 
-        from the application memory buffer <code>buf</code>
-        directly to its logical destination <code>offset</code>
-        in a dataset <code>dset_id</code>. 
+        as specified by its logical <code>offset</code>
+        in a chunked dataset <code>dset_id</code> from
+        the application memory buffer <code>buf</code> to the dataset in the file.
         Typically, the data in <code>buf</code> is preprocessed in memory 
         by a custom transformation, such as compression. 
-        The data chunk will bypass the library&rsquo;s internal data 
+        The chunk will bypass the library&rsquo;s internal data
         transfer pipeline, including filters, and 
         will be written directly to the file.
         <p>
         <code>dxpl_id</code> is a data transfer property list identifier. 
-        <i>(Currently unused.)</i>
         </p>
         <p>
         <code>filter_mask</code> is a mask providing a record of which 
@@ -218,24 +219,24 @@ function only creates the table, it does not write data to it.</p>
         A filter is skipped if the bit corresponding to the filter&rsquo;s 
         position in the pipeline 
         (<code>0&nbsp;&le;&nbsp;position&nbsp;&lt;&nbsp;32</code>) is turned on.
-        This mask is saved with the data chunk in the file. 
+        This mask is saved with the chunk in the file. 
         </p>
         <p>
         <code>offset</code> is an array specifying the logical position 
-        of the first element of the data chunk in the dataset&rsquo;s 
+        of the first element of the chunk in the dataset&rsquo;s 
         dataspace. The length of the offset array must equal the number 
         of dimensions, or rank, of the dataspace. 
         The values in <code>offset</code> must not exceed the dimension 
-        limits and must specify a point that falls on a data chunk boundary.
+        limits and must specify a point that falls on a dataset chunk boundary.
         </p>
         <p>
-        <code>data_size</code> is the size in bytes of the raw data chunk, 
+        <code>data_size</code> is the size in bytes of the chunk, 
         representing the number of bytes to be read from the buffer 
         <code>buf</code>. If the data chunk has been precompressed, 
         <code>data_size</code> should be the size of the compressed data.
         </p>
         <p>
-        <code>buf</code> is the memory buffer for the data chunk.
+        <code>buf</code> is the memory buffer containing data to be written to the chunk in the file.
 
   <p>
   <dt><strong>Parameters:</strong>
@@ -252,7 +253,6 @@ function only creates the table, it does not write data to it.</p>
           <td valign="top">IN: Transfer property list identifier for 
             this I/O operation
             <br>
-            <i>(Currently unused)</i>
             </td>
         </tr>
         <tr>
@@ -276,7 +276,7 @@ function only creates the table, it does not write data to it.</p>
           <td valign="top">
             <em>const void *</em><code>buf</code></td>
           <td valign="top">IN: Buffer containing data to be written 
-            to the file</td>
+            to the chunk</td>
         </tr>
       </table>
     </dd>
@@ -307,16 +307,28 @@ end subroutine h5dowrite_chunk_f
 
   <p>
   <dt><strong>See Also:</strong>
-    <dd>&ldquo;<a 
+    <ul>
+    <li>
+    &ldquo;<a 
         href="../Advanced/DirectChunkWrite/UsingDirectChunkWrite.pdf">Using
         the Direct Chunk Write Function</a>&rdquo; 
         in &ldquo;<a href="../Advanced.html">Advanced Topics in HDF5</a>&rdquo; 
         <i>(PDF only)</i>
-    <dd>Design document for this feature:
+    </li>
+    <li>
+    Design document for this feature:
         &ldquo;<a 
         href="../Advanced/DirectChunkWrite/DECTRISIntegrationRFC2013-1-25.pdf">RFC: 
         Direct Chunk Write</a>&rdquo;
         <i>(PDF only)</i>
+    </li>
+    <li>
+    <a href="#H5DOread_chunk">H5DOread_chunk</a>
+    </li>
+    <li>
+    <a href="../RM/H5D/H5Dget_chunk_storage_size.htm#Dataset-GetChunkStorageSize">H5Dget_chunk_storage_size</a>
+    </li>
+    </ul>
 
   <p>
   <dt><strong>Example Usage:</strong>
@@ -340,26 +352,26 @@ size_t       buf_size = CHUNK_NX*CHUNK_NY*sizeof(int);
 
 /* Create the data space */
 if((dataspace = H5Screate_simple(RANK, dims, maxdims)) &lt; 0)
-            goto error;
+    goto error;
     
 /* Create a new file */
 if((file = H5Fcreate(FILE_NAME5, H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT)) &lt; 0)
-            goto error;
+    goto error;
     
 /* Modify dataset creation properties, i.e. enable chunking and compression */
 if((cparms = H5Pcreate(H5P_DATASET_CREATE)) &lt; 0)
-            goto error;
+    goto error;
     
 if((status = H5Pset_chunk( cparms, RANK, chunk_dims)) &lt; 0)
-            goto error;
+    goto error;
     
 if((status = H5Pset_deflate( cparms, aggression)) &lt; 0)
-            goto error;
+    goto error;
 
 /* Create a new dataset within the file using cparms creation properties */
 if((dset_id = H5Dcreate2(file, DATASETNAME, H5T_NATIVE_INT, dataspace, H5P_DEFAULT,
                         cparms, H5P_DEFAULT)) &lt; 0)
-        goto error;
+    goto error;
 
 /* Initialize data for one chunk */
 for(i = n = 0; i &lt; CHUNK_NX; i++)
@@ -375,14 +387,14 @@ ret = compress2(z_dst, &z_dst_nbytes, z_src, z_src_nbytes, aggression);
 
 /* Check for various zlib errors */
 if(Z_BUF_ERROR == ret) {
-        fprintf(stderr, "overflow");
-        goto error;
+   fprintf(stderr, "overflow");
+   goto error;
 } else if(Z_MEM_ERROR == ret) {
-        fprintf(stderr, "deflate memory error");
-        goto error;
+   fprintf(stderr, "deflate memory error");
+   goto error;
 } else if(Z_OK != ret) {
-        fprintf(stderr, "other deflate error");
-        goto error;
+   fprintf(stderr, "other deflate error");
+   goto error;
 }
 
 /* Write the compressed chunk data repeatedly to cover all the 
@@ -403,12 +415,12 @@ filter_mask = 0x00000001;
 offset[0] = offset[1] = 0;
 if(H5DOwrite_chunk(dset_id, H5P_DEFAULT, filter_mask, offset, buf_size, 
              direct_buf) &lt; 0)
-        goto error;
+   goto error;
 
 /* Read the entire dataset back for data verification converting ints to longs */
 if(H5Dread(dataset, H5T_NATIVE_LONG, H5S_ALL, H5S_ALL, H5P_DEFAULT, 
              outbuf_long) &lt; 0)
-        goto error;
+   goto error;
 
 /* Data verification here */
             :
@@ -431,6 +443,289 @@ if(H5Dread(dataset, H5T_NATIVE_LONG, H5S_ALL, H5S_ALL, H5P_DEFAULT,
 
 </dl>
 
+<!-- NEW PAGE -->
+<!-- HEADER RIGHT "H5DOread_chunk" -->
+<hr>
+<dl>
+
+  <dt><div align=right><font color=999999 size=-1><i>
+      /ast modified: 28 February 2013
+      </i></font></div>
+
+  <dt style="background-color: #CCCCFF"><strong>Name:</strong>        
+    <a name="H5DOread_chunk">H5DOread_chunk</a>
+    
+  <dt><strong>Signature:</strong>
+    <dd><em>herr_t</em> <code>H5DOread_chunk</code>(
+            <em>hid_t</em><code> dset_id</code>,
+            <em>hid_t</em><code> dxpl_id</code>,
+            <em>const hsize_t *</em><code>offset</code>,
+            <em>uint32_t *</em><code>filter_mask</code>,
+            <em>void *</em><code>buf</code>
+      )
+
+  <p>
+  <dt><strong>Purpose:</strong>
+    <dd>Reads a raw data chunk directly from a dataset in a file into a buffer.
+    
+  <p>
+  <dt><strong>Description:</strong>
+    <dd><code>H5DOread_chunk</code> reads a raw data chunk 
+        as specified by its logical <code>offset</code> in 
+        a chunked dataset <code>dset_id</code>
+        from the dataset in the file into the application memory buffer <code>buf</code>.
+
+        The data in <code>buf</code> is read directly from the file
+        bypassing the library&rsquo;s internal data 
+        transfer pipeline, including filters.
+        <p>
+        <code>dxpl_id</code> is a data transfer property list identifier. 
+        </p>
+        <p>
+        The mask <code>filter_mask</code> indicates which filters are used
+        with the chunk when written. 
+        A zero value indicates that all enabled filters are applied on the chunk.
+        A filter is skipped if the bit corresponding to the filter&rsquo;s 
+        position in the pipeline 
+        (<code>0&nbsp;&le;&nbsp;position&nbsp;&lt;&nbsp;32</code>) is turned on.
+        </p>
+        <p>
+        <code>offset</code> is an array specifying the logical position 
+        of the first element of the chunk in the dataset&rsquo;s 
+        dataspace. The length of the offset array must equal the number 
+        of dimensions, or rank, of the dataspace. 
+        The values in <code>offset</code> must not exceed the dimension 
+        limits and must specify a point that falls on a dataset chunk boundary.
+        </p>
+        <p>
+        <p>
+        <code>buf</code> is the memory buffer containing the chunk read from the dataset in the file.
+
+  <p>
+  <dt><strong>Parameters:</strong>
+    <dd>
+      <table>
+        <tr> <td valign="top"> <em>hid_t</em><code> dset_id</code></td>
+          <td valign="top">IN: Identifier for the dataset to be read</td>
+        </tr>
+        <tr>
+          <td valign="top">
+            <em>hid_t</em><code> dxpl_id</code></td>
+          <td valign="top">IN: Transfer property list identifier for 
+            this I/O operation
+            </td>
+        </tr>
+        <tr>
+          <td valign="top">
+            <em>uint32_t *</em><code>&nbsp;filter_mask&nbsp;&nbsp;&nbsp;</code></td>
+          <td valign="top">IN: Mask for identifying the filters used with the chunk</td>
+        </tr>
+        <tr>
+          <td valign="top">
+            <em>const hsize_t *</em><code>offset</code></td>
+          <td valign="top">IN: Logical position of the chunk&rsquo;s 
+            first element in the dataspace</td>
+        </tr>
+        <tr>
+          <td valign="top">
+            <em>void *</em><code>buf</code></td>
+          <td valign="top">IN: Buffer containing the chunk read from the dataset</td>
+        </tr>
+      </table>
+    </dd>
+
+  <p>
+  <dt><strong>Returns:</strong>
+    <dd>Returns a non-negative value if successful; 
+        otherwise returns a negative value.
+
+<!-- NEW PAGE -->
+<!--
+  <p>
+  <dt><strong>Fortran Interface:</strong> h5doread_chunk_f
+    <dd>Note: <code>h5tbmake_table_f</code>
+        only creates the table, it does not write data to it.
+        <p>
+
+      <pre>
+subroutine h5doread_chunk_f(
+                            ) 
+  implicit none
+     .
+     .
+     .
+end subroutine h5doread_chunk_f
+      </pre>
+-->
+
+  <p>
+  <dt><strong>See Also:</strong>
+    <ul>
+    <li>
+    &ldquo;<a 
+        href="../Advanced/DirectChunkWrite/UsingDirectChunkWrite.pdf">Using
+        the Direct Chunk Write Function</a>&rdquo; 
+        in &ldquo;<a href="../Advanced.html">Advanced Topics in HDF5</a>&rdquo; 
+        <i>(PDF only)</i>
+    </li>
+    <li>
+    &ldquo;<a 
+        href="../Advanced/DirectChunkWrite/DECTRISIntegrationRFC2013-1-25.pdf">RFC: 
+        Direct Chunk Write</a>&rdquo;
+        <i>(PDF only)</i>
+    </li>
+    <li>
+    <a href="#H5DOwrite_chunk">H5DOwrite_chunk</a>
+    </li>
+    <li>
+    <a href="../RM/H5D/H5Dget_chunk_storage_size.htm#Dataset-GetChunkStorageSize">H5Dget_chunk_storage_size</a>
+    </li>
+    </ul>
+
+  <p>
+  <dt><strong>Example Usage:</strong>
+    <dd>The following code illustrates the use of <code>H5DOread_chunk</code> 
+        to read a chunk from a dataset:
+
+<pre>
+#include &lt;zlib.h&gt;
+#include &lt;math.h&gt;
+#define DEFLATE_SIZE_ADJUST(s) (ceil(((double)(s))*1.001)+12)
+                :
+                :
+size_t       buf_size = CHUNK_NX*CHUNK_NY*sizeof(int);
+const Bytef *z_src = (const Bytef*)(direct_buf);
+Bytef       *z_dst;             /* Destination buffer            */
+uLongf       z_dst_nbytes = (uLongf)DEFLATE_SIZE_ADJUST(buf_size);
+uLong        z_src_nbytes = (uLong)buf_size;
+int          aggression = 9;    /* Compression aggression setting */
+uint32_t     filter_mask = 0;
+size_t       buf_size = CHUNK_NX*CHUNK_NY*sizeof(int);
+/* For H5DOread_chunk() */
+void        *readbuf = NULL;                    /* Buffer for reading data */
+const Bytef *pt_readbuf;                        /* Point to the buffer for data read */
+hsize_t     read_chunk_nbytes;                  /* Size of chunk on disk */
+int         read_dst_buf[CHUNK_NX][CHUNK_NY];   /* Buffer to hold un-compressed data */
+
+/* Create the data space */
+if((dataspace = H5Screate_simple(RANK, dims, maxdims)) &lt; 0)
+    goto error;
+    
+/* Create a new file */
+if((file = H5Fcreate(FILE_NAME5, H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT)) &lt; 0)
+   goto error;
+    
+/* Modify dataset creation properties, i.e. enable chunking and compression */
+if((cparms = H5Pcreate(H5P_DATASET_CREATE)) &lt; 0)
+   goto error;
+    
+if((status = H5Pset_chunk( cparms, RANK, chunk_dims)) &lt; 0)
+   goto error;
+    
+if((status = H5Pset_deflate( cparms, aggression)) &lt; 0)
+   goto error;
+
+/* Create a new dataset within the file using cparms creation properties */
+if((dset_id = H5Dcreate2(file, DATASETNAME, H5T_NATIVE_INT, dataspace, H5P_DEFAULT,
+                        cparms, H5P_DEFAULT)) &lt; 0)
+   goto error;
+
+/* Initialize data for one chunk */
+for(i = n = 0; i &lt; CHUNK_NX; i++)
+    for(j = 0; j &lt; CHUNK_NY; j++)
+        direct_buf[i][j] = n++;
+
+/* Allocate output (compressed) buffer */
+outbuf = malloc(z_dst_nbytes);
+z_dst = (Bytef *)outbuf;
+
+/* Perform compression from the source to the destination buffer */
+ret = compress2(z_dst, &z_dst_nbytes, z_src, z_src_nbytes, aggression);
+
+/* Check for various zlib errors */
+if(Z_BUF_ERROR == ret) {
+    fprintf(stderr, "overflow");
+    goto error;
+} else if(Z_MEM_ERROR == ret) {
+    fprintf(stderr, "deflate memory error");
+    goto error;
+} else if(Z_OK != ret) {
+    fprintf(stderr, "other deflate error");
+    goto error;
+}
+
+/* Write the compressed chunk data repeatedly to cover all the 
+ * chunks in the dataset, using the direct write function.     */
+for(i=0; i&lt;NX/CHUNK_NX; i++) {
+    for(j=0; j&lt;NY/CHUNK_NY; j++) {
+        status = H5DOwrite_chunk(dset_id, H5P_DEFAULT, filter_mask, 
+                                offset, z_dst_nbytes, outbuf);
+        offset[1] += CHUNK_NY;
+    }
+    offset[0] += CHUNK_NX;
+    offset[1] = 0;
+}
+
+if(H5Fflush(dataset, H5F_SCOPE_LOCAL) < 0)
+    goto error;
+
+if(H5Dclose(dataset) < 0)
+    goto error;
+
+if((dataset = H5Dopen2(file, DATASETNAME1, H5P_DEFAULT)) < 0)
+    goto error;
+
+offset[0] = CHUNK_NX;
+offset[1] = CHUNK_NY;
+
+/* Get the size of the compressed chunk */
+ret = H5Dget_chunk_storage_size(dataset, offset, &read_chunk_nbytes);
+
+readbuf = HDmalloc(read_chunk_nbytes);
+pt_readbuf = (const Bytef *)readbuf;
+
+/* Use H5DOread_chunk() to read the chunk back */
+if((status = H5DOread_chunk(dataset, H5P_DEFAULT, offset, &read_filter_mask, readbuf)) < 0)
+    goto error;
+
+ret = uncompress((Bytef *)read_dst_buf, (uLongf *)&buf_size, pt_readbuf, (uLong)read_chunk_nbytes);
+
+/* Check for various zlib errors */
+if(Z_BUF_ERROR == ret) {
+    fprintf(stderr, "error: not enough room in output buffer");
+    goto error;
+} else if(Z_MEM_ERROR == ret) {
+    fprintf(stderr, "error: not enough memory");
+    goto error;
+} else if(Z_OK != ret) {
+    fprintf(stderr, "error: corrupted input data");
+    goto error;
+}
+
+
+/* Data verification here */
+            :
+            :
+</pre>
+
+  <p>
+  <dt><strong>History:</strong>
+    <dd><table width="90%">
+        <tr>
+          <td valign="top" align="left" width="10%">
+            <strong>Release</strong>&nbsp;&nbsp;&nbsp;&nbsp;</td>
+          <td valign="top" align="left">
+            <strong>Change</strong></td></tr>
+        <tr>
+          <td valign="top">1.10.2</td>
+          <td valign="top">
+            C function introduced in this release.</td></tr>
+    </table>
+
+</dl>
+
+
+
 <!-- INCLUDE ADDITIONAL H5DO FUNCTIONS.  -->
 
 <?php include("HDF5Optimized/H5DOappend.htm"); ?>
@@ -446,7 +741,7 @@ if(H5Dread(dataset, H5T_NATIVE_LONG, H5S_ALL, H5S_ALL, H5P_DEFAULT,
 <!--
 document.writeln(' \
 <address> \
-  Last modified:  February 2016<br> \
+  Last modified:  27 April 2017<br> \
 </address> \
 ');
 -->
