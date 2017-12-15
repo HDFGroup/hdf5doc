@@ -1,0 +1,306 @@
+<html>
+<head><title>
+HDF5/H5I API Specification
+</title>
+<link href="../ed_styles/RMelect.css" rel="stylesheet" type="text/css">
+</head>
+
+<body bgcolor="#FFFFFF">
+
+<!-- #BeginLibraryItem "/ed_libs/styles_RM.lbi" -->
+<!--
+  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+  * Copyright by The HDF Group.                                               *
+  * Copyright by the Board of Trustees of the University of Illinois.         *
+  * All rights reserved.                                                      *
+  *                                                                           *
+  * This file is part of HDF5.  The full HDF5 copyright notice, including     *
+  * terms governing use, modification, and redistribution, is contained in    *
+  * the files COPYING and Copyright.html.  COPYING can be found at the root   *
+  * of the source code distribution tree; Copyright.html can be found at the  *
+  * root level of an installed copy of the electronic HDF5 document set and   *
+  * is linked from the top-level documents page.  It can also be found at     *
+  * http://www.hdfgroup.org/HDF5/doc/Copyright.html.  If you do not have      *
+  * access to either file, you may request a copy from help@hdfgroup.org.     *
+  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+ -->
+<!-- #EndLibraryItem --><!-- HEADER RIGHT " " -->
+
+
+<!-- #BeginLibraryItem "/ed_libs/NavBar_RM.lbi" -->
+<hr>
+<center>
+<table border=0 width=98%>
+<tr><td valign=top align=left>
+<a href="../index.html">HDF5 documents and links</a>&nbsp;<br>
+<a href="../H5.intro.html">Introduction to HDF5</a>&nbsp;<br>
+<a href="../UG/HDF5_Users_Guide-Responsive HTML5/index.html">HDF5 User&rsquo;s Guide</a>&nbsp;<br>
+<!--
+<a href="Glossary.html">Glossary</a><br>
+-->
+</td>
+<td valign=top align=right>
+In the 
+<a href="RM_H5Front.html">HDF5 Reference Manual</a>&nbsp;
+<font size=-1>
+<br>
+<a href="../HL/RM_H5DS.html">H5DS</a>&nbsp;&nbsp;
+<a href="../HL/RM_H5IM.html">H5IM</a>&nbsp;&nbsp;
+<a href="../HL/RM_H5LT.html">H5LT</a>&nbsp;&nbsp;
+<a href="../HL/RM_H5PT.html">H5PT</a>&nbsp;&nbsp;
+<a href="../HL/RM_H5TB.html">H5TB</a>&nbsp;
+<a href="../HL/RM_HDF5Optimized.html">Optimized</a>&nbsp;
+<br>
+<a href="RM_H5.html">H5</a>&nbsp;&nbsp;
+<a href="RM_H5A.html">H5A</a>&nbsp;&nbsp;
+<a href="RM_H5D.html">H5D</a>&nbsp;&nbsp;
+<a href="RM_H5E.html">H5E</a>&nbsp;&nbsp;
+<a href="RM_H5F.html">H5F</a>&nbsp;&nbsp;
+<a href="RM_H5G.html">H5G</a>&nbsp;&nbsp;
+<a href="RM_H5I.html">H5I</a>&nbsp;&nbsp;
+<a href="RM_H5L.html">H5L</a>&nbsp;
+<br>
+<a href="RM_H5O.html">H5O</a>&nbsp;&nbsp;
+<a href="RM_H5P.html">H5P</a>&nbsp;&nbsp;
+<a href="RM_H5PL.html">H5PL</a>&nbsp;&nbsp;
+<a href="RM_H5R.html">H5R</a>&nbsp;&nbsp;
+<a href="RM_H5S.html">H5S</a>&nbsp;&nbsp;
+<a href="RM_H5T.html">H5T</a>&nbsp;&nbsp;
+<a href="RM_H5Z.html">H5Z</a>&nbsp;
+<br>
+<a href="Tools.html">Tools</a>&nbsp;&nbsp;
+<a href="PredefDTypes.html">Datatypes</a>&nbsp;&nbsp;
+<a href="../fortran/index.html">Fortran</a>&nbsp;&nbsp;
+<a href="APICompatMacros.html">Compatibility Macros</a>&nbsp;
+<br>
+<a href="CollectiveCalls.html">Collective Calls in Parallel</a>&nbsp;
+<!--
+<br>
+<i><font size=-1>(Printable <a href="http://hdfgroup.org/HDF5/doc/PSandPDF/HDF5_RefManual.PDF">PDF</a> of this Reference Manual)</font></i>&nbsp;
+-->
+</font>
+</td></tr>
+</table>
+</center>
+<hr>
+<!-- #EndLibraryItem --><center>
+<h1>H5I: Identifier Interface</h1>
+</center>
+
+<h2>Identifier API Functions</h2>
+
+These functions provides tools for working with object identifiers and 
+object names.
+
+
+<p>
+<strong>The C Interface:</strong>
+
+<table border=0>
+<tr><td valign=top>
+<ul>
+    <li><a href="#Identify-GetFileId">H5Iget_file_id</a>
+    <li><a href="#Identify-GetName">H5Iget_name</a>
+    <li><a href="#Identify-GetType">H5Iget_type</a>
+    <li><a href="#Identify-ObjectVerify">H5Iobject_verify</a>
+    <li><a href="#Identify-RemoveVerify">H5Iremove_verify</a>
+    <li><a href="#Identify-Search">H5Isearch</a>
+    <li><a href="#Identify-IsValid">H5Iis_valid</a>
+</ul>
+</td><td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td><td valign=top>
+<ul>
+    <li><a href="#Identify-GetRef">H5Iget_ref</a>
+    <li><a href="#Identify-IncRef">H5Iinc_ref</a>
+    <li><a href="#Identify-DecRef">H5Idec_ref</a>
+    <li><a href="#Identify-Register">H5Iregister</a>
+    <li><a href="#Identify-RegisterType">H5Iregister_type</a>
+    <li><a href="#Identify-DestroyType">H5Idestroy_type</a>
+</ul>
+</td><td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td><td valign=top>
+<ul>
+    <li><a href="#Identify-TypeExists">H5Itype_exists</a>
+    <li><a href="#Identify-GetTypeRef">H5Iget_type_ref</a>
+    <li><a href="#Identify-DecTypeRef">H5Idec_type_ref</a>
+    <li><a href="#Identify-IncTypeRef">H5Iinc_type_ref</a>
+    <li><a href="#Identify-ClearType">H5Iclear_type</a>
+    <li><a href="#Identify-NMembers">H5Inmembers</a>
+</ul>
+</td></tr>
+</table>
+<br>
+
+
+<i>Alphabetical Listing</i>
+
+<table border="0">
+  <tr>
+    <td valign="top">
+        <ul>
+        <li><a href="#Identify-ClearType">H5Iclear_type</a>
+        <li><a href="#Identify-DecRef">H5Idec_ref</a>
+        <li><a href="#Identify-DecTypeRef">H5Idec_type_ref</a>
+        <li><a href="#Identify-DestroyType">H5Idestroy_type</a>
+        <li><a href="#Identify-GetFileId">H5Iget_file_id</a>
+        <li><a href="#Identify-GetName">H5Iget_name</a>
+        <li><a href="#Identify-GetRef">H5Iget_ref</a>
+        </ul>     
+    </td>
+    
+    <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
+    
+    <td valign="top">
+        <ul>
+        <li><a href="#Identify-GetType">H5Iget_type</a>
+        <li><a href="#Identify-GetTypeRef">H5Iget_type_ref</a>
+        <li><a href="#Identify-IncRef">H5Iinc_ref</a>
+        <li><a href="#Identify-IncTypeRef">H5Iinc_type_ref</a>
+        <li><a href="#Identify-IsValid">H5Iis_valid</a>
+        <li><a href="#Identify-NMembers">H5Inmembers</a>
+        </ul>
+    </td>
+    
+    <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
+    
+    <td valign="top">
+        <ul>
+        <li><a href="#Identify-ObjectVerify">H5Iobject_verify</a>
+        <li><a href="#Identify-Register">H5Iregister</a>
+        <li><a href="#Identify-RegisterType">H5Iregister_type</a>
+        <li><a href="#Identify-RemoveVerify">H5Iremove_verify</a>
+        <li><a href="#Identify-Search">H5Isearch</a>  
+        <li><a href="#Identify-TypeExists">H5Itype_exists</a>
+        </ul>
+    </td>
+  </tr>
+</table>
+
+<br>
+<strong>The Fortran Interface:</strong>
+<br>
+In general, each Fortran subroutine performs exactly the same task 
+as the corresponding C function.  
+<br>
+
+<table border=0>
+<tr><td valign=top>
+<ul>
+    <li><a href="#Identify-GetName">h5iget_name_f</a>
+    <li><a href="#Identify-GetType">h5iget_type_f</a>
+</ul>
+</td><td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td><td valign=top>
+<ul>
+    <li><a href="#Identify-GetRef">h5iget_ref_f</a>
+    <li><a href="#Identify-IncRef">h5iinc_ref_f</a>
+</ul>
+</td><td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td><td valign=top>
+<ul>
+    <li><a href="#Identify-DecRef">h5idec_ref_f</a>
+    <li><a href="#Identify-IsValid">H5iis_valid_f</a>
+</ul>
+</td></tr>
+</table>
+
+<!-- NEW PAGE -->
+<!-- HEADER RIGHT " " -->
+
+<!--  ---  ---  ---  ---  ---  ---  ---  ---  ---  ---  ---  -->
+<!--       Include special topic files                       -->
+<!--  ---  ---  ---  ---  ---  ---  ---  ---  ---  ---  ---  -->
+
+
+<!--  ---  ---  ---  ---  ---  ---  ---  ---  ---  ---  ---  -->
+<!--       Include function files                            -->
+<!--  ---  ---  ---  ---  ---  ---  ---  ---  ---  ---  ---  -->
+
+<?php include("H5I/H5Iclear_type.htm"); ?>
+<?php include("H5I/H5Idec_ref.htm"); ?>
+<?php include("H5I/H5Idec_type_ref.htm"); ?>
+<?php include("H5I/H5Idestroy_type.htm"); ?>
+<?php include("H5I/H5Iget_file_id.htm"); ?>
+<?php include("H5I/H5Iget_name.htm"); ?>
+<?php include("H5I/H5Iget_ref.htm"); ?>
+<?php include("H5I/H5Iget_type.htm"); ?>
+<?php include("H5I/H5Iget_type_ref.htm"); ?>
+<?php include("H5I/H5Iinc_ref.htm"); ?>
+<?php include("H5I/H5Iinc_type_ref.htm"); ?>
+<?php include("H5I/H5Iis_valid.htm"); ?>
+<?php include("H5I/H5Inmembers.htm"); ?>
+<?php include("H5I/H5Iobject_verify.htm"); ?>
+<?php include("H5I/H5Iregister.htm"); ?>
+<?php include("H5I/H5Iregister_type.htm"); ?>
+<?php include("H5I/H5Iremove_verify.htm"); ?>
+<?php include("H5I/H5Isearch.htm"); ?>
+<?php include("H5I/H5Itype_exists.htm"); ?>
+
+
+<!-- HEADER RIGHT " " -->
+<!-- #BeginLibraryItem "/ed_libs/NavBar_RM.lbi" -->
+<hr>
+<center>
+<table border=0 width=98%>
+<tr><td valign=top align=left>
+<a href="../index.html">HDF5 documents and links</a>&nbsp;<br>
+<a href="../H5.intro.html">Introduction to HDF5</a>&nbsp;<br>
+<a href="../UG/HDF5_Users_Guide-Responsive HTML5/index.html">HDF5 User&rsquo;s Guide</a>&nbsp;<br>
+<!--
+<a href="Glossary.html">Glossary</a><br>
+-->
+</td>
+<td valign=top align=right>
+In the 
+<a href="RM_H5Front.html">HDF5 Reference Manual</a>&nbsp;
+<font size=-1>
+<br>
+<a href="../HL/RM_H5DS.html">H5DS</a>&nbsp;&nbsp;
+<a href="../HL/RM_H5IM.html">H5IM</a>&nbsp;&nbsp;
+<a href="../HL/RM_H5LT.html">H5LT</a>&nbsp;&nbsp;
+<a href="../HL/RM_H5PT.html">H5PT</a>&nbsp;&nbsp;
+<a href="../HL/RM_H5TB.html">H5TB</a>&nbsp;
+<a href="../HL/RM_HDF5Optimized.html">Optimized</a>&nbsp;
+<br>
+<a href="RM_H5.html">H5</a>&nbsp;&nbsp;
+<a href="RM_H5A.html">H5A</a>&nbsp;&nbsp;
+<a href="RM_H5D.html">H5D</a>&nbsp;&nbsp;
+<a href="RM_H5E.html">H5E</a>&nbsp;&nbsp;
+<a href="RM_H5F.html">H5F</a>&nbsp;&nbsp;
+<a href="RM_H5G.html">H5G</a>&nbsp;&nbsp;
+<a href="RM_H5I.html">H5I</a>&nbsp;&nbsp;
+<a href="RM_H5L.html">H5L</a>&nbsp;
+<br>
+<a href="RM_H5O.html">H5O</a>&nbsp;&nbsp;
+<a href="RM_H5P.html">H5P</a>&nbsp;&nbsp;
+<a href="RM_H5PL.html">H5PL</a>&nbsp;&nbsp;
+<a href="RM_H5R.html">H5R</a>&nbsp;&nbsp;
+<a href="RM_H5S.html">H5S</a>&nbsp;&nbsp;
+<a href="RM_H5T.html">H5T</a>&nbsp;&nbsp;
+<a href="RM_H5Z.html">H5Z</a>&nbsp;
+<br>
+<a href="Tools.html">Tools</a>&nbsp;&nbsp;
+<a href="PredefDTypes.html">Datatypes</a>&nbsp;&nbsp;
+<a href="../fortran/index.html">Fortran</a>&nbsp;&nbsp;
+<a href="APICompatMacros.html">Compatibility Macros</a>&nbsp;
+<br>
+<a href="CollectiveCalls.html">Collective Calls in Parallel</a>&nbsp;
+<!--
+<br>
+<i><font size=-1>(Printable <a href="http://hdfgroup.org/HDF5/doc/PSandPDF/HDF5_RefManual.PDF">PDF</a> of this Reference Manual)</font></i>&nbsp;
+-->
+</font>
+</td></tr>
+</table>
+</center>
+<hr>
+<!-- #EndLibraryItem -->
+
+<?php include("../ed_libs/Footer2.htm"); ?>
+
+<SCRIPT LANGUAGE="JAVASCRIPT">
+<!--
+document.writeln("Last modified: February 2017");
+-->
+</SCRIPT>
+
+<!-- HEADER RIGHT " " -->
+
+</body>
+</html>

@@ -1,0 +1,1243 @@
+<html>
+
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+<title> HDF5 Table Interface, H5TB</title>
+</head>
+
+<body bgcolor="#FFFFFF">
+
+
+<!--
+  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+  * Copyright by The HDF Group.                                               *
+  * Copyright by the Board of Trustees of the University of Illinois.         *
+  * All rights reserved.                                                      *
+  *                                                                           *
+  * This file is part of HDF5.  The full HDF5 copyright notice, including     *
+  * terms governing use, modification, and redistribution, is contained in    *
+  * the files COPYING and Copyright.html.  COPYING can be found at the root   *
+  * of the source code distribution tree; Copyright.html can be found at the  *
+  * root level of an installed copy of the electronic HDF5 document set and   *
+  * is linked from the top-level documents page.  It can also be found at     *
+  * http://hdfgroup.org/HDF5/doc/Copyright.html.  If you do not have          *
+  * access to either file, you may request a copy from help@hdfgroup.org.     *
+  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+ -->
+
+
+
+<a name="TopofRM">
+</a>
+
+<!-- #BeginLibraryItem "/ed_libs/NavBar_RMHL.lbi" -->
+<hr>
+<center>
+<table border=0 width=98%>
+<tr><td valign=top align=left>
+<a href="../index.html">HDF5 documents and links</a>&nbsp;<br>
+<a href="../H5.intro.html">Introduction to HDF5</a>&nbsp;<br>
+<a href="../UG/HDF5_Users_Guide-Responsive HTML5/index.html">HDF5 User&rsquo;s Guide</a>&nbsp;<br>
+<a href="index.html">Other High-level API documents</a>
+<!--
+<a href="Glossary.html">Glossary</a><br>
+-->
+</td>
+<td valign=top align=right>
+In the 
+<a href="../RM/RM_H5Front.html">HDF5 Reference Manual</a>&nbsp;&nbsp;
+<font size=-1>
+<br>
+<a href="RM_H5DS.html">H5DS</a>&nbsp;&nbsp;
+<a href="RM_H5IM.html">H5IM</a>&nbsp;&nbsp;
+<a href="RM_H5LT.html">H5LT</a>&nbsp;&nbsp;
+<a href="RM_H5PT.html">H5PT</a>&nbsp;&nbsp;
+<a href="RM_H5TB.html">H5TB</a>&nbsp;&nbsp;
+<a href="RM_HDF5Optimized.html">Optimized</a>&nbsp;
+<br>
+<a href="../RM/RM_H5.html">H5</a>&nbsp;&nbsp;
+<a href="../RM/RM_H5A.html">H5A</a>&nbsp;&nbsp;
+<a href="../RM/RM_H5D.html">H5D</a>&nbsp;&nbsp;
+<a href="../RM/RM_H5E.html">H5E</a>&nbsp;&nbsp;
+<a href="../RM/RM_H5F.html">H5F</a>&nbsp;&nbsp;
+<a href="../RM/RM_H5G.html">H5G</a>&nbsp;&nbsp;
+<a href="../RM/RM_H5I.html">H5I</a>&nbsp;&nbsp;
+<a href="../RM/RM_H5L.html">H5L</a>&nbsp;&nbsp;
+<br>
+<a href="../RM/RM_H5O.html">H5O</a>&nbsp;&nbsp;
+<a href="../RM/RM_H5P.html">H5P</a>&nbsp;&nbsp;
+<a href="../RM/RM_H5PL.html">H5PL</a>&nbsp;&nbsp;
+<a href="../RM/RM_H5R.html">H5R</a>&nbsp;&nbsp;
+<a href="../RM/RM_H5S.html">H5S</a>&nbsp;&nbsp;
+<a href="../RM/RM_H5T.html">H5T</a>&nbsp;&nbsp;
+<a href="../RM/RM_H5Z.html">H5Z</a>&nbsp;&nbsp;
+<br>
+<a href="../RM/Tools.html">Tools</a>&nbsp;&nbsp;
+<a href="../RM/PredefDTypes.html">Datatypes</a>&nbsp;&nbsp;
+<a href="../fortran/index.html">Fortran</a>&nbsp;&nbsp;
+</font>
+</td></tr>
+</table>
+</center>
+<hr>
+<!-- #EndLibraryItem --><h1 align="center">H5TB: HDF5 Table</h1>
+
+<!-- HEADER RIGHT " " -->
+<!-- HEADER RIGHT " " -->
+
+<h2>HDF5 Table API&nbsp;Reference</h2>
+
+<p>The HDF5 Table API defines a standard 
+storage for HDF5 datasets that are intended to be interpreted as tables. 
+A table is defined as a collection of records whose values are stored 
+in fixed-length fields. All records have the same structure, and all 
+values in each field have the same data type.</p>
+
+<p>The following functions are part of the HDF5 Table API.</p>
+
+<p><strong>Programming Hints:</strong></p>
+
+<p>To use any of these functions or subroutines, you must first include
+the relevant include file (C) or module (Fortran) in your application.</p>
+
+<p>The following line includes the HDF5 Table package, H5TB, in C 
+applications:</p>
+
+<p><code>&nbsp;&nbsp;&nbsp;&nbsp;#include "hdf5_hl.h"</code></p>
+
+<p>The following line includes the H5TB module in Fortran applications:</p>
+
+<p><code>&nbsp;&nbsp;&nbsp;&nbsp;use h5tb</code></p>
+
+<p><strong>The C Interfaces:</strong>
+
+</p>
+
+<table border="0" width="100%">
+  <tr>
+    <td width="50%" valign="top">
+      <p align="left"><i>Creation</i>
+      <ul>
+        <li><a href="#H5TBmake_table">H5TBmake_table</a></li>
+      </ul>
+          <p align="left"><i>Storage</i>
+      <ul>
+        <li><a href="#H5TBappend_records">H5TBappend_records</a></li>
+        <li><a href="#H5TBwrite_records">H5TBwrite_records</a></li>
+        <li><a href="#H5TBwrite_fields_name">H5TBwrite_fields_name</a></li>
+        <li><a href="#H5TBwrite_fields_index">H5TBwrite_fields_index</a></li>
+      </ul>
+      <p align="left"><i>Modification</i>
+      <ul>
+        <li><a href="#H5TBdelete_record">H5TBdelete_record</a></li>
+        <li><a href="#H5TBinsert_record">H5TBinsert_record</a></li>
+        <li><a href="#H5TBadd_records_from">H5TBadd_records_from</a></li>
+        <li><a href="#H5TBcombine_tables">H5TBcombine_tables</a></li>
+        <li><a href="#H5TBinsert_field">H5TBinsert_field</a></li>
+        <li><a href="#H5TBdelete_field">H5TBdelete_field</a></li>
+      </ul>
+    </td>
+    <td width="50%" valign="top">
+      <p align="left"><i>Retrieval</i>
+      <ul>
+        <li><a href="#H5TBread_table">H5TBread_table</a></li>
+        <li><a href="#H5TBread_records">H5TBread_records</a></li>
+        <li><a href="#H5TBread_fields_name">H5TBread_fields_name</a></li>
+        <li><a href="#H5TBread_fields_index">H5TBread_fields_index</a></li>
+      </ul>
+      <p align="left"><i>Query</i>
+      <ul>
+        <li><a href="#H5TBget_table_info">H5TBget_table_info</a></li>
+        <li><a href="#H5TBget_field_info">H5TBget_field_info</a></li>
+      </ul>
+    </td>
+  </tr>
+</table>
+
+<!-- NEW PAGE -->
+<p align="left">
+<strong>The FORTRAN90 Interfaces:</strong>
+<br>
+In general, each FORTRAN90 subroutine performs exactly the same task 
+as the corresponding C function. There are four types supported: <code>integer</code>,
+<code>real, double precision</code> and <code>character</code> array. The
+&lt;TYPE&gt; notation below is one of these four types.&nbsp; In FORTRAN, only
+the functions that read and write data by fields are&nbsp; available. The <code>h5tbmake_table_f</code>
+function only creates the table, it does not write data to it.</p>
+
+<table border="0" width="100%">
+  <tr>
+    <td width="50%" valign="top">
+      <p align="left"><i>Creation</i>
+      <ul>
+        <li><a href="#H5TBmake_table">h5tbmake_table_f</a></li>
+      </ul>
+          <p align="left"><i>Storage</i>
+      <ul>
+        <li><a href="#H5TBwrite_fields_name">h5tbwrite_field_name_f</a></li>
+        <li><a href="#H5TBwrite_fields_index">h5tbwrite_field_index_f</a></li>
+      </ul>
+      <p align="left"><i>Modification</i>
+      <ul>
+        <li><a href="#H5TBinsert_field">h5tbinsert_field_f</a></li>
+        <li><a href="#H5TBdelete_field">h5tbdelete_field_f</a></li>
+      </ul>
+    </td>
+    <td width="50%" valign="top">
+      <p align="left"><i>Retrieval</i>
+      <ul>
+        <li><a href="#H5TBread_table">h5tbread_table_f</a></li>
+        <li><a href="#H5TBread_fields_name">h5tbread_field_name_f</a></li>
+        <li><a href="#H5TBread_fields_index">h5tbread_field_index_f</a></li>
+      </ul>
+      <p align="left"><i>Query</i>
+      <ul>
+        <li><a href="#H5TBget_table_info">h5tbget_table_info_f</a></li>
+        <li><a href="#H5TBget_field_info">h5tbget_field_info_f</a></li>
+      </ul>
+    </td>
+  </tr>
+</table>
+
+
+
+<!-- NEW PAGE -->
+<!-- HEADER RIGHT "H5TBmake_table" -->
+<hr>
+<dl>
+  <dt style="background-color: #CCCCFF"><strong>Name:</strong>        
+    <a name="H5TBmake_table">H5TBmake_table</a>
+    
+  <dt><strong>Signature:</strong>
+    <dd><em>herr_t</em> <code>H5TBmake_table</code>( 
+      <em>const char *</em><code>table_title</code>, <em>hid_t</em> 
+      <code>loc_id</code>, <em>const char *</em><code>dset_name</code>, 
+      <em>hsize_t</em> <code>nfields</code>, <em>const hsize_t</em> 
+      <code>nrecords</code>, <em>size_t</em> <code>type_size</code>, 
+      <em>const char *</em><code>field_names [ ]</code>, 
+      <em>const size_t *</em><code>field_offset</code>, 
+      <em>const hid_t *</em><code>field_types</code>, <em>hsize_t</em> 
+      <code>chunk_size</code>, <em>void *</em><code>fill_data</code>, 
+      <em>int</em> <code>compress</code>, 
+      <em>const void *</em><code>data</code>
+      )
+
+  <dt><strong>Purpose:</strong>
+    <dd>Creates and writes a table.
+    
+  <dt><strong>Description:</strong>
+    <dd><code>H5TBmake_table</code> creates and writes a dataset named 
+      <code>table_name</code> attached to the object specified by the 
+      identifier <code>loc_id</code>.
+
+  <dt><strong>Parameters:</strong>
+    <dd>
+      <table>
+        <tr>
+	  <td valign="top">
+	    <em>const char *</em><code>table_title</code></td>
+	  <td valign="top">IN: The title of the table.</td>
+	</tr>
+        <tr>
+	  <td valign="top"><em>hid_t</em> <code>loc_id</code></td>
+	  <td valign="top">IN: Identifier of the file or group to 
+	    create the table within.</td>
+	</tr>
+        <tr>
+	  <td valign="top">
+	    <em>const char *</em><code>table_name</code></td>
+	  <td valign="top">IN: The name of the dataset to create.</td>
+	</tr>
+        <tr>
+	  <td valign="top"><em>hsize_t </em><code>nfields</code></td>
+	  <td valign="top">IN: The number of fields.</td>
+	</tr>
+        <tr>
+	  <td valign="top"><em>const hsize_t</em> 
+	    <code>nrecords</code></td>
+	  <td valign="top">IN: The number of records.</td>
+	</tr>
+        <tr>
+	  <td valign="top"><em>hsize_t</em> 
+	    <code>type_size</code></td>
+	  <td valign="top">IN: The size in bytes of the structure 
+	    associated with the table. This value is obtained 
+	    with <code>sizeof</code>.</td>
+	</tr>
+        <tr>
+	  <td valign="top"><em>const&nbsp;char&nbsp;*</em><code>field_names[]</code>&nbsp;&nbsp;&nbsp;&nbsp;</td>
+	  <td valign="top">IN: An array containing the names 
+	    of the fields.</td>
+	</tr>
+        <tr>
+	  <td valign="top">
+	    <em>const size_t *</em><code>field_offset</code></td>
+	  <td valign="top">IN: An array containing the offsets of 
+	    the fields.</td>
+	</tr>
+        <tr>
+	  <td valign="top">
+	    <em>const hid_t *</em><code>field_types</code></td>
+	  <td valign="top">IN: An array containing the type of 
+	    the fields.</td>
+	</tr>
+        <tr>
+	  <td valign="top"><em>hsize_t</em> 
+	    <code>chunk_size</code></td>
+	  <td valign="top">IN: The chunk size.</td>
+	</tr>
+        <tr>
+	  <td valign="top">
+	    <em>void *</em><code>fill_data</code></td>
+	  <td valign="top">IN: Fill values data.</td>
+	</tr>
+        <tr>
+	  <td valign="top"><em>int</em> <code>compress</code></td>
+	  <td valign="top">IN: Flag that turns compression 
+	    on or off.</td>
+	</tr>
+        <tr>
+	  <td valign="top">
+	    <em>const void *</em><code>data</code></td>
+	  <td valign="top">IN: Buffer with data to be written 
+	    to the table.</td>
+	</tr>
+      </table>
+    </dd>
+
+  <dt><strong>Returns:</strong>
+    <dd>Returns a non-negative value if successful; 
+        otherwise returns a negative value.
+
+<!-- NEW PAGE -->
+  <dt><strong>Fortran90 Interface:</strong> h5tbmake_table_f
+    <dd>Note: <code>h5tbmake_table_f</code>
+        only creates the table, it does not write data to it.
+        <p>
+
+      <pre>
+subroutine h5tbmake_table_f(table_title, loc_id, dset_name, nfields, &amp;
+                            nrecords, type_size, field_names, field_offset, &amp;
+                            field_types, chunk_size, compress, errcode) 
+  implicit none
+  character(LEN=*), intent(IN) :: table_title     ! name of the table
+  integer(HID_T), intent(IN) :: loc_id            ! file or group identifier 
+  character(LEN=*), intent(IN) :: dset_name       ! name of the dataset 
+  integer(HSIZE_T), intent(IN) :: nfields         ! fields 
+  integer(HSIZE_T), intent(IN) :: nrecords        ! records
+  integer(SIZE_T), intent(IN) :: type_size        ! type size
+  character(LEN=*), dimension(nfields), intent(IN) :: field_names
+                                                  ! field names
+  integer(SIZE_T), dimension(nfields), intent(IN) :: field_offset
+                                                  ! field offset
+  integer(HID_T), dimension(nfields), intent(IN) :: field_types
+                                                  ! field types
+  integer(HSIZE_T), intent(IN) :: chunk_size      ! chunk size
+  integer, intent(IN) :: compress                 ! compress
+  integer :: errcode                              ! error code
+end subroutine h5tbmake_table_f
+      </pre>
+</dl>
+
+<!-- NEW PAGE -->
+<!-- HEADER RIGHT "H5TBappend_records" -->
+<hr>
+<dl>
+  <dt style="background-color: #CCCCFF"><strong>Name:</strong> 
+    <a name="H5TBappend_records">H5TBappend_records</a>
+
+  <dt><strong>Signature:</strong>
+    <dd><em>herr_t</em> <code>H5TBappend_records</code> (
+      <em>hid_t</em> <code>loc_id</code>, 
+      <em>const char *</em><code>dset_name</code>, 
+      <em>hsize_t</em> <code>nrecords</code>, 
+      <em>size_t</em> <code>type_size</code>,
+      <em>const size_t</em> *<code>field_offset</code>, 
+      <em>const size_t</em> *<code>field_sizes</code>, 
+      <em>const void *</em><code>data</code>
+      )
+
+  <dt><strong>Purpose:</strong>
+    <dd>Adds records to the end of the table.
+
+  <dt><strong>Description:</strong>
+    <dd><code>H5TBappend_records</code> adds records to the end of 
+        the table named <code>dset_name</code> attached to the object 
+        specified by the identifier <code>loc_id</code>. The dataset 
+        is extended to hold the new records.
+
+
+  <dt><strong>Parameters:</strong>
+    <dd><dl>
+        <dt><em>hid_t</em> <code>loc_id</code>
+          <dd>IN: Identifier of the file or group where the 
+              table is located.
+        <dt><em>const char *</em><code>dset_name</code>
+          <dd>IN: The name of the dataset to overwrite.
+        <dt><i>hsize_t</i> <code>nrecords</code></dt>
+          <dd>IN: The number of records to append. </dd>
+        <dt><i>size_t</i><em> </em><code>type_size</code> </dt>
+          <dd>IN: The size of the structure type, 
+              as calculated by <code>sizeof()</code>. </dd>
+        <dt><i>const size_t</i><em> *</em><code>field_offset</code> </dt>
+          <dd>IN: An array containing the offsets of the fields. 
+              These offsets can be calculated with the HOFFSET macro. </dd>
+        <dt><i>const size_t</i><em> *</em><code>field_sizes</code> </dt>
+          <dd>IN: An array containing the sizes of the fields. </dd>
+        <dt><em>const void *</em><code>data</code> </dt>
+          <dd>IN: Buffer with data. </dd>
+    </dl>
+
+  <dt><strong>Returns:</strong> </dt>
+    <dd>Returns a non-negative value if successful; 
+        otherwise returns a negative value. </dd>
+</dl>
+
+
+<!-- NEW PAGE -->
+<!-- HEADER RIGHT "H5TBwrite_records" -->
+<hr>
+<dl>
+  <dt style="background-color: #CCCCFF"><strong>Name:</strong> <a name="H5TBwrite_records">H5TBwrite_records</a> </dt>
+
+  <dt><strong>Signature:</strong> </dt>
+    <dd><em>herr_t</em> <code>H5TBwrite_records</code> ( 
+            <em>hid_t</em> <code>loc_id</code>, 
+            <em>const char</em> *<code>table_name</code>, 
+            <em>hsize_t</em> <code>start</code>, 
+            <em>hsize_t</em> <code>nrecords</code>, 
+            <em>size_t</em> <code>type_size</code>,
+            <em>const size_t</em> *<code>field_offset</code>, 
+            <em>const size_t</em> *<code>field_sizes</code>, 
+            <em>const void</em> *<code>data></code>)
+
+  <dt><strong>Purpose:</strong> </dt>
+    <dd>Overwrites records. </dd>
+
+  <dt><strong>Description:</strong> </dt>
+    <dd><code>H5TBwrite_records </code>overwrites records starting at the 
+        zero index position <code>start</code> of the table named 
+        <code>table_name</code> attached to
+        the object specified by the identifier <code>loc_id</code>. </dd>
+
+  <dt><strong>Parameters:</strong> </dt>
+    <dd><dl>
+        <dt><em>hid_t</em> <code>loc_id</code> </dt>
+          <dd>IN: Identifier of the file or group where the table is located. </dd>
+        <dt><em>const char *</em><code>table_name</code> </dt>
+          <dd>IN: The name of the dataset to overwrite. </dd>
+        <dt><em>hsize_t</em>  <code>start</code> </dt>
+          <dd>IN: The zero index record to start writing.&nbsp; </dd>
+        <dt><em>hsize_t</em>   <code>nrecords</code> </dt>
+          <dd>IN: The number of records to write. </dd>
+        <dt><em>size_t</em> <code>type_size</code> </dt>
+          <dd>IN: The size of the structure type, as calculated 
+              by <code>sizeof()</code>. </dd>
+        <dt><em>const size_t</em> *<code>field_offset</code> </dt>
+          <dd>IN: An array containing the offsets of the fields. These offsets 
+              can be calculated with the HOFFSET macro. </dd>
+        <dt><em>const size_t</em> *<code>field_sizes</code> </dt>
+          <dd>IN: An array containing the sizes of the fields. </dd>
+        <dt><em>const void</em> *<code>data</code> </dt>
+          <dd>IN: Buffer with data. </dd>
+        </dl>
+
+  <dt><strong>Returns:</strong> </dt>
+    <dd>Returns a non-negative value if successful; 
+        otherwise returns a negative value. </dd>
+</dl>
+
+<!-- NEW PAGE -->
+<!-- HEADER RIGHT "H5TBwrite_fields_name" -->
+<hr>
+<dl>
+  <dt style="background-color: #CCCCFF"><strong>Name:</strong> <a name="H5TBwrite_fields_name">H5TBwrite_fields_name</a> </dt>
+
+  <dt><strong>Signature:</strong> </dt>
+      <dd><em>herr_t</em> <code>H5TBwrite_fields_name</code> ( 
+                    <em>hid_t</em> <code>loc_id</code>, 
+                    <em>const char</em> *<code>table_name</code>, 
+                    <em>const char</em> *<code>field_names</code>, 
+                    <em>hsize_t</em> <code>start</code>, 
+                    <em>hsize_t</em> <code>nrecords</code>, 
+                    <em>size_t</em> <code>type_size</code>,
+                    <em>const size_t</em> *<code>field_offset</code>, 
+                    <em>const size_t</em> *<code>field_sizes</code>, 
+                    <em>const void</em> *<code>data</code>
+         )</dd>
+
+  <dt><strong>Purpose:</strong> </dt>
+    <dd>Overwrites fields. </dd>
+
+  <dt><strong>Description:</strong> </dt>
+    <dd><code>H5TBwrite_fields_name </code>overwrites one or several fields 
+        contained in the buffer <code>field_names</code>
+        from a dataset named <code>table_name</code> attached to
+        the object specified by the identifier <code>loc_id</code>.&nbsp; </dd>
+
+  <dt><strong>Parameters:</strong> </dt>
+    <dd><dl>
+        <dt><em>hid_t</em> <code>loc_id</code> </dt>
+          <dd>IN: Identifier of the file or group where the table is located. 
+              </dd>
+        <dt><em>const char *</em><code>table_name</code> </dt>
+          <dd>IN: The name of the dataset to overwrite. </dd>
+        <dt> <em>const char</em>   *<em> </em><code>field_names</code> </dt>
+          <dd>IN: The names of the fields to write. </dd>
+        <dt><em>hsize_t</em>  <code>start</code> </dt>
+          <dd>IN: The zero based index record to start writing.&nbsp; </dd>
+        <dt><em>hsize_t</em>   <code>nrecords</code> </dt>
+          <dd>IN: The number of records to write. </dd>
+        <dt><em>size_t</em> <code>type_size</code> </dt>
+          <dd>IN: The size of the structure type, as calculated by 
+              <code>sizeof()</code>. </dd>
+        <dt><em>const size_t</em> *<code>field_offset</code> </dt>
+          <dd>IN: An array containing the offsets of the fields. These offsets 
+              can be calculated with the HOFFSET macro. </dd>
+        <dt><em>const size_t</em> *<code>field_sizes</code> </dt>
+          <dd>IN: An array containing the sizes of the fields. </dd>
+        <dt><em>void *</em><code>data</code> </dt>
+          <dd>IN: Buffer with data. </dd>
+        </dl>
+
+
+  <dt><strong>Returns:</strong> </dt>
+    <dd>Returns a non-negative value if successful; 
+        otherwise returns a negative value. </dd>
+
+  <dt><strong>Fortran90 Interface:</strong>   h5tbwrite_field_name_f</dt>
+    <dd>
+      <pre>
+subroutine h5tbwrite_field_name_f(loc_id, dset_name, field_name, start, &amp;
+                                  nrecords, type_size, buf, errcode) 
+
+  implicit none
+  integer(HID_T), intent(IN) :: loc_id           ! file or group identifier 
+  character(LEN=*), intent(IN) :: dset_name      ! name of the dataset 
+  character(LEN=*), intent(IN) :: field_name     ! name of the field
+  integer(HSIZE_T), intent(IN) :: start          ! start record 
+  integer(HSIZE_T), intent(IN) :: nrecords       ! records
+  integer(SIZE_T), intent(IN) :: type_size       ! type size
+  &lt;TYPE&gt;, intent(IN), dimension(*) :: buf        ! data buffer 
+  integer :: errcode                             ! error code
+
+end subroutine h5tbwrite_field_name_f
+      </pre>
+</dl>
+
+<!-- NEW PAGE -->
+<!-- HEADER RIGHT "H5TBwrite_fields_index" -->
+<hr>
+<dl>
+  <dt style="background-color: #CCCCFF"><strong>Name:</strong> <a name="H5TBwrite_fields_index">H5TBwrite_fields_index</a> </dt>
+  <dt><strong>Signature:</strong> </dt>
+    <dd><em>herr_t</em> <code>H5TBwrite_fields_index</code> ( 
+              <em>hid_t</em> <code>loc_id</code>, 
+              <em>const char</em> *<code>table_name</code>, 
+              <em>int</em> <code>nfields</code>, 
+              <em>const int</em> *<code>field_index</code>, 
+              <em>hsize_t</em> <code>start</code>, 
+              <em>hsize_t</em> <code>nrecords</code>, 
+              <em>size_t</em> <code>type_size</code>,
+              <em>const size_t</em> *<code>field_offset</code>,
+              <em>const size_t*</em> <code>field_sizes</code></code>, 
+              <em>const void</em> *<code>data</code>
+         )</dt>
+
+  <dt><strong>Purpose:</strong> </dt>
+    <dd>Overwrites fields. </dd>
+
+  <dt><strong>Description:</strong> </dt>
+    <dd><code>H5TBwrite_fields_index </code>overwrites one or several fields 
+        contained in the buffer <code>field_index</code>
+        from a dataset named <code>table_name</code> attached to
+        the object specified by the identifier <code>loc_id</code>.&nbsp; </dd>
+
+  <dt><strong>Parameters:</strong> </dt>
+    <dd><dl>
+        <dt><em>hid_t</em> <code>loc_id</code> </dt>
+          <dd>IN: Identifier of the file or group where the table is located. 
+              </dd>
+        <dt><em>const char *</em><code>table_name</code> </dt>
+          <dd>IN: The name of the dataset to overwrite. </dd>
+        <dt><em>int</em> n<code>fields</code> </dt>
+          <dd>IN: The number of fields to overwrite. This parameter is also 
+              the size of the <code>field_index</code> array. </dd>
+        <dt><em>const int</em> *<code>field_index</code> </dt>
+          <dd>IN: The indexes of the fields to write. </dd>
+        <dt><em>hsize_t</em>  <code>start</code> </dt>
+          <dd>IN: The zero based index record to start writing.&nbsp; </dd>
+        <dt><em>hsize_t</em>   <code>nrecords</code> </dt>
+          <dd>IN: The number of records to write. </dd>
+        <dt><em>size_t</em> <code>type_size</code> </dt>
+          <dd>IN: The size of the structure type, as calculated by 
+              <code>sizeof()</code>. </dd>
+        <dt><em>const size_t</em> *<code>field_offset</code> </dt>
+          <dd>IN: An array containing the offsets of the fields. These offsets 
+              can be calculated with the HOFFSET macro. </dd>
+        <dt><em>const size_t</em> *<code>field_sizes</code> </dt>
+          <dd>IN: An array containing the sizes of the fields. </dd>
+        <dt><em>void *</em><code>data</code> </dt>
+          <dd>IN: Buffer with data. </dd>
+        </dl>
+
+  <dt><strong>Returns:</strong> </dt>
+    <dd>Returns a non-negative value if successful; 
+        otherwise returns a negative value. </dd>
+
+  <dt><strong>Fortran90 Interface:</strong>   h5tbwrite_field_index_f</dt>
+    <dd>
+      <pre>
+subroutine h5tbwrite_field_index_f(loc_id, dset_name, field_index, start, &amp;
+                                   nrecords, type_size, buf, errcode)
+  implicit none
+  integer(HID_T), intent(IN) :: loc_id           ! file or group identifier 
+  character(LEN=*), intent(IN) :: dset_name      ! name of the dataset 
+  integer, intent(IN) :: field_index             ! index
+  integer(HSIZE_T), intent(IN) :: start          ! start record 
+  integer(HSIZE_T), intent(IN) :: nrecords       ! records
+  integer(SIZE_T), intent(IN) :: type_size       ! type size
+  &lt;TYPE&gt;, intent(IN), dimension(*) :: buf        ! data buffer 
+  integer :: errcode                             ! error code
+end subroutine h5tbwrite_field_index_f
+      </pre>
+</dl>
+
+
+<!-- NEW PAGE -->
+<!-- HEADER RIGHT "H5TBread_table" -->
+<hr>
+<dl>
+  <dt style="background-color: #CCCCFF"><strong>Name:</strong>         <a name="H5TBread_table">H5TBread_table</a> </dt>
+  <dt><strong>Signature:</strong> </dt>
+  <dl><dt> <em>herr_t</em>        H5TBread_table( <em>hid_t</em>
+    loc_id, <em>const char</em>    *table_name, <i>                       size_t</i>
+      dst_size,&nbsp; <i>const size_t</i> *dst_offset, <i>																			    const size_t</i>
+      *dst_sizes, <i>																			    void</i>
+      *dst_buf )</dt>
+  </dl>
+  <dt><strong>Purpose:</strong> </dt>
+  <dd>Reads a table. </dd>
+  <dt><strong>Description:</strong> </dt>
+  <dd><code>H5TBread_table </code>reads a table named <code>table_name</code> attached to
+    the object specified by the identifier <code>loc_id</code>.&nbsp; </dd>
+  <dt><strong>Parameters:</strong> </dt>
+  <dl>
+
+    <dt><em>hid_t</em> <code>loc_id</code> </dt>
+    <dd>IN: Identifier of the file or group to read the table within. </dd>
+    <dt><em>const char *</em><code>table_name</code> </dt>
+    <dd>IN: The name of the dataset to read. </dd>
+    <dt><i>                       size_t</i><em> </em><code>dst_size</code> </dt>
+    <dd>IN: The size of the structure type, as calculated by <code>sizeof()</code>. </dd>
+    <dt><i>																			    const size_t</i><em>
+      </em><em>*</em><code>dst_offset</code> </dt>
+    <dd>IN: An array containing the offsets of the fields. These offsets can be
+      calculated with the HOFFSET macro. </dd>
+  <dt><i>																			    const size_t</i><em>&nbsp;
+    *</em><code>dst_sizes</code> </dt>
+    <dd>IN: An array containing the sizes of the fields. These sizes can be
+      calculated with the <code>sizeof()</code> macro. </dd>
+    <dt><em>void *</em><code>dst_buf</code> </dt>
+    <dd>OUT: Buffer with data.&nbsp; </dd>
+    <dt>&nbsp;</dt>
+  </dl>
+
+  <dt><strong>Returns:</strong> </dt>
+  <dd>Returns a non-negative value if successful; otherwise returns a negative value. </dd>
+  <dt><strong>Fortran Interface:</strong>   h5tbread_table_f</dt>
+    <dd>
+
+      <pre>
+subroutine h5tbread_table_f(loc_id, table_name, nfields, dst_size, dst_offset, &
+                             dst_sizes, dst_buf, errcode)
+
+    integer(HID_T),   intent(IN) :: loc_id                            ! An array containing the sizes of the fields
+    character(LEN=*), intent(IN) :: table_name                        ! The name of the dataset to read
+    integer(HSIZE_T), intent(IN) :: nfields                           ! number of fields
+    integer(SIZE_T),  intent(IN) :: dst_size                          ! The size of the structure type
+    integer(SIZE_T),  dimension(1:nfields), intent(IN) :: dst_offset  ! An array containing the offsets of the fields
+    integer(SIZE_T),  dimension(1:nfields), intent(IN) :: dst_sizes   ! An array containing the sizes of the fields
+    type(C_PTR), intent(out) :: dst_buf                               ! Buffer with data
+    integer :: errcode                                                ! error code
+      </pre>
+</dl>
+
+<!-- NEW PAGE -->
+<!-- HEADER RIGHT "H5TBread_records" -->
+<hr>
+<dl>
+  <dt style="background-color: #CCCCFF"><strong>Name:</strong>          <a name="H5TBread_records">H5TBread_records</a> </dt>
+  <dt><strong>Signature:</strong> </dt>
+  <dl><dt> <em>herr_t</em>         H5TBread_records ( <em>hid_t</em>
+    loc_id, <em>const char</em>    *table_name,
+      <i>hsize_t</i> start, <i>hsize_t</i>   nrecords, <i>size_t</i>    type_size,&nbsp; <i>const size_t</i> 
+      *field_offset, <em>const size_t *</em>dst_sizes<em>,&nbsp;</em> <em>void</em>
+      *data )</dt>
+  </dl>
+  <dt><strong>Purpose:</strong> </dt>
+  <dd>Reads records. </dd>
+  <dt><strong>Description:</strong> </dt>
+  <dd><code>H5TBread_records </code>reads some records identified
+    from a dataset named <code>table_name</code> attached to
+    the object specified by the identifier <code>loc_id</code>.&nbsp; </dd>
+  <dt><strong>Parameters:</strong> </dt>
+  <dl>
+    <dt><em>hid_t</em> <code>loc_id</code> </dt>
+    <dd>IN: Identifier of the file or group to read the table within. </dd>
+    <dt><em>const char *</em><code>table_name</code> </dt>
+    <dd>IN: The name of the dataset to read. </dd>
+    <dt><i>hsize_t</i>&nbsp;<em> </em><code>start</code> </dt>
+    <dd>IN: The start record to read from. </dd>
+    <dt><i>                            hsize_t</i>   <code>nrecords</code> </dt>
+    <dd>IN: The number of records to read. </dd>
+    <dt><i>                       size_t</i><em> </em><code>type_size</code> </dt>
+    <dd>IN: The size of the structure type, as calculated by <code>sizeof()</code>. </dd>
+    <dt><i>																			    const size_t</i><em>
+      *</em><code>field_offset</code> </dt>
+    <dd>IN: An array containing the offsets of the fields. These offsets can be
+      calculated with the HOFFSET macro. </dd>
+    <dt> <i>
+                       const size_t</i>  *dst_sizes </dt>
+    <dd>IN: An array containing the size in bytes of the fields. </dd>
+    <dt><em>void *</em><code>data</code> </dt>
+     <dd>OUT: Buffer with data. </dd>
+  </dl>
+</dl>
+
+<dl>
+  <dt><strong>Returns:</strong> </dt>
+  <dd>Returns a non-negative value if successful; otherwise returns a negative value. </dd>
+</dl>
+
+<!-- NEW PAGE -->
+<!-- HEADER RIGHT "H5TBread_fields_name" -->
+<hr>
+<dl>
+  <dt style="background-color: #CCCCFF"><strong>Name:</strong>          <a name="H5TBread_fields_name">H5TBread_fields_name</a> </dt>
+  <dt><strong>Signature:</strong> </dt>
+  <dl><dt> <em>herr_t</em>        H5TBread_fields_name ( <em>hid_t</em>
+    loc_id, <em>const char</em>  *table_name, <em>const char</em>   *
+      field_names,
+      <i>hsize_t</i> start, <i>hsize_t</i>   nrecords, <i>size_t</i>    type_size,&nbsp; <i>const size_t</i> 
+      *field_offset, <em>const size_t *</em>dst_sizes<em>, void</em>
+      *data)</dt>
+  </dl>
+  <dt><strong>Purpose:</strong> </dt>
+  <dd>Reads one or several fields. The fields are identified by name. </dd>
+  <dt><strong>Description:</strong> </dt>
+  <dd><code>H5TBread_fields_name </code>reads the fields identified by&nbsp; <code>field_names</code>
+    from a dataset named <code>table_name</code> attached to
+    the object specified by the identifier <code>loc_id</code>.&nbsp; </dd>
+  <dt><strong>Parameters:</strong> </dt>
+  <dl>
+    <dt><em>hid_t</em> <code>loc_id</code> </dt>
+    <dd>IN: Identifier of the file or group to read the table within. </dd>
+    <dt><em>const char *</em><code>table_name</code> </dt>
+    <dd>IN: The name of the dataset to read. </dd>
+    <dt> <em>const char</em>   *<em> </em><code>field_names</code> </dt>
+    <dd>IN: An array containing the names of the fields to read. </dd>
+    <dt><i>hsize_t</i>&nbsp;<em> </em><code>start</code> </dt>
+    <dd>IN: The start record to read from. </dd>
+    <dt><i>                            hsize_t</i>   <code>nrecords</code> </dt>
+    <dd>IN: The number of records to read. </dd>
+    <dt><em> hsize_t </em><code> type_size</code> </dt>
+    <dd>IN: The size in bytes of the structure associated with the table. This
+      value is obtained with <code>sizeof</code>. </dd>
+    <dt> <i>
+                       const size_t</i>  *<code>field_offset</code> </dt>
+    <dd>IN: An array containing the offsets of the fields. </dd>
+    <dt> <i>
+                       const size_t</i>  *dst_sizes </dt>
+    <dd>IN: An array containing the size in bytes of the fields. </dd>
+    <dt><em>void *</em><code>data</code> </dt>
+    <dd>OUT: Buffer with data. </dd>
+  </dl>
+</dl>
+
+<dl>
+  <dt><strong>Returns:</strong> </dt>
+  <dd>Returns a non-negative value if successful; otherwise returns a negative value. </dd>
+  <dt><strong>Fortran90 Interface:</strong>   h5tbread_field_name_f</dt>
+    <dd>
+
+      <pre>
+subroutine h5tbread_field_name_f(loc_id, dset_name, field_name, start, &amp;
+                                 nrecords, type_size, buf, errcode) 
+  implicit none
+  integer(HID_T), intent(IN) :: loc_id           ! file or group identifier 
+  character(LEN=*), intent(IN) :: dset_name      ! name of the dataset 
+  character(LEN=*), intent(IN) :: field_name     ! name of the field
+  integer(HSIZE_T), intent(IN) :: start          ! start record 
+  integer(HSIZE_T), intent(IN) :: nrecords       ! records
+  integer(SIZE_T), intent(IN) :: type_size       ! type size
+  &lt;TYPE&gt;, intent(IN), dimension(*) :: buf        ! data buffer 
+  integer :: errcode                             ! error code
+end subroutine h5tbread_field_name_f
+      </pre>
+</dl>
+
+<!-- NEW PAGE -->
+<!-- HEADER RIGHT "H5TBread_fields_index" -->
+<hr>
+<dl>
+  <dt style="background-color: #CCCCFF"><strong>Name:</strong>          <a name="H5TBread_fields_index">H5TBread_fields_index</a> </dt>
+  <dt><strong>Signature:</strong> </dt>
+  <dl><dt> <em>herr_t</em>        H5TBread_fields_index ( <em>hid_t</em>
+    loc_id, <em>const char</em>  *table_name, <i>                               int</i>
+      nfields, <i>                               const int</i>   *field_index, <i>hsize_t</i> start, <i>hsize_t</i> 
+      nrecords, <i>size_t</i>     type_size,&nbsp; <i>const size_t</i> 
+      *field_offset, <em>const size_t *</em>dst_sizes<em></em>, <em>void</em>
+      *data)</dt>
+  </dl>
+  <dt><strong>Purpose:</strong> </dt>
+  <dd>Reads one or several fields. The fields are identified by index. </dd>
+  <dt><strong>Description:</strong> </dt>
+  <dd><code>H5TBread_fields_index </code>reads the fields identified by&nbsp; <code>field_index</code>
+    from a dataset named <code>table_name</code> attached to
+    the object specified by the identifier <code>loc_id</code>.&nbsp; </dd>
+  <dt><strong>Parameters:</strong> </dt>
+  <dl>
+    <dt><em>hid_t</em> <code>loc_id</code> </dt>
+    <dd>IN: Identifier of the file or group to read the table within. </dd>
+    <dt><em>const char *</em><code>table_name</code> </dt>
+    <dd>IN: The name of the dataset to read. </dd>
+    <dt><em>int</em> n<code>fields</code> </dt>
+    <dd>IN: The number of fields to overwrite. This parameter is also the size
+      of the <code>field_index</code> array. </dd>
+    <dt> <em>const int</em>   *<em> </em><code>field_index</code> </dt>
+    <dd>IN: The indexes of the fields to write. </dd>
+    <dt><i>hsize_t</i>&nbsp;<em> </em><code>start</code> </dt>
+    <dd>IN: The start record to read from. </dd>
+    <dt><i>                            hsize_t</i>   <code>nrecords</code> </dt>
+    <dd>IN: The number of records to read. </dd>
+    <dt><em> hsize_t </em><code> type_size</code> </dt>
+    <dd>IN: The size in bytes of the structure associated with the table. This
+      value is obtained with <code>sizeof</code>. </dd>
+    <dt> <i>
+                       const size_t</i>  *<code>field_offset</code> </dt>
+    <dd>IN: An array containing the offsets of the fields. </dd>
+    <dt> <i>
+                       const size_t</i>  *dst_sizes </dt>
+    <dd>IN: An array containing the size in bytes of the fields. </dd>
+    <dt><em>void *</em><code>data</code> </dt>
+    <dd>OUT: Buffer with data. </dd>
+  </dl>
+</dl>
+
+<dl>
+  <dt><strong>Returns:</strong> </dt>
+  <dd>Returns a non-negative value if successful; otherwise returns a negative value. </dd>
+<!-- NEW PAGE -->
+  <dt><strong>Fortran90 Interface:</strong>   h5tbread_field_index_f</dt>
+    <dd>
+
+      <pre>
+subroutine h5tbread_field_index_f(loc_id, dset_name, field_index, start, &amp; 
+                                  nrecords, type_size, buf, errcode) 
+  implicit none
+  integer(HID_T), intent(IN) :: loc_id           ! file or group identifier 
+  character(LEN=*), intent(IN) :: dset_name      ! name of the dataset 
+  integer, intent(IN) :: field_index             ! index
+  integer(HSIZE_T), intent(IN) :: start          ! start record 
+  integer(HSIZE_T), intent(IN) :: nrecords       ! records
+  integer(SIZE_T), intent(IN) :: type_size       ! type size
+  &lt;TYPE&gt;, intent(IN), dimension(*) :: buf        ! data buffer 
+  integer :: errcode                             ! error code
+end subroutine h5tbread_field_index_f
+      </pre>
+</dl>
+
+<!-- NEW PAGE -->
+<!-- HEADER RIGHT "H5TBget_table_info" -->
+<hr>
+<dl>
+  <dt style="background-color: #CCCCFF"><strong>Name:</strong>         <a name="H5TBget_table_info">H5TBget_table_info</a> </dt>
+  <dt><strong>Signature:</strong> </dt>
+  <dl><dt> <em>herr_t</em>        H5TBget_table_info ( <em>hid_t</em>
+    loc_id, <em>const char</em>  *table_name, <em>hsize_t</em> *nfields, <em>hsize_t</em> 
+      *nrecords )</dt>
+  </dl>
+  <dt><strong>Purpose:</strong> </dt>
+  <dd>Gets the table dimensions. </dd>
+  <dt><strong>Description:</strong> </dt>
+  <dd><code>H5TBget_dimensions </code>retrieves the table dimensions from a dataset named
+    <code>table_name</code> attached to
+    the object specified by the identifier <code>loc_id</code>.&nbsp; </dd>
+  <dt><strong>Parameters:</strong> </dt>
+  <dl>
+    <dt><em>hid_t</em> <code>loc_id</code> </dt>
+    <dd>IN: Identifier of the file or group to read the table within. </dd>
+    <dt><em>const char *</em><code>table_name</code> </dt>
+    <dd>IN: The name of the dataset to read. </dd>
+    <dt><em>hsize_t *</em><code>nfields</code> </dt>
+    <dd>OUT: The number of fields. </dd>
+    <dt><em>hsize_t *</em><code>nrecords</code> </dt>
+    <dd>OUT: The number of records. </dd>
+
+ </dl>
+</dl>
+
+<dl>
+  <dt><strong>Returns:</strong> </dt>
+  <dd>Returns a non-negative value if successful; otherwise returns a negative value. </dd>
+  <dt><strong>Fortran90 Interface:</strong>   h5tbget_table_info_f</dt>
+    <dd>
+    
+      <pre>
+subroutine h5tbget_table_info_f(loc_id, dset_name, nfields, nrecords, errcode) 
+
+  implicit none
+  integer(HID_T), intent(IN) :: loc_id        ! file or group identifier 
+  character(LEN=*), intent(IN) :: dset_name   ! name of the dataset 
+  integer(HSIZE_T), intent(INOUT):: nfields   ! nfields 
+  integer(HSIZE_T), intent(INOUT):: nrecords  ! nrecords 
+  integer :: errcode                          ! error code
+end subroutine h5tbget_table_info_f
+      </pre>
+</dl>
+
+ <!-- NEW PAGE -->
+<!-- HEADER RIGHT "H5TBget_field_info" -->
+<hr>
+<dl>
+  <dt style="background-color: #CCCCFF"><strong>Name:</strong>          <a name="H5TBget_field_info">H5TBget_field_info</a> </dt>
+  <dt><strong>Signature:</strong> </dt>
+  <dl><dt> <em>herr_t</em>        H5TBget_field_info ( <em>hid_t</em>
+    loc_id, <em>const char</em>  *table_name, <em>char</em>  *field_names[], <em>size_t</em>
+      *field_sizes, <em>size_t</em> *field_offsets, <i>                     size_t</i> 
+      *type_size&nbsp;
+      )</dt>
+  </dl>
+  <dt><strong>Purpose:</strong> </dt>
+  <dd>Gets information about a table. </dd>
+  <dt><strong>Description:</strong> </dt>
+  <dd><code>H5TBget_field_info </code>gets information about a dataset named <code>table_name</code> attached to
+    the object specified by the identifier <code>loc_id</code>.&nbsp; </dd>
+  <dt><strong>Parameters:</strong> </dt>
+  <dl>
+    <dt><em>hid_t</em> <code>loc_id</code> </dt>
+    <dd>IN: Identifier of the file or group to read the table within. </dd>
+    <dt><em>const char *</em><code>table_name</code> </dt>
+    <dd>IN: The name of the dataset to read. </dd>
+    <dt><em>char *</em><code>field_names[]</code> </dt>
+    <dd>OUT: An array containing the names of the fields. </dd>
+    <dt><em>size_t *</em><code>field_sizes</code> </dt>
+    <dd>OUT: An array containing the size of the fields. </dd>
+    <dt><em>size_t *</em><code>field_offsets</code> </dt>
+    <dd>OUT: An array containing the offsets of the fields. </dd>
+    <dt><em>size_t *</em><code>type_size</code> </dt>
+    <dd>OUT: The size of the HDF5 datatype associated with the table. 
+        <br>
+        More specifically, the size in bytes of the HDF5 compound datatype
+        used to define a row, or record, in the table.</dd>
+
+</dl>
+</dl>
+
+<dl>
+  <dt><strong>Returns:</strong> </dt>
+  <dd>Returns a non-negative value if successful; otherwise returns a negative value. </dd>
+  <dt><strong>Fortran90 Interface:</strong>   h5tbget_field_info_f</dt>
+    <dd>
+    
+      <pre>
+subroutine h5tbget_field_info_f(loc_id, dset_name, nfields, field_names, &amp; 
+                                field_sizes, field_offsets, type_size, &amp; 
+                                errcode, maxlen_out)
+  implicit none
+  integer(HID_T), intent(IN) :: loc_id         ! file or group identifier 
+  character(LEN=*), intent(IN) :: dset_name    ! name of the dataset 
+  integer(HSIZE_T), intent(IN):: nfields       ! nfields 
+  character(LEN=*), dimension(nfields), intent(INOUT) :: field_names    
+                                               ! field names
+  integer(SIZE_T), dimension(nfields), intent(INOUT) :: field_sizes    
+                                               ! field sizes
+  integer(SIZE_T), dimension(nfields), intent(INOUT) :: field_offsets  
+                                               ! field offsets
+  integer(SIZE_T), intent(INOUT):: type_size   ! type size 
+  integer :: errcode                           ! error code
+  integer, optional :: maxlen_out              ! returns maximum character 
+                                               ! length of field_names
+end subroutine h5tbget_field_info_f
+      </pre>
+</dl>
+
+<!-- NEW PAGE -->
+<!-- HEADER RIGHT "H5TBdelete_record" -->
+<hr>
+<dl>
+  <dt style="background-color: #CCCCFF"><strong>Name:</strong>           <a name="H5TBdelete_record">H5TBdelete_record</a> </dt>
+  <dt><strong>Signature:</strong> </dt>
+  <dl><dt> <em>herr_t</em>         H5TBdelete_record ( <em>hid_t</em>
+      loc_id, <em>const char</em>   *dset_name, <i>hsize_t</i>
+      start, <i>                            hsize_t</i>
+      nrecords )</dt>
+  </dl>
+  <dt><strong>Purpose:</strong> </dt>
+  <dd>Delete records. </dd>
+  <dt><strong>Description:</strong> </dt>
+  <dd><code>H5TBdelete_record</code><code> </code>deletes records from middle of table ("pulling up" all the records after it) </dd>
+  <dt><strong>Parameters:</strong> </dt>
+  <dl>
+    <dt><em>hid_t</em> <code>loc_id</code> </dt>
+    <dd>IN: Identifier of the file or group in which the table is located. </dd>
+    <dt><em>const char *</em><code>dset_name</code> </dt>
+    <dd>IN: The name of the dataset. </dd>
+    <dt><i>hsize_t</i>&nbsp;<em> </em><code>start</code> </dt>
+    <dd>IN: The start record to delete from. </dd>
+    <dt><i>                            hsize_t</i>   <code>nrecords</code> </dt>
+    <dd>IN: The number of records to delete. </dd>
+
+</dl>
+</dl>
+
+<dl>
+  <dt><strong>Returns:</strong> </dt>
+  <dd>Returns a non-negative value if successful; otherwise returns a negative value. </dd>
+</dl>
+
+<!-- NEW PAGE -->
+<!-- HEADER RIGHT "H5TBinsert_record" -->
+<hr>
+<dl>
+  <dt style="background-color: #CCCCFF"><strong>Name:</strong>           <a name="H5TBinsert_record">H5TBinsert_record</a> </dt>
+  <dt><strong>Signature:</strong> </dt>
+  <dl><dt> <em>herr_t</em>         H5TBinsert_record (<em>hid_t</em>
+      loc_id, <em>const char</em>   *dset_name, <i>hsize_t</i>
+      start, <i>                            hsize_t</i>
+      nrecords, <i>                       size_t</i>   type_size,&nbsp; <i>const size_t</i> 
+      *field_offset, <em>void</em>
+      *data&nbsp;
+      )</dt>
+  </dl>
+  <dt><strong>Purpose:</strong> </dt>
+  <dd>Insert records. </dd>
+  <dt><strong>Description:</strong> </dt>
+  <dd><code>H5TBinsert_record </code>inserts records into the middle of the table ("pushing down" all the records after it) </dd>
+  <dt><strong>Parameters:</strong> </dt>
+  <dl>
+    <dt><em>hid_t</em> <code>loc_id</code> </dt>
+    <dd>IN: Identifier of the file or group in which the table is located. </dd>
+    <dt><em>const char *</em><code>dset_name</code> </dt>
+    <dd>IN: The name of the dataset. </dd>
+    <dt><i>hsize_t</i>&nbsp;<em> </em><code>start</code> </dt>
+    <dd>IN: The position to insert. </dd>
+    <dt><i>                            hsize_t</i>   <code>nrecords</code> </dt>
+    <dd>IN: The number of records to insert. </dd>
+    <dt><em>void *</em><code>data</code> </dt>
+    <dd>IN: Buffer with data. </dd>
+
+</dl>
+</dl>
+
+<dl>
+  <dt><strong>Returns:</strong> </dt>
+  <dd>Returns a non-negative value if successful; otherwise returns a negative value. </dd>
+</dl>
+
+<!-- NEW PAGE -->
+<!-- HEADER RIGHT "H5TBadd_records_from" -->
+<hr>
+<dl>
+  <dt style="background-color: #CCCCFF"><strong>Name:</strong>           <a name="H5TBadd_records_from">H5TBadd_records_from</a> </dt>
+  <dt><strong>Signature:</strong> </dt>
+  <dl><dt> <em>herr_t</em>         H5TBadd_records_from ( <em>hid_t</em>
+      loc_id, <em>const char</em>   *dset_name1,
+      <i>hsize_t</i>
+      start1, <i>                            hsize_t</i>
+      nrecords, <em>const char</em>   *dset_name2,
+      <i>hsize_t</i>
+      start2 )</dt>
+  </dl>
+  <dt><strong>Purpose:</strong> </dt>
+  <dd>Add records from first table to second table. </dd>
+  <dt><strong>Description:</strong> </dt>
+  <dd><code>H5TBadd_records_from</code> adds records from a dataset named <code>dset_name1</code>
+    to a dataset named <code>dset_name2. </code>Both tables are attached to
+    the object specified by the identifier <code>loc_id</code>.&nbsp; </dd>
+  <dt><strong>Parameters:</strong> </dt>
+  <dl>
+    <dt><em>hid_t</em> <code>loc_id</code> </dt>
+    <dd>IN: Identifier of the file or group in which the table is located. </dd>
+  <dt><em>const char *</em><code>dset_name1</code> </dt>
+    <dd>IN: The name of the dataset to <i>read</i> the records. </dd>
+    <dt><i>hsize_t</i>&nbsp;<em> </em><code>start1</code> </dt>
+    <dd>IN: The position to <i> read</i> the records from the first table </dd>
+  <dt><i>                            hsize_t</i>   <code>nrecords</code> </dt>
+    <dd>IN: The number of records to <i>read</i> from the first table. </dd>
+  <dt><em>const char *</em><code>dset_name2</code> </dt>
+    <dd>IN: The name of the dataset to <i>write</i> the records. </dd>
+    <dt><i>hsize_t</i>&nbsp;<em> </em><code>start2</code> </dt>
+    <dd>IN: The position to <i>write</i> the records on the second table </dd>
+</dl>
+</dl>
+
+
+<dl>
+  <dt><strong>Returns:</strong> </dt>
+  <dd>Returns a non-negative value if successful; otherwise returns a negative value. </dd>
+</dl>
+
+<!-- NEW PAGE -->
+<!-- HEADER RIGHT "H5TBcombine_tables" -->
+<hr>
+<dl>
+  <dt style="background-color: #CCCCFF"><strong>Name:</strong>            <a name="H5TBcombine_tables">H5TBcombine_tables</a> </dt>
+  <dt><strong>Signature:</strong> </dt>
+  <dl><dt> <em>herr_t</em>          H5TBcombine_tables ( <em>hid_t</em>
+      loc_id1, <em>const char</em>   *dset_name1, <em>hid_t</em>
+      loc_id2, <em>const char</em>   *dset_name2,&nbsp;
+      <em>const char</em>     *dset_name3 )</dt>
+  </dl>
+  <dt><strong>Purpose:</strong> </dt>
+  <dd> Combines records from two tables into a third. </dd>
+  <dt><strong>Description:</strong> </dt>
+  <dd><code>H5TBcombine_tables</code> combines records from two datasets named <code>dset_name1</code>
+    and <code>dset_name2</code>, to a new table named <code>dset_name3</code>.
+    These tables can be located on different files, identified by <code>loc_id1</code>
+    and <code>loc_id2</code> (identifiers obtained with <code>H5Fcreate</code>).
+    They can also be located on the same file. In this case one uses the same
+    identifier for both parameters&nbsp; <code>loc_id1</code> and <code>loc_id2</code>.
+    If two files are used, the third table is written on the first file. </dd>
+  <dt><strong>Parameters:</strong> </dt>
+  <dl>
+    <dt><em>hid_t</em> <code>loc_id1</code> </dt>
+    <dd>IN: Identifier of the file or group in which the first table is located. </dd>
+  <dt><em>const char *</em><code>dset_name1</code> </dt>
+    <dd>IN: The name of the first table to combine. </dd>
+  <dt><em>hid_t</em> <code>loc_id2</code> </dt>
+    <dd>IN: Identifier of the file or group in which the second table is located. </dd>
+  <dt><em>const char *</em><code>dset_name2</code> </dt>
+    <dd>IN: The name of the second table to combine. </dd>
+  <dt><em>const char *</em><code>dset_name3</code> </dt>
+    <dd>IN: The name of the new table. </dd>
+</dl>
+</dl>
+
+
+<dl>
+  <dt><strong>Returns:</strong> </dt>
+  <dd>Returns a non-negative value if successful; otherwise returns a negative value. </dd>
+</dl>
+
+<!-- NEW PAGE -->
+<!-- HEADER RIGHT "H5TBinsert_field" -->
+<hr>
+<dl>
+  <dt style="background-color: #CCCCFF"><strong>Name:</strong> <a name="H5TBinsert_field">H5TBinsert_field</a> </dt>
+  <dt><strong>Signature:</strong> </dt>
+  <dl><dt> <em>herr_t</em>           H5TBinsert_field ( <em>hid_t</em>
+      loc_id, <em>const char</em>    *dset_name, <em>const char</em>    *field_name,&nbsp;
+      <em>hid_t</em>
+      field_type, <i>                         hsize_t </i> position<i>, const void
+      *</i>fill_data<i>, const void</i> *data )</dt>
+  </dl>
+  <dt><strong>Purpose:</strong> </dt>
+  <dd> Insert a new field into a table. </dd>
+  <dt><strong>Description:</strong> </dt>
+  <dd><code>H5TBinsert_field</code> inserts a new field named <code>field_name</code>
+    into the table <code>dset_name</code>.&nbsp;Note: this function requires the table to be re-created
+    and rewritten in its entirety, and this can result in some unused space in
+    the file, and can also take a great deal of time if the table is large.&nbsp; </dd>
+  <dt>&nbsp;</dt>
+  <dt><strong>Parameters:</strong> </dt>
+  <dl>
+    <dt><em>hid_t</em> <code>loc_id</code> </dt>
+    <dd>IN: Identifier of the file or group in which the table is located. </dd>
+  <dt><em>const char *</em><code>dset_name</code> </dt>
+    <dd>IN: The name of the table. </dd>
+  <dt><em>const char *</em><code>field_name</code> </dt>
+    <dd>IN: The name of the field to insert. </dd>
+  <dt><em>hid_t </em><code>field_type</code> </dt>
+    <dd>IN: The data type of the field. </dd>
+    <dt><em>hize_t </em><code>position</code> </dt>
+    <dd>IN: The zero based index position where to insert the field. </dd>
+    <dt> <i>void</i>  *<code>fill_data</code></dt>
+    <dd>IN: Fill value data for the field. This parameter can be NULL.</dd>
+    <dt><em>const void *</em><code>data</code> </dt>
+    <dd>IN: Buffer with data. </dd>
+  </dl>
+
+  <dt>&nbsp;<strong>Returns:</strong> </dt>
+  <dd>Returns a non-negative value if successful; otherwise returns a negative value. </dd>
+  <dt><strong>Fortran90 Interface:</strong>   h5tbinsert_field_f</dt>
+    <dd>
+    
+      <pre>
+subroutine h5tbinsert_field_f(loc_id, dset_name, field_name, field_type, &amp;
+                              field_index, buf, errcode )
+  implicit none
+  integer(HID_T), intent(IN) :: loc_id           ! file or group identifier 
+  character(LEN=*), intent(IN) :: dset_name      ! name of the dataset 
+  character(LEN=*), intent(IN) :: field_name     ! name of the field
+  integer(HID_T), intent(IN)   :: field_type     ! field type
+  integer, intent(IN) :: field_index             ! field_index
+  &lt;TYPE&gt;, intent(IN), dimension(*) :: buf        ! data buffer 
+  integer :: errcode                             ! error code
+end subroutine h5tbinsert_field_f
+      </pre>
+</dl>
+
+<!-- NEW PAGE -->
+<!-- HEADER RIGHT "H5TBdelete_field" -->
+<hr>
+<dl>
+  <dt style="background-color: #CCCCFF"><strong>Name:</strong>             <a name="H5TBdelete_field">H5TBdelete_field</a> </dt>
+  <dt><strong>Signature:</strong> </dt>
+  <dl><dt> <em>herr_t</em>            H5TBdelete_field ( <em>hid_t</em>
+      loc_id, <em>const char</em>     *dset_name, <em>const char</em>     *field_name
+      )</dt>
+  </dl>
+  <dt><strong>Purpose:</strong> </dt>
+  <dd> Deletes a field from a table. </dd>
+  <dt><strong>Description:</strong> </dt>
+  <dd><code>H5TBdelete_field</code> deletes a&nbsp; field named <code>field_name</code>
+    from the table <code>dset_name</code>.&nbsp;Note: this function requires the table to be re-created
+    and rewritten in its entirety, and this can result in some unused space in
+    the file, and can also take a great deal of time if the table is large. </dd>
+  <dt><strong>Parameters:</strong> </dt>
+  <dl>
+    <dt><em>hid_t</em> <code>loc_id</code> </dt>
+    <dd>IN: Identifier of the file or group in which the table is located. </dd>
+  <dt><em>const char *</em><code>dset_name</code> </dt>
+    <dd>IN: The name of the table. </dd>
+  <dt><em>const char *</em><code>field_name</code> </dt>
+    <dd>IN: The name of the field to delete. </dd>
+  </dl>
+
+  <dt>&nbsp;<strong>Returns:</strong> </dt>
+
+  <dd>Returns a non-negative value if successful; otherwise returns a negative value. </dd>
+  <dt><strong>Fortran90 Interface:</strong>   h5tbdelete_field_f</dt>
+    <dd>
+    
+      <pre>
+subroutine h5tbdelete_field_f(loc_id, dset_name, field_name, errcode)
+  implicit none
+  integer(HID_T), intent(IN) :: loc_id        ! file or group identifier 
+  character(LEN=*), intent(IN) :: dset_name   ! name of the dataset 
+  character(LEN=*), intent(IN) :: field_name  ! name of the field
+  integer :: errcode                          ! error code
+end subroutine h5tbdelete_field_f
+      </pre>
+</dl>
+
+  
+<hr> 
+
+<?php include("../ed_libs/Footer2.htm"); ?>
+
+<SCRIPT LANGUAGE="JAVASCRIPT">
+<!--
+document.writeln(' \
+<address> \
+  Last modified: February 2017<br> \
+</address> \
+');
+-->
+</SCRIPT>
+
+
+</body>
+</html>

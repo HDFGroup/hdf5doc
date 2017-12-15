@@ -1,0 +1,173 @@
+
+
+<!--
+  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+  * Copyright by The HDF Group.                                               *
+  * Copyright by the Board of Trustees of the University of Illinois.         *
+  * All rights reserved.                                                      *
+  *                                                                           *
+  * This file is part of HDF5.  The full HDF5 copyright notice, including     *
+  * terms governing use, modification, and redistribution, is contained in    *
+  * the files COPYING and Copyright.html.  COPYING can be found at the root   *
+  * of the source code distribution tree; Copyright.html can be found at the  *
+  * root level of an installed copy of the electronic HDF5 document set and   *
+  * is linked from the top-level documents page.  It can also be found at     *
+  * http://hdfgroup.org/HDF5/doc/Copyright.html.  If you do not have          *
+  * access to either file, you may request a copy from help@hdfgroup.org.     *
+  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+ -->
+
+
+<!-- NEW PAGE -->
+<!-- HEADER RIGHT "H5Dcreate2" -->
+<hr>
+<dl>
+
+  <dt><div align=right><font color=999999 size=-1><i>
+  Last modified: 9 October 2014</i></font></div></dt>
+
+  <dt><strong>Name:</strong> <a name="Dataset-Create2">H5Dcreate2</a></dt>
+  <br />
+  <dt><strong>Signature:</strong></dt>
+    <dd><em>hid_t</em> <code>H5Dcreate2</code>(
+            <em>hid_t</em> <code>loc_id</code>, 
+            <em>const char *</em><code>name</code>, 
+            <em>hid_t</em> <code>dtype_id</code>, 
+            <em>hid_t</em> <code>space_id</code>,
+            <em>hid_t</em> <code>lcpl_id</code>, 
+            <em>hid_t</em> <code>dcpl_id</code>, 
+            <em>hid_t</em> <code>dapl_id</code>
+    )</dd>
+
+  <p>
+  <dt><strong>Purpose:</strong>
+    <dd>Creates a new dataset and links it into the file.</dd>
+
+  <p>
+  <dt><strong>Description:</strong></dt>
+    <dd><code>H5Dcreate2</code> creates a new dataset named 
+        <code>name</code> at the location specified by 
+	<code>loc_id</code>, and associates constant and initial 
+        persistent properties with that dataset, including 
+        <code>dtype_id</code>, the datatype of each data element 
+        as stored in the file; 
+        <code>space_id</code>, the dataspace of the dataset; 
+        and other initial properties as defined in the dataset
+        creation property and access property lists, 
+        <code>dcpl_id</code> and  <code>dapl_id</code>, respectively.
+        Once created, the dataset is opened for access.
+        <p>
+        <code>loc_id</code> may be a file identifier, 
+        or a group identifier within that file.
+        <code>name</code> may be either an absolute path in the file
+	or a relative path from <code>loc_id</code> naming the dataset.
+        <p>
+        If <code>dtype_id</code> is either a fixed-length or
+        variable-length string, it is important to set the string length
+        when defining the datatype.
+        String datatypes are derived from <code>H5T_C_S1</code>
+        (or <code>H5T_FORTRAN_S1</code> for Fortran codes), 
+        which defaults to 1 character in size.
+        See <a href="RM_H5T.html#Datatype-SetSize"><code>H5Tset_size</code></a> 
+        and &ldquo;<a href="RM_H5T.html#CreateVLString">Creating 
+        variable-length string datatypes</a>.&rdquo; 
+        <p>
+	If <code>dtype_id</code> is a committed datatype, and if the file location
+	associated with the committed datatype is different from the file location
+	where the dataset will be created, the datatype is copied and converted to a
+	transient type.
+        <p>
+        The link creation property list, <code>lcpl_id</code>,
+        governs creation of the link(s) by which the new dataset
+        is accessed and the creation of any intermediate groups that 
+        may be missing. 
+        <p>
+        The datatype and dataspace properties 
+	and the dataset creation and access property lists 
+	are attached to the dataset, so the caller 
+        may derive new datatypes, dataspaces, and
+        creation and access properties from the old ones and
+        reuse them in calls to create additional datasets.
+        <p>
+        Once created, the dataset is ready to receive raw data.  
+        Immediately attempting to read raw data from
+        the dataset will probably return the fill value.  
+        <p>
+        To conserve and release resources, the dataset should be 
+        closed when access is no longer required.
+
+  <p>
+  <dt><strong>Parameters:</strong>
+    <dd><table>
+      <tr>
+        <td valign="top"><em>hid_t</em> <code>loc_id</code>
+        </td>
+        <td valign="top">IN: Location identifier
+        </td></tr>
+      <tr>
+        <td valign="top"><em>const&nbsp;char&nbsp;*</em><code>name</code>&nbsp;&nbsp;&nbsp;&nbsp;
+        </td>
+        <td valign="top">IN: Dataset name
+        </td></tr>
+      <tr>
+        <td valign="top"><em>hid_t</em> <code>dtype_id</code>
+        </td>
+        <td valign="top">IN: Datatype identifier
+        </td></tr>
+      <tr>
+        <td valign="top"><em>hid_t</em> <code>space_id</code>
+        </td>
+        <td valign="top">IN: Dataspace identifier
+        </td></tr>
+      <tr>
+        <td valign="top"><em>hid_t</em> <code>lcpl_id</code>
+        </td>
+        <td valign="top">IN: Link creation property list
+        </td></tr>
+      <tr>
+        <td valign="top"><em>hid_t</em> <code>dcpl_id</code>
+        </td>
+        <td valign="top">IN: Dataset creation property list
+        </td></tr>
+      <tr>
+        <td valign="top"><em>hid_t</em> <code>dapl_id</code>
+        </td>
+        <td valign="top">IN: Dataset access property list
+        </td></tr>
+    </table>
+
+  <p>
+  <dt><strong>Returns:</strong>
+    <dd>Returns a dataset identifier if successful;
+        otherwise returns a negative value.
+
+  <p>
+  <dt><strong>Fortran90 Interface:</strong> See listing under <a href="RM_H5D.html#Dataset-Create"><code>H5Dcreate</code></a>.
+    <dd>
+
+  <p>
+  <dt><strong>See Also:</strong>
+    <dd><a href="RM_H5T.html#Datatype-SetSize"><code>H5Tset_size</code></a></dd>
+    <dd>&ldquo;<a href="RM_H5T.html#CreateVLString">Creating 
+        variable-length string datatypes</a>&rdquo;</dd>
+    <dd>
+    <a href="http://www.hdfgroup.org/HDF5/doc/Advanced/UsingIdentifiers/index.html">
+    &ldquo;Using Identifiers&rdquo;</a></dd>
+
+
+  <p>
+  <dt><strong>History:</strong>
+    <dd><table width="90%">
+        <tr>
+          <td valign="top" align="left" width="10%">
+            <strong>Release</strong>&nbsp;&nbsp;&nbsp;&nbsp;</td>
+          <td valign="top" align="left">
+            <strong>Change</strong></td></tr>
+        <tr>
+          <td valign="top">1.8.0</td>
+          <td valign="top">
+            C function introduced in this release.</td></tr>
+    </table>
+</dl>
+
+

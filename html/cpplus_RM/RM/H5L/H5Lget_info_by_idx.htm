@@ -1,0 +1,204 @@
+
+
+<!--
+  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+  * Copyright by The HDF Group.                                               *
+  * Copyright by the Board of Trustees of the University of Illinois.         *
+  * All rights reserved.                                                      *
+  *                                                                           *
+  * This file is part of HDF5.  The full HDF5 copyright notice, including     *
+  * terms governing use, modification, and redistribution, is contained in    *
+  * the files COPYING and Copyright.html.  COPYING can be found at the root   *
+  * of the source code distribution tree; Copyright.html can be found at the  *
+  * root level of an installed copy of the electronic HDF5 document set and   *
+  * is linked from the top-level documents page.  It can also be found at     *
+  * http://hdfgroup.org/HDF5/doc/Copyright.html.  If you do not have          *
+  * access to either file, you may request a copy from help@hdfgroup.org.     *
+  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+ -->
+
+
+<!-- NEW PAGE -->
+<!-- HEADER RIGHT "H5Lget_info_by_idx" -->
+<hr>
+<dl>
+
+  <dt><div align=right><font color=999999 size=-1><i>
+      Last modified: 11 November 2009
+      </i></font></div>
+
+  <dt><strong>Name:</strong> <a name="Link-GetInfoByIdx">H5Lget_info_by_idx</a>
+  <dt><strong>Signature:</strong>
+    <dd><em>herr_t</em> <code>H5Lget_info_by_idx</code>(
+        <em>hid_t</em> <code>loc_id</code>,
+        <em>const char *</em><code>group_name</code>,
+        <em>H5_index_t</em> <code>index_field</code>,
+        <em>H5_iter_order_t</em> <code>order</code>,
+        <em>hsize_t</em> <code>n</code>,
+        <em>H5L_info_t</em> *<code>link_val</code>,
+        <em>hid_t</em> <code>lapl_id</code>
+    )
+  <p>
+  <dt><strong>Purpose:</strong>
+    <dd>Retrieves metadata for a link in a group, according to the order 
+        within a field or index.
+  <p>
+  <dt><strong>Description:</strong>
+    <dd><code>H5Lget_info_by_idx</code> returns the metadata for a link
+      in a group according to a specified field or index and a specified
+      order.
+      <p>
+      The link for which information is to be returned is specified by 
+      <code>index_field</code>, <code>order</code>, and <code>n</code> 
+      as follows:
+      <ul>
+          <li><code>index_field</code> specifies the field by which
+              the links in <code>group_name</code> are ordered.
+              The links may be indexed on this field, in which case
+              operations seeking specific links are likely to complete 
+              more quickly.
+          <li><code>order</code> specifies the order in which the links
+              are to be referenced for the purposes of this function. 
+          <li><code>n</code> specifies the position of the subject link.
+              Note that this count is zero-based; 
+              <code>0</code> (zero) indicates that the function will return
+              the value of the first link; 
+              if <code>n</code> is <code>5</code>, the function will return
+              the value of the sixth link; etc.
+      </ul>
+      <p>
+      For example, assume that 
+      <code>index_field</code>, <code>order</code>, and <code>n</code> are 
+      <code>H5_INDEX_NAME</code>, <code>H5_ITER_DEC</code>, and <code>5</code>,
+      respectively. 
+      <code>H5_INDEX_NAME</code> indicates that the links are accessed 
+      in alpha-numeric order by their names.  
+      <code>H5_ITER_DEC</code> specifies that the list be traversed in 
+      reverse order, or in decremented order.
+      And <code>5</code> specifies that this call to the function will 
+      return the metadata for the 6th link (<code>n</code> + 1) from the end.
+      <p>
+      See <a href="#Link-Iterate"><code>H5Literate</code></a>
+      for a list of valid values and further discussion regarding 
+      <code>index_field</code> and <code>order</code>.
+      <p>
+      If <code>loc_id</code> specifies the group in which the link
+      resides, <code>group_name</code> can be a dot (.).
+  <p>
+  <dt><strong>Parameters:</strong>
+    <dd><table>
+      <tr>
+        <td valign="top"><em>hid_t</em> <code>loc_id</code></td>
+        <td valign="top">IN: File or group identifier specifying location 
+            of subject group</td></tr>
+      <tr>
+        <td valign="top"><em>const&nbsp;char&nbsp;*</em><code>group_name&nbsp;&nbsp;&nbsp;&nbsp;</code></td>
+        <td valign="top">IN: Name of subject group</td></tr>
+      <tr>
+        <td valign="top"><em>H5_index_t</em> <code>index_field</code></td>
+        <td valign="top">IN: Index or field which determines the order</td></tr>
+      <tr>
+        <td valign="top"><em>H5_iter_order_t</em> <code>order</code></td>
+        <td valign="top">IN: Order within field or index</td></tr>
+      <tr>
+        <td valign="top"><em>hsize_t</em> <code>n</code></td>
+        <td valign="top">IN: Link for which to retrieve information</td></tr>
+      <tr>
+        <td valign="top"><em>H5L_info_t</em> *<code>link_val</code></td>
+        <td valign="top">OUT: Buffer in which link value is returned</td></tr>
+      <tr>
+        <td valign="top"><em>hid_t</em> <code>lapl_id</code></td>
+        <td valign="top">IN: Link access property list</td></tr>
+    </table>
+  <p>
+  <dt><strong>Returns:</strong>
+    <dd>Returns a non-negative value if successful;
+        otherwise returns a negative value.
+<!-- NEW PAGE -->
+  <p>
+  <dt><strong>Fortran90 Interface:</strong> h5lget_info_by_idx_f
+    <dd>
+    <pre>
+SUBROUTINE h5lget_info_by_idx_f(loc_id, group_name, index_field, order, n, &
+               link_type, f_corder_valid, corder, cset, address, val_size, &
+               hdferr, lapl_id)
+  IMPLICIT NONE
+  INTEGER(HID_T), INTENT(IN) :: loc_id 
+                             ! File or group identifier specifying 
+                             ! location of subject group  
+  CHARACTER(LEN=*), INTENT(IN) :: group_name 
+                             ! Name of subject group
+  INTEGER, INTENT(IN) :: index_field   
+                             ! Index/field which determines the order
+                             !   H5_INDEX_UNKNOWN_F   - Unknown index type
+                             !   H5_INDEX_NAME_F      - Index on names
+                             !   H5_INDEX_CRT_ORDER_F - Index on creation order
+                             !   H5_INDEX_N_F	      - Number of indices defined
+  INTEGER, INTENT(IN) :: order        
+                             ! Order in which to iterate over index; 
+                             ! Possible values are:
+                             !    H5_ITER_UNKNOWN_F  - Unknown order
+                             !    H5_ITER_INC_F      - Increasing order
+                             !    H5_ITER_DEC_F      - Decreasing order
+                             !    H5_ITER_NATIVE_F   - No particular order, 
+                             !                         whatever is fastest
+  INTEGER(HSIZE_T), INTENT(IN) :: n   
+                             ! Attribute&rsquo;s position in index
+  INTEGER, INTENT(OUT) :: link_type 
+                             ! Specifies the link class:
+     	                     !   H5L_TYPE_HARD_F      - Hard link
+     	                     !   H5L_TYPE_SOFT_F      - Soft link
+     	                     !   H5L_TYPE_EXTERNAL_F  - External link
+     	                     !   H5L_TYPE_ERROR_F     - Error
+  LOGICAL, INTENT(OUT) :: f_corder_valid 
+                             ! Indicates whether the creation order data is 
+                             ! valid for this attribute 
+  INTEGER, INTENT(OUT) :: corder 
+                             ! Is a positive integer containing the creation 
+                             ! order of the attribute
+  INTEGER, INTENT(OUT) :: cset 
+                             ! Indicates the character set used for the 
+                             ! attribute&rsquo;s name
+  INTEGER(HADDR_T), INTENT(OUT) :: address  
+                             ! If the link is a hard link, address specifies the 
+                             ! file address that the link points to
+  INTEGER(SIZE_T), INTENT(OUT) :: val_size 
+                             ! If the link is a symbolic link, val_size will be 
+                             ! the length of the link value, i.e. the length of 
+                             ! the name of the pointed-to object with a null 
+                             ! terminator.
+  INTEGER, INTENT(OUT) :: hdferr       
+                             ! Error code:
+                             ! 0 on success and -1 on failure
+  INTEGER(HID_T), OPTIONAL, INTENT(IN) :: lapl_id  
+                             ! Link access property list
+END SUBROUTINE h5lget_info_by_idx_f  
+    </pre>
+
+
+<!-- NEW PAGE -->
+
+  <p>
+  <dt><strong>History:</strong>
+    <dd><table width="90%">
+        <tr>
+          <td valign="top" align="left" width="10%">
+            <strong>Release</strong>&nbsp;&nbsp;&nbsp;&nbsp;</td>
+          <td valign="top" align="left">
+            <strong>C</strong></td></tr>
+        <tr>
+          <td valign="top">1.8.0</td>
+          <td valign="top">
+            Function introduced in this release.</td></tr>
+        <tr>
+          <td valign="top">1.8.2</td>
+          <td valign="top">
+            Fortran subroutine added in this release.</td></tr>
+        <tr>
+          <td valign="top">1.8.4</td>
+          <td valign="top">
+            Fortran subroutine syntax changed in this release.</td></tr>
+    </table>
+</dl>
+
+

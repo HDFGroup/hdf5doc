@@ -1,0 +1,139 @@
+
+
+<!--
+  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+  * Copyright by The HDF Group.                                               *
+  * Copyright by the Board of Trustees of the University of Illinois.         *
+  * All rights reserved.                                                      *
+  *                                                                           *
+  * This file is part of HDF5.  The full HDF5 copyright notice, including     *
+  * terms governing use, modification, and redistribution, is contained in    *
+  * the files COPYING and Copyright.html.  COPYING can be found at the root   *
+  * of the source code distribution tree; Copyright.html can be found at the  *
+  * root level of an installed copy of the electronic HDF5 document set and   *
+  * is linked from the top-level documents page.  It can also be found at     *
+  * http://hdfgroup.org/HDF5/doc/Copyright.html.  If you do not have          *
+  * access to either file, you may request a copy from help@hdfgroup.org.     *
+  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+ -->
+
+
+<!-- NEW PAGE -->
+<!-- HEADER RIGHT "H5Pset_chunk" -->
+<hr>
+<dl>
+  <dt><div align="right"><font color="999999" size="-1"><i>
+    Last modified: 16 September 2015
+    </i></font></div></dt>
+    <br />
+
+  <dt><strong>Name:</strong> <a name="Property-SetChunk">H5Pset_chunk</a></dt>
+    <br />
+  <dt><strong>Signature:</strong></dt>
+    <dd><em>herr_t </em><code>H5Pset_chunk</code>(<em>hid_t</em> <code>plist</code>,
+            <em>int</em> <code>ndims</code>,
+            <em>const hsize_t *</em> <code>dim</code>
+        )</dd>
+        <br />
+  <dt><strong>Purpose:</strong></dt>
+    <dd>Sets the size of the chunks used to store a chunked layout dataset. 
+    </dd>
+    <br />
+  <dt><strong>Description:</strong></dt>
+    <dd>
+    <p><code>H5Pset_chunk</code> sets the size of the chunks used to 
+        store a chunked layout dataset.  This function is only valid 
+        for dataset creation property lists.</p>  
+        <p>
+        The <code>ndims</code> parameter currently must be the same size 
+        as the rank of the dataset.  </p>
+        <p>
+        The values of the <code>dim</code> 
+        array define the size of the chunks to store the dataset's raw data.
+        The unit of measure for <code>dim</code> values is 
+        <em>dataset elements</em>.</p>
+        <p>
+        As a side-effect of this function, the layout of the dataset is 
+        changed to <code>H5D_CHUNKED</code>, if it is not already so set.
+        (See <a href="#Property-SetLayout"><code>H5Pset_layout</code></a>.)
+        </p>
+        </dd>
+        <br />
+  <dt><strong>Notes:</strong></dt>
+    <ul>
+        <li>Chunk size cannot exceed the size of a fixed-size dataset. 
+        For example, a dataset consisting of a 5x4 fixed-size array 
+        cannot be defined with 10x10 chunks. </li>
+        <li>Chunk maximums</li>
+            <ul>
+            <li>The maximum number of elements in a chunk is 
+            2<sup>32</sup>-1 which is equal to 4,294,967,295. If the 
+            number of elements in a chunk is set via 
+            <code>H5Pset_chunk</code> to a value greater than 
+            2<sup>32</sup>-1, then <code>H5Pset_chunk</code> will fail.</li>
+            
+            <li>The maximum size for any chunk is 4GB. If a chunk that 
+            is larger than 4GB attempts to be written with 
+            <code>H5Dwrite</code>, then <code>H5Dwrite</code> will fail.</li>
+            </ul>
+        </ul>
+        <br />
+  <dt><strong>Parameters:</strong></dt>
+    <ul><table>
+        <tr>
+          <td valign="top"><em>hid_t</em> <code>plist</code></td>
+          <td valign="top">IN: Dataset creation property list 
+              identifier.</td></tr>
+        <tr>
+          <td valign="top"><em>int</em> <code>ndims</code></td>
+          <td valign="top">IN: The number of dimensions of each chunk.</td></tr>
+        <tr>
+          <td valign="top"><em>const&nbsp;hsize_t&nbsp;*</em>&nbsp;<code>dim&nbsp;&nbsp;&nbsp;&nbsp;</code></td>
+          <td valign="top">IN: An array defining the size, in dataset elements, 
+              of each chunk.</td></tr>
+    </table></ul>
+    <br />
+  <dt><strong>Returns:</strong></dt>
+    <dd>Returns a non-negative value if successful;
+        otherwise returns a negative value.</dd>
+    <br />
+  <dt><strong>Fortran90 Interface:</strong> h5pset_chunk_f</dt>
+    <dd>
+	<pre>
+SUBROUTINE h5pset_chunk_f(prp_id, ndims, dims, hdferr) 
+  IMPLICIT NONE
+  INTEGER(HID_T), INTENT(IN) :: prp_id  ! Property list identifier 
+  INTEGER, INTENT(IN) :: ndims          ! Number of chunk dimensions
+  INTEGER(HSIZE_T), DIMENSION(ndims), INTENT(IN) :: dims    
+                                        ! Array containing sizes of
+                                        ! chunk dimensions
+  INTEGER, INTENT(OUT) :: hdferr        ! Error code
+                                        ! 0 on success and -1 on failure
+END SUBROUTINE h5pset_chunk_f
+	</pre></dd>
+		
+		<!--<dt><strong>Non-C API(s):</strong>
+    	<dd>
+        
+        <img src="Graphics/Java.gif"> 
+        <img src="Graphics/C++.gif">
+        -->
+  <dt><strong>History:</strong></dt>
+    <dd>
+    <table width="90%">
+    <tr>
+        <td valign="top" align="left" width="10%">
+        <strong>Release</strong>&nbsp;&nbsp;&nbsp;&nbsp;</td>
+        <td valign="top" align="left">
+        <strong>Change</strong></td>
+    </tr><tr>
+        <td valign="top">1.8.16</td>
+        <td valign="top">
+        Added chunk size limit note to Description.</td>
+    </tr>
+    </table>
+    </dd>
+    <br />
+</dl>
+
+

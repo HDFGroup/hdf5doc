@@ -1,0 +1,282 @@
+<html>
+<head><title>
+HDF5/H5R API Specification
+</title>
+<link href="../ed_styles/RMelect.css" rel="stylesheet" type="text/css">
+</head>
+
+<body bgcolor="#FFFFFF">
+
+<!-- #BeginLibraryItem "/ed_libs/styles_RM.lbi" -->
+<!--
+  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+  * Copyright by The HDF Group.                                               *
+  * Copyright by the Board of Trustees of the University of Illinois.         *
+  * All rights reserved.                                                      *
+  *                                                                           *
+  * This file is part of HDF5.  The full HDF5 copyright notice, including     *
+  * terms governing use, modification, and redistribution, is contained in    *
+  * the files COPYING and Copyright.html.  COPYING can be found at the root   *
+  * of the source code distribution tree; Copyright.html can be found at the  *
+  * root level of an installed copy of the electronic HDF5 document set and   *
+  * is linked from the top-level documents page.  It can also be found at     *
+  * http://www.hdfgroup.org/HDF5/doc/Copyright.html.  If you do not have      *
+  * access to either file, you may request a copy from help@hdfgroup.org.     *
+  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+ -->
+<!-- #EndLibraryItem --><!-- HEADER RIGHT " " -->
+
+<!-- #BeginLibraryItem "/ed_libs/NavBar_RM.lbi" -->
+<hr>
+<center>
+<table border=0 width=98%>
+<tr><td valign=top align=left>
+<a href="../index.html">HDF5 documents and links</a>&nbsp;<br>
+<a href="../H5.intro.html">Introduction to HDF5</a>&nbsp;<br>
+<a href="../UG/HDF5_Users_Guide-Responsive HTML5/index.html">HDF5 User&rsquo;s Guide</a>&nbsp;<br>
+<!--
+<a href="Glossary.html">Glossary</a><br>
+-->
+</td>
+<td valign=top align=right>
+In the 
+<a href="RM_H5Front.html">HDF5 Reference Manual</a>&nbsp;
+<font size=-1>
+<br>
+<a href="../HL/RM_H5DS.html">H5DS</a>&nbsp;&nbsp;
+<a href="../HL/RM_H5IM.html">H5IM</a>&nbsp;&nbsp;
+<a href="../HL/RM_H5LT.html">H5LT</a>&nbsp;&nbsp;
+<a href="../HL/RM_H5PT.html">H5PT</a>&nbsp;&nbsp;
+<a href="../HL/RM_H5TB.html">H5TB</a>&nbsp;
+<a href="../HL/RM_HDF5Optimized.html">Optimized</a>&nbsp;
+<br>
+<a href="RM_H5.html">H5</a>&nbsp;&nbsp;
+<a href="RM_H5A.html">H5A</a>&nbsp;&nbsp;
+<a href="RM_H5D.html">H5D</a>&nbsp;&nbsp;
+<a href="RM_H5E.html">H5E</a>&nbsp;&nbsp;
+<a href="RM_H5F.html">H5F</a>&nbsp;&nbsp;
+<a href="RM_H5G.html">H5G</a>&nbsp;&nbsp;
+<a href="RM_H5I.html">H5I</a>&nbsp;&nbsp;
+<a href="RM_H5L.html">H5L</a>&nbsp;
+<br>
+<a href="RM_H5O.html">H5O</a>&nbsp;&nbsp;
+<a href="RM_H5P.html">H5P</a>&nbsp;&nbsp;
+<a href="RM_H5PL.html">H5PL</a>&nbsp;&nbsp;
+<a href="RM_H5R.html">H5R</a>&nbsp;&nbsp;
+<a href="RM_H5S.html">H5S</a>&nbsp;&nbsp;
+<a href="RM_H5T.html">H5T</a>&nbsp;&nbsp;
+<a href="RM_H5Z.html">H5Z</a>&nbsp;
+<br>
+<a href="Tools.html">Tools</a>&nbsp;&nbsp;
+<a href="PredefDTypes.html">Datatypes</a>&nbsp;&nbsp;
+<a href="../fortran/index.html">Fortran</a>&nbsp;&nbsp;
+<a href="APICompatMacros.html">Compatibility Macros</a>&nbsp;
+<br>
+<a href="CollectiveCalls.html">Collective Calls in Parallel</a>&nbsp;
+<!--
+<br>
+<i><font size=-1>(Printable <a href="http://hdfgroup.org/HDF5/doc/PSandPDF/HDF5_RefManual.PDF">PDF</a> of this Reference Manual)</font></i>&nbsp;
+-->
+</font>
+</td></tr>
+</table>
+</center>
+<hr>
+<!-- #EndLibraryItem --><center>
+<h1>H5R: Reference Interface</h1>
+</center>
+
+<h2>Reference API Functions</h2>
+
+The Reference interface allows the user to create references 
+to specific objects and data regions in an HDF5 file.
+<br>
+In the following lists, italic type indicates a configurable macro.
+
+<p>
+<strong>The C Interfaces:</strong>
+
+<table border=0 width=80%>
+<tr><td valign=top width=40%>
+<ul>
+    <li><a href="#Reference-Create">H5Rcreate</a>
+    <li><a href="#Reference-Dereference"><i>H5Rdereference</i></a>
+    <li><a href="#Reference-Dereference1">H5Rdereference1</a>&nbsp;*
+    <li><a href="#Reference-Dereference2">H5Rdereference2</a>
+</ul>
+</td><td valign=top width=40%>
+<ul>
+    <li><i><a href="#Reference-GetObjType">H5Rget_obj_type</a></i>
+    <li><a href="#Reference-GetObjType1">H5Rget_obj_type1</a>&nbsp;*
+    <li><a href="#Reference-GetObjType2">H5Rget_obj_type2</a>
+</ul>
+</td><td valign=top width=20%>
+<ul>
+    <li><a href="#Reference-GetRegion">H5Rget_region</a>
+    <li><a href="#Reference-GetName">H5Rget_name</a>
+</ul>
+</td></tr>
+<tr><td align=right colspan=5>
+    *&nbsp;<i>Use of these functions is deprecated in Release 1.8.0.</i>
+</td></tr>
+</table>
+
+<p>
+
+<i>Alphabetical Listing</i>
+
+<table border="0" width=80%>
+  <tr>
+    <td valign="top">
+	<ul>
+      <li><a href="#Reference-Create">H5Rcreate</a>
+      <li><a href="#Reference-Dereference"><i>H5Rdereference</i></a>
+      <li><a href="#Reference-Dereference1">H5Rdereference1</a>&nbsp;*
+      <li><a href="#Reference-Dereference2">H5Rdereference2</a>
+	</ul>      
+    </td>
+    
+    <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
+    
+    <td valign="top">
+	<ul>
+      <li><a href="#Reference-GetName">H5Rget_name</a>
+      <li><i><a href="#Reference-GetObjType">H5Rget_obj_type</a></i>
+      <li><a href="#Reference-GetObjType1">H5Rget_obj_type1</a>&nbsp;*
+      <li><a href="#Reference-GetObjType2">H5Rget_obj_type2</a>
+	</ul>
+    </td>
+    
+    <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
+    
+    <td valign="top">
+	<ul>
+      <li><a href="#Reference-GetRegion">H5Rget_region</a>
+	</ul>
+    </td>
+  </tr>
+</table>
+
+<br>
+<strong>The Fortran Interface:</strong>
+<br>
+In general, each Fortran subroutine performs exactly the same task 
+as the corresponding C function.  
+<br>
+
+<table border=0 width=80%>
+<tr><td valign=top width=40%>
+<ul>
+    <li><a href="#Reference-Create">h5rcreate_f</a>
+    <li><a href="#Reference-Dereference">h5rdereference_f</a>
+</ul>
+</td><td valign=top width=40%>
+<ul>
+    <li><a href="#Reference-GetRegion">h5rget_region_f</a>
+    <li><a href="#Reference-GetObjType">h5rget_object_type_f</a>
+</ul>
+</td><td valign=top width=20%>
+<ul>
+
+    <li><a href="#Reference-GetName">h5rget_name_f</a>
+
+</ul>
+</td></tr>
+</table>
+
+
+<p>
+
+<!-- NEW PAGE -->
+<!-- HEADER RIGHT " " -->
+
+<!--  ---  ---  ---  ---  ---  ---  ---  ---  ---  ---  ---  -->
+<!--       Include special topic files                       -->
+<!--  ---  ---  ---  ---  ---  ---  ---  ---  ---  ---  ---  -->
+
+
+<!--  ---  ---  ---  ---  ---  ---  ---  ---  ---  ---  ---  -->
+<!--       Include function files                            -->
+<!--  ---  ---  ---  ---  ---  ---  ---  ---  ---  ---  ---  -->
+
+<?php include("H5R/H5Rcreate.htm"); ?>
+<?php include("H5R/H5Rdereference.htm"); ?>
+<?php include("H5R/H5Rdereference1.htm"); ?>
+<?php include("H5R/H5Rdereference2.htm"); ?>
+<?php include("H5R/H5Rget_name.htm"); ?>
+<?php include("H5R/H5Rget_obj_type.htm"); ?>
+<?php include("H5R/H5Rget_obj_type1.htm"); ?>
+<?php include("H5R/H5Rget_obj_type2.htm"); ?>
+<?php include("H5R/H5Rget_region.htm"); ?>
+
+
+<!-- HEADER RIGHT " " -->
+<!-- #BeginLibraryItem "/ed_libs/NavBar_RM.lbi" -->
+<hr>
+<center>
+<table border=0 width=98%>
+<tr><td valign=top align=left>
+<a href="../index.html">HDF5 documents and links</a>&nbsp;<br>
+<a href="../H5.intro.html">Introduction to HDF5</a>&nbsp;<br>
+<a href="../UG/HDF5_Users_Guide-Responsive HTML5/index.html">HDF5 User&rsquo;s Guide</a>&nbsp;<br>
+<!--
+<a href="Glossary.html">Glossary</a><br>
+-->
+</td>
+<td valign=top align=right>
+In the 
+<a href="RM_H5Front.html">HDF5 Reference Manual</a>&nbsp;
+<font size=-1>
+<br>
+<a href="../HL/RM_H5DS.html">H5DS</a>&nbsp;&nbsp;
+<a href="../HL/RM_H5IM.html">H5IM</a>&nbsp;&nbsp;
+<a href="../HL/RM_H5LT.html">H5LT</a>&nbsp;&nbsp;
+<a href="../HL/RM_H5PT.html">H5PT</a>&nbsp;&nbsp;
+<a href="../HL/RM_H5TB.html">H5TB</a>&nbsp;
+<a href="../HL/RM_HDF5Optimized.html">Optimized</a>&nbsp;
+<br>
+<a href="RM_H5.html">H5</a>&nbsp;&nbsp;
+<a href="RM_H5A.html">H5A</a>&nbsp;&nbsp;
+<a href="RM_H5D.html">H5D</a>&nbsp;&nbsp;
+<a href="RM_H5E.html">H5E</a>&nbsp;&nbsp;
+<a href="RM_H5F.html">H5F</a>&nbsp;&nbsp;
+<a href="RM_H5G.html">H5G</a>&nbsp;&nbsp;
+<a href="RM_H5I.html">H5I</a>&nbsp;&nbsp;
+<a href="RM_H5L.html">H5L</a>&nbsp;
+<br>
+<a href="RM_H5O.html">H5O</a>&nbsp;&nbsp;
+<a href="RM_H5P.html">H5P</a>&nbsp;&nbsp;
+<a href="RM_H5PL.html">H5PL</a>&nbsp;&nbsp;
+<a href="RM_H5R.html">H5R</a>&nbsp;&nbsp;
+<a href="RM_H5S.html">H5S</a>&nbsp;&nbsp;
+<a href="RM_H5T.html">H5T</a>&nbsp;&nbsp;
+<a href="RM_H5Z.html">H5Z</a>&nbsp;
+<br>
+<a href="Tools.html">Tools</a>&nbsp;&nbsp;
+<a href="PredefDTypes.html">Datatypes</a>&nbsp;&nbsp;
+<a href="../fortran/index.html">Fortran</a>&nbsp;&nbsp;
+<a href="APICompatMacros.html">Compatibility Macros</a>&nbsp;
+<br>
+<a href="CollectiveCalls.html">Collective Calls in Parallel</a>&nbsp;
+<!--
+<br>
+<i><font size=-1>(Printable <a href="http://hdfgroup.org/HDF5/doc/PSandPDF/HDF5_RefManual.PDF">PDF</a> of this Reference Manual)</font></i>&nbsp;
+-->
+</font>
+</td></tr>
+</table>
+</center>
+<hr>
+<!-- #EndLibraryItem -->
+
+<?php include("../ed_libs/Footer2.htm"); ?>
+
+<SCRIPT LANGUAGE="JAVASCRIPT">
+<!--
+document.writeln("Last modified: February 2017");
+-->
+</SCRIPT> 
+
+</body>
+</html>
+

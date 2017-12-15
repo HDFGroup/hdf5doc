@@ -1,0 +1,134 @@
+
+
+<!--
+  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+  * Copyright by The HDF Group.                                               *
+  * Copyright by the Board of Trustees of the University of Illinois.         *
+  * All rights reserved.                                                      *
+  *                                                                           *
+  * This file is part of HDF5.  The full HDF5 copyright notice, including     *
+  * terms governing use, modification, and redistribution, is contained in    *
+  * the files COPYING and Copyright.html.  COPYING can be found at the root   *
+  * of the source code distribution tree; Copyright.html can be found at the  *
+  * root level of an installed copy of the electronic HDF5 document set and   *
+  * is linked from the top-level documents page.  It can also be found at     *
+  * http://hdfgroup.org/HDF5/doc/Copyright.html.  If you do not have          *
+  * access to either file, you may request a copy from help@hdfgroup.org.     *
+  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+ -->
+
+
+<!-- NEW PAGE -->
+<!-- HEADER RIGHT "H5Pset_fapl_core" -->
+<hr>
+<dl>
+  <dt><strong>Name:</strong> <a name="Property-SetFaplCore">H5Pset_fapl_core</a>
+  <dt><strong>Signature:</strong>
+    <dd><em>herr_t</em> <code>H5Pset_fapl_core</code>(
+                     <em>hid_t</em> <code>fapl_id</code>,
+                     <em>size_t</em> <code>increment</code>,
+                     <em>hbool_t</em> <code>backing_store</code>
+    )
+  <dt><strong>Purpose:</strong>
+    <dd>Modifies the file access property list to use the 
+        <code>H5FD_CORE</code> driver.
+  <dt><strong>Description:</strong>
+    <dd><code>H5Pset_fapl_core</code> modifies the file access property list 
+        to use the <code>H5FD_CORE</code> driver.  
+        <p>
+        The <code>H5FD_CORE</code> driver enables an application to work
+        with a file in memory, speeding reads and writes as no disk access 
+        is made.  File contents are stored only in memory until the file
+        is closed.  The <code>backing_store</code> parameter determines 
+        whether file contents are ever written to disk.
+        <p>
+        <code>increment</code> specifies the increment by which allocated 
+        memory is to be increased each time more memory is required.
+        <p>
+        While using <code>H5Fcreate</code> to create a core file, if 
+	the <code>backing_store</code> is set to <code>1</code> 
+        (<code>TRUE</code>), the file contents are flushed to a file 
+        with the same name as this core file when the file is closed 
+        or access to the file is terminated in memory.
+	<p>
+	The application is allowed to open an existing file with 
+	<code>H5FD_CORE</code> driver.  While using <code>H5Fopen</code> to
+	open an existing file, if the <code>backing_store</code> is set to 
+	<code>1</code> and the <code>flags</code> for <code>H5Fopen</code>
+	is set to <code>H5F_ACC_RDWR</code>, any change to the file contents
+	are saved to the file when the file is closed.  If <code>backing_store</code>
+	is set to <code>0</code> and the <code>flags</code> for <code>H5Fopen</code> 
+	is set to <code>H5F_ACC_RDWR</code>, any change to the file contents
+	will be lost when the file is closed.  If the <code>flags</code> for 
+	<code>H5Fopen</code> is set to <code>H5F_ACC_RDONLY</code>, no change 
+	to the file is allowed either in memory or on file.
+  <dt><strong>Note:</strong>
+    <dd>Currently this driver cannot create or open family or multi files.
+  <dt><strong>Parameters:</strong>
+    <ul><table>
+        <tr>
+		    <td valign="top"><em>hid_t</em> <code>fapl_id</code></td>
+            <td valign="top">IN: File access property list identifier.</td></tr>
+        <tr>
+		    <td valign="top"><em>size_t</em> <code>increment</code></td>
+            <td valign="top">IN: Size, in bytes, of memory increments.</td></tr>
+        <tr>
+		    <td valign="top"><em>hbool_t</em>&nbsp;<code>backing_store&nbsp;&nbsp;&nbsp;&nbsp;</code></td>
+            <td valign="top">IN: Boolean flag indicating whether to write the file
+                contents to disk when the file is closed.</td></tr>
+    </table></ul>
+  <dt><strong>Returns:</strong>
+    <dd>Returns a non-negative value if successful.
+        Otherwise returns a negative value.
+  <dt><strong>Fortran90 Interface:</strong> h5pset_fapl_core_f
+    <dd>
+	<pre>
+SUBROUTINE h5pset_fapl_core_f(prp_id, increment, backing_store, hdferr) 
+  IMPLICIT NONE
+  INTEGER(HID_T), INTENT(IN)  :: prp_id    ! Property list identifier
+  INTEGER(SIZE_T), INTENT(IN) :: increment ! File block size in bytes
+  LOGICAL, INTENT(IN) :: backing_store     ! Flag to indicate that entire 
+                                           ! file contents are flushed to 
+                                           ! a file with the same name as 
+                                           ! this core file
+  INTEGER, INTENT(OUT) :: hdferr           ! Error code
+                                           ! 0 on success and -1 on failure
+END SUBROUTINE h5pset_fapl_core_f
+	</pre>		
+		
+		<!--<dt><strong>Non-C API(s):</strong>
+    	<dd>
+        
+        <img src="Graphics/Java.gif"> 
+        <img src="Graphics/C++.gif">
+        -->
+<!-- NEW PAGE -->
+  <dt><strong>History:</strong>
+    <ul><table width="90%">
+        <tr>
+		  <td valign="top" align="left" width="10%">
+		    <strong>Release</strong>&nbsp;&nbsp;&nbsp;&nbsp;</td>
+          <td valign="top" align="left">
+		    <strong>C</strong></td>
+		  <td valign="top" align="left">
+		    &nbsp;&nbsp;&nbsp;&nbsp;</td>
+		  <td valign="top" align="left">
+		    <strong>Fortran90</strong></td></tr>
+        <tr>
+		  <td valign="top">1.6.0</td>
+          <td valign="top">&nbsp;</td>
+		  <td valign="top">&nbsp;</td>
+		  <td valign="top">
+		    The <code>backing_store</code> parameter 
+			has changed from <em>INTEGER</em> to 
+			<em>LOGICAL</em> to better match the C API.</td></tr>
+		<tr>
+		  <td valign="top">1.4.0</td>
+		  <td valign="top">Function introduced in this release.</td>
+		  <td valign="top">&nbsp;</td>
+		  <td valign="top">&nbsp;</td>
+		</tr>
+    </table></ul>
+</dl>
+
+

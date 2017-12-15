@@ -1,0 +1,1984 @@
+<html>
+<head><title>
+Collective HDF5 Calls in Parallel
+</title>
+<link href="../ed_styles/RMelect.css" rel="stylesheet" type="text/css">
+</head>
+
+<body bgcolor="#FFFFFF">
+
+<!-- #BeginLibraryItem "/ed_libs/styles_RM.lbi" -->
+<!--
+  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+  * Copyright by The HDF Group.                                               *
+  * Copyright by the Board of Trustees of the University of Illinois.         *
+  * All rights reserved.                                                      *
+  *                                                                           *
+  * This file is part of HDF5.  The full HDF5 copyright notice, including     *
+  * terms governing use, modification, and redistribution, is contained in    *
+  * the files COPYING and Copyright.html.  COPYING can be found at the root   *
+  * of the source code distribution tree; Copyright.html can be found at the  *
+  * root level of an installed copy of the electronic HDF5 document set and   *
+  * is linked from the top-level documents page.  It can also be found at     *
+  * http://www.hdfgroup.org/HDF5/doc/Copyright.html.  If you do not have      *
+  * access to either file, you may request a copy from help@hdfgroup.org.     *
+  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+ -->
+<!-- #EndLibraryItem --><!-- #BeginLibraryItem "/ed_libs/NavBar_RM.lbi" -->
+<hr>
+<center>
+<table border=0 width=98%>
+<tr><td valign=top align=left>
+<a href="../index.html">HDF5 documents and links</a>&nbsp;<br>
+<a href="../H5.intro.html">Introduction to HDF5</a>&nbsp;<br>
+<a href="../UG/HDF5_Users_Guide-Responsive HTML5/index.html">HDF5 User&rsquo;s Guide</a>&nbsp;<br>
+<!--
+<a href="Glossary.html">Glossary</a><br>
+-->
+</td>
+<td valign=top align=right>
+In the 
+<a href="RM_H5Front.html">HDF5 Reference Manual</a>&nbsp;
+<font size=-1>
+<br>
+<a href="../HL/RM_H5DS.html">H5DS</a>&nbsp;&nbsp;
+<a href="../HL/RM_H5IM.html">H5IM</a>&nbsp;&nbsp;
+<a href="../HL/RM_H5LT.html">H5LT</a>&nbsp;&nbsp;
+<a href="../HL/RM_H5PT.html">H5PT</a>&nbsp;&nbsp;
+<a href="../HL/RM_H5TB.html">H5TB</a>&nbsp;
+<a href="../HL/RM_HDF5Optimized.html">Optimized</a>&nbsp;
+<br>
+<a href="RM_H5.html">H5</a>&nbsp;&nbsp;
+<a href="RM_H5A.html">H5A</a>&nbsp;&nbsp;
+<a href="RM_H5D.html">H5D</a>&nbsp;&nbsp;
+<a href="RM_H5E.html">H5E</a>&nbsp;&nbsp;
+<a href="RM_H5F.html">H5F</a>&nbsp;&nbsp;
+<a href="RM_H5G.html">H5G</a>&nbsp;&nbsp;
+<a href="RM_H5I.html">H5I</a>&nbsp;&nbsp;
+<a href="RM_H5L.html">H5L</a>&nbsp;
+<br>
+<a href="RM_H5O.html">H5O</a>&nbsp;&nbsp;
+<a href="RM_H5P.html">H5P</a>&nbsp;&nbsp;
+<a href="RM_H5PL.html">H5PL</a>&nbsp;&nbsp;
+<a href="RM_H5R.html">H5R</a>&nbsp;&nbsp;
+<a href="RM_H5S.html">H5S</a>&nbsp;&nbsp;
+<a href="RM_H5T.html">H5T</a>&nbsp;&nbsp;
+<a href="RM_H5Z.html">H5Z</a>&nbsp;
+<br>
+<a href="Tools.html">Tools</a>&nbsp;&nbsp;
+<a href="PredefDTypes.html">Datatypes</a>&nbsp;&nbsp;
+<a href="../fortran/index.html">Fortran</a>&nbsp;&nbsp;
+<a href="APICompatMacros.html">Compatibility Macros</a>&nbsp;
+<br>
+<a href="CollectiveCalls.html">Collective Calls in Parallel</a>&nbsp;
+<!--
+<br>
+<i><font size=-1>(Printable <a href="http://hdfgroup.org/HDF5/doc/PSandPDF/HDF5_RefManual.PDF">PDF</a> of this Reference Manual)</font></i>&nbsp;
+-->
+</font>
+</td></tr>
+</table>
+</center>
+<hr>
+<!-- #EndLibraryItem --><div align=center>
+<h1>Collective Calling Requirements<br>in Parallel HDF5 Applications</h1>
+</div>
+
+
+<h2>Introduction</h2>
+<dir>
+
+    This document addresses two topics of concern 
+    in a parallel computing environment:
+    <ul><li>HDF5 functions that must be called collectively and when 
+        <li>Properties that must be used in a coordinated manner
+    </ul>
+    <p>
+    The term <i>Macro</i> in the &ldquo;Additional notes&rdquo;
+    column indicates that the first item in the &ldquo;Function&rdquo; 
+    column of the same row is a macro that is selectively mapped to one
+    of the two immediately-following functions.  
+    For example, <code>H5Acreate</code> is a macro that can be mapped to
+    either <code>H5Acreate1</code> or <code>H5Acreate2</code>.
+    This mapping is configurable and is explained in 
+    &ldquo;<a href="APICompatMacros.html">API Compatibility Macros in 
+    HDF5</a>.&rdquo;
+    The macro structure was introduced at HDF5 Release 1.8.0.
+
+
+
+</dir>
+<h2>Always collective</h2>
+<dir>
+    The following functions must always be called collectively.
+    <p>
+
+    <table border="0" width="100%">
+    <tr valign="top" align="enter" bgcolor="FFFFFF"><th>
+        API
+      </th><th>
+        Function
+      </th><th><font size="-1">
+        <u>All&nbsp;processes:</u>
+        <br>
+        same&nbsp;datatype<br>&amp; dataspace 
+      </font></th>
+      </th><th><font size="-1">
+        <u>All&nbsp;processes:</u>
+        <br>
+        same access
+        <br>
+        properties
+      </font></th>
+      </th><th><font size="-1">
+        <u>All&nbsp;processes:</u>
+        <br>
+        same&nbsp;creation
+        <br>
+        properties
+      </font></th>
+      </th><th><font size="-1">
+        Available in<br>releases&nbsp;since
+      </font></th>
+      </th><th>
+        Additional&nbsp;notes
+      </th>
+      </tr>
+
+    <tr valign="top" align="left" bgcolor="DDEEEE"><td>
+        H5A
+      </td><td>
+        <code>H5Acreate</code>
+        <br>
+        <code>H5Acreate1</code>
+        <br>
+        <code>H5Acreate2</code>
+      </td><td align="center">
+        &check;
+      </td><td align="center">
+        &check;
+      </td><td align="center">
+        &check;
+      </td><td align="center">
+        1.8.x
+      </td><td align="left">
+        <a href="APICompatMacros.html">Macro</a>
+        <br><font size="-1">
+        The function <code>H5Acreate</code> was renamed to 
+        <code>H5Acreate1</code> at Release 1.8.0.
+        </font>
+      </td>
+      </tr>
+
+    <tr valign="top" align="left" bgcolor="FFFFFF"><td>
+        &nbsp;
+      </td><td>
+        <code>H5Acreate_by_name</code>
+      </td><td align="center">
+        &check;
+      </td><td align="center">
+        &check;
+      </td><td align="center">
+        &check;
+      </td><td align="center">
+        1.8.x
+      </td><td align="left"><font size="-1">
+        &nbsp;
+        </font>
+      </td>
+      </tr>
+
+    <tr valign="top" align="left" bgcolor="DDEEEE"><td>
+        &nbsp;
+      </td><td>
+        <code>H5Adelete</code>
+      </td><td align="center">&nbsp;
+        
+      </td><td align="center">&nbsp;
+        
+      </td><td align="center">&nbsp;
+        
+      </td><td align="center">&nbsp;
+        
+      </td><td align="left"><font size="-1">
+        &nbsp;
+        </font>
+      </td>
+      </tr>
+
+    <tr valign="top" align="left" bgcolor="FFFFFF"><td>
+        &nbsp;
+      </td><td>
+        <code>H5Adelete_by_idx</code>
+      </td><td align="center">&nbsp;
+        
+      </td><td align="center">&nbsp;
+        
+      </td><td align="center">&nbsp;
+        
+      </td><td align="center">
+        1.8.x
+      </td><td align="left"><font size="-1">
+        &nbsp;
+        </font>
+      </td>
+      </tr>
+
+    <tr valign="top" align="left" bgcolor="DDEEEE"><td>
+        &nbsp;
+      </td><td>
+        <code>H5Adelete_by_name</code>
+      </td><td align="center">&nbsp;
+        
+      </td><td align="center">&nbsp;
+        
+      </td><td align="center">&nbsp;
+        
+      </td><td align="center">
+        1.8.x
+      </td><td align="left"><font size="-1">
+        &nbsp;
+        </font>
+      </td>
+      </tr>
+
+    <tr valign="top" align="left" bgcolor="FFFFFF"><td>
+        &nbsp;
+      </td><td>
+        <code>H5Arename</code>
+      </td><td align="center">&nbsp;
+        
+      </td><td align="center">&nbsp;
+        
+      </td><td align="center">&nbsp;
+        
+      </td><td align="center">
+        1.6.x
+      </td><td align="left"><font size="-1">
+        &nbsp;
+        </font>
+      </td>
+      </tr>
+
+    <tr valign="top" align="left" bgcolor="DDEEEE"><td>
+        &nbsp;
+      </td><td>
+        <code>H5Arename_by_name</code>
+      </td><td align="center">&nbsp;
+        
+      </td><td align="center">&nbsp;
+        
+      </td><td align="center">&nbsp;
+        
+      </td><td align="center">
+        1.8.x
+      </td><td align="left"><font size="-1">
+        &nbsp;
+        </font>
+      </td>
+      </tr>
+
+    <tr valign="top" align="left" bgcolor="FFFFFF"><td>
+        &nbsp;
+      </td><td>
+        <code>H5Awrite</code>
+      </td><td align="center">&nbsp;
+        
+      </td><td align="center">&nbsp;
+        
+      </td><td align="center">&nbsp;
+        
+      </td><td align="center">&nbsp;
+        
+      </td><td align="left"><font size="-1">
+        Because raw data for an attribute is cached locally, 
+        all processes must participate in order to guarantee that 
+        future <code>H5Aread</code> calls return correct results 
+        on all processes.
+        </font>
+      </td>
+      </tr>
+
+    <tr valign="top" align="left" bgcolor="FFFFFF"><td colspan="6">&nbsp;
+        
+      </td></tr>
+
+    <tr valign="top" align="left" bgcolor="DDEEEE"><td>
+        H5D
+      </td><td>
+        <code>H5Dcreate</code>
+        <br>
+        <code>H5Dcreate1</code>
+        <br>
+        <code>H5Dcreate2</code>
+      </td><td align="center">
+        &check;
+      </td><td align="center">
+        &check;
+      </td><td align="center">
+        &check;
+      </td><td align="center">
+        1.8.x
+      </td><td align="left">
+        <a href="APICompatMacros.html">Macro</a>
+        <br><font size="-1">
+        The function <code>H5Dcreate</code> was renamed to 
+        <code>H5Dcreate1</code> at Release 1.8.0.
+        </font>
+      </td>
+      </tr>
+
+    <tr valign="top" align="left" bgcolor="FFFFFF"><td>
+        &nbsp;
+      </td><td>
+        <code>H5Dcreate_anon</code>
+      </td><td align="center">
+        &check;
+      </td><td align="center">
+        &check;
+      </td><td align="center">
+        &check;
+      </td><td align="center">
+        1.8.x
+      </td><td align="left"><font size="-1">
+        &nbsp;
+        </font>
+      </td>
+      </tr>
+
+    <tr valign="top" align="left" bgcolor="DDEEEE"><td>
+        &nbsp;
+      </td><td>
+        <code>H5Dextend</code>
+      </td><td align="center">&nbsp;
+        
+      </td><td align="center">&nbsp;
+        
+      </td><td align="center">&nbsp;
+        
+      </td><td align="center">&nbsp;
+        
+      </td><td align="left"><font size="-1">
+        All processes must participate only if the number of chunks 
+        in the dataset actually changes.
+        <br>
+        All processes must use the same dataspace dimensions.
+        </font>
+      </td>
+      </tr>
+
+    <tr valign="top" align="left" bgcolor="FFFFFF"><td>
+        &nbsp;
+      </td><td>
+        <code>H5Dset_extent</code>
+      </td><td align="center">&nbsp;
+        
+      </td><td align="center">&nbsp;
+        
+      </td><td align="center">&nbsp;
+        
+      </td><td align="center">
+        1.6.x
+      </td><td align="left"><font size="-1">
+        All processes must participate only if the number of chunks 
+        in the dataset actually changes.
+        <br>
+        All processes must use the same dataspace dimensions.
+        </font>
+      </td>
+      </tr>
+
+    <tr valign="top" align="left" bgcolor="FFFFFF"><td colspan="6">&nbsp;
+        
+      </td></tr>
+
+    <tr valign="top" align="left" bgcolor="DDEEEE"><td>
+        H5F
+      </td><td>
+        <code>H5Fclose</code>
+      </td><td align="center">&nbsp;
+        
+      </td><td align="center">&nbsp;
+        
+      </td><td align="center">&nbsp;
+        
+      </td><td align="center">&nbsp;
+        
+      </td><td align="left"><font size="-1">
+        All processes must participate only if this is the 
+        last reference to the file identifier.
+        </font>
+      </td>
+      </tr>
+
+    <tr valign="top" align="left" bgcolor="FFFFFF"><td>
+        &nbsp;
+      </td><td>
+        <code>H5Fcreate</code>
+      </td><td align="center">&nbsp;
+        
+      </td><td align="center">
+        &check;
+      </td><td align="center">
+        &check;
+      </td><td align="center">&nbsp;
+        
+      </td><td align="left"><font size="-1">
+        &nbsp;
+        </font>
+      </td>
+      </tr>
+
+    <tr valign="top" align="left" bgcolor="DDEEEE"><td>
+        &nbsp;
+      </td><td>
+        <code>H5Fflush</code>
+      </td><td align="center">&nbsp;
+        
+      </td><td align="center">&nbsp;
+        
+      </td><td align="center">&nbsp;
+        
+      </td><td align="center">&nbsp;
+        
+      </td><td align="left"><font size="-1">
+        &nbsp;
+        </font>
+      </td>
+      </tr>
+
+    <tr valign="top" align="left" bgcolor="FFFFFF"><td>
+        &nbsp;
+      </td><td>
+        <code>H5Fmount</code>
+      </td><td align="center">&nbsp;
+        
+      </td><td align="center">&nbsp;
+        
+      </td><td align="center">&nbsp;
+        
+      </td><td align="center">&nbsp;
+        
+      </td><td align="left"><font size="-1">
+        &nbsp;
+        </font>
+      </td>
+      </tr>
+
+    <tr valign="top" align="left" bgcolor="DDEEEE"><td>
+        &nbsp;
+      </td><td>
+        <code>H5Fopen</code>
+      </td><td align="center">&nbsp;
+        
+      </td><td align="center">
+        &check;
+      </td><td align="center">&nbsp;
+        
+      </td><td align="center">&nbsp;
+        
+      </td><td align="left"><font size="-1">
+        &nbsp;
+        </font>
+      </td>
+      </tr>
+
+    <tr valign="top" align="left" bgcolor="FFFFFF"><td>
+        &nbsp;
+      </td><td>
+        <code>H5Freopen</code>
+      </td><td align="center">&nbsp;
+        
+      </td><td align="center">&nbsp;
+        
+      </td><td align="center">&nbsp;
+        
+      </td><td align="center">&nbsp;
+        
+      </td><td align="left"><font size="-1">
+        &nbsp;
+        </font>
+      </td>
+      </tr>
+
+    <tr valign="top" align="left" bgcolor="DDEEEE"><td>
+        &nbsp;
+      </td><td>
+        <code>H5Funmount</code>
+      </td><td align="center">&nbsp;
+        
+      </td><td align="center">&nbsp;
+        
+      </td><td align="center">&nbsp;
+        
+      </td><td align="center">&nbsp;
+        
+      </td><td align="left"><font size="-1">
+        &nbsp;
+        </font>
+      </td>
+      </tr>
+
+    <tr valign="top" align="left" bgcolor="FFFFFF"><td colspan="6">&nbsp;
+        
+      </td></tr>
+
+    <tr valign="top" align="left" bgcolor="DDEEEE"><td>
+        H5G
+      </td><td>
+        <code>H5Gcreate</code>
+        <br>
+        <code>H5Gcreate1</code>
+        <br>
+        <code>H5Gcreate2</code>
+      </td><td align="center">&nbsp;
+        
+      </td><td align="center">
+        &check;
+      </td><td align="center">
+        &check;
+      </td><td align="center">
+        1.8.x
+      </td><td align="left">
+        <a href="APICompatMacros.html">Macro</a>
+        <br><font size="-1">
+        The function <code>H5Gcreate</code> was renamed to 
+        <code>H5Gcreate1</code> at Release 1.8.0.
+        </font>
+      </td>
+      </tr>
+
+    <tr valign="top" align="left" bgcolor="FFFFFF"><td>
+        &nbsp;
+      </td><td>
+        <code>H5Gcreate_anon</code>
+      </td><td align="center">&nbsp;
+        
+      </td><td align="center">
+        &check;
+      </td><td align="center">
+        &check;
+      </td><td align="center">
+        1.8.x
+      </td><td align="left"><font size="-1">
+        &nbsp;
+        </font>
+      </td>
+      </tr>
+
+    <tr valign="top" align="left" bgcolor="DDEEEE"><td>
+        &nbsp;
+      </td><td>
+        <code>H5Glink</code>
+      </td><td align="center">&nbsp;
+        
+      </td><td align="center">&nbsp;
+        
+      </td><td align="center">&nbsp;
+        
+      </td><td align="center">&nbsp;
+        
+      </td><td align="left"><font size="-1">
+        &nbsp;
+        </font>
+      </td>
+      </tr>
+
+    <tr valign="top" align="left" bgcolor="FFFFFF"><td>
+        &nbsp;
+      </td><td>
+        <code>H5Glink2</code>
+      </td><td align="center">&nbsp;
+        
+      </td><td align="center">&nbsp;
+        
+      </td><td align="center">&nbsp;
+        
+      </td><td align="center">
+        1.6.x
+      </td><td align="left"><font size="-1">
+        &nbsp;
+        </font>
+      </td>
+      </tr>
+
+    <tr valign="top" align="left" bgcolor="DDEEEE"><td>
+        &nbsp;
+      </td><td>
+        <code>H5Gmove</code>
+      </td><td align="center">&nbsp;
+        
+      </td><td align="center">&nbsp;
+        
+      </td><td align="center">&nbsp;
+        
+      </td><td align="center">&nbsp;
+        
+      </td><td align="left"><font size="-1">
+        &nbsp;
+        </font>
+      </td>
+      </tr>
+
+    <tr valign="top" align="left" bgcolor="FFFFFF"><td>
+        &nbsp;
+      </td><td>
+        <code>H5Gmove2</code>
+      </td><td align="center">&nbsp;
+        
+      </td><td align="center">&nbsp;
+        
+      </td><td align="center">&nbsp;
+        
+      </td><td align="center">
+        1.6.x
+      </td><td align="left"><font size="-1">
+        &nbsp;
+        </font>
+      </td>
+      </tr>
+
+    <tr valign="top" align="left" bgcolor="DDEEEE"><td>
+        &nbsp;
+      </td><td>
+        <code>H5Gset_comment</code>
+      </td><td align="center">&nbsp;
+        
+      </td><td align="center">&nbsp;
+        
+      </td><td align="center">&nbsp;
+        
+      </td><td align="center">&nbsp;
+        
+      </td><td align="left"><font size="-1">
+        &nbsp;
+        </font>
+      </td>
+      </tr>
+
+    <tr valign="top" align="left" bgcolor="FFFFFF"><td>
+        &nbsp;
+      </td><td>
+        <code>H5Gunlink</code>
+      </td><td align="center">&nbsp;
+        
+      </td><td align="center">&nbsp;
+        
+      </td><td align="center">&nbsp;
+        
+      </td><td align="center">&nbsp;
+        
+      </td><td align="left"><font size="-1">
+        &nbsp;
+        </font>
+      </td>
+      </tr>
+
+    <tr valign="top" align="left" bgcolor="FFFFFF"><td colspan="6">&nbsp;
+        
+      </td></tr>
+
+    <tr valign="top" align="left" bgcolor="DDEEEE"><td>
+        H5I
+      </td><td>
+        <code>H5Idec_ref</code>
+      </td><td align="center">&nbsp;
+        
+      </td><td align="center">&nbsp;
+        
+      </td><td align="center">&nbsp;
+        
+      </td><td align="center">
+        1.6.x
+      </td><td align="left"><font size="-1">
+        This function may be called independently if the object identifier 
+        does not refer to an object that was collectively opened.
+        </font>
+      </td>
+      </tr>
+
+    <tr valign="top" align="left" bgcolor="FFFFFF"><td>
+        &nbsp;
+      </td><td>
+        <code>H5LIinc_ref</code>
+      </td><td align="center">&nbsp;
+        
+      </td><td align="center">&nbsp;
+        
+      </td><td align="center">&nbsp;
+        
+      </td><td align="center">
+        1.6.x
+      </td><td align="left"><font size="-1">
+        This function may be called independently if the object identifier 
+        does not refer to an object that was collectively opened.
+        </font>
+      </td>
+      </tr>
+
+    <tr valign="top" align="left" bgcolor="FFFFFF"><td colspan="6">&nbsp;
+        
+      </td></tr>
+
+    <tr valign="top" align="left" bgcolor="DDEEEE"><td>
+        H5L
+      </td><td>
+        <code>H5Lcopy</code>
+      </td><td align="center">&nbsp;
+        
+      </td><td align="center">&nbsp;
+        
+      </td><td align="center">&nbsp;
+        
+      </td><td align="center">
+        1.8.x
+      </td><td align="left"><font size="-1">
+        &nbsp;
+        </font>
+      </td>
+      </tr>
+
+    <tr valign="top" align="left" bgcolor="FFFFFF"><td>
+        &nbsp;
+      </td><td>
+        <code>H5Lcreate_external</code>
+      </td><td align="center">&nbsp;
+        
+      </td><td align="center">&nbsp;
+        
+      </td><td align="center">
+        &check;
+      </td><td align="center">
+        1.8.x
+      </td><td align="left"><font size="-1">
+        &nbsp;
+        </font>
+      </td>
+      </tr>
+
+    <tr valign="top" align="left" bgcolor="DDEEEE"><td>
+        &nbsp;
+      </td><td>
+        <code>H5Lcreate_hard</code>
+      </td><td align="center">&nbsp;
+        
+      </td><td align="center">&nbsp;
+        
+      </td><td align="center">
+        &check;
+      </td><td align="center">
+        1.8.x
+      </td><td align="left"><font size="-1">
+        &nbsp;
+        </font>
+      </td>
+      </tr>
+
+    <tr valign="top" align="left" bgcolor="FFFFFF"><td>
+        &nbsp;
+      </td><td>
+        <code>H5Lcreate_soft</code>
+      </td><td align="center">&nbsp;
+        
+      </td><td align="center">&nbsp;
+        
+      </td><td align="center">
+        &check;
+      </td><td align="center">
+        1.8.x
+      </td><td align="left"><font size="-1">
+        &nbsp;
+        </font>
+      </td>
+      </tr>
+
+    <tr valign="top" align="left" bgcolor="DDEEEE"><td>
+        &nbsp;
+      </td><td>
+        <code>H5Lcreate_ud</code>
+      </td><td align="center">&nbsp;
+        
+      </td><td align="center">&nbsp;
+        
+      </td><td align="center">
+        &check;
+      </td><td align="center">
+        1.8.x
+      </td><td align="left"><font size="-1">
+        &nbsp;
+        </font>
+      </td>
+      </tr>
+
+    <tr valign="top" align="left" bgcolor="FFFFFF"><td>
+        &nbsp;
+      </td><td>
+        <code>H5Ldelete</code>
+      </td><td align="center">&nbsp;
+        
+      </td><td align="center">&nbsp;
+        
+      </td><td align="center">&nbsp;
+        
+      </td><td align="center">
+        1.8.x
+      </td><td align="left"><font size="-1">
+        &nbsp;
+        </font>
+      </td>
+      </tr>
+
+    <tr valign="top" align="left" bgcolor="DDEEEE"><td>
+        &nbsp;
+      </td><td>
+        <code>H5Ldelete_by_idx</code>
+      </td><td align="center">&nbsp;
+        
+      </td><td align="center">&nbsp;
+        
+      </td><td align="center">&nbsp;
+        
+      </td><td align="center">
+        1.8.x
+      </td><td align="left"><font size="-1">
+        &nbsp;
+        </font>
+      </td>
+      </tr>
+
+    <tr valign="top" align="left" bgcolor="FFFFFF"><td>
+        &nbsp;
+      </td><td>
+        <code>H5Lmove</code>
+      </td><td align="center">&nbsp;
+        
+      </td><td align="center">&nbsp;
+        
+      </td><td align="center">&nbsp;
+        
+      </td><td align="center">
+        1.8.x
+      </td><td align="left"><font size="-1">
+        &nbsp;
+        </font>
+      </td>
+      </tr>
+
+    <tr valign="top" align="left" bgcolor="FFFFFF"><td colspan="6">&nbsp;
+        
+      </td></tr>
+
+    <tr valign="top" align="left" bgcolor="DDEEEE"><td>
+        H5O
+      </td><td>
+        <code>H5Ocopy</code>
+      </td><td align="center">&nbsp;
+        
+      </td><td align="center">&nbsp;
+        
+      </td><td align="center">&nbsp;
+        
+      </td><td align="center">
+        1.8.x
+      </td><td align="left"><font size="-1">
+        &nbsp;
+        </font>
+      </td>
+      </tr>
+
+    <tr valign="top" align="left" bgcolor="FFFFFF"><td>
+        &nbsp;
+      </td><td>
+        <code>H5Odecr_refcount</code>
+      </td><td align="center">&nbsp;
+        
+      </td><td align="center">&nbsp;
+        
+      </td><td align="center">&nbsp;
+        
+      </td><td align="center">
+        1.8.x
+      </td><td align="left"><font size="-1">
+        &nbsp;
+        </font>
+      </td>
+      </tr>
+
+    <tr valign="top" align="left" bgcolor="DDEEEE"><td>
+        &nbsp;
+      </td><td>
+        <code>H5Oincr_refcount</code>
+      </td><td align="center">&nbsp;
+        
+      </td><td align="center">&nbsp;
+        
+      </td><td align="center">&nbsp;
+        
+      </td><td align="center">
+        1.8.x
+      </td><td align="left"><font size="-1">
+        &nbsp;
+        </font>
+      </td>
+      </tr>
+
+    <tr valign="top" align="left" bgcolor="FFFFFF"><td>
+        &nbsp;
+      </td><td>
+        <code>H5Olink</code>
+      </td><td align="center">&nbsp;
+        
+      </td><td align="center">&nbsp;
+        
+      </td><td align="center">&nbsp;
+        
+      </td><td align="center">
+        1.8.x
+      </td><td align="left"><font size="-1">
+        &nbsp;
+        </font>
+      </td>
+      </tr>
+
+    <tr valign="top" align="left" bgcolor="DDEEEE"><td>
+        &nbsp;
+      </td><td>
+        <code>H5Oset_comment</code>
+      </td><td align="center">&nbsp;
+        
+      </td><td align="center">&nbsp;
+        
+      </td><td align="center">&nbsp;
+        
+      </td><td align="center">
+        1.8.x
+      </td><td align="left"><font size="-1">
+        &nbsp;
+        </font>
+      </td>
+      </tr>
+
+    <tr valign="top" align="left" bgcolor="FFFFFF"><td>
+        &nbsp;
+      </td><td>
+        <code>H5Oset_comment_by_name</code>
+      </td><td align="center">&nbsp;
+        
+      </td><td align="center">&nbsp;
+        
+      </td><td align="center">&nbsp;
+        
+      </td><td align="center">
+        1.8.x
+      </td><td align="left"><font size="-1">
+        &nbsp;
+        </font>
+      </td>
+      </tr>
+
+    <tr valign="top" align="left" bgcolor="FFFFFF"><td colspan="6">&nbsp;
+        
+      </td></tr>
+
+    <tr valign="top" align="left" bgcolor="DDEEEE"><td>
+        H5R
+      </td><td>
+        <code>H5Rcreate</code>
+      </td><td align="center">&nbsp;
+        
+      </td><td align="center">&nbsp;
+        
+      </td><td align="center">&nbsp;
+        
+      </td><td align="center">&nbsp;
+        
+      </td><td align="left"><font size="-1">
+        &nbsp;
+        </font>
+      </td>
+      </tr>
+
+    <tr valign="center" align="left" bgcolor="FFFFFF"><td colspan="6">&nbsp;
+        
+      </td></tr>
+
+    <tr valign="top" align="left" bgcolor="DDEEEE"><td>
+        H5T
+      </td><td>
+        <code>H5Tcommit</code>
+        <br>
+        <code>H5Tcommit1</code>
+        <br>
+        <code>H5Tcommit2</code>
+      </td><td align="center">&nbsp;
+        
+      </td><td align="center">
+        &check;
+      </td><td align="center">
+        &check;
+      </td><td align="center">
+        1.8.x
+      </td><td align="left">
+        <a href="APICompatMacros.html">Macro</a>
+        <br><font size="-1">
+        The function <code>H5Tcommit</code> was renamed to 
+        <code>H5Tcommit1</code> at Release 1.8.0.
+        </font>
+      </td>
+      </tr>
+
+    <tr valign="top" align="left" bgcolor="FFFFFF"><td>
+        &nbsp;
+      </td><td>
+        <code>H5Tcommit_anon</code>
+      </td><td align="center">&nbsp;
+        
+      </td><td align="center">
+        &check;
+      </td><td align="center">
+        &check;
+      </td><td align="center">
+        1.8.x
+      </td><td align="left"><font size="-1">
+        &nbsp;
+        </font>
+      </td>
+      </tr>
+    </table>
+
+
+
+</dir>
+<h2>Collective, unless target object will not be modified</h2>
+<dir>
+    The following functions must normally be called collectively.
+    If, however, the target object will <emphasis>not</emphasis> be modified, 
+    they may be called independently.
+    <p>
+
+    <table border="0" width="100%">
+    <tr valign="top" align="center" bgcolor="FFFFFF"><th>
+        API
+      </th><th>
+        Function
+      </th><th><font size="-1">
+        <u>All&nbsp;processes:</u>
+        <br>
+        same&nbsp;datatype<br>&amp; dataspace 
+      </font></th>
+      </th><th><font size="-1">
+        <u>All&nbsp;processes:</u>
+        <br>
+        same access
+        <br>
+        properties
+      </font></th>
+      </th><th><font size="-1">
+        <u>All&nbsp;processes:</u>
+        <br>
+        same&nbsp;creation
+        <br>
+        properties
+      </font></th>
+      </th><th><font size="-1">
+        Available in<br>releases&nbsp;since
+      </font></th>
+      </th><th>
+        Additional&nbsp;notes
+      </th>
+      </tr>
+
+    <tr valign="top" align="left" bgcolor="DDEEEE"><td>
+        H5A
+      </td><td>
+        <code>H5Aclose</code>
+      </td><td align="center">&nbsp;
+        
+      </td><td align="center">&nbsp;
+        
+      </td><td align="center">&nbsp;
+        
+      </td><td align="center">&nbsp;
+        
+      </td><td align="left"><font size="-1">
+        All processes must participate only if 
+        all file identifiers for a file have been closed and 
+        this is the last outstanding object identifier.
+        </font>
+      </td>
+      </tr>
+
+    <tr valign="top" align="left" bgcolor="FFFFFF"><td>
+        &nbsp;
+      </td><td>
+        <code>H5Aopen</code>
+      </td><td align="center">&nbsp;
+        
+      </td><td align="center">
+        &check;
+      </td><td align="center">&nbsp;
+        
+      </td><td align="center">
+        1.8.x
+      </td><td align="left"><font size="-1">
+        &nbsp;
+        </font>
+      </td>
+      </tr>
+
+    <tr valign="top" align="left" bgcolor="DDEEEE"><td>
+        &nbsp;
+      </td><td>
+        <code>H5Aopen_by_idx</code>
+      </td><td align="center">&nbsp;
+        
+      </td><td align="center">
+        &check;
+      </td><td align="center">&nbsp;
+        
+      </td><td align="center">
+        1.8.x
+      </td><td align="left"><font size="-1">
+        &nbsp;
+        </font>
+      </td>
+      </tr>
+
+    <tr valign="top" align="left" bgcolor="FFFFFF"><td>
+        &nbsp;
+      </td><td>
+        <code>H5Aopen_by_name</code>
+      </td><td align="center">&nbsp;
+        
+      </td><td align="center">
+        &check;
+      </td><td align="center">&nbsp;
+        
+      </td><td align="center">
+        1.8.x
+      </td><td align="left"><font size="-1">
+        &nbsp;
+        </font>
+      </td>
+      </tr>
+
+    <tr valign="top" align="left" bgcolor="DDEEEE"><td>
+        &nbsp;
+      </td><td>
+        <code>H5Aopen_idx</code>
+      </td><td align="center">&nbsp;
+        
+      </td><td align="center">
+        &check;
+      </td><td align="center">&nbsp;
+        
+      </td><td align="center">&nbsp;
+        
+      </td><td align="left"><font size="-1">
+        &nbsp;
+        </font>
+      </td>
+      </tr>
+
+    <tr valign="top" align="left" bgcolor="FFFFFF"><td>
+        &nbsp;
+      </td><td>
+        <code>H5Aopen_name</code>
+      </td><td align="center">&nbsp;
+        
+      </td><td align="center">
+        &check;
+      </td><td align="center">&nbsp;
+        
+      </td><td align="center">&nbsp;
+        
+      </td><td align="left"><font size="-1">
+        &nbsp;
+        </font>
+      </td>
+      </tr>
+
+    <tr valign="top" align="left" bgcolor="FFFFFF"><td colspan="6">&nbsp;
+        
+      </td></tr>
+
+    <tr valign="top" align="left" bgcolor="DDEEEE"><td>
+        H5D
+      </td><td>
+        <code>H5Dclose</code>
+      </td><td align="center">&nbsp;
+        
+      </td><td align="center">&nbsp;
+        
+      </td><td align="center">&nbsp;
+        
+      </td><td align="center">&nbsp;
+        
+      </td><td align="left"><font size="-1">
+        All processes must participate only if 
+        all file identifiers for a file have been closed and 
+        this is the last outstanding object identifier.
+        </font>
+      </td>
+      </tr>
+
+    <tr valign="top" align="left" bgcolor="FFFFFF"><td>
+        &nbsp;
+      </td><td>
+        <code>H5Dopen</code>
+        <br>
+        <code>H5Dopen1</code>
+        <br>
+        <code>H5Dopen2</code>
+      </td><td align="center">&nbsp;
+        
+      </td><td align="center">
+        &check;
+      </td><td align="center">&nbsp;
+        
+      </td><td align="center">
+        1.8.x
+      </td><td align="left">
+        <a href="APICompatMacros.html">Macro</a>
+        <br><font size="-1">
+        The function <code>H5Dopen</code> was renamed to 
+        <code>H5Dopen1</code> at Release 1.8.0.
+        </font>
+      </td>
+      </tr>
+
+    <tr valign="top" align="left" bgcolor="FFFFFF"><td colspan="6">&nbsp;
+        
+      </td></tr>
+
+    <tr valign="top" align="left" bgcolor="DDEEEE"><td>
+        H5G
+      </td><td>
+        <code>H5Gclose</code>
+      </td><td align="center">&nbsp;
+        
+      </td><td align="center">&nbsp;
+        
+      </td><td align="center">&nbsp;
+        
+      </td><td align="center">&nbsp;
+        
+      </td><td align="left"><font size="-1">
+        All processes must participate only if 
+        all file identifiers for a file have been closed and 
+        this is the last outstanding object identifier.
+        </font>
+      </td>
+      </tr>
+
+    <tr valign="top" align="left" bgcolor="FFFFFF"><td>
+        &nbsp;
+      </td><td>
+        <code>H5Gopen</code>
+        <br>
+        <code>H5Gopen1</code>
+        <br>
+        <code>H5Gopen2</code>
+      </td><td align="center">&nbsp;
+        
+      </td><td align="center">
+        &check;
+      </td><td align="center">&nbsp;
+        
+      </td><td align="center">
+        1.8.x
+      </td><td align="left">
+        <a href="APICompatMacros.html">Macro</a>
+        <br><font size="-1">
+        The function <code>H5Gopen</code> was renamed to 
+        <code>H5Gopen1</code> at Release 1.8.0.
+        </font>
+      </td>
+      </tr>
+
+    <tr valign="top" align="left" bgcolor="FFFFFF"><td colspan="6">&nbsp;
+        
+      </td></tr>
+
+    <tr valign="top" align="left" bgcolor="DDEEEE"><td>
+        H5I
+      </td><td>
+        <code>H5Iget_file_id</code>
+      </td><td align="center">&nbsp;
+        
+      </td><td align="center">&nbsp;
+        
+      </td><td align="center">&nbsp;
+        
+      </td><td align="center">
+        1.8.x
+      </td><td align="left"><font size="-1">
+        &nbsp;
+        </font>
+      </td>
+      </tr>
+
+    <tr valign="top" align="left" bgcolor="FFFFFF"><td colspan="6">&nbsp;
+        
+      </td></tr>
+
+    <tr valign="top" align="left" bgcolor="DDEEEE"><td>
+        H5O
+      </td><td>
+        <code>H5Oclose</code>
+      </td><td align="center">&nbsp;
+        
+      </td><td align="center">&nbsp;
+        
+      </td><td align="center">&nbsp;
+        
+      </td><td align="center">
+        1.8.x
+      </td><td align="left"><font size="-1">
+        All processes must participate only if 
+        all file identifiers for a file have been closed and 
+        this is the last outstanding object identifier.
+        </font>
+      </td>
+      </tr>
+
+    <tr valign="top" align="left" bgcolor="FFFFFF"><td>
+        &nbsp;
+      </td><td>
+        <code>H5Oopen</code>
+      </td><td align="center">&nbsp;
+        
+      </td><td align="center">
+        &check;
+      </td><td align="center">&nbsp;
+        
+      </td><td align="center">
+        1.8.x
+      </td><td align="left"><font size="-1">
+        &nbsp;
+        </font>
+      </td>
+      </tr>
+
+    <tr valign="top" align="left" bgcolor="DDEEEE"><td>
+        &nbsp;
+      </td><td>
+        <code>H5Oopen_by_addr</code>
+      </td><td align="center">&nbsp;
+        
+      </td><td align="center">
+        &check;
+      </td><td align="center">&nbsp;
+        
+      </td><td align="center">
+        1.8.x
+      </td><td align="left"><font size="-1">
+        &nbsp;
+        </font>
+      </td>
+      </tr>
+
+    <tr valign="top" align="left" bgcolor="FFFFFF"><td>
+        &nbsp;
+      </td><td>
+        <code>H5Oopen_by_idx</code>
+      </td><td align="center">&nbsp;
+        
+      </td><td align="center">
+        &check;
+      </td><td align="center">&nbsp;
+        
+      </td><td align="center">
+        1.8.x
+      </td><td align="left"><font size="-1">
+        &nbsp;
+        </font>
+      </td>
+      </tr>
+
+    <tr valign="top" align="left" bgcolor="FFFFFF"><td colspan="6">&nbsp;
+        
+      </td></tr>
+
+    <tr valign="top" align="left" bgcolor="DDEEEE"><td>
+        H5R
+      </td><td>
+        <code>H5Rdereference</code>
+      </td><td align="center">&nbsp;
+        
+      </td><td align="center">&nbsp;
+        
+      </td><td align="center">&nbsp;
+        
+      </td><td align="center">&nbsp;
+        
+      </td><td align="left"><font size="-1">
+        &nbsp;
+        </font>
+      </td>
+      </tr>
+
+    <tr valign="top" align="left" bgcolor="FFFFFF"><td colspan="6">&nbsp;
+        
+      </td></tr>
+
+    <tr valign="top" align="left" bgcolor="DDEEEE"><td>
+        H5T
+      </td><td>
+        <code>H5Tclose</code>
+      </td><td align="center">&nbsp;
+        
+      </td><td align="center">&nbsp;
+        
+      </td><td align="center">&nbsp;
+        
+      </td><td align="center">&nbsp;
+        
+      </td><td align="left"><font size="-1">
+        All processes must participate only if 
+        the datatype is for a committed datatype, 
+        all the file identifiers for the file have been closed, and 
+        this is the last outstanding object identifier.
+        </font>
+      </td>
+      </tr>
+
+    <tr valign="top" align="left" bgcolor="FFFFFF"><td>
+        &nbsp;
+      </td><td>
+        <code>H5Topen</code>
+        <br>
+        <code>H5Topen1<code>
+        <br>
+        <code>H5Topen2</code>
+      </td><td align="center">&nbsp;
+        
+      </td><td align="center">
+        &check;
+      </td><td align="center">&nbsp;
+        
+      </td><td align="center">
+        1.8.x
+      </td><td align="left">
+        <a href="APICompatMacros.html">Macro</a>
+        <br><font size="-1">
+        The function <code>H5Topen</code> was renamed to 
+        <code>H5Topen1</code> at Release 1.8.0.
+        </font>
+      </td>
+      </tr>
+
+    </td><tr>
+    </table>
+
+
+</dir>
+
+<!-- NEW PAGE -->
+
+<h2>Properties</h2>
+<dir>
+    The following properties must be set to the same values
+    for an object or link in all cases where the object or link is accessed
+    in a parallel program.
+
+<table width="100%" border="0">
+<tr valign="top" align="left"><td width="50%">
+
+    <table border="0">
+
+    <tr valign="top" align="left" bgcolor="FFFFFF"><th>
+        Function
+      </th><th>
+        Available&nbsp;in<br>releases&nbsp;since
+      </th>
+      </tr>
+
+    <tr valign="top" align="left" bgcolor="FFFFFF"><td colspan="2">
+        <u>Dataset creation properties</u>
+      </td>
+      </tr>
+
+    <tr valign="top" align="left" bgcolor="DDEEEE"><td>
+        <code>H5Pmodify_filter</code>
+      </td><td align="left">
+        1.8.x
+      </td>
+      </tr>
+
+    <tr valign="top" align="left" bgcolor="FFFFFF"><td>
+        <code>H5Premove_filter</code>
+      </td><td align="left">
+        1.8.x
+      </td>
+      </tr>
+
+    <tr valign="top" align="left" bgcolor="DDEEEE"><td>
+        <code>H5Pset_alloc_time</code>
+      </td><td align="left">&nbsp;
+        
+      </td>
+      </tr>
+
+    <tr valign="top" align="left" bgcolor="FFFFFF"><td>
+        <code>H5Pset_chunk</code>
+      </td><td align="left">&nbsp;
+        
+      </td>
+      </tr>
+
+    <tr valign="top" align="left" bgcolor="DDEEEE"><td>
+        <code>H5Pset_external</code>
+      </td><td align="left">&nbsp;
+        
+      </td>
+      </tr>
+
+    <tr valign="top" align="left" bgcolor="FFFFFF"><td>
+        <code>H5Pset_fill_time</code>
+      </td><td align="left">&nbsp;
+        
+      </td>
+      </tr>
+
+    <tr valign="top" align="left" bgcolor="DDEEEE"><td>
+        <code>H5Pset_fill_value</code>
+      </td><td align="left">&nbsp;
+        
+      </td>
+      </tr>
+
+    <tr valign="top" align="left" bgcolor="FFFFFF"><td>
+        <code>H5Pset_filter</code>
+      </td><td align="left">&nbsp;
+        
+      </td>
+      </tr>
+
+    <tr valign="top" align="left" bgcolor="DDEEEE"><td>
+        <code>H5Pset_fletcher32</code>
+      </td><td align="left">
+        1.8.x
+      </td>
+      </tr>
+
+    <tr valign="top" align="left" bgcolor="FFFFFF"><td>
+        <code>H5Pset_layout</code>
+      </td><td align="left">&nbsp;
+        
+      </td>
+      </tr>
+
+    <tr valign="top" align="left" bgcolor="DDEEEE"><td>
+        <code>H5Pset_nbit</code>
+      </td><td align="left">
+        1.8.x
+      </td>
+      </tr>
+
+    <tr valign="top" align="left" bgcolor="FFFFFF"><td>
+        <code>H5Pset_shuffle</code>
+      </td><td align="left">&nbsp;
+        
+      </td>
+      </tr>
+
+    <tr valign="top" align="left" bgcolor="DDEEEE"><td>
+        <code>H5Pset_szip</code>
+      </td><td align="left">&nbsp;
+        
+      </td>
+      </tr>
+
+    <tr valign="top" align="left" bgcolor="FFFFFF"><th colspan="2">&nbsp;
+        
+      </th>
+      </tr>
+
+    <tr valign="top" align="left" bgcolor="FFFFFF"><td colspan="2">
+        <u>Dataset transfer properties</u>
+      </th>
+      </tr>
+
+    <tr valign="top" align="left" bgcolor="DDEEEE"><td>
+        <code>H5Pset_btree_ratios</code>
+      </td><td align="left">&nbsp;
+        
+      </td>
+      </tr>
+
+    <tr valign="top" align="left" bgcolor="FFFFFF"><td>
+        <code>H5Pset_buffer</code>
+      </td><td align="left">&nbsp;
+        
+      </td>
+      </tr>
+
+    <tr valign="top" align="left" bgcolor="DDEEEE"><td>
+        <code>H5Pset_dxpl_mpio</code>
+      </td><td align="left">&nbsp;
+        
+      </td>
+      </tr>
+
+    <tr valign="top" align="left" bgcolor="FFFFFF"><td>
+        <code>H5Pset_hyper_cache</code>
+      </td><td align="left">&nbsp;
+        
+      </td>
+      </tr>
+
+    <tr valign="top" align="left" bgcolor="DDEEEE"><td>
+        <code>H5Pset_preserve</code>
+      </td><td align="left">&nbsp;
+        
+      </td>
+      </tr>
+
+    <tr valign="top" align="left" bgcolor="FFFFFF"><th colspan="2">&nbsp;
+        
+      </th>
+      </tr>
+
+    <tr valign="top" align="left" bgcolor="FFFFFF"><td colspan="2">
+        <u>File access properties</u>
+      </th>
+      </tr>
+
+    <tr valign="top" align="left" bgcolor="DDEEEE"><td>
+        <code>H5Pset_alignment</code>
+      </td><td align="left">&nbsp;
+        
+      </td>
+      </tr>
+
+    <tr valign="top" align="left" bgcolor="FFFFFF"><td>
+        <code>H5Pset_cache</code>
+      </td><td align="left">&nbsp;
+        
+      </td>
+      </tr>
+
+    <tr valign="top" align="left" bgcolor="DDEEEE"><td>
+        <code>H5Pset_fapl_mpio</code>
+      </td><td align="left">&nbsp;
+        
+      </td>
+      </tr>
+
+    <tr valign="top" align="left" bgcolor="FFFFFF"><td>
+        <code>H5Pset_fclose_degree</code>
+      </td><td align="left">&nbsp;
+        
+      </td>
+      </tr>
+
+    <tr valign="top" align="left" bgcolor="DDEEEE"><td>
+        <code>H5Pset_gc_references</code>
+      </td><td align="left">&nbsp;
+        
+      </td>
+      </tr>
+
+    <tr valign="top" align="left" bgcolor="FFFFFF"><td>
+        <code>H5Pset_latest_format</code>
+      </td><td align="left">
+        1.8.x
+      </td>
+      </tr>
+
+    <tr valign="top" align="left" bgcolor="DDEEEE"><td>
+        <code>H5Pset_libver_bounds</code>
+      </td><td align="left">
+        1.8.x
+      </td>
+      </tr>
+
+    <tr valign="top" align="left" bgcolor="FFFFFF"><td>
+        <code>H5Pset_mdc_config</code>
+      </td><td align="left">&nbsp;
+        
+      </td>
+      </tr>
+
+    <tr valign="top" align="left" bgcolor="DDEEEE"><td>
+        <code>H5Pset_meta_block_size</code>
+      </td><td align="left">&nbsp;
+        
+      </td>
+      </tr>
+
+    <tr valign="top" align="left" bgcolor="FFFFFF"><td>
+        <code>H5Pset_small_data_block_size&nbsp;&nbsp;&nbsp;</code>
+      </td><td align="left">&nbsp;
+        
+      </td>
+      </tr>
+
+    <tr valign="top" align="left" bgcolor="DDEEEE"><td>
+        <code>H5Pset_sieve_buf_size</code>
+      </td><td align="left">&nbsp;
+        
+      </td>
+      </tr>
+
+    <tr valign="top" align="left" bgcolor="FFFFFF"><th colspan="3">&nbsp;
+        
+      </th>
+      </tr>
+
+    </table>
+
+</td><td width="50%">
+
+    <table border="0">
+
+    <tr valign="top" align="left" bgcolor="FFFFFF"><th>
+        Function
+      </th><th>
+        Available&nbsp;in<br>releases&nbsp;since
+      </th>
+      </tr>
+
+
+    <tr valign="top" align="left" bgcolor="FFFFFF"><td colspan="2">
+        <u>File creation properties</u>
+      </th>
+      </tr>
+
+    <tr valign="top" align="left" bgcolor="DDEEEE"><td>
+        <code>H5Pset_istore_k</code>
+      </td><td align="left">&nbsp;
+        
+      </td>
+      </tr>
+
+    <tr valign="top" align="left" bgcolor="FFFFFF"><td>
+        <code>H5Pset_shared_mesg_index</code>
+      </td><td align="left">
+        1.8.x
+      </td>
+      </tr>
+
+    <tr valign="top" align="left" bgcolor="DDEEEE"><td>
+        <code>H5Pset_shared_mesg_nindexes</code>
+      </td><td align="left">
+        1.8.x
+      </td>
+      </tr>
+
+    <tr valign="top" align="left" bgcolor="FFFFFF"><td>
+        <code>H5Pset_shared_mesg_phase_change</code>
+      </td><td align="left">
+        1.8.x
+      </td>
+      </tr>
+
+    <tr valign="top" align="left" bgcolor="DDEEEE"><td>
+        <code>H5Pset_sizes</code>
+      </td><td align="left">&nbsp;
+        
+      </td>
+      </tr>
+
+    <tr valign="top" align="left" bgcolor="FFFFFF"><td>
+        <code>H5Pset_sym_k</code>
+      </td><td align="left">&nbsp;
+        
+      </td>
+      </tr>
+
+    <tr valign="top" align="left" bgcolor="DDEEEE"><td>
+        <code>H5Pset_userblock</code>
+      </td><td align="left">&nbsp;
+        
+      </td>
+      </tr>
+
+    <tr valign="top" align="left" bgcolor="FFFFFF"><th colspan="2">&nbsp;
+        
+      </th>
+      </tr>
+
+    <tr valign="top" align="left" bgcolor="FFFFFF"><td colspan="2">
+        <u>Group creation properties</u>
+      </th>
+      </tr>
+
+    <tr valign="top" align="left" bgcolor="DDEEEE"><td>
+        <code>H5Pset_ext_link_info</code>
+      </td><td align="left">
+        1.8.x
+      </td>
+      </tr>
+
+    <tr valign="top" align="left" bgcolor="FFFFFF"><td>
+        <code>H5Pset_link_creation_order</code>
+      </td><td align="left">
+        1.8.x
+      </td>
+      </tr>
+
+    <tr valign="top" align="left" bgcolor="DDEEEE"><td>
+        <code>H5Pset_link_phase_change</code>
+      </td><td align="left">
+        1.8.x
+      </td>
+      </tr>
+
+    <tr valign="top" align="left" bgcolor="FFFFFF"><td>
+        <code>H5Pset_local_heap_size_hint</code>
+      </td><td align="left">
+        1.8.x
+      </td>
+      </tr>
+
+    <tr valign="top" align="left" bgcolor="FFFFFF"><th colspan="2">&nbsp;
+        
+      </th>
+      </tr>
+
+    <tr valign="top" align="left" bgcolor="FFFFFF"><td colspan="2">
+        <u>Link creation properties</u>
+      </th>
+      </tr>
+
+    <tr valign="top" align="left" bgcolor="DDEEEE"><td>
+        <code>H5Pset_char_encoding</code>
+      </td><td align="left">
+        1.8.x
+      </td>
+      </tr>
+
+    <tr valign="top" align="left" bgcolor="FFFFFF"><td>
+        <code>H5Pset_create_intermediate_group&nbsp;&nbsp;&nbsp;</code>
+      </td><td align="left">
+        1.8.x
+      </td>
+      </tr>
+
+    <tr valign="top" align="left" bgcolor="FFFFFF"><th colspan="2">&nbsp;
+        
+      </th>
+      </tr>
+
+    <tr valign="top" align="left" bgcolor="FFFFFF"><td colspan="2">
+        <u>Object creation properties</u>
+      </th>
+      </tr>
+
+    <tr valign="top" align="left" bgcolor="DDEEEE"><td>
+        <code>H5Pset_attr_phase_change</code>
+      </td><td align="left">
+        1.8.x
+      </td>
+      </tr>
+
+    <tr valign="top" align="left" bgcolor="FFFFFF"><td>
+        <code>H5Pset_attr_creation_order</code>
+      </td><td align="left">
+        1.8.x
+      </td>
+      </tr>
+
+    <tr valign="top" align="left" bgcolor="DDEEEE"><td>
+        <code>H5Pset_obj_track_times</code>
+      </td><td align="left">
+        1.8.x
+      </td>
+      </tr>
+
+    <tr valign="top" align="left" bgcolor="FFFFFF"><th colspan="2">&nbsp;
+        
+      </th>
+      </tr>
+
+    <tr valign="top" align="left" bgcolor="FFFFFF"><td colspan="2">
+        <u>Object copy properties</u>
+      </th>
+      </tr>
+
+    <tr valign="top" align="left" bgcolor="DDEEEE"><td>
+        <code>H5Pset_copy_object</code>
+      </td><td align="left">
+        1.8.x
+      </td>
+      </tr>
+
+    </table>
+
+</td></tr>
+</table>
+
+</dir>
+
+
+
+
+<!-- #BeginLibraryItem "/ed_libs/NavBar_RM.lbi" -->
+<hr>
+<center>
+<table border=0 width=98%>
+<tr><td valign=top align=left>
+<a href="../index.html">HDF5 documents and links</a>&nbsp;<br>
+<a href="../H5.intro.html">Introduction to HDF5</a>&nbsp;<br>
+<a href="../UG/HDF5_Users_Guide-Responsive HTML5/index.html">HDF5 User&rsquo;s Guide</a>&nbsp;<br>
+<!--
+<a href="Glossary.html">Glossary</a><br>
+-->
+</td>
+<td valign=top align=right>
+In the 
+<a href="RM_H5Front.html">HDF5 Reference Manual</a>&nbsp;
+<font size=-1>
+<br>
+<a href="../HL/RM_H5DS.html">H5DS</a>&nbsp;&nbsp;
+<a href="../HL/RM_H5IM.html">H5IM</a>&nbsp;&nbsp;
+<a href="../HL/RM_H5LT.html">H5LT</a>&nbsp;&nbsp;
+<a href="../HL/RM_H5PT.html">H5PT</a>&nbsp;&nbsp;
+<a href="../HL/RM_H5TB.html">H5TB</a>&nbsp;
+<a href="../HL/RM_HDF5Optimized.html">Optimized</a>&nbsp;
+<br>
+<a href="RM_H5.html">H5</a>&nbsp;&nbsp;
+<a href="RM_H5A.html">H5A</a>&nbsp;&nbsp;
+<a href="RM_H5D.html">H5D</a>&nbsp;&nbsp;
+<a href="RM_H5E.html">H5E</a>&nbsp;&nbsp;
+<a href="RM_H5F.html">H5F</a>&nbsp;&nbsp;
+<a href="RM_H5G.html">H5G</a>&nbsp;&nbsp;
+<a href="RM_H5I.html">H5I</a>&nbsp;&nbsp;
+<a href="RM_H5L.html">H5L</a>&nbsp;
+<br>
+<a href="RM_H5O.html">H5O</a>&nbsp;&nbsp;
+<a href="RM_H5P.html">H5P</a>&nbsp;&nbsp;
+<a href="RM_H5PL.html">H5PL</a>&nbsp;&nbsp;
+<a href="RM_H5R.html">H5R</a>&nbsp;&nbsp;
+<a href="RM_H5S.html">H5S</a>&nbsp;&nbsp;
+<a href="RM_H5T.html">H5T</a>&nbsp;&nbsp;
+<a href="RM_H5Z.html">H5Z</a>&nbsp;
+<br>
+<a href="Tools.html">Tools</a>&nbsp;&nbsp;
+<a href="PredefDTypes.html">Datatypes</a>&nbsp;&nbsp;
+<a href="../fortran/index.html">Fortran</a>&nbsp;&nbsp;
+<a href="APICompatMacros.html">Compatibility Macros</a>&nbsp;
+<br>
+<a href="CollectiveCalls.html">Collective Calls in Parallel</a>&nbsp;
+<!--
+<br>
+<i><font size=-1>(Printable <a href="http://hdfgroup.org/HDF5/doc/PSandPDF/HDF5_RefManual.PDF">PDF</a> of this Reference Manual)</font></i>&nbsp;
+-->
+</font>
+</td></tr>
+</table>
+</center>
+<hr>
+<!-- #EndLibraryItem -->
+
+<?php include("../ed_libs/Footer-THGonly2.htm"); ?>
+
+<SCRIPT LANGUAGE="JAVASCRIPT">
+<!--
+document.writeln("Last modified: February 2017");
+-->
+</SCRIPT>
+</body>
+</html>
