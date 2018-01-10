@@ -2,12 +2,12 @@
 External plugins are developed outside of the HDF5 library and do not
 use any internal HDF5 private functions. They do not require to be
 shipped with the HDF5 library, but can just link to it from userspace
-just like an HDF5 application. If an external VOL plugin is installed on system as a shared library or a DLL, the library can search for it and load it dynamically to be used by an application.
+just like an HDF5 application. If an external VOL plugin is installed on the system as a shared library or a DLL, the library can search for it and load it dynamically to be used by an application.
 
 \subsection{Creating an External Plugin}
-Developing an external plugin is similar to developing an internal plugin. Refer to Section~ref{sec:vol} for details on plugin creation. The important thing to keep in mind is that external plugins cannot use internal HDF5 features. The ``value'' field for an external plugin should be a positive integer greater than 128. The name should be unique across all plugins registered with the library.
+Developing an external plugin is similar to developing an internal plugin. Refer to Section~\ref{sec:vol} for details on plugin creation. The important thing to keep in mind is that external plugins cannot use internal HDF5 features. The ``value'' field for an external plugin should be a positive integer greater than 128. The name should be unique across all plugins registered with the library.
 
-In order for the HDF5 library to be able to load an external plugin dynamically, the plugin developer has to define two public routines with the following name and signature:
+For the HDF5 library to be able to load an external plugin dynamically, the plugin developer has to define two public routines with the following name and signature:
 \begin{lstlisting}
 H5PL_type_t H5PLget_plugin_type(void)
 const void *H5PLget_plugin_info(void)
@@ -30,9 +30,9 @@ const void *H5PLget_plugin_info(void) {return &H5VL_log_g;}
 Implementing iteration and visit callbacks in external plugins requires the plugin invoking the user defined callback function with an HDF5 identifier ({\tt hid\_t}) on the location object. The current HDF5 H5I API does not allow creating and dereferencing identifiers that point to HDF5 object types. Therefore, two new API routines have been added (see Section~\ref{sec:api} for more details) to get around that. {\tt H5VLobject\_register()} is used to create an HDF5 identifier for a VOL object handle (file, group, dataset, named datatype, or attribute). {\tt H5VLget\_object()} is used to derefernce the HDF5 identifier back to the VOL object handle.
 
 \subsection{Using an External Plugin}
-Unlike internal plugins, external plugins cannot create an API routine for applications to use to set the VOL plugin in the file access property list. External plugin developers can however provide a wrapper routine that registers the plugin with {\tt H5VLregister()} instead of having the application call that directly with the pointer to the plugin class structure. Both ways are possible if the external plugin used is in the application's user space. External plugins provided by third pary vendors that are not in the application's user space but are installed on the system with a shared library or DLL can be registered by the application using {\tt H5VLregister\_name()} provided that the application knows the plugin's name in advance.
+Unlike internal plugins, external plugins cannot create an API routine for applications to use to set the VOL plugin in the file access property list. External plugin developers can, however, provide a wrapper routine that registers the plugin with {\tt H5VLregister()} instead of having the application call that directly with the pointer to the plugin class structure. Both ways are possible if the external plugin used is in the application's userspace. External plugins provided by third party vendors that are not in the application's userspace but are installed on the system with a shared library or DLL can be registered by the application using {\tt H5VLregister\_name()} provided that the application knows the plugin's name in advance.
 
-The registration operation will return a global identifier for the registered plugin. Applications can query the library for that identifier using the plugin name with {\tt H5VLget\_plugin\_id()}. This identifier is used to initialize the plugin if it requires an initialization phase. A third party library could use that ID to create a plugin that stacks or mirrors on top of an internal plugin using that identifier (refer to section~\ref{sec:stack} for more details on stacking and mirroring).
+The registration operation will return a global identifier for the registered plugin. Applications can query the library for that identifier using the plugin name with {\tt H5VLget\_plugin\_id()}. This identifier is used to initialize the plugin if it requires an initialization phase. A third party library could use that ID to create a plugin that stacks or mirrors on top of an internal plugin using that identifier (refer to Section~\ref{sec:stack} for more details on stacking and mirroring).
 
 Some plugins could require an initialization phase before using the plugin with some input parameters from users. This process is done by creating a VOL initialization property list and setting a public property that should be defined by the internal plugin to the hostname of the remote machine. The user then calls the initialize routine ({\tt H5VLintialize()}) with the plugin\_id and the property list to initialize the plugin. An external plugin could abstract those operations into a wrapper routine that wraps the property list creation, property settings, and plugin initialization into one call that the user makes to simplify this process.
 
@@ -44,7 +44,7 @@ where {\tt new\_vol\_info} is the plugin information needed from the application
 
 Now that the plugin is initialized, the application can create or open an HDF5 container using the external plugin. After closing all objects and containers on that plugin, the application should terminate access to the selected plugin if it requires a termination phase by calling {\tt H5VLterminate()} with the required termination properties (similar to the initialization phase). 
 
-Finally the application is required to un-register the plugin from the library when access to the container(s) is terminated using {\tt H5VLunregister}.
+Finally, the application is required to un-register the plugin from the library when access to the container(s) is terminated using {\tt H5VLunregister}.
 
 % /* Function prototypes */
 % H5_DLL htri_t H5VLis_registered(hid_t id);
