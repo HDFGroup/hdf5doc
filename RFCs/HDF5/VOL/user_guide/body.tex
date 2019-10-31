@@ -19,6 +19,11 @@
 
 \section{Adapting HDF5 Software to Use the VOL}
 
+\subsection{Specific API Call Substitutions}
+${\tt H5Fis\_hdf5} \rightarrow {\tt H5Fis\_accessible}$
+
+${\tt H5Oget\_info(1|2)} \rightarrow {\tt H5Ofuture\_function\_goes\_here}$
+
 \section{Using VOL Connectors With The HDF5 Command-Line Tools}
 \subsection{Connection Strings}
 \subsection{Connector Compatibility}
@@ -26,14 +31,15 @@
 \section{Compatibility}
 \subsection{Feature Flags}
 \begin{tcolorbox}[colback=yellow!10!white,colframe=red!75!black,title=PRELIMINARY]
-    This feature is under active development and is either incomplete or may change in behavior.
+    This feature is under active development and is either incomplete or may change in behavior before the final release.
 \end{tcolorbox}
 \subsection{List of HDF5 Native VOL API Calls}
 
 These API calls will probably fail when used with terminal VOL connectors other than the native HDF5 file format connector. Their use should be protected in code that uses arbitrary VOL connectors.
 \begin{longtable}{ |>{\raggedright\arraybackslash}p{\linewidth}| }
     \hline
-    H5Aiterate1 \\
+    H5Aget\_num\_attrs (deprecated) \\
+    H5Aiterate1 (deprecated) \\
     \hline
     H5Ddebug \\
     H5Dformat\_convert \\
@@ -53,7 +59,7 @@ These API calls will probably fail when used with terminal VOL connectors other 
     H5Fget\_filesize \\
     H5Fget\_free\_sections \\
     H5Fget\_freespace \\
-    H5Fget\_info1 \\
+    H5Fget\_info1 (deprecated) \\
     H5Fget\_info2 \\
     H5Fget\_mdc\_config \\
     H5Fget\_mdc\_hit\_rate \\
@@ -65,11 +71,11 @@ These API calls will probably fail when used with terminal VOL connectors other 
     H5Fget\_page\_buffering\_stats \\
     H5Fget\_vfd\_handle \\
     H5Fincrement\_filesize \\
-    H5Fis\_hdf5 \\
+    H5Fis\_hdf5 (deprecated) \\
     H5Freset\_mdc\_hit\_rate\_stats \\
     H5Freset\_page\_buffering\_stats \\
     H5Fset\_dset\_no\_attrs\_hint \\
-    H5Fset\_latest\_format \\
+    H5Fset\_latest\_format (deprecated) \\
     H5Fset\_libver\_bounds \\
     H5Fset\_mdc\_config \\
     H5Fset\_mpi\_atomicity \\
@@ -77,26 +83,26 @@ These API calls will probably fail when used with terminal VOL connectors other 
     H5Fstart\_swmr\_write \\
     H5Fstop\_mdc\_logging \\
     \hline
-    H5Gget\_comment \\
-    H5Giterate \\
-    H5Gset\_comment \\
+    H5Gget\_comment (deprecated) \\
+    H5Giterate (deprecated) \\
     H5Gget\_info \\
     H5Gget\_info\_by\_name \\
     H5Gget\_info\_by\_idx \\
-    H5Gget\_objinfo \\
-    H5Gget\_objname\_by\_idx \\
-    H5Gget\_objtype\_by\_idx \\
+    H5Gget\_objinfo (deprecated) \\
+    H5Gget\_objname\_by\_idx (deprecated) \\
+    H5Gget\_objtype\_by\_idx (deprecated) \\
+    H5Gset\_comment (deprecated) \\
     \hline
     H5Oare\_mdc\_flushes\_disabled \\
     H5Odisable\_mdc\_flushes \\
     H5Oenable\_mdc\_flushes \\
     H5Oget\_comment \\
     H5Oget\_comment\_by\_name \\
-    H5Oget\_info\_by\_idx1 \\
+    H5Oget\_info\_by\_idx1 (deprecated) \\
     H5Oget\_info\_by\_idx2 \\
-    H5Oget\_info\_by\_name1 \\
+    H5Oget\_info\_by\_name1 (deprecated) \\
     H5Oget\_info\_by\_name2 \\
-    H5Oget\_info1 \\
+    H5Oget\_info1 (deprecated) \\
     H5Oget\_info2 \\
     H5Oset\_comment \\
     H5Oset\_comment\_by\_name \\
@@ -116,7 +122,7 @@ These HDF5 API calls do not depend on a particular VOL connector being loaded.
     H5Dgather \\
     H5Diterate \\
     H5Dscatter \\
-    H5Dvlen\_reclaim \\
+    H5Dvlen\_reclaim (deprecated) \\
     H5Dvlen\_get\_buf\_size \\
     \hline
     H5E* \\
@@ -160,6 +166,7 @@ These HDF5 API calls do not depend on a particular VOL connector being loaded.
     specific & H5Fdelete \\
              & H5Fflush \\
              & H5Fis\_accessible \\
+             & H5Fis\_hdf5 (deprecated, hard-coded to use native connector) \\
              & H5Fmount \\
              & H5Freopen \\
              & H5Funmount \\
@@ -168,17 +175,18 @@ These HDF5 API calls do not depend on a particular VOL connector being loaded.
     \hline
     \multicolumn{2}{|>{\raggedright\arraybackslash}p{\linewidth}|}{\cellcolor{gray!35}GROUP} \\
     \hline
-    create & H5Gcreate1 \\
+    create & H5Gcreate1 (deprecated) \\
            & H5Gcreate2 \\
            & H5Gcreate\_anon \\
     \hline
-    open & H5Gopen1 \\
+    open & H5Gopen1 (deprecated) \\
          & H5Gopen2 \\
     \hline
     get & H5Gget\_create\_plist \\
         & H5Gget\_info \\
         & H5Gget\_info\_by\_idx \\
         & H5Gget\_info\_by\_name \\
+        & H5Gget\_num\_objs (deprecated) \\
     \hline
     specific & H5Gflush \\
              & H5Grefresh \\
@@ -187,10 +195,10 @@ These HDF5 API calls do not depend on a particular VOL connector being loaded.
     \hline
     \multicolumn{2}{|>{\raggedright\arraybackslash}p{\linewidth}|}{\cellcolor{gray!35}DATASET} \\
     \hline
-    create & H5Dcreate1 \\
+    create & H5Dcreate1 (deprecated) \\
            & H5Dcreate2 \\
     \hline
-    open & H5Dopen1 \\
+    open & H5Dopen1 (deprecated) \\
          & H5Dopen2 \\
     \hline
     read & H5Dread \\
@@ -206,7 +214,8 @@ These HDF5 API calls do not depend on a particular VOL connector being loaded.
         & H5Dget\_storage\_size \\
         & H5Dget\_type \\
     \hline
-    specific & H5Dflush \\
+    specific & H5Dextend (deprecated) \\
+             & H5Dflush \\
              & H5Drefresh \\
              & H5Dset\_extent \\
     \hline
@@ -228,31 +237,37 @@ These HDF5 API calls do not depend on a particular VOL connector being loaded.
              & H5Oflush \\
              & H5O\_incr\_refcount \\
              & H5Orefresh \\
-             & H5Ovisit\_by\_name1 \\
+             & H5Ovisit\_by\_name1 (deprecated) \\
              & H5Ovisit\_by\_name2 \\
-             & H5Ovisit1 \\
+             & H5Ovisit1 (deprecated) \\
              & H5Ovisit2 \\
     \hline
     close & H5Oclose \\
     \hline
     \multicolumn{2}{|>{\raggedright\arraybackslash}p{\linewidth}|}{\cellcolor{gray!35}LINK} \\
     \hline
-    create & H5Lcreate\_hard \\
+    create & H5Glink (deprecated) \\
+           & H5Glink2 (deprecated) \\
+           & H5Lcreate\_hard \\
            & H5Lcreate\_soft \\
            & H5Lcreate\_ud \\
            & H5Olink \\
     \hline
     copy & H5Lcopy \\
     \hline
-    move & H5Lmove \\
+    move & H5Gmove (deprecated) \\
+         & H5Gmove2 (deprecated) \\
+         & H5Lmove \\
     \hline
-    get & H5Lget\_info \\
+    get & H5Gget\_linkval (deprecated) \\
+        & H5Lget\_info \\
         & H5Lget\_info\_by\_idx \\
         & H5Lget\_name\_by\_idx \\
         & H5Lget\_val \\
         & H5Lget\_val\_by\_idx \\
     \hline
-    specific & H5Ldelete \\
+    specific & H5Gunlink (deprecated) \\
+             & H5Ldelete \\
              & H5Ldelete\_by\_idx \\
              & H5Lexists \\
              & H5Literate \\
@@ -262,9 +277,12 @@ These HDF5 API calls do not depend on a particular VOL connector being loaded.
     \hline
     \multicolumn{2}{|>{\raggedright\arraybackslash}p{\linewidth}|}{\cellcolor{gray!35}DATATYPE} \\
     \hline
-    commit & H5Tcommit \\
+    commit & H5Tcommit1 (deprecated) \\
+           & H5Tcommit2 \\
+           & H5Tcommit\_anon \\
     \hline
-    open & H5Topen \\
+    open & H5Topen1 (deprecated) \\
+         & H5Topen2 \\
     \hline
     get & H5Tget\_create\_plist \\
     \hline
@@ -275,15 +293,15 @@ These HDF5 API calls do not depend on a particular VOL connector being loaded.
     \hline
     \multicolumn{2}{|>{\raggedright\arraybackslash}p{\linewidth}|}{\cellcolor{gray!35}ATTRIBUTE} \\
     \hline
-    create & H5Acreate1 \\
+    create & H5Acreate1 (deprecated) \\
            & H5Acreate2 \\
            & H5Acreate\_by\_name \\
     \hline
     open & H5Aopen \\
          & H5Aopen\_by\_idx \\
          & H5Aopen\_by\_name \\
-         & H5Aopen\_idx \\
-         & H5Aopen\_name \\
+         & H5Aopen\_idx (deprecated)\\
+         & H5Aopen\_name (deprecated) \\
     \hline
     read & H5Aread \\
     \hline
@@ -304,7 +322,7 @@ These HDF5 API calls do not depend on a particular VOL connector being loaded.
              & H5Adelete\_by\_name \\
              & H5Aexists \\
              & H5Aexists\_by\_name \\
-             & H5Aiterate1 \\
+             & H5Aiterate1 (deprecated) \\
              & H5Aiterate2 \\
              & H5Aiterate\_by\_name \\
              & H5Arename \\
