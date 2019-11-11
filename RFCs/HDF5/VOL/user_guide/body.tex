@@ -7,32 +7,93 @@
 \section{Introduction}
 
 \section{Quickstart}
+
+\subsection*{Read The Documentation For The New VOL Connector}
+
+Many VOL connectors will require specific setup and configuration of both the application and the storage. Specific permissions may have to be set, configuration files constructed, and connector-specific setup calls may need to be invoked in the application. In many cases, converting software to use a new VOL connector will be more than just a straightforward drop-in replacement done by specifying a name in the VOL plugin environment variable.
+
 \subsection*{Use A VOL-Enabled HDF5 Library}
+
+The virtual object layer was introduced in HDF5 1.12.0, so you will need that version or later to use it. The particular configuration of the library (serial vs parallel, thread-safe, debug vs production/release) does not matter. The VOL is a fundamental part of the library and cannot be disabled, so any build will do.
+
+On Windows, it's probably best to use the same debug vs release configuration for the application and all libraries in order to avoid C runtime (CRT) issues. On pre-2015 versions of Visual Studio, you'll probably also want to stick to the same Visual Studio version (and thus same CRT version) as well.
+
+When working with a debug HDF5 library, it's probably also wise to build with the "memory sanity checking" feature disabled to avoid accidentally clobbering our memory tracking infrastructure when dealing with buffers obtained from the HDF5 library.
+
 \subsection*{Make Sure The VOL Connector Is In The Search Path}
-\subsection*{Update Your Code To Load The Connector}
+
+The default location for all HDF5 plugins is set at configure time when building the HDF5 library. This is true for both CMake and the Autotools.
+
+\textbf{Default locations:}
+
+\begin{tabular}{ l l }
+    POSIX systems: &  {\tt /usr/local/hdf5/lib/plugin} \\
+     & \\
+    Windows: & {\tt \%ALLUSERSPROFILE\%/hdf5/lib/plugin}
+\end{tabular}
+
+These default locations can be overridden by setting the {\tt HDF5\_PLUGIN\_PATH} environment variable. There are also public {\tt H5PL} API calls which can be used to add, modify, and remove search paths. The library will only look for plugins in the specified plugin paths. By default, it will NOT find plugins that are simply located in the same directory as the executable.
+
+\subsection*{Update Your Code To Load And Use A VOL Connector}
+
+How this is done depends on the VOL connector, which may have special API calls for setup or require appropriate configuration files, but the most generic way to modify a program to use a specific VOL connector would be to {\tt use H5Pset\_vol()} to set the VOL connector in the file access property list (fapl) that will be used to open the file.
+
+You will also need to protect any API calls which are only implemented in the native VOL connector as those calls will fail when using a non-native VOL connector. See the section entitled "Adapting HDF5 Software to Use the VOL", below. A list of native VOL API calls has been included in an appendix.
+
+\subsection*{Optional: Set The VOL Connector Via The Environment Variable}
+
 
 \section{Loading and Registering Connectors}
 \subsection{VOL Connector Search Path}
+\subsection{Connector Versioning}
 \subsection{Connector-Specific Registration Calls}
 \subsection{\tt H5Pset\_vol()}
+\subsection{Connector Compatibility}
+
+\thgfuturewarning
+
+
+\subsection{Connection Strings}
 \subsection{Environment Variable}
+
+The HDF5 library allows specifying a default VOL connector via an environment variable: {\tt HDF5\_VOL\_CONNECTOR}. The value of this environment variable should be set to "\textit{vol\_connector\_name $<$parameters$>$}".
+
+This will perform the equivalent of:
+
+\begin{enumerate}
+    \item {\tt H5VLregister\_connector\_by\_name()} using the specified connector name
+    \item {\tt H5VLconnector\_str\_to\_info()} using the specified parameters. This will go through the connector we got from the previous step and should return a VOL info struct from the parameter string in the environment variable.
+    \item {\tt H5Pset\_vol()} on the default fapl using the obtained ID and info.
+\end{enumerate}
+
+The environment variable is parsed once, at library startup. Since the environment variable scheme just changes the default connector, it can be overridden by subsequent calls to {\tt H5Pset\_vol()}. The \textit{$<$parameters$>$} is optional, so for connectors which do not require any special configuration parameters you can just set the environment variable to the name.
 
 \section{Adapting HDF5 Software to Use the VOL}
 
 \subsection{Specific API Call Substitutions}
-${\tt H5Fis\_hdf5} \rightarrow {\tt H5Fis\_accessible}$
+\subsection*{${\tt H5Fis\_hdf5()} \rightarrow {\tt H5Fis\_accessible()}$}
 
-${\tt H5Oget\_info(1|2)} \rightarrow {\tt H5Ofuture\_function\_goes\_here}$
+{\tt H5Fis\_hdf5()} does not take a file access property list (fapl). As this is where the VOL connector is specified, this call cannot be used with aribtrary connectors. As a VOL-enabled replacement, {\tt H5Fis\_accessible()} has been added to the library. It has the same semantics as {\tt H5Fis\_hdf5()}, but takes a fapl so it can work with any VOL connector.
+
+Note that, at this time, {\tt H5Fis\_hdf5()} \textit{always} uses the native VOL connector, regardless of the settings of environment variables, etc.
+
+\subsection*{${\tt H5Oget\_info[1|2]()} \rightarrow {\tt H5Ofuture\_function\_goes\_here()}$}
+
+\thgfuturewarning
+
+The {\tt H5Oget\_info1()} and {\tt H5Oget\_info2()} are often used by user code to obtain information about an object in the file, however these calls return a struct which contains native information and are thus currently handled via the native connector's \textit{object optional} callback.
+
+These calls will be separated into two functions: one for getting generic object info (which will go through the \textit{object get} callback), and another for returning native file format information (which will go through the native connector's \textit{object optional} callback).
+
+\subsection{Protect Native-Only API Calls}
+
+
 
 \section{Using VOL Connectors With The HDF5 Command-Line Tools}
-\subsection{Connection Strings}
-\subsection{Connector Compatibility}
 
 \section{Compatibility}
 \subsection{Feature Flags}
-\begin{tcolorbox}[colback=yellow!10!white,colframe=red!75!black,title=PRELIMINARY]
-    This feature is under active development and is either incomplete or may change in behavior before the final release.
-\end{tcolorbox}
+\thgfuturewarning
 \subsection{List of HDF5 Native VOL API Calls}
 
 These API calls will probably fail when used with terminal VOL connectors other than the native HDF5 file format connector. Their use should be protected in code that uses arbitrary VOL connectors.
