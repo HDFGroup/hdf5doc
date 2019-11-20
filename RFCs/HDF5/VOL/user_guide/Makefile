@@ -1,4 +1,4 @@
-filename=main
+filename=vol_user_guide
 
 all:
 	pdflatex ${filename}

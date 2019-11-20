@@ -8,7 +8,7 @@
 
 The virtual object layer is an abstraction layer in the HDF5 library that intercepts all API calls that could potentially access objects in an HDF5 container and forwards those calls to a VOL connector, which implements the storage. The user or application gets the benefit of using the familiar and widely-used HDF5 data model and API, but can map the physical storage of the HDF5 file and objects to storage that better meets the application's data needs.
 
-\subsection*{The VOL Abstraction Layer}
+\subsection{The VOL Abstraction Layer}
 
 The VOL lies just under the public API. When a storage-oriented public API call is made, the library performs a few sanity checks on the input parameters and then immediately invokes a VOL callback, which resolves to an implementation in the VOL connector that was selected when opening or creating the file. The VOL connector then performs whatever operations are needed before control returns to the library, where any final library operations such as assigning IDs for newly created/opened datasets are performed before returning. This means that, for calls that utilize the VOL, all of the functionality is deferred to the VOL connector and the HDF5 library does very little work. An important consideration of this is that most of the HDF5 caching layers (metadata and chunk caches, page buffering, etc.) will not be available as those are implemented in the HDF5 native VOL connector and cannot be easily reused by external connectors.
 
@@ -23,7 +23,7 @@ Another thing to keep in mind is that not every VOL connector will implement the
 
 For more information about which calls go through the VOL and the mechanism by which this is implemented, see the connector author and library internals documentation.
 
-\subsection*{VOL Connectors}
+\subsection{VOL Connectors}
 
 An external VOL connector is normally implemented as a dynamically loaded plugin. In order to be used by an application, they must be discoverable and loadable via path settings, etc. These plugins are loaded at runtime via the same HDF5 plugin scheme used for filters. A VOL connector for a file is set in the file access property list (FAPL) used to open it, either via H5Pset\_vol() or a connector-specific API call provided by the connector author.
 
@@ -38,11 +38,11 @@ The native VOL connector is a special case. It is currently implemented as a bui
 
 \section{Quickstart}
 
-\subsection*{Read The Documentation For The New VOL Connector}
+\subsection{Read The Documentation For The New VOL Connector}
 
 Many VOL connectors will require specific setup and configuration of both the application and the storage. Specific permissions may have to be set, configuration files constructed, and connector-specific setup calls may need to be invoked in the application. In many cases, converting software to use a new VOL connector will be more than just a straightforward drop-in replacement done by specifying a name in the VOL plugin environment variable.
 
-\subsection*{Use A VOL-Enabled HDF5 Library}
+\subsection{Use A VOL-Enabled HDF5 Library}
 
 The virtual object layer was introduced in HDF5 1.12.0, so you will need that version or later to use it. The particular configuration of the library (serial vs parallel, thread-safe, debug vs production/release) does not matter. The VOL is a fundamental part of the library and cannot be disabled, so any build will do.
 
@@ -50,7 +50,7 @@ On Windows, it's probably best to use the same debug vs release configuration fo
 
 When working with a debug HDF5 library, it's probably also wise to build with the "memory sanity checking" feature disabled to avoid accidentally clobbering our memory tracking infrastructure when dealing with buffers obtained from the HDF5 library.
 
-\subsection*{Make Sure The VOL Connector Is In The Search Path}
+\subsection{Make Sure The VOL Connector Is In The Search Path}
 
 The default location for all HDF5 plugins is set at configure time when building the HDF5 library. This is true for both CMake and the Autotools.
 
@@ -64,13 +64,13 @@ The default location for all HDF5 plugins is set at configure time when building
 
 These default locations can be overridden by setting the {\tt HDF5\_PLUGIN\_PATH} environment variable. There are also public {\tt H5PL} API calls which can be used to add, modify, and remove search paths. The library will only look for plugins in the specified plugin paths. By default, it will NOT find plugins that are simply located in the same directory as the executable.
 
-\subsection*{Update Your Code To Load And Use A VOL Connector}
+\subsection{Update Your Code To Load And Use A VOL Connector}
 
 How this is done depends on the VOL connector, which may have special API calls for setup or require appropriate configuration files, but the most generic way to modify a program to use a specific VOL connector would be to {\tt use H5Pset\_vol()} to set the VOL connector in the file access property list (fapl) that will be used to open the file.
 
 You will also need to protect any API calls which are only implemented in the native VOL connector as those calls will fail when using a non-native VOL connector. See the section entitled "Adapting HDF5 Software to Use the VOL", below. A list of native VOL API calls has been included in an appendix.
 
-\subsection*{Optional: Set The VOL Connector Via The Environment Variable}
+\subsection{Optional: Set The VOL Connector Via The Environment Variable}
 
 In place of modifying the source code of your application, you may be able to simply set the {\tt HDF5\_VOL\_CONNECTOR} environment variable (see below). This will automatically use the speicified VOL in place of the native VOL connector.
 
@@ -78,11 +78,11 @@ In place of modifying the source code of your application, you may be able to si
 
 Before a VOL connector can be used, it must be discoverable by the library and then loaded and registered.
 
-\subsection*{VOL Connector Search Path}
+\subsection{VOL Connector Search Path}
 
 VOL connector plugins are discovered and loaded by the library using the same mechanism as dataset/group filter plugins (REF). Essentially, 
 
-\subsection*{registration}
+\subsection{registration}
 
 Before a connector can be used, it must be registered. This loads the connector into the library and give it an HDF5 {\tt hid\_t} ID. The {\tt H5VLregister\_connector} API calls are used for this.
 
@@ -102,16 +102,17 @@ As far as the library is concerned, connectors do not need to be explicitly unre
 
 Note that it's considered an error to close/unload the native VOL connector. The library will prevent this. This means that, for the time being, the native VOL connector will always be available. This may change in the future so that the memory footprint of the native VOL connector goes away when not in use.
 
-\subsection*{Connector Versioning}
+\subsection{Connector Versioning}
 
 \thgfuturewarning
 
 There is currently no recommended or library-inherent way to version VOL connectors. A {\tt version} field is included in the {\tt H5VL\_class\_t} struct which holds a connector's information and callbacks, but this has not been utilized in the plugin loading code at this time.
 
-\subsection*{Connector-Specific Registration Calls}
+\subsection{Connector-Specific Registration Calls}
 
+Most connectors will provide a special API call which will set the connector in the fapl. These will often be in the form of {\tt H5Pset\_fapl\_<name>()}. For example, the DAOS VOL (https://bitbucket.hdfgroup.org/projects/HDF5VOL/repos/daos-vol) provides a {\tt H5Pset\_fapl\_daos()} API call which will take MPI parameters and make this call. See the connector's documentation or public header file(s) for more information.
 
-\subsection*{\tt H5Pset\_vol()}
+\subsection{\tt H5Pset\_vol()}
 
 The is the main library API call for setting the VOL connector in a file access property list. Its signature is:
 
@@ -119,14 +120,9 @@ The is the main library API call for setting the VOL connector in a file access 
 
 It takes the ID of the file access property list, the ID of the registered VOL connector, and a pointer to whatever connector-specific data the connector is expecting. This will usually be a data struct specified in the connector's header.
 
-Most connectors will provide a special API call which will make this call for you. For example, the DAOS VOL (https://bitbucket.hdfgroup.org/projects/HDF5VOL/repos/daos-vol) provides a {\tt H5Pset\_fapl\_daos()} API call which will take MPI parameters and make this call.
+As mentioned above, many connectors will provide their own replacement for this call. See the connector's documentation for more information.
 
-\subsection*{Connector Compatibility}
-
-\thgfuturewarning
-
-
-\subsection*{Parameter Strings}
+\subsection{Parameter Strings}
 
 Each VOL connector is allowed to take in a parameter string which can be parsed via {\tt H5VLconnector\_str\_to\_info()} to get an info struct which can be passed to {\tt H5Pset\_vol()}.
 
@@ -138,7 +134,7 @@ And the obtained info can be freed via:
 
 Most users will not need this functionality as they will be using either connector-specific setup calls which will handle registering and configuring the connector for them or they will be using the environment variable (see below).
 
-\subsection*{Environment Variable}
+\subsection{Environment Variable}
 
 The HDF5 library allows specifying a default VOL connector via an environment variable: {\tt HDF5\_VOL\_CONNECTOR}. The value of this environment variable should be set to "\textit{vol\_connector\_name $<$parameters$>$}".
 
@@ -154,14 +150,14 @@ The environment variable is parsed once, at library startup. Since the environme
 
 \section{Adapting HDF5 Software to Use the VOL}
 
-\subsection*{Specific API Call Substitutions}
-\subsection*{${\tt H5Fis\_hdf5()} \rightarrow {\tt H5Fis\_accessible()}$}
+\subsection{Specific API Call Substitutions}
+\subsection{${\tt H5Fis\_hdf5()} \rightarrow {\tt H5Fis\_accessible()}$}
 
 {\tt H5Fis\_hdf5()} does not take a file access property list (fapl). As this is where the VOL connector is specified, this call cannot be used with aribtrary connectors. As a VOL-enabled replacement, {\tt H5Fis\_accessible()} has been added to the library. It has the same semantics as {\tt H5Fis\_hdf5()}, but takes a fapl so it can work with any VOL connector.
 
 Note that, at this time, {\tt H5Fis\_hdf5()} \textit{always} uses the native VOL connector, regardless of the settings of environment variables, etc.
 
-\subsection*{${\tt H5Oget\_info[1|2]()} \rightarrow {\tt H5Oget\_[native|data\_model]\_info()}$}
+\subsection{${\tt H5Oget\_info[1|2]()} \rightarrow {\tt H5Oget\_[native|data\_model]\_info()}$}
 
 \thgfuturewarning
 
@@ -171,7 +167,7 @@ These calls will be separated into two functions: one for getting an object's da
 
 \textbf{This section will be expanded when the RFC for this feature is complete.}
 
-\subsection*{Protect Native-Only API Calls}
+\subsection{Protect Native-Only API Calls}
 
 There is currently no simple way to determine if the VOL connector used for a file or object is the native VOL connector. You will have to track this in your application and not make native-only VOL calls with non-native VOL connectors.
 
@@ -186,14 +182,14 @@ The best way to use a particular VOL connector with the HDF5 tools, both command
 The HDF5 tools currently do not have an option to specify a VOL connector on the command line, though this option will be added soon.
 
 \section{Compatibility}
-\subsection*{Introspection / Feature Flags}
+\subsection{Introspection / Feature Flags}
 \thgfuturewarning
 
 Some VOL connectors will not implement all the functionality available in the HDF5 library, especially in the early stages of development. Unfortunately, there is currently no easy way to determine if a VOL connector implements particular API calls or groups of calls.
 
 We are working on an introspection mechanism, possibly involving a set of feature or capabilities flags and will have that available in a future release.
 
-\subsection*{List of HDF5 Native VOL API Calls}
+\subsection{List of HDF5 Native VOL API Calls}
 
 These API calls will probably fail when used with terminal VOL connectors other than the native HDF5 file format connector. Their use should be protected in code that uses arbitrary VOL connectors. Note that some connectors may, in fact, implement some of this functionality as it is possible to mimic the native HDF5 connector, however this will probably not be true for most non-native VOL connectors.
 
@@ -271,7 +267,7 @@ These API calls will probably fail when used with terminal VOL connectors other 
 \caption{Alphabetical list of HDF5 API calls specific to the native VOL connector}
 \end{longtable}
 
-\subsection*{List of HDF5 VOL-Independent API Calls}
+\subsection{List of HDF5 VOL-Independent API Calls}
 
 These HDF5 API calls do not depend on a particular VOL connector being loaded.
 
@@ -304,7 +300,7 @@ These HDF5 API calls do not depend on a particular VOL connector being loaded.
 \caption{Alphabetical list of VOL-independent HDF5 API calls}
 \end{longtable}
 
-\subsection*{List of HDF5 API Calls By Callback}
+\subsection{List of HDF5 API Calls By Callback}
 
 \begin{longtable}{ |l|>{\raggedright\arraybackslash}l| }
     \hline
