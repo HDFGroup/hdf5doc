@@ -1,0 +1,137 @@
+\section{Creating a New Connector}
+External plugins are developed outside of the HDF5 library and do not
+use any internal HDF5 private functions. They do not require to be
+shipped with the HDF5 library, but can just link to it from userspace
+just like an HDF5 application. If an external VOL plugin is installed on the system as a shared library or a DLL, the library can search for it and load it dynamically to be used by an application.
+
+\subsection{Overview}
+Developing an external plugin is similar to developing an internal plugin. Refer to Section~\ref{sec:vol} for details on plugin creation. The important thing to keep in mind is that external plugins cannot use internal HDF5 features. The ``value'' field for an external plugin should be a positive integer greater than 128. The name should be unique across all plugins registered with the library.
+
+For the HDF5 library to be able to load an external plugin dynamically, the plugin developer has to define two public routines with the following name and signature:
+\begin{lstlisting}
+H5PL_type_t H5PLget_plugin_type(void)
+const void *H5PLget_plugin_info(void)
+\end{lstlisting}
+{\tt H5PLget\_plugin\_type} should return the library type which should always be {\tt H5PL\_TYPE\_VOL}. {\tt H5PLget\_plugin\_info} should return a pointer to the plugin structure defining the VOL plugin with all the callbacks. For example, consider an external plugin defined as:
+\begin{lstlisting}
+static const H5VL_class_t H5VL_log_g = {
+    1,	/* version */
+    502,	/* value */
+    "log",	/* name */
+    ...
+}
+\end{lstlisting}
+The plugin would implement the two routines as:
+\begin{lstlisting}
+H5PL_type_t H5PLget_plugin_type(void) {return H5PL_TYPE_VOL;}
+const void *H5PLget_plugin_info(void) {return &H5VL_log_g;}
+\end{lstlisting}
+
+Implementing iteration and visit callbacks in external plugins requires the plugin invoking the user defined callback function with an HDF5 identifier ({\tt hid\_t}) on the location object. The current HDF5 H5I API does not allow creating and dereferencing identifiers that point to HDF5 object types. Therefore, two new API routines have been added (see Section~\ref{sec:api} for more details) to get around that. {\tt H5VLobject\_register()} is used to create an HDF5 identifier for a VOL object handle (file, group, dataset, named datatype, or attribute). {\tt H5VLget\_object()} is used to derefernce the HDF5 identifier back to the VOL object handle.
+
+\subsection{Using The New Connector}
+Unlike internal plugins, external plugins cannot create an API routine for applications to use to set the VOL plugin in the file access property list. External plugin developers can, however, provide a wrapper routine that registers the plugin with {\tt H5VLregister()} instead of having the application call that directly with the pointer to the plugin class structure. Both ways are possible if the external plugin used is in the application's userspace. External plugins provided by third party vendors that are not in the application's userspace but are installed on the system with a shared library or DLL can be registered by the application using {\tt H5VLregister\_name()} provided that the application knows the plugin's name in advance.
+
+The registration operation will return a global identifier for the registered plugin. Applications can query the library for that identifier using the plugin name with {\tt H5VLget\_plugin\_id()}. This identifier is used to initialize the plugin if it requires an initialization phase. A third party library could use that ID to create a plugin that stacks or mirrors on top of an internal plugin using that identifier (refer to Section~\ref{sec:stack} for more details on stacking and mirroring).
+
+Some plugins could require an initialization phase before using the plugin with some input parameters from users. This process is done by creating a VOL initialization property list and setting a public property that should be defined by the internal plugin to the hostname of the remote machine. The user then calls the initialize routine ({\tt H5VLintialize()}) with the plugin\_id and the property list to initialize the plugin. An external plugin could abstract those operations into a wrapper routine that wraps the property list creation, property settings, and plugin initialization into one call that the user makes to simplify this process.
+
+The application then sets the plugin access property in the file access property list to the external plugin using the plugin identifier with this API routine:
+\begin{lstlisting}
+  herr_t H5Pset_vol(hid_t fapl_id, hid_t plugin_id, const void *new_vol_info);
+\end{lstlisting}
+where {\tt new\_vol\_info} is the plugin information needed from the application. Typically it is a plugin defined structure with some fields to setup the plugin access. The external plugin could also provide a wrapper function around this to make it easier for the application to use. 
+
+Now that the plugin is initialized, the application can create or open an HDF5 container using the external plugin. After closing all objects and containers on that plugin, the application should terminate access to the selected plugin if it requires a termination phase by calling {\tt H5VLterminate()} with the required termination properties (similar to the initialization phase). 
+
+Finally, the application is required to un-register the plugin from the library when access to the container(s) is terminated using {\tt H5VLunregister}.
+
+\subsection{Testing}
+
+\subsection{Internal Connectors}
+
+Internal plugins are developed internally with the HDF5 library and
+are required to ship with the entire library to be used. Typically
+those plugins need to use internal features and functions of the HDF5
+library that are not available publicly from the user application.
+
+\subsubsection{Implementing an Internal Connector}
+The first step to implement an internal plugin is to implement all the callbacks defined in the VOL class as described in Section~\ref{sec:vol}. After implementing the VOL class, the next step would be to allow users to select
+this plugin to be used. This is done by creating a new API routine to
+set the plugin on the file access property list. For example, if we
+create an internal plugin called ``dummy'' that needs an MPI
+communicator and info object as information from the user, that
+routine signature should look like:
+
+\begin{lstlisting}
+herr_t H5Pset_fapl_dummy(hid_t fapl_id, MPI_Comm comm, MPI_Info info);
+\end{lstlisting}
+
+The implementation for the above routine should use the internal
+function:
+\begin{lstlisting}
+herr_t H5P_set_vol(H5P_genplist_t *plist, H5VL_class_t *vol_cls, const
+void *vol_info);
+\end{lstlisting}
+that will set the file access using that {\tt fapl\_id} to go through
+the ``dummy'' plugin. It will also call the copy callback of the
+``dummy'' plugin on the info object ({\tt comm and info}).
+
+A sample implementation for the {\tt H5Pset\_fapl\_dummy()} would look like this:
+
+\begin{lstlisting}
+/* DUMMY-specific file access properties */
+typedef struct H5VL_dummy_fapl_t {
+    MPI_Comm            comm;     /* communicator       */
+    MPI_Info            info;     /* MPI information   */
+} H5VL_dummy_fapl_t;
+
+herr_t
+H5Pset_fapl_dummy(hid_t fapl_id, MPI_Comm comm, MPI_Info info)
+{
+    H5VL_dummy_fapl_t fa;
+    H5P_genplist_t  *plist;      /* Property list pointer */
+    herr_t          ret_value;
+
+    FUNC_ENTER_API(FAIL)
+
+    if(fapl_id == H5P_DEFAULT)
+        HGOTO_ERROR(H5E_PLIST, H5E_BADVALUE, FAIL, "can't set values in default property list")
+
+    if(NULL == (plist = H5P_object_verify(fapl_id, H5P_FILE_ACCESS)))
+        HGOTO_ERROR(H5E_ARGS, H5E_BADTYPE, FAIL, "not a file access property list")
+
+    if(MPI_COMM_NULL == comm)
+	HGOTO_ERROR(H5E_PLIST, H5E_BADTYPE, FAIL, "not a valid communicator")
+
+    /* Initialize driver specific properties */
+    fa.comm = comm;
+    fa.info = info;
+
+    ret_value = H5P_set_vol(plist, &H5VL_dummy_g, &fa);
+
+done:
+    FUNC_LEAVE_API(ret_value)
+} /* end H5Pset_fapl_dummy() */
+\end{lstlisting}
+
+At this point, the internal plugin is ready to be used. For more
+information on how to implement an internal plugin, the native plugin
+for the HDF5 library is a comprehensive plugin that implements all
+features of the library and can be used as a guide.
+
+\subsubsection{Using an Internal Connector}
+An internal plugin is registered automatically with the HDF5 library when the library gets initialized. Users should not attempt to register an internal plugin. The internal registration operation creates a global identifier for each internal plugin. Applications can query the library for that identifier using the plugin name with {\tt H5VLget\_plugin\_id()}. This identifier is used to initialize the plugin if it requires an initialization phase. A third party library could use that ID to create a plugin that stacks or mirrors on top of an internal plugin using that identifier (refer to Section~\ref{sec:stack} for more details on stacking and mirroring).
+
+Some plugins could require an initialization phase before using the plugin with some input parameters from users. For example, a remote plugin would need to setup a connection to a remote machine with a specific hostname that the user knows and the HDF5 library does not know about. This process is done by creating a VOL initialization property list and setting a public property that should be defined by the internal plugin to the hostname of the remote machine. The user then calls the initialize routine ({\tt H5VLintialize()}) with the plugin\_id and the property list to initialize the plugin. Some plugins could create a public API routine that wraps the property list creation, property settings, and plugin initialization into one routine that the user calls to simplify this process for the users. The native HDF5 plugin does not require an initialization phase.
+
+Now that the plugin is initialized, the application can create or open an HDF5 container using the internal plugin by creating a file access property list and calling the corresponding API routine that the internal plugin should define for setting the VOL plugin property and container parameters on the file access property list. That FAPL can be passed to the {\tt H5Fcreate()} or {\tt H5Fopen{}} calls to access the container through the VOL plugin. Subsequently, all other HDF5 calls on the container and objects created or opened in that container will automatically go to the selected VOL plugin. 
+
+After closing all objects and containers on that plugin, the application should terminate access to the selected plugin if it requires a termination phase by calling {\tt H5VLterminate()} with the required termination properties (similar to the initialization phase). The native HDF5 plugin does not require a termination phase.
+
+The internal plugin is unregistered automatically by the HDF5 library on library termination, and users should not attempt to unregister it themselves.
+
+%%% Local Variables: 
+%%% mode: latex
+%%% TeX-master: t
+%%% End: 
