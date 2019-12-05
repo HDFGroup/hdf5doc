@@ -535,7 +535,7 @@ typedef enum H5VL_attr_get_t {
 
 \textbf{Arguments:}\\
 \begin{tabular}{l p{13.5cm}}
-  \texttt{attr} & (IN): An attribute or location object where information
+  \texttt{obj} & (IN): An attribute or location object where information
   needs to be retrieved from.\\
   \texttt{get\_type} & (IN): The type of the information to retrieve.\\
   \texttt{dxpl\_id} & (IN): The data transfer property list.\\
@@ -561,7 +561,7 @@ the argument list, in order, for each type:
 
 \item \texttt{H5VL\_ATTR\_GET\_INFO}, to retrieve the attribute info:
   \begin{enumerate}
-  \item \texttt{H5VL\_loc\_params\_t loc\_params} (IN): The location parameters
+  \item \texttt{H5VL\_loc\_params\_t *loc\_params} (IN): Pointer to the location parameters
     explained in Section~\ref{sec:map}. 
   \item \texttt{H5A\_info\_t *ainfo} (OUT): info structure to fill the
     attribute info in.
@@ -570,7 +570,7 @@ the argument list, in order, for each type:
 \item \texttt{H5VL\_ATTR\_GET\_NAME}, to retrieve an attribute name on a
   particular object specified in \texttt{obj}:
   \begin{enumerate}
-  \item \texttt{H5VL\_loc\_params\_t loc\_params} (IN): The location parameters
+  \item \texttt{H5VL\_loc\_params\_t *loc\_params} (IN): Pointer to the location parameters
     explained in Section~\ref{sec:map}. The type could be either
     \texttt{H5VL\_OBJECT\_BY\_SELF} meaning \texttt{obj} is the attribute,
     or \texttt{H5VL\_OBJECT\_BY\_IDX} meaning the attribute to retrieve
@@ -652,8 +652,6 @@ the argument list, in order, for each type:
 \item \texttt{H5VL\_ATTR\_EXISTS}, to check if an attribute exists on a
   particular object specified in \texttt{obj}:
   \begin{enumerate}
-  \item \texttt{H5VL\_loc\_params\_t loc\_params} (IN): The location parameters
-    explained in Section~\ref{sec:map}.
   \item \texttt{char *attr\_name} (IN): the attribute name to check.
   \item \texttt{htri\_t *ret} (OUT): existence result, 0 if false, 1 if true.
   \end{enumerate}
@@ -829,7 +827,7 @@ failure.\bigskip
 \textbf{Signature:}
 \begin{lstlisting}
     herr_t (*write)(void *dset, hid_t mem_type_id, hid_t mem_space_id, 
-        hid_t file_space_id, hid_t dxpl_id, const void * buf, void **req);
+        hid_t file_space_id, hid_t dxpl_id, const void *buf, void **req);
 \end{lstlisting}
 
 \textbf{Arguments:}\\
@@ -1375,12 +1373,11 @@ depending on the \texttt{get\_type} parameter. The following list shows
 the argument list, in order, for each type:
 
 \begin{itemize}
-\item \texttt{H5VL\_OBJECT\_GET\_CONT\_INFO}, get the container that the object
-  belongs to:
+\item \texttt{H5VL\_OBJECT\_GET\_CONT\_INFO}, get information about the container
+    that the object belongs to:
   \begin{enumerate}
-  \item \texttt{H5I\_type\_t type} (IN): the object type in \texttt{obj}.
-  \item \texttt{void **ret} (OUT): pointer to the file structure returned
-    by the connector.
+  \item \texttt{H5VL\_file\_cont\_info\_t *info} (OUT): pointer to the file
+    container info structure returned.
   \end{enumerate}
 
 \item \texttt{H5VL\_FILE\_GET\_FAPL}, to retrieve the file access
@@ -1399,14 +1396,13 @@ the argument list, in order, for each type:
 
 \item \texttt{H5VL\_FILE\_GET\_FILENO}, to retrieve the file's file number:
   \begin{enumerate}
-  \item \texttt{hid\_t *ret\_id} (OUT): buffer for the identifier of the
-    file creation property list.
+  \item \texttt{unsigned long *fileno} (OUT): buffer for the file number.
   \end{enumerate}
 
 \item \texttt{H5VL\_FILE\_GET\_INTENT}, get access intent of the
   container:
   \begin{enumerate}
-  \item \texttt{unsigned *ret} (OUT): buffer for the intent value.
+  \item \texttt{unsigned *intent\_flags} (OUT): buffer for the intent flags value.
   \end{enumerate}
 
 \item \texttt{H5VL\_FILE\_GET\_NAME}, get container name an object
@@ -1458,7 +1454,8 @@ typedef enum H5VL_file_specific_t {
     H5VL_FILE_MOUNT,                        /* Mount a file                     */
     H5VL_FILE_UNMOUNT,                      /* Unmount a file                   */
     H5VL_FILE_IS_ACCESSIBLE,                /* Check if a file is accessible    */
-    H5VL_FILE_DELETE                        /* Delete a file                    */
+    H5VL_FILE_DELETE,                       /* Delete a file                    */
+    H5VL_FILE_IS_EQUAL                      /* Check if two files are the same  */
 } H5VL_file_specific_t;
 \end{lstlisting}
 
@@ -1480,10 +1477,6 @@ the argument list, in order, for each type:
 
 \begin{itemize}
 \item \texttt{H5VL\_FILE\_POST\_OPEN}, adjust a file after opening it:
-  \begin{enumerate}
-  \item \texttt{H5I\_type\_t obj\_type} (IN): The object type of \texttt{obj} on which the flush operation was called.
-  \item \texttt{H5F\_scope\_t scope} (IN): The scope of the flushing action.
-  \end{enumerate}
         
 \item \texttt{H5VL\_FILE\_FLUSH}, flushes all buffers associated with the container to disk:
   \begin{enumerate}
@@ -1493,8 +1486,8 @@ the argument list, in order, for each type:
   
 \item \texttt{H5VL\_FILE\_REOPEN}, reopens a file:
   \begin{enumerate}
-  \item \texttt{H5I\_type\_t obj\_type} (IN): The object type of \texttt{obj} on which the flush operation was called.
-  \item \texttt{H5F\_scope\_t scope} (IN): The scope of the flushing action.
+      \item \texttt{void *file} (IN): pointer to the reopened file (same type
+          of pointer as is returned from the connector's create/open callbacks).
   \end{enumerate}
   
 \item \texttt{H5VL\_FILE\_MOUNT}, Mounts a file on the location object:
@@ -1502,7 +1495,8 @@ the argument list, in order, for each type:
   \item \texttt{H5I\_type\_t type} (IN): the object type in \texttt{obj}.
   \item \texttt{char *name} (IN): name of the group onto which the file
     specified by \texttt{file} is to be mounted.
-  \item \texttt{void *file} (IN): child file to be mounted.
+  \item \texttt{void *child} (IN): child file to be mounted (same type
+          of pointer as is returned from the connector's create/open callbacks).
   \item \texttt{hid\_t *fmpl\_id} (IN): file mount property list.
   \end{enumerate}
 
@@ -1526,6 +1520,13 @@ the argument list, in order, for each type:
   \item \texttt{H5I\_type\_t obj\_type} (IN): The object type of \texttt{obj} on which the flush operation was called.
   \item \texttt{H5F\_scope\_t scope} (IN): The scope of the flushing action.
   \end{enumerate}
+
+\item \texttt{H5VL\_FILE\_IS\_EQUAL}, check if one file is equal to another:
+  \begin{enumerate}
+  \item \texttt{H5I\_type\_t obj\_type} (IN): The object type of \texttt{obj} on which the flush operation was called.
+  \item \texttt{H5F\_scope\_t scope} (IN): The scope of the flushing action.
+  \end{enumerate}
+
  \end{itemize}
 \end{mdframed}
 
@@ -1599,7 +1600,7 @@ future calls.\bigskip
 \begin{mdframed}[style=bgbox]
 \textbf{Signature:}
 \begin{lstlisting}
-    void *(*create)(void *obj, H5VL_loc_params_t loc_params, const char *name, hid_t gcpl_id, hid_t gapl_id, hid_t dxpl_id, void **req);
+    void *(*create)(void *obj, H5VL_loc_params_t *loc_params, const char *name, hid_t gcpl_id, hid_t gapl_id, hid_t dxpl_id, void **req);
 \end{lstlisting}
 
 \textbf{Arguments:}\\
@@ -1607,7 +1608,7 @@ future calls.\bigskip
   \texttt{obj} & (IN): Pointer to an object where the group needs
   to be created or where the look-up of the target object needs to
   start.\\
-  \texttt{loc\_params} & (IN): The location parameters as explained in
+  \texttt{loc\_params} & (IN): Pointer to the location parameters as explained in
   Section~\ref{sec:map}. The type can be only \texttt{H5VL\_OBJECT\_BY\_SELF} in this callback. \\
   \texttt{name} & (IN): The name of the group to be created.\\
   \texttt{dcpl\_id} & (IN): The group creation property list. It contains
@@ -1630,7 +1631,7 @@ calls.\bigskip
 \begin{mdframed}[style=bgbox]
 \textbf{Signature:}
 \begin{lstlisting}
-    void *(*open)(void *obj, H5VL_loc_params_t loc_params, 
+    void *(*open)(void *obj, H5VL_loc_params_t *loc_params, 
         const char*name, hid_t gapl_id, hid_t dxpl_id, void **req);
 \end{lstlisting}
 
@@ -1638,7 +1639,7 @@ calls.\bigskip
 \begin{tabular}{l p{13.5cm}}
   \texttt{obj} & (IN): Pointer to an object where the group needs to be
   opened or where the look-up of the target object needs to start.\\
-  \texttt{loc\_params} & (IN): The location parameters as explained in
+  \texttt{loc\_params} & (IN): Pointer to the location parameters as explained in
   Section~\ref{sec:map}. The type can be only \texttt{H5VL\_OBJECT\_BY\_SELF} in this callback. \\
   \texttt{name} & (IN): The name of the group to be opened.\\
   \texttt{dapl\_id} & (IN): The group access property list.\\
@@ -1695,9 +1696,9 @@ the argument list, in order, for each type:
 
 \item \texttt{H5VL\_GROUP\_GET\_INFO}, to retrieve the attribute info:
   \begin{enumerate}
-  \item \texttt{H5VL\_loc\_params\_t loc\_params} (IN): The location parameters
-    explained in Section~\ref{sec:map}. 
-  \item \texttt{H5G\_info\_t *ginfo} (OUT): info structure to fill the
+  \item \texttt{H5VL\_loc\_params\_t *loc\_params} (IN): Pointer to the location
+      parameters explained in Section~\ref{sec:map}. 
+  \item \texttt{H5G\_info\_t *group\_info} (OUT): info structure to fill the
     group info in.
   \end{enumerate}
 \end{itemize}
@@ -1708,7 +1709,7 @@ The \texttt{specific} callback in the group class implements specific operations
 \begin{mdframed}[style=bgbox]
 \textbf{Signature:}
 \begin{lstlisting}
-	herr_t (*specific)(void *obj, H5VL_loc_params_t loc_params, H5VL_object_specific_t specific_type, hid_t dxpl_id, void **req, va_list arguments);
+	herr_t (*specific)(void *obj, H5VL_loc_params_t *loc_params, H5VL_object_specific_t specific_type, hid_t dxpl_id, void **req, va_list arguments);
 \end{lstlisting}
 
 The \texttt{specific\_type} argument is an \texttt{enum}:
@@ -1723,7 +1724,7 @@ typedef enum H5VL_group_specific_t {
 \textbf{Arguments:}\\
 \begin{tabular}{l p{13.5cm}}
   \texttt{obj} & (IN): The container or object where the operation needs to happen.\\
-  \texttt{loc\_params} & (IN): The location parameters as explained in Section~\ref{sec:map}.\\
+  \texttt{loc\_params} & (IN): Pointer to the location parameters as explained in Section~\ref{sec:map}.\\
   \texttt{specific\_type} & (IN): The type of the operation.\\
   \texttt{dxpl\_id} & (IN): The data transfer property list.\\
   \texttt{req} & (IN/OUT): A pointer to the asynchronous request of the
@@ -1819,7 +1820,7 @@ soft, external, or user-defined link in the container. It returns an
 \textbf{Signature:}
 \begin{lstlisting}
     herr_t (*create)(H5VL_link_create_type_t create_type, void *obj,
-        H5VL_loc_params_t loc_params, hid_t lcpl_id, 
+        H5VL_loc_params_t *loc_params, hid_t lcpl_id, 
         hid_t lapl_id, hid_t dxpl_id, void **req);
 \end{lstlisting}
 
@@ -1838,7 +1839,7 @@ typedef enum H5VL_link_create_type_t {
   \texttt{create\_type} & (IN): type of the link to be created.\\
   \texttt{obj} & (IN): Pointer to an object where the link needs to be
   created from.\\
-  \texttt{loc\_params} & (IN): The location parameters as explained in
+  \texttt{loc\_params} & (IN): Pointer to the location parameters as explained in
   Section~\ref{sec:map} for the source object. \\
   \texttt{lcpl\_id} & (IN): The link creation property list. It contains
   all the link creation properties in addition to other API parameters
@@ -1887,16 +1888,16 @@ The \texttt{copy} callback in the link class copies a link within the HDF5 conta
 \begin{mdframed}[style=bgbox]
 \textbf{Signature:}
 \begin{lstlisting}
-    herr_t (*copy)(void *src_obj, H5VL_loc_params_t loc_params1, void *dst_obj, H5VL_loc_params_t loc_params2, hid_t lcpl_id, hid_t lapl_id, hid_t dxpl_id, void **req);
+    herr_t (*copy)(void *src_obj, H5VL_loc_params_t *loc_params1, void *dst_obj, H5VL_loc_params_t *loc_params2, hid_t lcpl_id, hid_t lapl_id, hid_t dxpl_id, void **req);
 \end{lstlisting}
 
 \textbf{Arguments:}\\
 \begin{tabular}{l p{13.5cm}}
   \texttt{src\_obj} & (IN): original/source object or file. \\
-  \texttt{loc\_params1} & (IN): The location parameters for the source
+  \texttt{loc\_params1} & (IN): Pointer to the location parameters for the source
   object as explained in Section~\ref{sec:map}. The type can be only \texttt{H5VL\_OBJECT\_BY\_NAME} in this callback. \\
   \texttt{dst\_obj} & (IN): destination object or file. \\
-  \texttt{loc\_params1} & (IN): The location parameters for the destination
+  \texttt{loc\_params1} & (IN): Pointer to the location parameters for the destination
   object as explained in Section~\ref{sec:map}. The type can be only \texttt{H5VL\_OBJECT\_BY\_NAME} in this callback. \\
   \texttt{lcpl\_id} & (IN): The link creation property list.\\
   \texttt{lapl\_id} & (IN): The link access property list.\\
@@ -1912,16 +1913,16 @@ The \texttt{move} callback in the link class moves a link within the HDF5 contai
 \begin{mdframed}[style=bgbox]
 \textbf{Signature:}
 \begin{lstlisting}
-    herr_t (*move)(void *src_obj, H5VL_loc_params_t loc_params1, void *dst_obj, H5VL_loc_params_t loc_params2, hid_t lcpl_id, hid_t lapl_id, hid_t dxpl_id, void **req);
+    herr_t (*move)(void *src_obj, H5VL_loc_params_t *loc_params1, void *dst_obj, H5VL_loc_params_t *loc_params2, hid_t lcpl_id, hid_t lapl_id, hid_t dxpl_id, void **req);
 \end{lstlisting}
 
 \textbf{Arguments:}\\
 \begin{tabular}{l p{13.5cm}}
   \texttt{src\_obj} & (IN): original/source object or file. \\
-  \texttt{loc\_params1} & (IN): The location parameters for the source
+  \texttt{loc\_params1} & (IN): Pointer to the location parameters for the source
   object as explained in Section~\ref{sec:map}. The type can be only \texttt{H5VL\_OBJECT\_BY\_NAME} in this callback. \\
   \texttt{dst\_obj} & (IN): destination object or file. \\
-  \texttt{loc\_params1} & (IN): The location parameters for the destination
+  \texttt{loc\_params1} & (IN): Pointer to the location parameters for the destination
   object as explained in Section~\ref{sec:map}. The type can be only \texttt{H5VL\_OBJECT\_BY\_NAME} in this callback. \\
   \texttt{lcpl\_id} & (IN): The link creation property list.\\
   \texttt{lapl\_id} & (IN): The link access property list.\\
@@ -1939,7 +1940,7 @@ returns an \texttt{herr\_t} indicating success or failure.\bigskip
 \begin{mdframed}[style=bgbox]
 \textbf{Signature:}
 \begin{lstlisting}
-    herr_t (*get)(void *obj, H5VL_loc_params_t loc_params, 
+    herr_t (*get)(void *obj, H5VL_loc_params_t *loc_params, 
         H5VL_link_get_t get_type, hid_t dxpl_id, void **req, 
         va_list arguments);
 \end{lstlisting}
@@ -1958,7 +1959,7 @@ typedef enum H5VL_link_get_t {
 \begin{tabular}{l p{13.5cm}}
   \texttt{obj} & (IN): The file or group object where information needs to be
   retrieved from.\\
-  \texttt{loc\_params} & (IN): The location parameters for the source
+  \texttt{loc\_params} & (IN): Pointer to the location parameters for the source
   object as explained in Section~\ref{sec:map}. The type can be only \texttt{H5VL\_OBJECT\_BY\_NAME} or \texttt{H5VL\_OBJECT\_BY\_IDX} in this
   callback.\\ 
   \texttt{get\_type} & (IN): The type of the information to retrieve.\\
@@ -1978,7 +1979,7 @@ the argument list, in order, for each type:
 \item \texttt{H5VL\_LINK\_GET\_INFO}, to retrieve the link info from the
   link specified in the \texttt{loc\_params}:
   \begin{enumerate}
-  \item \texttt{H5L\_info\_t linfo} (OUT): pointer to info structure to
+  \item \texttt{H5L\_info\_t *linfo} (OUT): pointer to info structure to
     fill.
   \end{enumerate}
 
@@ -2007,7 +2008,7 @@ The \texttt{specific} callback in the link class implements specific operations 
 \begin{mdframed}[style=bgbox]
 \textbf{Signature:}
 \begin{lstlisting}
-	herr_t (*specific)(void *obj, H5VL_loc_params_t loc_params, H5VL_link_specific_t specific_type, hid_t dxpl_id, void **req, va_list arguments);
+	herr_t (*specific)(void *obj, H5VL_loc_params_t *loc_params, H5VL_link_specific_t specific_type, hid_t dxpl_id, void **req, va_list arguments);
 \end{lstlisting}
 
 The \texttt{specific\_type} argument is an \texttt{enum}:
@@ -2023,7 +2024,7 @@ typedef enum H5VL_link_specific_t {
 \textbf{Arguments:}\\
 \begin{tabular}{l p{13.5cm}}
   \texttt{obj} & (IN): The location object  where the operation needs to happen.\\
-  \texttt{loc\_params} & (IN): The location parameters as explained in Section~\ref{sec:map}.\\
+  \texttt{loc\_params} & (IN): Pointer to the location parameters as explained in Section~\ref{sec:map}.\\
   \texttt{specific\_type} & (IN): The type of the operation.\\
   \texttt{dxpl\_id} & (IN): The data transfer property list.\\
   \texttt{req} & (IN/OUT): A pointer to the asynchronous request of the
@@ -2040,7 +2041,7 @@ the argument list, in order, for each type:
 \begin{itemize}
 \item \texttt{H5VL\_LINK\_DELETE}, to remove a link specified in the location parameter from an HDF5 container.
 
-\item \texttt{H5VL\_LINK\_EXITS}, to determine whether the link specified
+\item \texttt{H5VL\_LINK\_EXISTS}, to determine whether the link specified
   in the \texttt{loc\_params} exits (\texttt{loc\_params} is of type \texttt{H5VL\_OBJECT\_BY\_NAME} only with this type):
   \begin{enumerate}
   \item \texttt{htri\_t *ret} (OUT): buffer for the existence of the link
@@ -2052,7 +2053,7 @@ the argument list, in order, for each type:
   \item \texttt{hbool\_t recursive} (IN): whether to recursively follow links into subgroups of the specified group.\\
   \item \texttt{H5\_index\_t idx\_type} (IN): Type of index.\\
   \item \texttt{H5\_iter\_order\_t order} (IN): Order in which to iterate over index.\\
-  \item \texttt{hsize\_t *idx} (IN/OUT):  iteration position where to start and return position where an interrupted iteration may restart.\\
+  \item \texttt{hsize\_t *idx\_p} (IN/OUT):  iteration position where to start and return position where an interrupted iteration may restart.\\
   \item \texttt{H5L\_iterate\_t op} (IN): User-defined function to pass each link to. \\
   \item \texttt{void *op\_data} (IN/OUT): User data to pass through to and to be returned by iterator operator function. \\
   \end{enumerate}
@@ -2177,6 +2178,7 @@ The \texttt{get\_type} argument is an \texttt{enum}:
 \begin{lstlisting}
 /* type for object GET callback */
 typedef enum H5VL_object_get_t {                                                 
+    H5VL_OBJECT_GET_FILE,              /* object's file                     */   
     H5VL_OBJECT_GET_NAME,              /* object name                       */   
     H5VL_OBJECT_GET_TYPE               /* object type                       */   
 } H5VL_object_get_t; 
@@ -2202,25 +2204,24 @@ depending on the \texttt{get\_type} parameter. The following list shows
 the argument list, in order, for each type:
 
 \begin{itemize}
-\item \texttt{H5VL\_OBJECT\_GET\_NAME}, to retrieve a name for a referenced object:
+\item \texttt{H5VL\_OBJECT\_GET\_FILE}, to retrieve a file for a referenced object:
+  \begin{enumerate}
+  \item \texttt{void **ret} (OUT): pointer to buffer to return the file.
+  \end{enumerate}
+
+ \item \texttt{H5VL\_OBJECT\_GET\_NAME}, to retrieve a name for a referenced object:
   \begin{enumerate}
   \item \texttt{ssize\_t *ret} (OUT): buffer to return the length of the
     name.
   \item \texttt{char* name} (OUT): buffer to copy the name into.
   \item \texttt{size\_t size} (IN): size of the buffer name, if 0, return
     only the buffer size needed.
-  \item \texttt{H5R\_type\_t ret\_type} (IN): type of region reference to
-    query.
-  \item \texttt{void *ref} (IN): the region reference to query.
   \end{enumerate}
   
 \item \texttt{H5VL\_OBJECT\_GET\_TYPE}, to retrieve object type a reference
   points to:
   \begin{enumerate}
   \item \texttt{H5O\_type\_t *type} (OUT): buffer to return the object type.
-  \item \texttt{H5R\_type\_t ret\_type} (IN): type of region reference to
-    query.
-  \item \texttt{void *ref} (IN): the region reference to query.
   \end{enumerate}
 \end{itemize}
 
@@ -2277,12 +2278,18 @@ the argument list, in order, for each type:
   \item \texttt{htri\_t *ret} (OUT): existence result, 0 if false, 1 if true.
   \end{enumerate}
 
+\item \texttt{H5VL\_OBJECT\_LOOKUP}, Look up an object:
+  \begin{enumerate}
+  \item \texttt{void *token} (IN): The object's token.\\
+  \end{enumerate}
+
 \item \texttt{H5VL\_OBJECT\_VISIT}, to iterate over all objects starting at the location provided and call a user-specified callback on each one:
   \begin{enumerate}
   \item \texttt{H5\_index\_t idx\_type} (IN): Type of index.\\
   \item \texttt{H5\_iter\_order\_t order} (IN): Order in which to iterate over index.\\
   \item \texttt{H5O\_iterate\_t op} (IN): User-defined function to pass each object to. \\
   \item \texttt{void *op\_data} (IN/OUT): User data to pass through to and to be returned by iterator operator function. \\
+  \item \texttt{unsigned fields} (IN): Fields in H5O\_info\_t struct to return. \\
   \end{enumerate}
   
 \item \texttt{H5VL\_OBJECT\_FLUSH}, flushes a object:
