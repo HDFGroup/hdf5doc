@@ -1,11 +1,100 @@
 \section{Creating a New Connector}
-External plugins are developed outside of the HDF5 library and do not
-use any internal HDF5 private functions. They do not require to be
-shipped with the HDF5 library, but can just link to it from userspace
-just like an HDF5 application. If an external VOL plugin is installed on the system as a shared library or a DLL, the library can search for it and load it dynamically to be used by an application.
 
 \subsection{Overview}
-Developing an external plugin is similar to developing an internal plugin. Refer to Section~\ref{sec:vol} for details on plugin creation. The important thing to keep in mind is that external plugins cannot use internal HDF5 features. The ``value'' field for an external plugin should be a positive integer greater than 128. The name should be unique across all plugins registered with the library.
+Creating a new VOL connector can be a complicated process. You will need to map
+your storage system to the HDF5 data model through the lens of the VOL and this
+may involve some impedence mismatch that you will have to work around. The good
+news is that the HDF5 library has been re-engineered to handle arbitrary,
+connector-specific data structures via the VOL callbacks, so no knowledge of
+the library internals is necessary to write a VOL connector.
+
+Writing a VOL connector requires these things:
+
+\begin{enumerate}
+    \item Decide on library vs plugin vs internal.
+    \item Set up your build/test files (CMake, Autotools, etc.).
+    \item Fill in some boilerplate information in your {\tt H5VL\_class\_t} struct.
+    \item Decide how you will perform any necessary initialization needed
+        by your storage system.
+    \item Map Storage to HDF5 File Objects
+    \item Create implementations for the callbacks you need to support.
+    \item Test the connector.
+\end{enumerate}
+
+Each of the steps listed above is decribed in more detail in this section of the document.
+
+The "model then implement" steps can be performed iteratively. You might begin
+by only supporting files, datasets, and groups and only allowing basic operations
+on them. In some cases, this may be all that is needed. As your needs grow, you
+can repeat those steps and increase the connector's HDF5 API coverage at a pace
+that makes sense for your users.
+
+Also, note that this document only covers writing VOL connectors using the
+C programming language. It is often possible to write connectors in other programming languages
+(e.g.; Python) via the language's C interop facilities, but that topic is out of
+scope for this document.
+
+\subsection{Sources Of Information}
+
+Use of the VOL, including topics such as registration and loading VOL plugins, is
+described in the VOL User Guide.
+
+Public header files you will need to be familiar with include:
+
+\begin{tabularx}{\linewidth}{ l X }
+  \texttt{H5VLpublic.h} & Public VOL header.\\
+  \texttt{H5VLconnector.h} & Main connector author header. Contains definitions for the main VOL struct and callbacks, enum values, etc.\\
+  \texttt{H5VLconnector\_passthru.h} & Helper routines for passthrough connector authors.\\
+    \texttt{H5VLnative.h} & Native VOL connector header. May be useful if your connector will attempt to implement native HDF5 API calls that are handled via the \textit{optional} callbacks.\\
+  \texttt{H5PLextern.h} & Needed if your connector will be built as a plugin.\\
+\end{tabularx}
+
+Many VOL connectors can be found on The HDF Group's Bitbucket server, located at
+\url{https://bitbucket.hdfgroup.org/projects/HDF5VOL}. Not all of these VOL
+connectors are supported by THe HDF Group and the level of completeness varies,
+but the connectors found there can serve as examples of working implementations.
+
+
+\subsection{Library vs Plugin vs Internal}
+
+When building a VOL connector, you have several options:
+
+\subsubsection*{Library}
+
+The connector can be built as a normal shared or static library. Software that
+uses your connector will have to link to it just like any other library. This
+can be convenient since you don't have to deal with plugin paths and searching
+for the connector at runtime, but it also means that software which uses
+your connector will have to be built and linked against it.
+
+\subsubsection*{Plugin}
+
+You can also build your connector as a dynamically loaded plugin. The mechanism
+for this is the same mechanism used to dynamically load HDF5 filter plugins. This can
+allow use of your connector via the VOL environment variable, without modifying
+the application, but requires your plugin to be discoverable at runtime. See
+the VOL User Guide for more information about using HDF5 plugins.
+
+To build your connector as a plugin, you will have to include {\tt H5PLextern.h}
+(a public header distributed with the library) and implement the
+{\tt H5PLget\_plugin\_type()} and {\tt H5PLget\_plugin\_info()}
+calls, both of which are trivial to code up. It also often requires your
+connector to be built with certain compile/link options. The VOL connector
+template does all of these things.
+
+To show how easy this is to accomplish, here is the complete implementation
+of those functions in the template VOL connector:
+
+\begin{lstlisting}
+H5PL_type_t H5PLget_plugin_type(void) {return H5PL_TYPE_VOL;}
+const void *H5PLget_plugin_info(void) {return &template_class_g;}
+\end{lstlisting}
+
+The HDF5 library's plugin loading code will call {\tt H5PLget\_plugin\_type()}
+to determine the type of plugin (e.g.; filter, VOL) and {\tt H5PLget\_plugin\_info()}
+to get the class struct, which allows the library to query the plugin for its
+name and value to see if it has found a requested plugin. When a match is found,
+the library will use the class struct to register the connector and map its callbacks.
 
 For the HDF5 library to be able to load an external plugin dynamically, the plugin developer has to define two public routines with the following name and signature:
 \begin{lstlisting}
@@ -27,109 +116,109 @@ H5PL_type_t H5PLget_plugin_type(void) {return H5PL_TYPE_VOL;}
 const void *H5PLget_plugin_info(void) {return &H5VL_log_g;}
 \end{lstlisting}
 
-Implementing iteration and visit callbacks in external plugins requires the plugin invoking the user defined callback function with an HDF5 identifier ({\tt hid\_t}) on the location object. The current HDF5 H5I API does not allow creating and dereferencing identifiers that point to HDF5 object types. Therefore, two new API routines have been added (see Section~\ref{sec:api} for more details) to get around that. {\tt H5VLobject\_register()} is used to create an HDF5 identifier for a VOL object handle (file, group, dataset, named datatype, or attribute). {\tt H5VLget\_object()} is used to derefernce the HDF5 identifier back to the VOL object handle.
+\subsubsection*{Internal}
 
-\subsection{Using The New Connector}
-Unlike internal plugins, external plugins cannot create an API routine for applications to use to set the VOL plugin in the file access property list. External plugin developers can, however, provide a wrapper routine that registers the plugin with {\tt H5VLregister()} instead of having the application call that directly with the pointer to the plugin class structure. Both ways are possible if the external plugin used is in the application's userspace. External plugins provided by third party vendors that are not in the application's userspace but are installed on the system with a shared library or DLL can be registered by the application using {\tt H5VLregister\_name()} provided that the application knows the plugin's name in advance.
+Your VOL connector can also be constructed as a part of the HDF5 library. This
+works in the same way as the stdio and multi virtual file drivers (VFDs) and
+does not require knowledge of HDF5 internals or use of non-public API calls. You
+simply have to add your connector's files to the {\tt Makefile.am} and/or
+{\tt CMakeLists.txt} files in the source distribution's {\tt src} directory.
+This requires maintaining a private build of the library, though, and is not
+recommended.
 
-The registration operation will return a global identifier for the registered plugin. Applications can query the library for that identifier using the plugin name with {\tt H5VLget\_plugin\_id()}. This identifier is used to initialize the plugin if it requires an initialization phase. A third party library could use that ID to create a plugin that stacks or mirrors on top of an internal plugin using that identifier (refer to Section~\ref{sec:stack} for more details on stacking and mirroring).
+\subsection{Build Files / VOL Template}
 
-Some plugins could require an initialization phase before using the plugin with some input parameters from users. This process is done by creating a VOL initialization property list and setting a public property that should be defined by the internal plugin to the hostname of the remote machine. The user then calls the initialize routine ({\tt H5VLintialize()}) with the plugin\_id and the property list to initialize the plugin. An external plugin could abstract those operations into a wrapper routine that wraps the property list creation, property settings, and plugin initialization into one call that the user makes to simplify this process.
+We have created a template VOL connector that includes both Autotools and CMake
+build files. The constructed VOL connector includes no real functionality, but 
+can be registered and loaded as a plugin.
 
-The application then sets the plugin access property in the file access property list to the external plugin using the plugin identifier with this API routine:
-\begin{lstlisting}
-  herr_t H5Pset_vol(hid_t fapl_id, hid_t plugin_id, const void *new_vol_info);
-\end{lstlisting}
-where {\tt new\_vol\_info} is the plugin information needed from the application. Typically it is a plugin defined structure with some fields to setup the plugin access. The external plugin could also provide a wrapper function around this to make it easier for the application to use. 
+The VOL template  can be found here:
 
-Now that the plugin is initialized, the application can create or open an HDF5 container using the external plugin. After closing all objects and containers on that plugin, the application should terminate access to the selected plugin if it requires a termination phase by calling {\tt H5VLterminate()} with the required termination properties (similar to the initialization phase). 
+\quad \quad \url{https://bitbucket.hdfgroup.org/projects/HDF5VOL/repos/template}
 
-Finally, the application is required to un-register the plugin from the library when access to the container(s) is terminated using {\tt H5VLunregister}.
+The purpose of this template is to quickly get you to the point where you can
+begin filling in the callback functions and writing tests. You can copy this
+code to your own repository to serve as the basis for your new connector.
 
-\subsection{Testing}
 
-\subsection{Internal Connectors}
+\subsection{{\tt H5VL\_class\_t} Boilerplate}
 
-Internal plugins are developed internally with the HDF5 library and
-are required to ship with the entire library to be used. Typically
-those plugins need to use internal features and functions of the HDF5
-library that are not available publicly from the user application.
+Several fields in the {\tt H5VL\_class\_t} struct will need to be filled in.
 
-\subsubsection{Implementing an Internal Connector}
-The first step to implement an internal plugin is to implement all the callbacks defined in the VOL class as described in Section~\ref{sec:vol}. After implementing the VOL class, the next step would be to allow users to select
-this plugin to be used. This is done by creating a new API routine to
-set the plugin on the file access property list. For example, if we
-create an internal plugin called ``dummy'' that needs an MPI
-communicator and info object as information from the user, that
-routine signature should look like:
+In HDF5 1.12.0, {\tt version} will be 1, indicating version 1 of the {\tt H5VL\_class\_t} struct.
 
-\begin{lstlisting}
-herr_t H5Pset_fapl_dummy(hid_t fapl_id, MPI_Comm comm, MPI_Info info);
-\end{lstlisting}
+Every connector needs a {\tt name} and {\tt value}. The library will use these when
+loading and registering the connector (as described in the VOL User Guide), so
+they should be unique in your ecosystem.
 
-The implementation for the above routine should use the internal
-function:
-\begin{lstlisting}
-herr_t H5P_set_vol(H5P_genplist_t *plist, H5VL_class_t *vol_cls, const
-void *vol_info);
-\end{lstlisting}
-that will set the file access using that {\tt fapl\_id} to go through
-the ``dummy'' plugin. It will also call the copy callback of the
-``dummy'' plugin on the info object ({\tt comm and info}).
+VOL connector values are integers, with a maximum value of 65535. Values from
+0 to 255 are reserved for internal use by The HDF Group. The native VOL connector
+has a value of 0.
 
-A sample implementation for the {\tt H5Pset\_fapl\_dummy()} would look like this:
+As is the case with HDF5 filters, The HDF Group can register the value you've
+chosen for your VOL connector so that others don't use it. Please contact
+\href{mailto:help@hdfgroup.org}{help@hdfgroup.org} for help with this. We currently
+do not register connector names.
 
-\begin{lstlisting}
-/* DUMMY-specific file access properties */
-typedef struct H5VL_dummy_fapl_t {
-    MPI_Comm            comm;     /* communicator       */
-    MPI_Info            info;     /* MPI information   */
-} H5VL_dummy_fapl_t;
+The {\tt cap\_flags} field is currently not fully utilized. In the future, this
+will be most likely be used to indicate which callbacks and capabilities are
+supported by the VOL connector, but for now this struct field contains few flags, 
+a list of which can be found in {\tt H5VLconnector.h}.
 
-herr_t
-H5Pset_fapl_dummy(hid_t fapl_id, MPI_Comm comm, MPI_Info info)
-{
-    H5VL_dummy_fapl_t fa;
-    H5P_genplist_t  *plist;      /* Property list pointer */
-    herr_t          ret_value;
+\subsection{Initialization and Shutdown}
 
-    FUNC_ENTER_API(FAIL)
+You'll need to decide how to perform any initialization and shutdown tasks that
+are required by your connector. There are initialize and terminate callbacks
+in the {\tt H5VL\_class\_t} struct to handle this. They are invoked when
+the connector is registered and unregistered, respectively. If this is
+unsuitable, you may have to create custom connector-specific API calls to handle
+initialization and termination. It may also be useful to perform operations in
+a custom API call used to set the VOL connector in the fapl.
 
-    if(fapl_id == H5P_DEFAULT)
-        HGOTO_ERROR(H5E_PLIST, H5E_BADVALUE, FAIL, "can't set values in default property list")
+\subsection{Map Storage to HDF5 File Objects}
 
-    if(NULL == (plist = H5P_object_verify(fapl_id, H5P_FILE_ACCESS)))
-        HGOTO_ERROR(H5E_ARGS, H5E_BADTYPE, FAIL, "not a file access property list")
+The most difficult part of designing a new VOL connector is going to determining
+how to support HDF5 file objects and operaions using your storage system.
+There isn't much specific advice to give here, as
+each connector will have unique needs, but a forthcoming "tutorial" connector
+will set up a simple connector and demonstrate this process.
 
-    if(MPI_COMM_NULL == comm)
-	HGOTO_ERROR(H5E_PLIST, H5E_BADTYPE, FAIL, "not a valid communicator")
 
-    /* Initialize driver specific properties */
-    fa.comm = comm;
-    fa.info = info;
+\subsection{Fill In VOL Callbacks}
 
-    ret_value = H5P_set_vol(plist, &H5VL_dummy_g, &fa);
+For each file object you support in your connector (including the file itself),
+you will need to create a data struct to hold whatever file object
+metadata that are needed by your connector. For example, a data structure for
+a VOL connector based on text files might have a file struct that contains a
+file pointer for the text file, buffers used for cacheing data, etc. Pointers
+to these data structures are where your connector's state is stored and are
+returned to the HDF5 library from the create/open/etc. callbacks such as
+\textit{dataset create}.
 
-done:
-    FUNC_LEAVE_API(ret_value)
-} /* end H5Pset_fapl_dummy() */
-\end{lstlisting}
+Once you have your data structures, you'll need to create your own
+implementations of the callback functions and map them via your
+{\tt H5VL\_class\_t} struct. 
+\subsection{Testing Your Connector}
 
-At this point, the internal plugin is ready to be used. For more
-information on how to implement an internal plugin, the native plugin
-for the HDF5 library is a comprehensive plugin that implements all
-features of the library and can be used as a guide.
+At the time of writing, some of the HDF5 library tests have been abstracted
+out of the library with their native-file-format-only sections removed and
+added to a VOL test suite available here:
 
-\subsubsection{Using an Internal Connector}
-An internal plugin is registered automatically with the HDF5 library when the library gets initialized. Users should not attempt to register an internal plugin. The internal registration operation creates a global identifier for each internal plugin. Applications can query the library for that identifier using the plugin name with {\tt H5VLget\_plugin\_id()}. This identifier is used to initialize the plugin if it requires an initialization phase. A third party library could use that ID to create a plugin that stacks or mirrors on top of an internal plugin using that identifier (refer to Section~\ref{sec:stack} for more details on stacking and mirroring).
+\quad \quad \url{https://bitbucket.hdfgroup.org/projects/HDF5VOL/repos/vol-tests}
 
-Some plugins could require an initialization phase before using the plugin with some input parameters from users. For example, a remote plugin would need to setup a connection to a remote machine with a specific hostname that the user knows and the HDF5 library does not know about. This process is done by creating a VOL initialization property list and setting a public property that should be defined by the internal plugin to the hostname of the remote machine. The user then calls the initialize routine ({\tt H5VLintialize()}) with the plugin\_id and the property list to initialize the plugin. Some plugins could create a public API routine that wraps the property list creation, property settings, and plugin initialization into one routine that the user calls to simplify this process for the users. The native HDF5 plugin does not require an initialization phase.
+This is an evolving set of tests, so see the documentation in that repository
+for instructions as to its use. You may want to clone and modify and/or
+extend these tests for use with your own connector.
 
-Now that the plugin is initialized, the application can create or open an HDF5 container using the internal plugin by creating a file access property list and calling the corresponding API routine that the internal plugin should define for setting the VOL plugin property and container parameters on the file access property list. That FAPL can be passed to the {\tt H5Fcreate()} or {\tt H5Fopen{}} calls to access the container through the VOL plugin. Subsequently, all other HDF5 calls on the container and objects created or opened in that container will automatically go to the selected VOL plugin. 
+In the future, we plan to modify the HDF5 test suite that ships with the
+library to use a future VOL capabilities flags scheme to selectively run
+tests that a particular connector supports. As this is a large task, it may be
+some time before that work is complete.
 
-After closing all objects and containers on that plugin, the application should terminate access to the selected plugin if it requires a termination phase by calling {\tt H5VLterminate()} with the required termination properties (similar to the initialization phase). The native HDF5 plugin does not require a termination phase.
+\subsection{Passthrough Connectors}
 
-The internal plugin is unregistered automatically by the HDF5 library on library termination, and users should not attempt to unregister it themselves.
+Coming Soon
+
 
 %%% Local Variables: 
 %%% mode: latex

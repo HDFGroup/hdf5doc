@@ -52,6 +52,8 @@ The \texttt{terminate} field is a function pointer to a routine that a connector
 The rest of the fields in the \texttt{H5VL\_class\_t} struct are "subclasses'' that define all the VOL function callbacks that
 are mapped to from the HDF5 API layer. Those subclasses are categorized into two categories, Data Model and Services. Data Model classes are those that provide functionality for accessing an HDF5 container and objects in that container as defined by the HDF5 data model.  Service classes are those that provide services for users that are not related to the data model specifically. Asynchronous operations, for example, are a service that most connectors can implement, so we add a class for it in the VOL structure. If a service becomes generic enough and common among many connectors, a class for it should be added to the VOL structure. However, many connectors can/will provide services that are not shared by other connectors. A good way to support these services is through an optional callback in the VOL structure which can be a hook from the API to the connector that provides those services, passing any necessary arguments needed without the HDF5 library having to worry about supporting that service. A similar API operation to allow users to use that service will be added. This API call would be similar to an “ioctl” call where any kind of operation can be supported and passed down to the connector that has enough knowledge from the user to interpret the type of the operation. All classes and their defined callbacks will be detailed in the following sub-sections.
 
+To handle that large set of API routines, each class in the Data Model category has three generic callbacks, \texttt{get}, \texttt{specific}, and \texttt{optional} to handle the three set of API operations outline above respectively. The callbacks will have a \texttt{va\_list} argument to handle the different set of parameters that could be passed in.  The \texttt{get} and \texttt{specific} callbacks also have an \texttt{op\_type} that contain an \texttt{enum} of the type of operation that is requested to be performed. Using that type, the \texttt{va\_list} argument can be parsed. The \texttt{optional} callback is a free for all callback where anything from the API layer is passed in directly. This callback is used to support connector specific operations in the API that other connectors should or would not know about. More information about types and the arguments for each type will be detailed in the corresponding class arguments.
+
 \subsection{Mapping the API to the Callbacks}
 \label{sec:map}
 
@@ -70,7 +72,7 @@ contain two parameters:
   VOL callback function.
 \item A pointer to a request (\texttt{void **req}) to handle asynchronous
   operations if the HDF5 library adds support for them in future
-  releases (beyond the 1.8 series). That pointer is set by the VOL
+  releases. That pointer is set by the VOL
   connector to a request object it creates to manage progress on that
   asynchronous operation. If the \texttt{req} is \texttt{NULL}, that means
   that the API operation is blocking and so the connector would not
@@ -81,17 +83,8 @@ contain two parameters:
 
 In order to keep the number of the VOL object classes and callbacks
 concise and readable, it was decided not to have a one-to-one mapping
-between API operation and callbacks. Furthermore, to keep the
-callbacks themselves short and not cluttered with a lot of parameters,
-some of the parameters are passed in as properties in property lists
-included with the callback. The value of those properties can be
-retrieved by calling the public routine (or its private version if
-this is an internal connector): 
-\begin{lstlisting}
-herr_t H5Pget(hid_t plist_id, const char *property_name, void *value);
-\end{lstlisting}
-The property names and value types will be detailed when describing
-each callback in their respective sections.
+between API operation and callbacks. The parameter names and types will be
+detailed when describing each callback in their respective sections.
 
 The HDF5 library provides several routines to access an object in the
 container. For example, to open an attribute on a group object, the
@@ -108,9 +101,7 @@ location parameter. The same applies to all types of routines that
 have multiple types of accesses.  The location parameter is a
 structure defined in Listing \ref{lst:ObjLocclass}.
 
-\newpage
-
-\begin{lstlisting}[caption={Structure to hold parameters for object locations, H5VLpublic.h}, captionpos=b, label={lst:ObjLocclass}]
+\begin{lstlisting}[caption={Structure to hold parameters for object locations, H5VLconnector.h}, captionpos=b, label={lst:ObjLocclass}]
 /* 
  * Structure to hold parameters for object locations.
  * either: BY_SELF, BY_NAME, BY_IDX, BY_TOKEN
@@ -161,17 +152,6 @@ typedef struct H5VL_loc_by_token {
     void *token; /* arbitrary token (physical address of location in native VOL) */
 }H5VL_loc_by_token_t;
 \end{lstlisting}
-
-\newpage
-
-Other API routines that would make a one-to-one mapping difficult are:
-\begin{itemize} 
-\item the \texttt{Get} operations that retrieve something from an object; for example a property list or a datatype of a dataset, etc.
-\item API routines are specific to each class of callbacks (attributes, files, etc...). Having a callback for each one would clutter the VOL callback structure and reduce user-friendliness. 
-\item API routines that make sense to only implement in the native HDF5 file format and would not be possible to implement in other connectors. Adding a callback for those routines would be confusing to connector developers. 
-\end{itemize}
-
-To handle that large set of API routines, each class in the Data Model category has three generic callbacks, \texttt{get}, \texttt{specific}, and \texttt{optional} to handle the three set of API operations outline above respectively. The callbacks will have a \texttt{va\_list} argument to handle the different set of parameters that could be passed in.  The \texttt{get} and \texttt{specific} callbacks also have an \texttt{op\_type} that contain an \texttt{enum} of the type of operation that is requested to be performed. Using that type, the \texttt{va\_list} argument can be parsed. The \texttt{optional} callback is a free for all callback where anything from the API layer is passed in directly. This callback is used to support connector specific operations in the API that other connectors should or would not know about. More information about types and the arguments for each type will be detailed in the corresponding class arguments.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % CONNECTOR INFORMATION CALLBACKS %
