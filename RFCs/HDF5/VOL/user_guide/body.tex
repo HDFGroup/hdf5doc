@@ -65,6 +65,7 @@ There are essentially three ways to do this:
 \end{itemize}
 
 Exactly how you go about setting a VOL connector in a fapl, will depend on the complexity of the VOL connector and how much control you have over the application's source code.
+Note that the environment variable method, though convenient, has some limitations in its implementation, which are discussed below.
 
 \subsection{If Needed: Update Your Code To Load And Use A VOL Connector}
 
@@ -94,13 +95,13 @@ Before a VOL connector can be set in a fapl, it must be registered with the libr
 
 Before a connector can be used, it must be registered. This loads the connector into the library and give it an HDF5 {\tt hid\_t} ID. The {\tt H5VLregister\_connector} API calls are used for this.
 
-\quad\quad {\tt hid\_t H5VLregister\_connector(const H5VL\_class\_t *cls, hid\_t vipl\_id)}
+\begin{lstlisting}
+  hid\_t H5VLregister\_connector\_by\_name(const char *connector\_name, hid\_t vipl\_id)
 
-\quad\quad {\tt hid\_t H5VLregister\_connector\_by\_name(const char *connector\_name, hid\_t vipl\_id)}
+  hid\_t H5VLregister\_connector\_by\_value(H5VL\_class\_value\_t connector\_value, hid\_t vipl\_id)
+\end{lstlisting}
 
-\quad\quad {\tt hid\_t H5VLregister\_connector\_by\_value(H5VL\_class\_value\_t connector\_value, hid\_t vipl\_id)}
-
-When used with a plugin, these functions will check to see if an appropriate plugin with a matching name, value, etc. is already loaded and check the plugin path (see above) for matching plugins if this is not true. The functions return {\tt H5I\_INVALID\_HID} if they are unable to register the connector. Most people will use the {\tt \_by\_name()} or {\tt \_by\_value} versions of this API call. The call that takes an {\tt H5VL\_class\_t} struct is considered a lower-level call this is more commonly used by connector authors in connector-specific setup/registration code. Many VOL connectors will provide a connector-specific init call that will load and register the connector for you.
+When used with a plugin, these functions will check to see if an appropriate plugin with a matching name, value, etc. is already loaded and check the plugin path (see above) for matching plugins if this is not true. The functions return {\tt H5I\_INVALID\_HID} if they are unable to register the connector. Many VOL connectors will provide a connector-specific init call that will load and register the connector for you.
 
 Note the two ways that a VOL connector can be identified: by a name or by a connector-specific numerical value ({\tt H5VL\_class\_value\_t} is typedef'd to an integer). The name and value for a connector can be found in the connector's documentation or public header file.
 
@@ -112,7 +113,6 @@ Note that it's considered an error to unload the native VOL connector. The libra
 
 \subsection{Connector Versioning}
 
-\thgfuturewarning
 
 There is currently no recommended or library-inherent way to version VOL connectors. A {\tt version} field is included in the {\tt H5VL\_class\_t} struct which holds a connector's information and callbacks, but this is intended for use when versioning the class struct.
 
@@ -124,9 +124,11 @@ Most connectors will provide a special API call which will set the connector in 
 
 The is the main library API call for setting the VOL connector in a file access property list. Its signature is:
 
-\quad\quad {\tt herr\_t H5Pset\_vol(hid\_t plist\_id, hid\_t vol\_id, vol\_info)}
+\begin{lstlisting}
+  herr\_t H5Pset\_vol(hid\_t plist\_id, hid\_t new\_vol\_id, const void *new\_vol\_info)
+\end{lstlisting}
 
-It takes the ID of the file access property list, the ID of the registered VOL connector, and a pointer to whatever connector-specific data the connector is expecting. This will usually be a data struct specified in the connector's header.
+It takes the ID of the file access property list, the ID of the registered VOL connector, and a pointer to whatever connector-specific data the connector is expecting. This will usually be a data struct specified in the connector's header or a NULL pointer if the connecter requires no special information (as in the native VOL connector).
 
 As mentioned above, many connectors will provide their own replacement for this call. See the connector's documentation for more information.
 
@@ -148,11 +150,15 @@ These default locations can be overridden by setting the {\tt HDF5\_PLUGIN\_PATH
 
 Each VOL connector is allowed to take in a parameter string which can be parsed via {\tt H5VLconnector\_str\_to\_info()} to get an info struct which can be passed to {\tt H5Pset\_vol()}.
 
-\quad\quad {\tt herr\_t H5VLconnector\_str\_to\_info(const char *str, hid\_t connector\_id, void **info)}
+\begin{lstlisting}
+  herr\_t H5VLconnector\_str\_to\_info(const char *str, hid\_t connector\_id, void **info)
+\end{lstlisting}
 
 And the obtained info can be freed via:
 
-\quad\quad {\tt herr\_t H5VLfree\_connector\_info(hid\_t connector\_id, void *vol\_info)}
+\begin{lstlisting}
+  herr\_t H5VLfree\_connector\_info(hid\_t connector\_id, void *vol\_info)
+\end{lstlisting}
 
 Most users will not need this functionality as they will be using either connector-specific setup calls which will handle registering and configuring the connector for them or they will be using the environment variable (see below).
 
@@ -170,39 +176,200 @@ This will perform the equivalent of:
 
 The environment variable is parsed once, at library startup. Since the environment variable scheme just changes the default connector, it can be overridden by subsequent calls to {\tt H5Pset\_vol()}. The \textit{$<$parameters$>$} is optional, so for connectors which do not require any special configuration parameters you can just set the environment variable to the name.
 
+NOTE: Implementing the environment variable in this way means that setting the native VOL connector becomes somewhat awkward as there is no explicit HDF5 API call to do this. Instead you will need to get the native VOL connector's ID via {\tt H5VLget\_connector\_id\_by\_value(H5\_VOL\_NATIVE)} and set it manually in the fapl using {\tt H5Pset\_vol()}.
+
 \section{Adapting HDF5 Software to Use the VOL}
 
-The VOL was engineered to be as unobtrusive as possible and, when a connector which implements most/all of the data model functionality is in use, most applications should require little, if any, modification. As mentioned in the quick start section, most modifications will probably consist of connector setup code (which can usually be accomplished via the environment variable) and protecting native file format functions.
+The VOL was engineered to be as unobtrusive as possible and, when a connector which implements most/all of the data model functionality is in use, many applications will require little, if any, modification. As mentioned in the quick start section, most modifications will probably consist of connector setup code (which can usually be accomplished via the environment variable), adapting code to use the new token-based API calls, and protecting native-VOL-connector-specific functions.
+
+\subsection{${\tt haddr\_t} \rightarrow {\tt H5O\_token\_t}$}
+
+Some HDF5 API calls and data structures refer to addresses in the HDF5 using the {\tt haddr\_t} type.
+Unfortunately, the concept of an "address" will make no sense for many connectors,
+though they may still have some sort of location key (e.g.: a key in a key-value
+pair store).
+
+As a part of the VOL work, the HDF5 API was updated to replace the {\tt haddr\_t}
+type with a new {\tt H5O\_token\_t} type that represents a more generic object location.
+These tokens appear as an opaque byte array of {\tt H5O\_MAX\_TOKEN\_SIZE} bytes that
+is only meaningful for a particular VOL connector. They are not intended for
+interpretation outside of a VOL connector, though a connector author may provide
+an API call to convert their tokens to something meaningful for the storage.
+
+\begin{lstlisting}
+typedef struct H5O_token_t {                                                     
+    uint8_t __data[H5O_MAX_TOKEN_SIZE];                                          
+} H5O_token_t;
+\end{lstlisting}
+
+As an example, in the native VOL connector, the token stores an {\tt haddr\_t}
+address and addresses can be converted to and from tokens using
+{\tt H5VLnative\_addr\_to\_token()} and {\tt H5VLnative\_token\_to\_addr()}.
+
+\begin{lstlisting}
+  herr_t H5VLnative_addr_to_token(hid_t loc_id, haddr_t addr, H5O_token_t *token)
+
+  herr_t H5VLnative_token_to_addr(hid_t loc_id, H5O_token_t token, haddr_t *addr)
+\end{lstlisting}
+
+Several API calls have also been added to compare tokens and convert tokens to
+and from strings.
+
+\begin{lstlisting}
+  herr_t H5Otoken_cmp(hid_t loc_id, const H5O_token_t *token1, const H5O_token_t *token2, int *cmp_value)
+
+  herr_t H5Otoken_to_str(hid_t loc_id, const H5O_token_t *token, char **token_str)
+
+  herr_t H5Otoken_from_str(hid_t loc_id, const char *token_str, H5O_token_t *token)
+\end{lstlisting}
+
 
 \subsection{Specific API Call Substitutions}
+
+
 \subsubsection{${\tt H5Fis\_hdf5()} \rightarrow {\tt H5Fis\_accessible()}$}
 
 {\tt H5Fis\_hdf5()} does not take a file access property list (fapl). As this is where the VOL connector is specified, this call cannot be used with aribtrary connectors. As a VOL-enabled replacement, {\tt H5Fis\_accessible()} has been added to the library. It has the same semantics as {\tt H5Fis\_hdf5()}, but takes a fapl so it can work with any VOL connector.
 
 Note that, at this time, {\tt H5Fis\_hdf5()} \textit{always} uses the native VOL connector, regardless of the settings of environment variables, etc.
 
-\subsubsection{${\tt H5Oget\_info[1|2]()} \rightarrow {\tt H5Oget\_info3()} {\tt H5Oget\_native\_info()}$}
-
-\thgfuturewarning
-
-The {\tt H5Oget\_info1()} and {\tt H5Oget\_info2()} family of HDF5 API calls are often used by user code to obtain information about an object in the file, however these calls return a struct which contains native information and are thus currently handled via the native connector's \textit{object optional} callback and so are not handled by most external VOL connectors.
-
-These calls will be separated into two functions: one for getting an object's data model information ({\tt H5Oget\_info3()}, which will go through the \textit{object get} callback), and another for returning an object's native file format information ({\tt H5Oget\_native\_info()}, which will go through the native connector's \textit{object optional} callback). These API calls will use new {\tt H5O\_info2\_t} and {\tt H5O\_native\_info\_t} structs, respectively, to hold the returned data.
-
-This feature is under development and this section will be updated when the feature is complete.
+\begin{lstlisting}
+  htri_t H5Fis_accessible(const char *container_name, hid_t fapl_id)
+\end{lstlisting}
 
 
-\subsubsection{Optional: ${\tt H5Ovisit[1|2]()} \rightarrow {\tt H5Ovisit3()}$}
+\subsubsection{${\tt H5Oget\_info[1|2]()} \rightarrow {\tt H5Oget\_info3()}$ and ${\tt H5Oget\_native\_info()}$}
 
-\thgfuturewarning
+The {\tt H5Oget\_info1()} and {\tt H5Oget\_info2()} family of HDF5 API calls are often
+used by user code to obtain information about an object in the file, however these
+calls returned a struct which contained native information and are thus unsuitable
+for use with arbitrary VOL connectors.
 
-The {\tt H5Ovisit()} family of API functions uses the {\tt H5O\_info\_t} struct in its callback function:
+A new {\tt H5Oget\_info3()} family of API calls has been added to the library which only
+return data model information via a new {\tt H5O\_info2\_t} struct. This
+struct also returns {\tt H5O\_token\_t} tokens in place of {\tt haddr\_t}
+addresses.
 
-\quad \quad {\tt typedef herr\_t (*H5O\_iterate\_t)(hid\_t obj, const char *name, const H5O\_info\_t *info, void *op\_data) }
+\begin{lstlisting}
+  H5Oget_info3(hid_t loc_id, H5O_info2_t *oinfo, unsigned fields)
 
-A new callback that takes the updated, data-model-only struct will replace the old callback in new {\tt H5Ovisit3} API calls. Note that replacing this function is optional as it goes through the VOL's \textit{object specific} callback.
+  herr_t H5Oget_info_by_name3(hid_t loc_id, const char *name, H5O_info2_t *oinfo, unsigned fields, hid_t lapl_id)
 
-As with the {\tt H5Oget\_info()} work, this feature is under development and this section will be updated when the feature is complete.
+  herr_t H5Oget_info_by_idx3(hid_t loc_id, const char *group_name, H5_index_t idx_type, H5_iter_order_t order, hsize_t n, H5O_info2_t *oinfo, unsigned fields, hid_t lapl_id)
+\end{lstlisting}
+
+\begin{lstlisting}
+typedef struct H5O_info2_t {
+    unsigned long   fileno;     /* File number that object is located in */
+    H5O_token_t     token;      /* Token representing the object        */
+    H5O_type_t      type;       /* Basic object type (group, dataset, etc.) */
+    unsigned        rc;         /* Reference count of object            */
+    time_t          atime;      /* Access time                          */
+    time_t          mtime;      /* Modification time                    */
+    time_t          ctime;      /* Change time                          */
+    time_t          btime;      /* Birth time                           */
+    hsize_t         num_attrs;  /* # of attributes attached to object   */
+} H5O_info2_t;
+\end{lstlisting}
+
+To return the native file format information, {\tt H5Oget\_native\_info()} calls
+have been added which can return such data separate from the data model data.
+
+\begin{lstlisting}
+  herr_t H5Oget_native_info(hid_t loc_id, H5O_native_info_t *oinfo, unsigned fields)
+
+  herr_t H5Oget_native_info_by_name(hid_t loc_id, const char *name, H5O_native_info_t *oinfo, unsigned fields, hid_t lapl_id)
+
+  herr_t H5Oget_native_info_by_idx(hid_t loc_id, const char *group_name, H5_index_t idx_type, H5_iter_order_t order, hsize_t n, H5O_native_info_t *oinfo, unsigned fields, hid_t lapl_id)
+\end{lstlisting}
+
+\begin{lstlisting}
+typedef struct H5O_native_info_t {                                               
+    H5O_hdr_info_t      hdr;            /* Object header information */          
+    /* Extra metadata storage for obj & attributes */                            
+    struct {                                                                     
+        H5_ih_info_t   obj;             /* v1/v2 B-tree & local/fractal heap for groups, B-tree for chunked datasets */
+        H5_ih_info_t   attr;            /* v2 B-tree & heap for attributes */    
+    } meta_size;                                                                 
+} H5O_native_info_t;
+\end{lstlisting}
+
+
+\subsubsection{${\tt H5Ovisit[1|2]()} \rightarrow {\tt H5Ovisit3()}$}
+
+The callback used in the {\tt H5Ovisit()} family of API calls took an {\tt H5O\_info\_t}
+struct parameter. As in {\tt H5Oget\_info()}, this both commingled data model and
+native file format information and also used native HDF5 file addresses.
+
+New {\tt H5Ovisit3()} API calls have been created which use the token-based,
+data-model-only {\tt H5O\_info\_t} struct in the callback.
+
+\begin{lstlisting}
+  herr_t H5Ovisit3(hid_t obj_id, H5_index_t idx_type, H5_iter_order_t order, H5O_iterate2_t op, void *op_data, unsigned fields)
+
+  herr_t H5Ovisit_by_name3(hid_t loc_id, const char *obj_name, H5_index_t idx_type, H5_iter_order_t order, H5O_iterate2_t op, void *op_data, unsigned fields, hid_t lapl_id)
+\end{lstlisting}
+
+\begin{lstlisting}
+typedef herr_t (*H5O_iterate2_t)(hid_t obj, const char *name, const H5O_info2_t *info, void *op_data)
+\end{lstlisting}
+
+
+\subsubsection{${\tt H5Lget\_info()} \rightarrow {\tt H5Lget\_info2()}$}
+
+The {\tt H5Lget\_info()} API calls were updated to use tokens instead
+of addresses in the {\tt H5L\_info\_t} struct.
+
+\begin{lstlisting}
+  herr_t H5Lget_info2(hid_t loc_id, const char *name, H5L_info2_t *linfo /*out*/, hid_t lapl_id)
+
+  herr_t H5Lget_info_by_idx2(hid_t loc_id, const char *group_name, H5_index_t idx_type, H5_iter_order_t order, hsize_t n, H5L_info2_t *linfo /*out*/, hid_t lapl_id)
+\end{lstlisting}
+
+\begin{lstlisting}
+typedef struct {                                                                 
+    H5L_type_t          type;           /* Type of link                   */     
+    hbool_t             corder_valid;   /* Indicate if creation order is valid */
+    int64_t             corder;         /* Creation order                 */     
+    H5T_cset_t          cset;           /* Character set of link name     */     
+    union {                                                                      
+        H5O_token_t     token;          /* Token of location that hard link points to */
+        size_t          val_size;       /* Size of a soft link or UD link value */
+    } u;                                                                         
+} H5L_info2_t;
+\end{lstlisting}
+
+
+\subsubsection{${\tt H5Literate()}$ and ${\tt H5Lvisit()}\rightarrow {\tt H5Literte2()}$ and ${\tt H5Lvisit2()}$}
+
+The callback used in these API calls used the old {\tt H5L\_info\_t} struct, which
+used addresses instead of tokens. These callbacks were versioned in the C library
+and now take modified {\tt H5L\_iterate2\_t} callbacks which use the new token-based
+info structs.
+
+\begin{lstlisting}
+  herr_t H5Literate2(hid_t grp_id, H5_index_t idx_type, H5_iter_order_t order, hsize_t *idx, H5L_iterate2_t op, void *op_data)
+
+  herr_t H5Literate_by_name2(hid_t loc_id, const char *group_name, H5_index_t idx_type, H5_iter_order_t order, hsize_t *idx, H5L_iterate2_t op, void *op_data, hid_t lapl_id)
+
+  herr_t H5Lvisit2(hid_t grp_id, H5_index_t idx_type, H5_iter_order_t order, H5L_iterate2_t op, void *op_data)
+
+  herr_t H5Lvisit_by_name2(hid_t loc_id, const char *group_name, H5_index_t idx_type, H5_iter_order_t order, H5L_iterate2_t op, void *op_data, hid_t lapl_id)
+\end{lstlisting}
+
+\begin{lstlisting}
+typedef herr_t (*H5L_iterate2_t)(hid_t group, const char *name, const H5L_info2_t *info, void *op_data); 
+\end{lstlisting}
+
+
+\subsubsection{${\tt H5Oopen\_by\_addr()} \rightarrow {\tt H5Oopen\_by\_token()}$}
+
+The new {\tt H5Oopen\_by\_token()} API call can be used to open objects by the tokens that are returned by the various "get info", et al. API calls.
+
+\begin{lstlisting}
+  hid_t H5Oopen_by_token(hid_t loc_id, H5O_token_t token)
+\end{lstlisting}
+
 
 \subsection{Protect Native-Only API Calls}
 
@@ -212,6 +379,71 @@ A list of native-only connector calls is given below.
 
 We are working on a mechanism that will allow detecting when the VOL connector is the native VOL connector, however a good mechanism for this is complicated as some VOL connectors will be passthrough VOL connectors (or even splitters) which ultimately resolve down to the native VOL connectors.
 
+\section{Language Wrappers}
+
+Due to the parameter type and callback changes that were required in the C
+library API regarding the update from {\tt haddr\_t} addresses to
+{\tt H5O\_object\_t} tokens and the difficulty in versioning the wrapper
+APIs, it was decided to update all of the wrappers to use tokens instead
+of addresses. This will allow the language wrappers to make use of the VOL,
+but at the expense of backward compatibility.
+
+Information on the C API changes can be found above.
+
+Affected API calls, by language:
+
+\subsection{C++}
+
+\begin{itemize}
+    \item The {\tt visit\_operator\_t} callback now uses a {\tt H5O\_info2\_t} parameter instead of {\tt H5O\_info(1)\_t} so the callback can be passed to {\tt H5Ovisit3()} internally. This affects the H5Object::visit() method.
+    \item The {\tt H5Location::getObjinfo()} methods now take {\tt H5O\_info2\_t} parameters.
+    \item The {\tt H5Location::getLinkInfo()} methods now return {\tt H5L\_info2\_t} structs.
+    \item {\tt H5File::isHdf5} uses {\tt H5Fis\_accessible()}, though it always passes H5P\_DEFAULT as the fapl. It will only work with arbitrary VOL connectors if the default VOL connector is changed via the environment variable.
+\end{itemize}
+
+The C++ wrappers to not allow opening HDF5 file objects by address or token.
+
+The public H5VL API calls found in {\tt H5VLpublic.h} were NOT added to
+the C++ API.
+
+\subsection{Fortran}
+
+As in the C API, these API calls had their structs updated to the token version so
+the {\tt h5o\_info\_t}, etc. structs no longer contain native file format information
+and the callbacks will need to match the non-deprecated, token-enabled versions.
+
+\begin{itemize}
+    \item h5lget\_info\_f
+    \item h5lget\_info\_by\_idx\_f
+    \item h5literate\_f
+    \item h5literate\_by\_name\_f
+    \item h5oget\_info\_f
+    \item h5oget\_info\_by\_idx\_f
+    \item h5oget\_info\_by\_name\_f
+    \item h5oopen\_by\_token\_f
+    \item h5ovisit\_f
+    \item h5ovisit\_by\_name\_f
+\end{itemize}
+
+Additionally, {\tt h5fis\_hdf5\_f} was updated to use {\tt H5Fis\_accessible}
+internally, though with the same caveat as the C++ implentation: the default
+fapl is alwys passed in so arbitrary VOL connectors will only work if the
+default VOL connector is changed via the environment variable.
+
+The public H5VL API calls found in {\tt H5VLpublic.h} were also added to
+the Fortran wrappers.
+
+\subsection{Java/JNI}
+
+\begin{itemize}
+    \item {\tt H5Fis\_hdf5} Will fail when the library is built without deprecated symbols.
+    \item {\tt H5Fis\_accessible} is available and takes a fapl, allowing it to work with arbitrary VOL connectors.
+    \item The {\tt H5(O|L)get\_info}, {\tt H5(O|L)visit}, and {\tt H5Literate} calls were updated as in the C library.
+    \item {\tt H5Oget\_native\_info\_by\_name} et al. were added and they work as in the C library (e.g.: essentially native VOL connector only).
+    \item {\tt H5Oopen\_by\_addr} was replaced with {\tt H5Oopen\_by\_token}.
+    \item The public API calls in {\tt H5VLpublic.h} were added to the JNI.
+\end{itemize}
+
 \section{Using VOL Connectors With The HDF5 Command-Line Tools}
 
 The best way to use a particular VOL connector with the HDF5 tools, both command-line and GUI tools, is to specify the VOL connector using the VOL connector environment variable (HDF5\_VOL\_CONNECTOR - see above).
@@ -219,12 +451,6 @@ The best way to use a particular VOL connector with the HDF5 tools, both command
 The HDF5 tools currently do not have an option to specify a VOL connector on the command line, though this option will be added soon.
 
 \section{Compatibility}
-\subsection{Introspection / Feature Flags}
-\thgfuturewarning
-
-Some VOL connectors will not implement all the functionality available in the HDF5 library, especially in the early stages of development. Unfortunately, there is currently no easy way to determine if a VOL connector implements particular API calls or groups of calls.
-
-We are working on an introspection mechanism, possibly involving a set of feature or capabilities flags and will have that available in a future release.
 
 \subsection{List of HDF5 Native VOL API Calls}
 
@@ -287,19 +513,31 @@ These API calls will probably fail when used with terminal VOL connectors other 
     H5Gget\_objtype\_by\_idx (deprecated) \\
     H5Gset\_comment (deprecated) \\
     \hline
+    H5Lget\_info1 (deprecated) \\
+    H5Lget\_info\_by\_idx1 (deprecated) \\
+    H5Literate1 (deprecated) \\
+    H5Literate\_by\_name1 (deprecated) \\
+    H5Lvisit1 (deprecated) \\
+    H5Lvisit\_by\_name1 (deprecated) \\
+    \hline
     H5Oare\_mdc\_flushes\_disabled \\
     H5Odisable\_mdc\_flushes \\
     H5Oenable\_mdc\_flushes \\
     H5Oget\_comment \\
     H5Oget\_comment\_by\_name \\
     H5Oget\_info\_by\_idx1 (deprecated) \\
-    H5Oget\_info\_by\_idx2 \\
+    H5Oget\_info\_by\_idx2 (deprecated)\\
     H5Oget\_info\_by\_name1 (deprecated) \\
-    H5Oget\_info\_by\_name2 \\
+    H5Oget\_info\_by\_name2 (deprecated)\\
     H5Oget\_info1 (deprecated) \\
-    H5Oget\_info2 \\
+    H5Oget\_info2 (deprecated) \\
+    H5Oopen\_by\_addr (deprecated) \\
     H5Oset\_comment \\
     H5Oset\_comment\_by\_name \\
+    H5Ovisit1 (deprecated) \\
+    H5Ovisit\_by\_name1 (deprecated) \\
+    H5Ovisit2 (deprecated) \\
+    H5Ovisit\_by\_name2 (deprecated) \\
     \hline
 \caption{Alphabetical list of HDF5 API calls specific to the native VOL connector}
 \end{longtable}

@@ -1,6 +1,6 @@
 \section{New VOL API Routines}
 \label{sec:api}
-New API routines have been added to the HDF5 library to manage VOL connectors. This section details each new API call and explains their intended usage. Additionally, a set of API calls that map directly to the VOL callbacks themselves have been added to aid in the development of passthrough connectors which can be stacked and/or split. A list of these API calls is given in an appendix.
+New API routines have been added to the HDF5 library to manage VOL connectors. This section details each new API call and explains its intended usage. Additionally, a set of API calls that map directly to the VOL callbacks themselves have been added to aid in the development of passthrough connectors which can be stacked and/or split. A list of these API calls is given in an appendix.
 
 \bigskip
 
@@ -8,23 +8,6 @@ New API routines have been added to the HDF5 library to manage VOL connectors. T
 
 The API calls in this header are for VOL management and general use (i.e., not
 limited to VOL connector authors).
-
-\subsubsection{H5VLregister\_connector}
-\begin{mdframed}[style=bgbox]
-\textbf{Signature:}
-\begin{lstlisting}
-hid_t H5VLregister_connector(const H5VL_class_t *cls, hid_t vipl_id);
-\end{lstlisting}
-
-\textbf{Arguments:}\\
-\begin{tabular}{l p{13.5cm}}
-  {\tt cls} & (IN): A pointer to the connector structure to register.\\
-  {\tt vipl\_id} & (IN): An ID for a VOL initialization property list (vipl).\\
-\end{tabular}
-\end{mdframed}
-
-Registers a user-defined VOL connector with the HDF5 library and returns an identifier for that connector (\texttt{H5I\_INVALID\_HID} on errors). This function is used when the application has direct access to the connector it wants to use and is able to obtain a pointer for the connector structure to pass to the HDF5 library.
-\bigskip
 
 \subsubsection{H5VLregister\_connector\_by\_name}
 \begin{mdframed}[style=bgbox]
@@ -40,6 +23,7 @@ hid_t H5VLregister_by_name(const char *connector_name, hid_t vipl_id);
 \end{mdframed}
 Registers a VOL connector with the HDF5 library given the name of the connector and returns an identifier for it (\texttt{H5I\_INVALID\_HID} on errors). If the connector is already registered, the library will create a new identifier for it and returns it to the user; otherwise the library will search the plugin path for a connector of that name, loading and registering it, returning an ID for it, if found. See the VOL User Guide for more information on loading plugins and the search paths.
 \bigskip
+
 
 \subsubsection{H5VLregister\_connector\_by\_value}
 \begin{mdframed}[style=bgbox]
@@ -57,32 +41,79 @@ Registers a VOL connector with the HDF5 library given a value for the connector 
 \bigskip
 
 
-\subsubsection{H5VLis\_connector\_registered}
+\subsubsection{H5VLis\_connector\_registered\_by\_name}
 \begin{mdframed}[style=bgbox]
 \textbf{Signature:}
 \begin{lstlisting}
-htri_t H5VLis_connector_registered(const char *name);
+htri_t H5VLis_connector_registered_by_name(const char *name);
 \end{lstlisting}
 \textbf{Arguments:}\\
 \begin{tabular}{l p{13.5cm}}
   {\tt name} & (IN): The connector name to check for.\\
 \end{tabular}
 \end{mdframed}
-Checks if a VOL connector is registered with the library given the connector name and returns TRUE/FALSE on success, otherwise it returns a negative value.\bigskip
+Checks if a VOL connector is registered with the library given the connector name and returns TRUE/FALSE on success, otherwise it returns a negative value.
+\bigskip
+
+
+\subsubsection{H5VLis\_connector\_registered\_by\_value}
+\begin{mdframed}[style=bgbox]
+\textbf{Signature:}
+\begin{lstlisting}
+htri_t H5VLis_connector_registered_by_value(H5VL_class_value_t connector_value);
+\end{lstlisting}
+\textbf{Arguments:}\\
+\begin{tabular}{l p{13.5cm}}
+  {\tt value} & (IN): The connector value to check for.\\
+\end{tabular}
+\end{mdframed}
+Checks if a VOL connector is registered with the library given the connector value and returns TRUE/FALSE on success, otherwise it returns a negative value.
+\bigskip
 
 
 \subsubsection{H5VLget\_connector\_id}
 \begin{mdframed}[style=bgbox]
 \textbf{Signature:}
 \begin{lstlisting}
-hid_t H5VLget_connector_id(const char *name);
+hid_t H5VLget_connector_id(hid_t obj_id);
+\end{lstlisting}
+\textbf{Arguments:}\\
+\begin{tabular}{l p{13.5cm}}
+  {\tt id} & (IN): An ID for an HDF5 VOL object.\\
+\end{tabular}
+\end{mdframed}
+Given a VOL object such as a dataset or an attribute, this function returns an identifier for its associated connector. If the ID is not a VOL object (such as a dataspace or uncommitted datatype), \texttt{H5I\_INVALID\_HID} is returned. The identifier must be released with a call to {\tt H5VLclose()}.
+\bigskip
+
+
+\subsubsection{H5VLget\_connector\_id\_by\_name}
+\begin{mdframed}[style=bgbox]
+\textbf{Signature:}
+\begin{lstlisting}
+hid_t H5VLget_connector_id_by_name(const char *name);
 \end{lstlisting}
 \textbf{Arguments:}\\
 \begin{tabular}{l p{13.5cm}}
   {\tt name} & (IN): The connector name to check for.\\
 \end{tabular}
 \end{mdframed}
-Given a connector name that is registered with the library, this function returns an identifier for the connector. If the connector is not registered with the library, a negative value is returned. The identifier must be released with a call to {\tt H5VLclose()}.\bigskip
+Given a connector name that is registered with the library, this function returns an identifier for the connector. If the connector is not registered with the library, \texttt{H5I\_INVALID\_HID} is returned. The identifier must be released with a call to {\tt H5VLclose()}.
+\bigskip
+
+
+\subsubsection{H5VLget\_connector\_id\_by\_value}
+\begin{mdframed}[style=bgbox]
+\textbf{Signature:}
+\begin{lstlisting}
+hid_t H5VLget_connector_id_by_value(H5VL_class_value_t connector_value);
+\end{lstlisting}
+\textbf{Arguments:}\\
+\begin{tabular}{l p{13.5cm}}
+  {\tt value} & (IN): The connector value to check for.\\
+\end{tabular}
+\end{mdframed}
+Given a connector value that is registered with the library, this function returns an identifier for the connector. If the connector is not registered with the library, \texttt{H5I\_INVALID\_HID} is returned. The identifier must be released with a call to {\tt H5VLclose()}.
+\bigskip
 
 
 \subsubsection{H5VLget\_connector\_name}
@@ -91,7 +122,6 @@ Given a connector name that is registered with the library, this function return
 \begin{lstlisting}
 ssize_t H5VLget_connector_name(hid_t id, char *name/*out*/, size_t size);
 \end{lstlisting}
-
 \textbf{Arguments:}\\
 \begin{tabular}{l p{13.5cm}}
   {\tt id} & (IN): The object identifier to check.\\
@@ -99,7 +129,8 @@ ssize_t H5VLget_connector_name(hid_t id, char *name/*out*/, size_t size);
   {\tt size} & (IN): the size of the passed in buffer.\\
 \end{tabular}
 \end{mdframed}
-Retrieves the name of a VOL connector given an object identifier that was created/opened with it. On success, the name length is returned.\bigskip
+Retrieves the name of a VOL connector given an object identifier that was created/opened with it. On success, the name length is returned.
+\bigskip
 
 
 \subsubsection{H5VLclose}
@@ -108,13 +139,13 @@ Retrieves the name of a VOL connector given an object identifier that was create
 \begin{lstlisting}
 herr_t H5VLclose(hid_t connector_id);
 \end{lstlisting}
-
 \textbf{Arguments:}\\
 \begin{tabular}{l p{13.5cm}}
  {\tt connector\_id} & (IN): A valid identifier of the connector to close.\\
 \end{tabular}
 \end{mdframed}
-Shuts down access to the connector that the identifier points to and release resources associated with it.\bigskip
+Shuts down access to the connector that the identifier points to and release resources associated with it.
+\bigskip
 
 
 \subsubsection{H5VLunregister\_connector}
@@ -128,29 +159,45 @@ herr_t H5VLunregister(hid_t connector_id);
   {\tt connector\_id} & (IN): A valid identifier of the connector to unregister.\\
 \end{tabular}
 \end{mdframed}
-Unregisters a connector from the library and return a positive value on success otherwise return a negative value. The native VOL connector cannot be unregistered (this will return a negative herr\_t value).\bigskip
+Unregisters a connector from the library and return a positive value on success otherwise return a negative value. The native VOL connector cannot be unregistered (this will return a negative herr\_t value).
+\bigskip
 
 
 \subsection{H5VLconnector.h}
 
 This functionality is intended for VOL connector authors and includes helper
-functions that are useful for writing connectors. Callback equivalent
-functions can be found in {\tt H5VLconnector\_passthru.h}. A list of these
-functions is included as an appendix to this document.
+functions that are useful for writing connectors.
+
+\subsubsection{H5VLregister\_connector}
+\begin{mdframed}[style=bgbox]
+\textbf{Signature:}
+\begin{lstlisting}
+hid_t H5VLregister_connector(const H5VL_class_t *cls, hid_t vipl_id);
+\end{lstlisting}
+\textbf{Arguments:}\\
+\begin{tabular}{l p{13.5cm}}
+  {\tt cls} & (IN): A pointer to the connector structure to register.\\
+  {\tt vipl\_id} & (IN): An ID for a VOL initialization property list (vipl).\\
+\end{tabular}
+\end{mdframed}
+Registers a user-defined VOL connector with the HDF5 library and returns an identifier for that connector (\texttt{H5I\_INVALID\_HID} on errors). This function is used when the application has direct access to the connector it wants to use and is able to obtain a pointer for the connector structure to pass to the HDF5 library.
+\bigskip
+
 
 \subsubsection{H5VLobject}
 \begin{mdframed}[style=bgbox]
 \textbf{Signature:}
 \begin{lstlisting}
-  void *H5VLget_object(hid_t obj_id); 
+  void *H5VLobject(hid_t obj_id); 
 \end{lstlisting}
-
 \textbf{Arguments:}\\
 \begin{tabular}{l p{13.5cm}}
  {\tt obj\_id} & (IN): identifier of the object to dereference.\\
 \end{tabular}
 \end{mdframed}
-Retrieves a pointer to the VOL object from an HDF5 file or object identifier.\bigskip
+Retrieves a pointer to the VOL object from an HDF5 file or object identifier.
+\bigskip
+
 
 \subsubsection{H5VLget\_file\_type}
 \begin{mdframed}[style=bgbox]
@@ -158,7 +205,6 @@ Retrieves a pointer to the VOL object from an HDF5 file or object identifier.\bi
 \begin{lstlisting}
   hid_t H5VLget_file_type(void *file_obj, hid_t connector_id, hid_t dtype_id); 
 \end{lstlisting}
-
 \textbf{Arguments:}\\
 \begin{tabular}{l p{13.5cm}}
  {\tt file\_obj} & (IN): pointer to a file or file object's connector-specific data.\\
@@ -167,26 +213,162 @@ Retrieves a pointer to the VOL object from an HDF5 file or object identifier.\bi
 \end{tabular}
 \end{mdframed}
 Returns a copy of the {\tt dtype\_id} parameter but with the location set to
-be in the file. Returns a negative value ({\tt H5I\_INVALID\_HID}) on errors.\bigskip
+be in the file. Returns a negative value ({\tt H5I\_INVALID\_HID}) on errors.
+\bigskip
 
-\subsubsection{H5VLpeek\_connector}
+
+\subsubsection{H5VLpeek\_connector\_by\_name}
 \begin{mdframed}[style=bgbox]
 \textbf{Signature:}
 \begin{lstlisting}
-  hid_t H5VLpeek_connector_id(const char *name); 
+  hid_t H5VLpeek_connector_id_by_name(const char *name); 
 \end{lstlisting}
-
 \textbf{Arguments:}\\
 \begin{tabular}{l p{13.5cm}}
  {\tt name} & (IN): name of the connector to query.\\
 \end{tabular}
 \end{mdframed}
-Retrieves the ID for a registered VOL connector. This is done without duplicating
+Retrieves the ID for a registered VOL connector based on a connector name.
+This is done without duplicating
 the ID and transferring ownership to the caller (as it normally the case in the
 HDF5 library). The ID returned from this operation should not be closed.
 This is intended for use by VOL connectors to find their own ID.
+Returns a negative value ({\tt H5I\_INVALID\_HID}) on errors.
+\bigskip
 
-Returns a negative value ({\tt H5I\_INVALID\_HID}) on errors.\bigskip
+
+\subsubsection{H5VLpeek\_connector\_by\_value}
+\begin{mdframed}[style=bgbox]
+\textbf{Signature:}
+\begin{lstlisting}
+  hid_t H5VLpeek_connector_id_by_value(H5VL_class_value_t value); 
+\end{lstlisting}
+\textbf{Arguments:}\\
+\begin{tabular}{l p{13.5cm}}
+ {\tt value} & (IN): value of the connector to query.\\
+\end{tabular}
+\end{mdframed}
+Retrieves the ID for a registered VOL connector based on a connector value.
+This is done without duplicating
+the ID and transferring ownership to the caller (as it normally the case in the
+HDF5 library). The ID returned from this operation should not be closed.
+This is intended for use by VOL connectors to find their own ID.
+Returns a negative value ({\tt H5I\_INVALID\_HID}) on errors.
+\bigskip
+
+
+\subsection{H5VLconnector\_passthru.h}
+
+This functionality is intended for VOL connector authors who are writing
+pass-through connectors and includes helper functions that are useful for
+writing such connectors. Callback equivalent functions can be found in this
+header as well. A list of these functions is included as an appendix to this
+document.
+
+
+\subsubsection{H5VLcmp\_connector\_cls}
+\begin{mdframed}[style=bgbox]
+\textbf{Signature:}
+\begin{lstlisting}
+  herr_t H5VLcmp_connector_cls(int *cmp, hid_t connector_id1, hid_t connector_id2);
+\end{lstlisting}
+\textbf{Arguments:}\\
+\begin{tabular}{l p{13.5cm}}
+ {\tt cmp} & (OUT): a value like strcmp.\\
+ {\tt connector\_id1} & (IN): the ID of the first connector to compare.\\
+ {\tt connector\_id2} & (IN): the ID of the second connector to compare.\\
+\end{tabular}
+\end{mdframed}
+Compares two connectors (given by the connector IDs) to see if they refer to the
+same connector underneath.
+Returns a positive value on success and a negative value on errors.
+\bigskip
+
+
+\subsubsection{H5VLwrap\_register}
+\begin{mdframed}[style=bgbox]
+\textbf{Signature:}
+\begin{lstlisting}
+  hid_t H5VLwrap_register(void *obj, H5I_type_t type);
+\end{lstlisting}
+\textbf{Arguments:}\\
+\begin{tabular}{l p{13.5cm}}
+ {\tt cmp} & (IN): an object to wrap.\\
+ {\tt type} & (IN): the type of the object (see below).\\
+\end{tabular}
+\end{mdframed}
+Wrap an internal object with a "wrap context" and register and return an
+hid\_t for the resulting object. This routine is mainly targeted toward wrapping
+objects for iteration routine callbacks (i.e. the callbacks from H5Aiterate*,
+H5Literate* / H5Lvisit*, and H5Ovisit*). The type must be a VOL-managed object
+class (H5I\_FILE, H5I\_GROUP, H5I\_DATATYPE, H5I\_DATASET, H5I\_MAP, or H5I\_ATTR).
+Returns a negative value ({\tt H5I\_INVALID\_HID}) on errors.
+\bigskip
+
+
+\subsubsection{H5VLretrieve\_lib\_state}
+\begin{mdframed}[style=bgbox]
+\textbf{Signature:}
+\begin{lstlisting}
+  herr_t H5VLretrieve_lib_state(void **state);
+\end{lstlisting}
+\textbf{Arguments:}\\
+\begin{tabular}{l p{13.5cm}}
+ {\tt state} & (OUT): the library state.\\
+\end{tabular}
+\end{mdframed}
+Retrieves a copy of the internal state of the HDF5 library,
+so that it can be restored later.
+Returns a positive value on success and a negative value on errors.
+\bigskip
+
+
+\subsubsection{H5VLrestore\_lib\_state}
+\begin{mdframed}[style=bgbox]
+\textbf{Signature:}
+\begin{lstlisting}
+  herr_t H5VLrestore_lib_state(const void *state);
+\end{lstlisting}
+\textbf{Arguments:}\\
+\begin{tabular}{l p{13.5cm}}
+ {\tt state} & (IN): the library state.\\
+\end{tabular}
+\end{mdframed}
+Restores the internal state of the HDF5 library.
+Returns a positive value on success and a negative value on errors.
+\bigskip
+
+
+\subsubsection{H5VLreset\_lib\_state}
+\begin{mdframed}[style=bgbox]
+\textbf{Signature:}
+\begin{lstlisting}
+  herr_t H5VLreset_lib_state(void);
+\end{lstlisting}
+\end{mdframed}
+Resets the internal state of the HDF5 library, undoing the
+affects of H5VLrestore\_lib\_state.
+This routine must be called as a "pair" with
+{\tt H5VLrestore\_lib\_state}.  It can be called before, after, or
+independently of {\tt H5VLfree\_lib\_state}.
+Returns a positive value on success and a negative value on errors.
+\bigskip
+
+
+\subsubsection{H5VLfree\_lib\_state}
+\begin{mdframed}[style=bgbox]
+\textbf{Signature:}
+\begin{lstlisting}
+  herr_t H5VLfree_lib_state(const void *state);
+\end{lstlisting}
+\textbf{Arguments:}\\
+\begin{tabular}{l p{13.5cm}}
+ {\tt state} & (IN): the library state.\\
+\end{tabular}
+\end{mdframed}
+Free a retrieved library state.
+Returns a positive value on success and a negative value on errors.
+\bigskip
 
 
 %%% Local Variables: 
