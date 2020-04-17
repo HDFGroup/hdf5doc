@@ -1,4 +1,4 @@
-filename=vol_user_guide
+filename=vol_connector_author_guide
 
 all:
 	pdflatex ${filename}
