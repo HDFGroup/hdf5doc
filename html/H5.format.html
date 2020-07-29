@@ -4668,8 +4668,8 @@ III.G. Disk Format: Level 1G - Fractal Heap</a></h3>
 	    Each fractal heap consists of a header and zero or more direct and
             indirect blocks (described below).  The header contains general
             information as well as
-            initialization parameters for the doubling table.  The <em>Root
-            Block Address</em> in the header points to the first direct or
+            initialization parameters for the doubling table.  The <em>Address
+            of Root Block</em> field in the header points to the first direct or
             indirect block in the heap.
         </p>
 
@@ -4697,8 +4697,8 @@ III.G. Disk Format: Level 1G - Fractal Heap</a></h3>
 
         <p>
             All indirect blocks have a constant number of block entries in each
-            row, called the <em>width</em> of the doubling table (stored in
-            the heap header).
+            row, called the <em>width</em> of the doubling table 
+            (see <em>Table Width</em> field in the header).
 
             The number
             of rows for each indirect block in the heap is determined by the
@@ -4711,8 +4711,11 @@ III.G. Disk Format: Level 1G - Fractal Heap</a></h3>
 
         <p>
             Blocks in the first <em>two</em> rows of an indirect block 
-            are <em>Starting Block Size</em> number of bytes in size, 
-            and the blocks in each subsequent row are twice the size of 
+            are <em>Starting Block Size</em> number of bytes in size.
+            For example, if the row <em>width</em> of the doubling table is 4,
+            then the first eight block entries in the
+            indirect block are <em>Starting Block Size</em> number of bytes in size.
+            The blocks in each subsequent row are twice the size of 
             the blocks in the previous row. In other words, blocks in 
             the third row are twice the <em>Starting Block Size</em>, 
             blocks in the fourth row are four times the 
@@ -4721,52 +4724,57 @@ III.G. Disk Format: Level 1G - Fractal Heap</a></h3>
             direct blocks, and entries for blocks greater than that size 
             point to further indirect blocks (which have their own 
             entries for direct and indirect blocks).
+            <em>Starting Block Size</em> and
+            <em>Maximum Direct Block Size</em> are fields
+            stored in the header.
         </p>
 
         <p>
             The number of rows of blocks, <em>nrows</em>, in an
-            indirect block of size <em>iblock_size</em> is given by the
-            following expression:
+            indirect block is calculated by the following expression:
             <br /> <br />
-                <em>nrows</em> = (log<sub>2</sub>(<em>iblock_size</em>) -
-                    log<sub>2</sub>(<em>&lt;Starting Block Size&gt;</em> *
-                        <em>&lt;Width&gt;</em>)) + 1
+                <em>nrows</em> = (log<sub>2</sub>(<em>block_size</em>) -
+                    log<sub>2</sub>(<em>&lt;Starting Block Size&gt;</em>)) + 1
         </p>
-
+            where <em>block_size</em> is the size of the block that the indirect block 
+            represents in the doubling table.
+            For example, to represent a block with <em>block_size</em> equals to 1024, 
+            and <em>Starting Block Size</em> equals to 256,
+            three rows are needed.
         <p>
             The maximum number of rows of direct blocks, <em>max_dblock_rows</em>,
             in any indirect block of a fractal heap is given by the
             following expression:
             <br /> <br />
                 <em>max_dblock_rows</em> =
-                    (log<sub>2</sub>(<em>&lt;Max. Direct Block Size&gt;</em>) -
+                    (log<sub>2</sub>(<em>&lt;Maximum Direct Block Size&gt;</em>) -
                     log<sub>2</sub>(<em>&lt;Starting Block Size&gt;</em>)) + 2
         </p>
-
         <p>
             Using the computed values for <em>nrows</em> and
-            <em>max_dblock_rows</em>, along with the <em>Width</em> of the
+            <em>max_dblock_rows</em>, along with the <em>width</em> of the
             doubling table, the number of direct and indirect block entries
             (<em>K</em> and <em>N</em> in the indirect block description, below)
             in an indirect block can be computed:
             <br /> <br />
                 <em>K</em> = MIN(<em>nrows</em>, <em>max_dblock_rows</em>) *
-                    <em>Width</em>
+                    <em>&lt;Table Width&gt;</em>
 
             <br /> <br />
             If <em>nrows</em> is less than or equal to <em>max_dblock_rows</em>,
             <em>N</em> is 0.  Otherwise, <em>N</em> is simply computed:
             <br /> <br />
                 <em>N</em> = <em>K</em> - (<em>max_dblock_rows</em> *
-                    <em>Width</em>)
+                    <em>&lt;Table Width&gt;</em>)
         </p>
 
         <p>
-            The size indirect blocks on disk is determined by the number
+            The size of indirect blocks on disk is determined by the number
             of rows in the indirect block (computed above).  The size of direct
             blocks on disk is exactly the size of the block in the doubling
             table.
         </p>
+        <br>
 
     <div align="center">
       <table class="format">
