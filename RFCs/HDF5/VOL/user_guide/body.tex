@@ -27,11 +27,19 @@ For more information about which calls go through the VOL and the mechanism by w
 
 A VOL connector can be implemented in several ways: as a shared or static library linked to an application; as a dynamically loaded plugin, implemented as a shared library; and even as an internal connector, built into the HDF5 library itself. This document mostly focuses on external connectors, both libraries and plugins, as those are expected to be much more common than internal implementations.
 
-Many VOL connectors (at various stages of implementation) can be found here:
+A list of VOL connectors can be found here:
 
-\quad \quad \url{https://bitbucket.hdfgroup.org/projects/HDF5VOL}
+\url{https://portal.hdfgroup.org/display/support/Registered+VOL+Connectors}
 
-Not every connector in this collection is actively maintained by The HDF Group. It simply serves as a single location where important VOL connectors can be found. See the documentation in a connector's repository to determine its development status and the parties responsible for it. The collection also includes a VOL template that contains build scripts (Autotools and CMake) and an empty VOL connector "shell" which can be copied and used as a starting point for building new connectors. See the VOL Connector Author Guide for more information on this.
+This list is incomplete and only includes the VOL connectors that have been registered with The HDF Group.
+
+Not every connector in this collection is actively maintained by The HDF Group. It simply serves as a single location where important VOL connectors can be found. See the documentation in a connector's repository to determine its development status and the parties responsible for it.
+
+A VOL template that contains build scripts (Autotools and CMake) and an empty VOL connector "shell" which can be copied and used as a starting point for building new connectors is located here:
+
+\url{https://github.com/HDFGroup/vol-template}
+
+This template VOL connector is for use in constructing terminal VOL connectors that do not forward calls to an underlying connector. The external pass-through VOL connector listed on the registered connector page can be used as a starting point for pass-through connectors.
 
 The only current (non-test) internal VOL connector distributed with the library is the native file format connector (the "native VOL connector") which contains the code that handles native HDF5 (*.h5/hdf5) files. In other words, even the canonical HDF5 file format is implemented via the VOL, making it a core part of the HDF5 library and not an optional component which could be disabled. It has not been completely abstracted from the HDF5 library, though, and is treated as a special case. For example, it cannot be unloaded and is always present.
 
@@ -46,11 +54,11 @@ Many VOL connectors will require specific setup and configuration of both the ap
 
 \subsection{Use A VOL-Enabled HDF5 Library}
 
-The virtual object layer was introduced in HDF5 1.12.0, so you will need that version or later to use it. The particular configuration of the library (serial vs parallel, thread-safe, debug vs production/release) does not matter. The VOL is a fundamental part of the library and cannot be disabled, so any build will do.
+The virtual object layer was introduced in HDF5 1.12.0, however that version of the VOL is deprecated. VOL users should target HDF5 1.13.0, which is currently under development (targeted release date: late 2021). This release is considered "unstable" in the sense that API calls, interfaces, and the file format may change in the 1.13 release branch and we do not guarantee binary compatibility ("unstable" does NOT mean buggy). The next stable version of the library will be HDF5 1.14.0 which should release in 2022. The particular configuration of the library (serial vs parallel, thread-safe, debug vs production/release) does not matter. The VOL is a fundamental part of the library and cannot be disabled, so any build will do.
 
 On Windows, it's probably best to use the same debug vs release configuration for the application and all libraries in order to avoid C runtime (CRT) issues. On pre-2015 versions of Visual Studio, you'll probably also want to stick to the same Visual Studio version (and thus same CRT version) as well.
 
-When working with a debug HDF5 library, it's probably also wise to build with the "memory sanity checking" feature disabled to avoid accidentally clobbering our memory tracking infrastructure when dealing with buffers obtained from the HDF5 library.
+When working with a debug HDF5 library, it's probably also wise to build with the "memory sanity checking" feature disabled to avoid accidentally clobbering our memory tracking infrastructure when dealing with buffers obtained from the HDF5 library. This feature should be disabled by default in HDF5 1.13.0.
 
 \subsection{Determine How You Will Set The VOL Connector}
 
@@ -96,9 +104,9 @@ Before a VOL connector can be set in a fapl, it must be registered with the libr
 Before a connector can be used, it must be registered. This loads the connector into the library and give it an HDF5 {\tt hid\_t} ID. The {\tt H5VLregister\_connector} API calls are used for this.
 
 \begin{lstlisting}
-  hid\_t H5VLregister\_connector\_by\_name(const char *connector\_name, hid\_t vipl\_id)
+  hid_t H5VLregister_connector_by_name(const char *connector_name, hid_t vipl_id)
 
-  hid\_t H5VLregister\_connector\_by\_value(H5VL\_class\_value\_t connector\_value, hid\_t vipl\_id)
+  hid_t H5VLregister_connector_by_value(H5VL_class_value_t connector_value, hid_t vipl_id)
 \end{lstlisting}
 
 When used with a plugin, these functions will check to see if an appropriate plugin with a matching name, value, etc. is already loaded and check the plugin path (see above) for matching plugins if this is not true. The functions return {\tt H5I\_INVALID\_HID} if they are unable to register the connector. Many VOL connectors will provide a connector-specific init call that will load and register the connector for you.
@@ -113,19 +121,18 @@ Note that it's considered an error to unload the native VOL connector. The libra
 
 \subsection{Connector Versioning}
 
-
-There is currently no recommended or library-inherent way to version VOL connectors. A {\tt version} field is included in the {\tt H5VL\_class\_t} struct which holds a connector's information and callbacks, but this is intended for use when versioning the class struct.
+The VOL connector struct provides a {\tt conn\_version} field for versioning connectors. The library developers are working on some best practices for versioning connectors.
 
 \subsection{Connector-Specific Registration Calls}
 
-Most connectors will provide a special API call which will set the connector in the fapl. These will often be in the form of {\tt H5Pset\_fapl\_<name>()}. For example, the DAOS VOL connector \url{https://bitbucket.hdfgroup.org/projects/HDF5VOL/repos/daos-vol} provides a {\tt H5Pset\_fapl\_daos()} API call which will take MPI parameters and make this call. See the connector's documentation or public header file(s) for more information.
+Most connectors will provide a special API call which will set the connector in the fapl. These will often be in the form of {\tt H5Pset\_fapl\_<name>()}. For example, the DAOS VOL connector \url{https://github.com/HDFGroup/vol-daos} provides a {\tt H5Pset\_fapl\_daos()} API call which will take MPI parameters and make this call. See the connector's documentation or public header file(s) for more information.
 
 \subsection{\tt H5Pset\_vol()}
 
 The is the main library API call for setting the VOL connector in a file access property list. Its signature is:
 
 \begin{lstlisting}
-  herr\_t H5Pset\_vol(hid\_t plist\_id, hid\_t new\_vol\_id, const void *new\_vol\_info)
+  herr_t H5Pset_vol(hid_t plist_id, hid_t new_vol_id, const void *new_vol_info)
 \end{lstlisting}
 
 It takes the ID of the file access property list, the ID of the registered VOL connector, and a pointer to whatever connector-specific data the connector is expecting. This will usually be a data struct specified in the connector's header or a NULL pointer if the connecter requires no special information (as in the native VOL connector).
@@ -151,13 +158,13 @@ These default locations can be overridden by setting the {\tt HDF5\_PLUGIN\_PATH
 Each VOL connector is allowed to take in a parameter string which can be parsed via {\tt H5VLconnector\_str\_to\_info()} to get an info struct which can be passed to {\tt H5Pset\_vol()}.
 
 \begin{lstlisting}
-  herr\_t H5VLconnector\_str\_to\_info(const char *str, hid\_t connector\_id, void **info)
+  herr_t H5VLconnector_str_to_info(const char *str, hid_t connector_id, void **info)
 \end{lstlisting}
 
 And the obtained info can be freed via:
 
 \begin{lstlisting}
-  herr\_t H5VLfree\_connector\_info(hid\_t connector\_id, void *vol\_info)
+  herr_t H5VLfree_connector_info(hid_t connector_id, void *vol_info)
 \end{lstlisting}
 
 Most users will not need this functionality as they will be using either connector-specific setup calls which will handle registering and configuring the connector for them or they will be using the environment variable (see below).
@@ -373,11 +380,16 @@ The new {\tt H5Oopen\_by\_token()} API call can be used to open objects by the t
 
 \subsection{Protect Native-Only API Calls}
 
-There is currently no simple way to determine if the VOL connector used for a file or object is the native VOL connector. You will have to track this in your application and not make native-only VOL calls with non-native VOL connectors.
+In HDF5 1.13.0, a way to determine support for optional calls has been added.
 
-A list of native-only connector calls is given below.
+\begin{lstlisting}
+  herr_t H5VLquery_optional(hid_t obj_id, H5VL_subclass_t subcls, int opt_type, uint64_t *flags)
+\end{lstlisting}
 
-We are working on a mechanism that will allow detecting when the VOL connector is the native VOL connector, however a good mechanism for this is complicated as some VOL connectors will be passthrough VOL connectors (or even splitters) which ultimately resolve down to the native VOL connectors.
+The call takes an object that is VOL managed (i.e.; file, group, dataset, attribute, object, committed datatype), the VOL subclass (an enum documented in H5VLpublic.h), an operation "type" (discussed below), and an out parameter for the bitwise capabilities flags (also discussed below). Code that needs to protect a VOL-specific API call can call the function to see if the API call is supported, which will be reported via the flags. Specifically, if the {\tt H5VL\_OPT\_QUERY\_SUPPORTED} bit is set, the feature is supported. The other flags are more useful for VOL connector authors than end users.
+
+In the case of the native VOL connector, the {\tt opt\_type} operations are documented in H5VLnative.h. The current list of native operations is given at the end of this document, along with a list of native-only connector calls.
+
 
 \section{Language Wrappers}
 
@@ -446,9 +458,17 @@ the Fortran wrappers.
 
 \section{Using VOL Connectors With The HDF5 Command-Line Tools}
 
-The best way to use a particular VOL connector with the HDF5 tools, both command-line and GUI tools, is to specify the VOL connector using the VOL connector environment variable (HDF5\_VOL\_CONNECTOR - see above).
+The following command-line tools are VOL-aware and can be used with arbitrary VOL connectors:
 
-The HDF5 tools currently do not have an option to specify a VOL connector on the command line, though this option will be added soon.
+\begin{itemize}
+    \item {\tt (p)h5diff}
+    \item {\tt h5dump}
+    \item {\tt h5ls}
+    \item {\tt h5mkgrp}
+    \item {\tt h5repack}
+\end{itemize}
+
+The VOL connector can be set either using the {\tt HDF5\_VOL\_CONNECTOR} environment variable (see above) or via the command line. Each of the above tools takes command-line options to set the VOL connector by name or value and the VOL connector string, usually in the form of {\tt --vol-(name|value|info)}. See the individual tool's help for the options specific to that tool.
 
 \section{Compatibility}
 
@@ -461,6 +481,7 @@ These API calls will probably fail when used with terminal VOL connectors other 
     H5Aget\_num\_attrs (deprecated) \\
     H5Aiterate1 (deprecated) \\
     \hline
+    H5Dchunk\_iter \\
     H5Ddebug \\
     H5Dformat\_convert \\
     H5Dget\_chunk\_index\_type \\
@@ -469,14 +490,16 @@ These API calls will probably fail when used with terminal VOL connectors other 
     H5Dget\_chunk\_storage\_size \\
     H5Dget\_num\_chunks \\
     H5Dget\_offset \\
-    H5Dread\_chunk H5Dwrite\_chunk \\
+    H5Dread\_chunk \\
+    H5Dwrite\_chunk \\
     \hline
     H5FD* \\
     \hline
     H5Fclear\_elink\_file\_cache \\
     H5Fformat\_convert \\
     H5Fget\_dset\_no\_attrs\_hint \\
-    H5Fget\_eoa H5Fget\_file\_image \\
+    H5Fget\_eoa \\
+    H5Fget\_file\_image \\
     H5Fget\_filesize \\
     H5Fget\_free\_sections \\
     H5Fget\_freespace \\
@@ -532,6 +555,9 @@ These API calls will probably fail when used with terminal VOL connectors other 
     H5Oget\_info\_by\_name2 (deprecated)\\
     H5Oget\_info1 (deprecated) \\
     H5Oget\_info2 (deprecated) \\
+    H5Oget\_native\_info \\
+    H5Oget\_native\_info\_by\_idx \\
+    H5Oget\_native\_info\_by\_name \\
     H5Oopen\_by\_addr (deprecated) \\
     H5Oset\_comment \\
     H5Oset\_comment\_by\_name \\
@@ -576,3 +602,116 @@ These HDF5 API calls do not depend on a particular VOL connector being loaded.
 \caption{Alphabetical list of VOL-independent HDF5 API calls}
 \end{longtable}
 
+\subsection{List of Native VOL Optional Operation Values By Subclass}
+
+These values can be passed to the {\tt opt\_type} parameter of {\tt H5VLquery\_optional()}.
+
+\begin{lstlisting}
+/* H5VL_SUBCLS_ATTR */
+/* H5Aiterate (deprecated routine) */
+#define H5VL_NATIVE_ATTR_ITERATE_OLD 0 
+
+/* H5VL_SUBCLS_DATASET */
+/* H5Dformat_convert (internal) */
+#define H5VL_NATIVE_DATASET_FORMAT_CONVERT          0  
+/* H5Dget_chunk_index_type */
+#define H5VL_NATIVE_DATASET_GET_CHUNK_INDEX_TYPE    1  
+/* H5Dget_chunk_storage_size */
+#define H5VL_NATIVE_DATASET_GET_CHUNK_STORAGE_SIZE  2  
+/* H5Dget_num_chunks */
+#define H5VL_NATIVE_DATASET_GET_NUM_CHUNKS          3  
+/* H5Dget_chunk_info */
+#define H5VL_NATIVE_DATASET_GET_CHUNK_INFO_BY_IDX   4  
+/* H5Dget_chunk_info_by_coord */
+#define H5VL_NATIVE_DATASET_GET_CHUNK_INFO_BY_COORD 5  
+/* H5Dchunk_read */
+#define H5VL_NATIVE_DATASET_CHUNK_READ              6  
+/* H5Dchunk_write */
+#define H5VL_NATIVE_DATASET_CHUNK_WRITE             7  
+/* H5Dvlen_get_buf_size */
+#define H5VL_NATIVE_DATASET_GET_VLEN_BUF_SIZE       8  
+/* H5Dget_offset */
+#define H5VL_NATIVE_DATASET_GET_OFFSET              9  
+/* H5Dget_offset */
+#define H5VL_NATIVE_DATASET_CHUNK_ITER              10 
+
+/* H5VL_SUBCLS_FILE */
+/* H5Fclear_elink_file_cache */
+#define H5VL_NATIVE_FILE_CLEAR_ELINK_CACHE            0  
+/* H5Fget_file_image */
+#define H5VL_NATIVE_FILE_GET_FILE_IMAGE               1  
+/* H5Fget_free_sections */
+#define H5VL_NATIVE_FILE_GET_FREE_SECTIONS            2  
+/* H5Fget_freespace */
+#define H5VL_NATIVE_FILE_GET_FREE_SPACE               3  
+/* H5Fget_info1/2 */
+#define H5VL_NATIVE_FILE_GET_INFO                     4  
+/* H5Fget_mdc_config */
+#define H5VL_NATIVE_FILE_GET_MDC_CONF                 5  
+/* H5Fget_mdc_hit_rate */
+#define H5VL_NATIVE_FILE_GET_MDC_HR                   6  
+/* H5Fget_mdc_size */
+#define H5VL_NATIVE_FILE_GET_MDC_SIZE                 7  
+/* H5Fget_filesize */
+#define H5VL_NATIVE_FILE_GET_SIZE                     8  
+/* H5Fget_vfd_handle */
+#define H5VL_NATIVE_FILE_GET_VFD_HANDLE               9  
+/* H5Freset_mdc_hit_rate_stats */
+#define H5VL_NATIVE_FILE_RESET_MDC_HIT_RATE           10 
+/* H5Fset_mdc_config */
+#define H5VL_NATIVE_FILE_SET_MDC_CONFIG               11 
+/* H5Fget_metadata_read_retry_info */
+#define H5VL_NATIVE_FILE_GET_METADATA_READ_RETRY_INFO 12 
+/* H5Fstart_swmr_write */
+#define H5VL_NATIVE_FILE_START_SWMR_WRITE             13 
+/* H5Fstart_mdc_logging */
+#define H5VL_NATIVE_FILE_START_MDC_LOGGING            14 
+/* H5Fstop_mdc_logging */
+#define H5VL_NATIVE_FILE_STOP_MDC_LOGGING             15 
+/* H5Fget_mdc_logging_status */
+#define H5VL_NATIVE_FILE_GET_MDC_LOGGING_STATUS       16 
+/* H5Fformat_convert */
+#define H5VL_NATIVE_FILE_FORMAT_CONVERT               17 
+/* H5Freset_page_buffering_stats */
+#define H5VL_NATIVE_FILE_RESET_PAGE_BUFFERING_STATS   18 
+/* H5Fget_page_buffering_stats */
+#define H5VL_NATIVE_FILE_GET_PAGE_BUFFERING_STATS     19 
+/* H5Fget_mdc_image_info */
+#define H5VL_NATIVE_FILE_GET_MDC_IMAGE_INFO           20 
+/* H5Fget_eoa */
+#define H5VL_NATIVE_FILE_GET_EOA                      21 
+/* H5Fincrement_filesize */
+#define H5VL_NATIVE_FILE_INCR_FILESIZE                22 
+/* H5Fset_latest_format/libver_bounds */
+#define H5VL_NATIVE_FILE_SET_LIBVER_BOUNDS            23 
+/* H5Fget_dset_no_attrs_hint */
+#define H5VL_NATIVE_FILE_GET_MIN_DSET_OHDR_FLAG       24 
+/* H5Fset_dset_no_attrs_hint */
+#define H5VL_NATIVE_FILE_SET_MIN_DSET_OHDR_FLAG       25 
+/* H5Fget_mpi_atomicity */
+#define H5VL_NATIVE_FILE_GET_MPI_ATOMICITY 26 
+/* H5Fset_mpi_atomicity */
+#define H5VL_NATIVE_FILE_SET_MPI_ATOMICITY 27 
+/* Adjust file after open, with wrapping context */
+#define H5VL_NATIVE_FILE_POST_OPEN 28         
+
+/* H5VL_SUBCLS_GROUP */
+/* HG5Giterate (deprecated routine) */
+#define H5VL_NATIVE_GROUP_ITERATE_OLD 0 
+/* HG5Gget_objinfo (deprecated routine) */
+#define H5VL_NATIVE_GROUP_GET_OBJINFO 1 
+
+/* H5VL_SUBCLS_OBJECT */
+/* H5G|H5Oget_comment, H5Oget_comment_by_name */
+#define H5VL_NATIVE_OBJECT_GET_COMMENT              0 
+/* H5G|H5Oset_comment, H5Oset_comment_by_name */
+#define H5VL_NATIVE_OBJECT_SET_COMMENT              1 
+/* H5Odisable_mdc_flushes */
+#define H5VL_NATIVE_OBJECT_DISABLE_MDC_FLUSHES      2 
+/* H5Oenable_mdc_flushes */
+#define H5VL_NATIVE_OBJECT_ENABLE_MDC_FLUSHES       3 
+/* H5Oare_mdc_flushes_disabled */
+#define H5VL_NATIVE_OBJECT_ARE_MDC_FLUSHES_DISABLED 4 
+/* H5Oget_native_info(_by_idx, _by_name) */
+#define H5VL_NATIVE_OBJECT_GET_NATIVE_INFO          5 
+\end{lstlisting}
