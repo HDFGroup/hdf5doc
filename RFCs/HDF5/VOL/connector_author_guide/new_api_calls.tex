@@ -1,6 +1,6 @@
 \section{New VOL API Routines}
 \label{sec:api}
-New API routines have been added to the HDF5 library to manage VOL connectors. This section details each new API call and explains its intended usage. Additionally, a set of API calls that map directly to the VOL callbacks themselves have been added to aid in the development of passthrough connectors which can be stacked and/or split. A list of these API calls is given in an appendix.
+API routines have been added to the HDF5 library to manage VOL connectors. This section details each new API call and explains its intended usage. Additionally, a set of API calls that map directly to the VOL callbacks themselves have been added to aid in the development of passthrough connectors which can be stacked and/or split. A list of these API calls is given in an appendix.
 
 \bigskip
 
@@ -163,10 +163,45 @@ Unregisters a connector from the library and return a positive value on success 
 \bigskip
 
 
+\subsubsection{H5VLquery\_optional}
+\begin{mdframed}[style=bgbox]
+\textbf{Signature:}
+\begin{lstlisting}
+herr_t H5VLquery_optional(hid_t obj_id, H5VL_subclass_t subcls, int opt_type, uint64_t *flags);
+\end{lstlisting}
+\textbf{Arguments:}\\
+\begin{tabular}{l p{13.5cm}}
+  {\tt obj\_id} & (IN): A valid identifier of a VOL-managed object.\\
+  {\tt subcls} & (IN): The subclass of the optional operation.\\
+  {\tt opt\_type} & (IN): The optional operation. The native VOL connector uses hard-coded values. Other VOL connectors get this value when the optional operations are registered.\\
+  {\tt flags} & (OUT): Bitwise flags indicating support and behavior.\\
+\end{tabular}
+\end{mdframed}
+Determines if a connector or connector stack (determined from the passed-in object) supports an optional operation. The returned flags (listed below) not only indicate whether the operation is supported or not, but also give a sense of the option's behavior (useful for pass-through connectors).
+
+Bitwise query flag values:
+\begin{lstlisting}
+#define H5VL_OPT_QUERY_SUPPORTED       0x0001 /* VOL connector supports this operation */
+#define H5VL_OPT_QUERY_READ_DATA       0x0002 /* Operation reads data for object */
+#define H5VL_OPT_QUERY_WRITE_DATA      0x0004 /* Operation writes data for object */
+#define H5VL_OPT_QUERY_QUERY_METADATA  0x0008 /* Operation reads metadata for object */
+#define H5VL_OPT_QUERY_MODIFY_METADATA 0x0010 /* Operation modifies metadata for object */
+#define H5VL_OPT_QUERY_COLLECTIVE                                                                            \
+    0x0020 /* Operation is collective (operations without this flag are assumed to be independent) */
+#define H5VL_OPT_QUERY_NO_ASYNC  0x0040 /* Operation may NOT be executed asynchronously */
+#define H5VL_OPT_QUERY_MULTI_OBJ 0x0080 /* Operation involves multiple objects */
+
+\end{lstlisting}
+\bigskip
+
+
 \subsection{H5VLconnector.h}
 
 This functionality is intended for VOL connector authors and includes helper
 functions that are useful for writing connectors.
+
+API calls to manage optional operations are also found in this header file.
+These are discussed in the section on optional operations, above.
 
 \subsubsection{H5VLregister\_connector}
 \begin{mdframed}[style=bgbox]
@@ -217,7 +252,7 @@ be in the file. Returns a negative value ({\tt H5I\_INVALID\_HID}) on errors.
 \bigskip
 
 
-\subsubsection{H5VLpeek\_connector\_by\_name}
+\subsubsection{H5VLpeek\_connector\_id\_by\_name}
 \begin{mdframed}[style=bgbox]
 \textbf{Signature:}
 \begin{lstlisting}
@@ -237,7 +272,7 @@ Returns a negative value ({\tt H5I\_INVALID\_HID}) on errors.
 \bigskip
 
 
-\subsubsection{H5VLpeek\_connector\_by\_value}
+\subsubsection{H5VLpeek\_connector\_id\_by\_value}
 \begin{mdframed}[style=bgbox]
 \textbf{Signature:}
 \begin{lstlisting}
@@ -323,6 +358,18 @@ Returns a positive value on success and a negative value on errors.
 \bigskip
 
 
+\subsubsection{H5VLstart\_lib\_state}
+\begin{mdframed}[style=bgbox]
+\textbf{Signature:}
+\begin{lstlisting}
+  herr_t H5VLstart_lib_state(void);
+\end{lstlisting}
+\end{mdframed}
+Opens a new internal state for the HDF5 library.
+Returns a positive value on success and a negative value on errors.
+\bigskip
+
+
 \subsubsection{H5VLrestore\_lib\_state}
 \begin{mdframed}[style=bgbox]
 \textbf{Signature:}
@@ -339,18 +386,14 @@ Returns a positive value on success and a negative value on errors.
 \bigskip
 
 
-\subsubsection{H5VLreset\_lib\_state}
+\subsubsection{H5VLfinish\_lib\_state}
 \begin{mdframed}[style=bgbox]
 \textbf{Signature:}
 \begin{lstlisting}
-  herr_t H5VLreset_lib_state(void);
+  herr_t H5VLfinish_lib_state(void);
 \end{lstlisting}
 \end{mdframed}
-Resets the internal state of the HDF5 library, undoing the
-affects of H5VLrestore\_lib\_state.
-This routine must be called as a "pair" with
-{\tt H5VLrestore\_lib\_state}.  It can be called before, after, or
-independently of {\tt H5VLfree\_lib\_state}.
+Closes the state of the library, undoing the effects of {\tt H5VLstart\_lib\_state}.
 Returns a positive value on success and a negative value on errors.
 \bigskip
 

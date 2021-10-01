@@ -7,54 +7,83 @@ Each VOL connector should be of type \texttt{H5VL\_class\_t}, Listing \ref{lst:V
 \begin{lstlisting}[caption={VOL connector class, H5VLpublic.h},captionpos=b, label={lst:VOLclass}]
 /* Class information for each VOL driver */
 typedef struct H5VL_class_t {
-    /* Overall connector fields & callbacks */                                   
-    unsigned int version;                   /* VOL connector class struct version #     */
-    H5VL_class_value_t value;               /* Value to identify connector              */
-    const char *name;                       /* Connector name (MUST be unique!)         */
-    unsigned cap_flags;                     /* Capability flags for connector           */
-    herr_t (*initialize)(hid_t vipl_id);    /* Connector initialization callback        */
-    herr_t (*terminate)(void);              /* Connector termination callback           */
-                                                                                 
-    /* VOL framework */                                                          
-    H5VL_info_class_t       info_cls;       /* VOL info fields & callbacks  */   
-    H5VL_wrap_class_t       wrap_cls;       /* VOL object wrap / retrieval callbacks */
-                                                                                 
-    /* Data Model */                                                             
-    H5VL_attr_class_t       attr_cls;       /* Attribute (H5A*) class callbacks */
-    H5VL_dataset_class_t    dataset_cls;    /* Dataset (H5D*) class callbacks   */
-    H5VL_datatype_class_t   datatype_cls;   /* Datatype (H5T*) class callbacks  */
-    H5VL_file_class_t       file_cls;       /* File (H5F*) class callbacks      */
-    H5VL_group_class_t      group_cls;      /* Group (H5G*) class callbacks     */
-    H5VL_link_class_t       link_cls;       /* Link (H5L*) class callbacks      */
-    H5VL_object_class_t     object_cls;     /* Object (H5O*) class callbacks    */
-                                                                                 
+    /* Overall connector fields & callbacks */
+    unsigned           version;          /**< VOL connector class struct version #     */
+    H5VL_class_value_t value;            /**< Value to identify connector              */
+    const char *       name;             /**< Connector name (MUST be unique!)         */
+    unsigned           conn_version;     /**< Version # of connector                   */
+    unsigned           cap_flags;        /**< Capability flags for connector           */
+    herr_t (*initialize)(hid_t vipl_id); /**< Connector initialization callback        */
+    herr_t (*terminate)(void);           /**< Connector termination callback           */
+
+    /* VOL framework */
+    H5VL_info_class_t info_cls; /**< VOL info fields & callbacks  */
+    H5VL_wrap_class_t wrap_cls; /**< VOL object wrap / retrieval callbacks */
+
+    /* Data Model */
+    H5VL_attr_class_t     attr_cls;     /**< Attribute (H5A*) class callbacks */
+    H5VL_dataset_class_t  dataset_cls;  /**< Dataset (H5D*) class callbacks   */
+    H5VL_datatype_class_t datatype_cls; /**< Datatype (H5T*) class callbacks  */
+    H5VL_file_class_t     file_cls;     /**< File (H5F*) class callbacks      */
+    H5VL_group_class_t    group_cls;    /**< Group (H5G*) class callbacks     */
+    H5VL_link_class_t     link_cls;     /**< Link (H5L*) class callbacks      */
+    H5VL_object_class_t   object_cls;   /**< Object (H5O*) class callbacks    */
+
     /* Infrastructure / Services */
-    H5VL_introspect_class_t introspect_cls; /* Container/connector introspection class callbacks */
-    H5VL_request_class_t    request_cls;    /* Asynchronous request class callbacks */
-    H5VL_blob_class_t       blob_cls;       /* 'blob' callbacks */
-    H5VL_token_class_t      token_cls;      /* VOL connector object token class callbacks */
-                                                                                 
-    /* Catch-all */                                                              
-    herr_t (*optional)(void *obj, int op_type, hid_t dxpl_id, void **req, va_list arguments); /* Optional callback */
+    H5VL_introspect_class_t introspect_cls; /**< Container/connector introspection class callbacks */
+    H5VL_request_class_t    request_cls;    /**< Asynchronous request class callbacks */
+    H5VL_blob_class_t       blob_cls;       /**< 'Blob' class callbacks */
+    H5VL_token_class_t      token_cls;      /**< VOL connector object token class callbacks */
+
+    /* Catch-all */
+    herr_t (*optional)(void *obj, H5VL_optional_args_t *args, hid_t dxpl_id,
+                       void **req); /**< Optional callback */
 } H5VL_class_t;
+
 \end{lstlisting}
 
 The \texttt{version} field is the version of the \texttt{H5VL\_class\_t} struct. This is identical to how the \texttt{version} field is used in the \texttt{H5Z\_class2\_t} struct for filters. 
 
-The \texttt{value} field is a unique integer identifier that should be greater than 256 for external, non-library connectors. Setting it in the VOL structure is required.
+The \texttt{value} field is a unique integer identifier that should be between 512 and 65535 for external, non-library connectors..
 
-The \texttt{name} field is a string that uniquely identifies the VOL connector name. Setting it in the VOL structure is required.
+The \texttt{name} field is a string that uniquely identifies the VOL connector name.
 
-The \texttt{cap\_flags} field will be used to hold bitwise capability/feature flags that can be used with a future query API call to determine which operations and capabilities are supported by a the VOL connector. This feature is currently under development.
+The \texttt{conn\_version} is the connector version. This is currently not used by the library.
+
+The \texttt{cap\_flags} holds bitwise capability/feature flags that determine which operations and capabilities are supported by a the VOL connector. These fields were enumerated in the previous section.
 
 The \texttt{initialize} field is a function pointer to a routine that a connector implements to set up or initialize access to the connector. Implementing this function by the connector is not required since some connectors do not require any set up to start accessing the connector. In that case, the value of the function pointer should be set to NULL. Connector specific variables that are required to be passed from users should be passed through the VOL initialize property list. Generic properties can be added to this property class for user-defined connectors that cannot modify the HDF5 library to add internal properties. For more information consult the property list reference manual pages.
 
-The \texttt{terminate} field is a function pointer to a routine that a connector implements to terminate or finalize access to the connector. Implementing this function by the connector is not required since some connectors do not require any termination phase to the connector. In that case, the value of the function pointer should be set to NULL. Connector specific variables that are required to be passed from users should be passed through the VOL terminate property list. Generic properties can be added to this property class for user-defined connectors that cannot modify the HDF5 library to add internal properties. For more information consult the property list reference manual pages.
+The \texttt{terminate} field is a function pointer to a routine that a connector implements to terminate or finalize access to the connector. Implementing this function by the connector is not required since some connectors do not require any termination phase to the connector. In that case, the value of the function pointer should be set to NULL.
 
 The rest of the fields in the \texttt{H5VL\_class\_t} struct are "subclasses'' that define all the VOL function callbacks that
-are mapped to from the HDF5 API layer. Those subclasses are categorized into two categories, Data Model and Services. Data Model classes are those that provide functionality for accessing an HDF5 container and objects in that container as defined by the HDF5 data model.  Service classes are those that provide services for users that are not related to the data model specifically. Asynchronous operations, for example, are a service that most connectors can implement, so we add a class for it in the VOL structure. If a service becomes generic enough and common among many connectors, a class for it should be added to the VOL structure. However, many connectors can/will provide services that are not shared by other connectors. A good way to support these services is through an optional callback in the VOL structure which can be a hook from the API to the connector that provides those services, passing any necessary arguments needed without the HDF5 library having to worry about supporting that service. A similar API operation to allow users to use that service will be added. This API call would be similar to an “ioctl” call where any kind of operation can be supported and passed down to the connector that has enough knowledge from the user to interpret the type of the operation. All classes and their defined callbacks will be detailed in the following sub-sections.
+are mapped to from the HDF5 API layer. Those subclasses are categorized into three categories, VOL Framework, Data Model, and Infrastructure / Services.
 
-To handle that large set of API routines, each class in the Data Model category has three generic callbacks, \texttt{get}, \texttt{specific}, and \texttt{optional} to handle the three set of API operations outline above respectively. The callbacks will have a \texttt{va\_list} argument to handle the different set of parameters that could be passed in.  The \texttt{get} and \texttt{specific} callbacks also have an \texttt{op\_type} that contain an \texttt{enum} of the type of operation that is requested to be performed. Using that type, the \texttt{va\_list} argument can be parsed. The \texttt{optional} callback is a free for all callback where anything from the API layer is passed in directly. This callback is used to support connector specific operations in the API that other connectors should or would not know about. More information about types and the arguments for each type will be detailed in the corresponding class arguments.
+VOL Framework classes provide functionality for working with the VOL connectors themselves (e.g., working with connector strings) and with wrapping and unwrapping objects for passthrough connectors.
+
+Data Model classes are those that provide functionality for accessing an HDF5 container and objects in that container as defined by the HDF5 data model.
+
+Infrastructure / Service classes are those that provide services for users that are not related to the data model specifically. Asynchronous operations, for example, are a service that most connectors can implement, so we add a class for it in the VOL structure.
+
+If a service becomes generic enough and common among many connectors, a class for it should be added to the VOL structure. However, many connectors can/will provide services that are not shared by other connectors. A good way to support these services is through an optional callback in the VOL structure which can be a hook from the API to the connector that provides those services, passing any necessary arguments needed without the HDF5 library having to worry about supporting that service. A similar API operation to allow users to use that service will be added. This API call would be similar to an “ioctl” call where any kind of operation can be supported and passed down to the connector that has enough knowledge from the user to interpret the type of the operation. All classes and their defined callbacks will be detailed in the following sub-sections.
+
+To handle that large set of API routines, each class in the Data Model category has three generic callbacks, \texttt{get}, \texttt{specific}, and \texttt{optional} to handle the three set of API operations outline above respectively. To handle the varying parameters that can be passed to the callback, each callback will take a struct parameter that includes an enum {\tt get/specific} or integer {\tt optional} field indicating the operation and a union of the possible parameters {\tt get/specific} or void pointer to the parameters {\tt optional}.
+
+The optional args struct used for all optional operations:
+\begin{lstlisting}
+/* Struct for all 'optional' callbacks */
+typedef struct H5VL_optional_args_t {
+    int   op_type; /* Operation to perform */
+    void *args;    /* Pointer to operation's argument struct */
+} H5VL_optional_args_t;
+\end{lstlisting}
+
+The {\tt opt\_type} member is the value assigned by the library when the optional operation was registered (or {\tt \#define}d in the case of the native VOL connector) and the {\tt args} member is a pointer to the optional operation's parameters (usually passed in as a struct).
+
+
+Note that this differs from the HDF5 1.12.x scheme, which used {\tt va\_list}s.
+
+The \texttt{optional} callback is a free for all callback where anything from the API layer is passed in directly. This callback is used to support connector specific operations in the API that other connectors should or would not know about. More information about types and the arguments for each type will be detailed in the corresponding class arguments.
 
 \subsection{Mapping the API to the Callbacks}
 \label{sec:map}
@@ -377,9 +406,9 @@ typedef struct H5VL_attr_class_t {
     void *(*open)(void *obj, const H5VL_loc_params_t *loc_params, const char *attr_name, hid_t aapl_id, hid_t dxpl_id, void **req);
     herr_t (*read)(void *attr, hid_t mem_type_id, void *buf, hid_t dxpl_id, void **req);
     herr_t (*write)(void *attr, hid_t mem_type_id, const void *buf, hid_t dxpl_id, void **req);
-    herr_t (*get)(void *obj, H5VL_attr_get_t get_type, hid_t dxpl_id, void **req, va_list arguments);
-    herr_t (*specific)(void *obj, const H5VL_loc_params_t *loc_params, H5VL_attr_specific_t specific_type, hid_t dxpl_id, void **req, va_list arguments);            
-    herr_t (*optional)(void *obj, H5VL_attr_optional_t opt_type, hid_t dxpl_id, void **req, va_list arguments); 
+    herr_t (*get)(void *obj, H5VL_attr_get_args_t *args, hid_t dxpl_id, void **req);
+    herr_t (*specific)(void *obj, const H5VL_loc_params_t *loc_params, H5VL_attr_specific_args_t *args, hid_t dxpl_id, void **req);            
+    herr_t (*optional)(void *obj, H5VL_optional_args_t *args, hid_t dxpl_id, void **req); 
     herr_t (*close) (void *attr, hid_t dxpl_id, void **req);                     
 } H5VL_attr_class_t; 
 \end{lstlisting}
@@ -498,95 +527,81 @@ parameter.It returns an \texttt{herr\_t} indicating success or failure.\bigskip
 \begin{mdframed}[style=bgbox]
 \textbf{Signature:}
 \begin{lstlisting}
-    herr_t (*get)(void *obj, H5VL_attr_get_t get_type, hid_t dxpl_id, 
-        void **req, va_list arguments);
-\end{lstlisting}
-
-The \texttt{get\_type} argument is an \texttt{enum}:
-\begin{lstlisting}
-/* types for attribute GET callback */
-typedef enum H5VL_attr_get_t {                                                   
-    H5VL_ATTR_GET_ACPL,                     /* creation property list              */
-    H5VL_ATTR_GET_INFO,                     /* info                                */
-    H5VL_ATTR_GET_NAME,                     /* access property list                */
-    H5VL_ATTR_GET_SPACE,                    /* dataspace                           */
-    H5VL_ATTR_GET_STORAGE_SIZE,             /* storage size                        */
-    H5VL_ATTR_GET_TYPE                      /* datatype                            */
-} H5VL_attr_get_t; 
+    herr_t (*get)(void *obj, H5VL_attr_get_args_t *args, hid_t dxpl_id, 
+        void **req);
 \end{lstlisting}
 
 \textbf{Arguments:}\\
 \begin{tabular}{l p{13.5cm}}
   \texttt{obj} & (IN): An attribute or location object where information
   needs to be retrieved from.\\
-  \texttt{get\_type} & (IN): The type of the information to retrieve.\\
+  \texttt{args} & (IN/OUT): A pointer to the arguments struct.\\
   \texttt{dxpl\_id} & (IN): The data transfer property list.\\
   \texttt{req} & (IN/OUT): A pointer to the asynchronous request of the
   operation created by the connector.\\
-  \texttt{arguments} & (IN/OUT): argument list containing parameters and
-  output pointers for the get operation. \\
 \end{tabular}
 \end{mdframed}
 
-The \texttt{arguments} argument contains a variable list of arguments
-depending on the \texttt{get\_type} parameter. The following list shows
-the argument list, in order, for each type:
+\begin{lstlisting}
+/* Values for attribute 'get' operations */
+typedef enum H5VL_attr_get_t {
+    H5VL_ATTR_GET_ACPL,         /* creation property list              */
+    H5VL_ATTR_GET_INFO,         /* info                                */
+    H5VL_ATTR_GET_NAME,         /* access property list                */
+    H5VL_ATTR_GET_SPACE,        /* dataspace                           */
+    H5VL_ATTR_GET_STORAGE_SIZE, /* storage size                        */
+    H5VL_ATTR_GET_TYPE          /* datatype                            */
+} H5VL_attr_get_t;
 
-\begin{itemize}
+/* Parameters for attribute 'get_name' operation */
+typedef struct H5VL_attr_get_name_args_t {
+    H5VL_loc_params_t loc_params;    /* Location parameters for object access */
+    size_t            buf_size;      /* Size of attribute name buffer */
+    char *            buf;           /* Buffer for attribute name (OUT) */
+    size_t *          attr_name_len; /* Actual length of attribute name (OUT) */
+} H5VL_attr_get_name_args_t;
 
-\item \texttt{H5VL\_ATTR\_GET\_ACPL}, to retrieve the attribute creation
-  property list of the attribute specified in \texttt{obj}:
-  \begin{enumerate}
-  \item \texttt{hid\_t *ret\_id} (OUT): buffer for the identifier of the
-    attribute creation property list.
-  \end{enumerate}
+/* Parameters for attribute 'get_info' operation */
+typedef struct H5VL_attr_get_info_args_t {
+    H5VL_loc_params_t loc_params; /* Location parameters for object access */
+    const char *      attr_name;  /* Attribute name (for get_info_by_name) */
+    H5A_info_t *      ainfo;      /* Attribute info (OUT) */
+} H5VL_attr_get_info_args_t;
 
-\item \texttt{H5VL\_ATTR\_GET\_INFO}, to retrieve the attribute info:
-  \begin{enumerate}
-  \item \texttt{H5VL\_loc\_params\_t *loc\_params} (IN): Pointer to the location parameters
-    explained in Section~\ref{sec:map}. 
-  \item \texttt{H5A\_info\_t *ainfo} (OUT): info structure to fill the
-    attribute info in.
-  \end{enumerate}
+/* Parameters for attribute 'get' operations */
+typedef struct H5VL_attr_get_args_t {
+    H5VL_attr_get_t op_type; /* Operation to perform */
 
-\item \texttt{H5VL\_ATTR\_GET\_NAME}, to retrieve an attribute name on a
-  particular object specified in \texttt{obj}:
-  \begin{enumerate}
-  \item \texttt{H5VL\_loc\_params\_t *loc\_params} (IN): Pointer to the location parameters
-    explained in Section~\ref{sec:map}. The type could be either
-    \texttt{H5VL\_OBJECT\_BY\_SELF} meaning \texttt{obj} is the attribute,
-    or \texttt{H5VL\_OBJECT\_BY\_IDX} meaning the attribute to retrieve
-    the name for should be looked up using the index information on
-    the object in \texttt{obj} and the index information in \texttt{loc\_params}.
-  \item \texttt{size\_t buf\_size} (IN): the size of the buffer to store
-    the name in.
-  \item \texttt{void *buf} (OUT): Buffer to store the name in.
-  \item \texttt{ssize\_t *ret\_val} (OUT): return the actual size needed
-    to store the fill attribute name.
-  \end{enumerate}
+    /* Parameters for each operation */
+    union {
+        /* H5VL_ATTR_GET_ACPL */
+        struct {
+            hid_t acpl_id; /* Attribute creation property list ID (OUT) */
+        } get_acpl;
 
-\item \texttt{H5VL\_ATTR\_GET\_SPACE}, to retrieve the dataspace of the
-  attribute specified in \texttt{obj}:
-  \begin{enumerate}
-  \item \texttt{hid\_t *ret\_id} (OUT): buffer for the identifier of the
-    attribute dataspace.
-  \end{enumerate}
+        /* H5VL_ATTR_GET_INFO */
+        H5VL_attr_get_info_args_t get_info; /* Attribute info */
 
-\item \texttt{H5VL\_ATTR\_GET\_STORAGE\_SIZE}, to retrieve the storage
-  size of the attribute specified in \texttt{obj}:
-  \begin{enumerate}
-  \item \texttt{hsize\_t *ret} (OUT): buffer for the storage size of
-    the attribute in the container.
-  \end{enumerate}
+        /* H5VL_ATTR_GET_NAME */
+        H5VL_attr_get_name_args_t get_name; /* Attribute name */
 
-\item \texttt{H5VL\_ATTR\_GET\_TYPE}, to retrieve the datatype of the
-  attribute specified in \texttt{obj}:
-  \begin{enumerate}
-  \item \texttt{hid\_t *ret\_id} (OUT): buffer for the identifier of the
-    attribute datatype.
-  \end{enumerate}
-  
-\end{itemize}
+        /* H5VL_ATTR_GET_SPACE */
+        struct {
+            hid_t space_id; /* Dataspace ID (OUT) */
+        } get_space;
+
+        /* H5VL_ATTR_GET_STORAGE_SIZE */
+        struct {
+            hsize_t *data_size; /* Size of attribute in file (OUT) */
+        } get_storage_size;
+
+        /* H5VL_ATTR_GET_TYPE */
+        struct {
+            hid_t type_id; /* Datatype ID (OUT) */
+        } get_type;
+    } args;
+} H5VL_attr_get_args_t;
+\end{lstlisting}
 
 \subsubsection{attr: specific}
 The \texttt{specific} callback in the attribute class implements specific operations on HDF5 attributes as specified in the \texttt{specific\_type} parameter. It returns an \texttt{herr\_t} indicating success or failure.\bigskip
@@ -594,66 +609,77 @@ The \texttt{specific} callback in the attribute class implements specific operat
 \begin{mdframed}[style=bgbox]
 \textbf{Signature:}
 \begin{lstlisting}
-	herr_t (*specific)(void *obj, H5VL_loc_params_t *loc_params, H5VL_attr_specific_t specific_type, hid_t dxpl_id, void **req, va_list arguments);
-\end{lstlisting}
-
-The \texttt{specific\_type} argument is an \texttt{enum}:
-\begin{lstlisting}
-/* types for attribute SPECFIC callback */
-typedef enum H5VL_attr_specific_t {                                              
-    H5VL_ATTR_DELETE,                       /* H5Adelete(_by_name/idx)             */
-    H5VL_ATTR_EXISTS,                       /* H5Aexists(_by_name)                 */
-    H5VL_ATTR_ITER,                         /* H5Aiterate(_by_name)                */
-    H5VL_ATTR_RENAME                        /* H5Arename(_by_name)                 */
-} H5VL_attr_specific_t; 
+	herr_t (*specific)(void *obj, H5VL_loc_params_t *loc_params, H5VL_attr_specific_args_t *args, hid_t dxpl_id, void **req);
 \end{lstlisting}
 
 \textbf{Arguments:}\\
 \begin{tabular}{l p{13.5cm}}
   \texttt{obj} & (IN): The location object  where the operation needs to happen.\\
   \texttt{loc\_params} & (IN): A pointer to the location parameters as explained in Section~\ref{sec:map}.\\
-  \texttt{specific\_type} & (IN): The type of the operation.\\
+  \texttt{args} & (IN/OUT): A pointer to the arguments struct.\\
   \texttt{dxpl\_id} & (IN): The data transfer property list.\\
   \texttt{req} & (IN/OUT): A pointer to the asynchronous request of the
   operation created by the connector.\\
-  \texttt{arguments} & (IN/OUT): argument list containing parameters and
-  output pointers for the get operation. \\
 \end{tabular}
 \end{mdframed}
 
-The \texttt{arguments} argument contains a variable list of arguments
-depending on the \texttt{specific\_type} parameter. The following list shows
-the argument list, in order, for each type:
+\begin{lstlisting}
+/* Values for attribute 'specific' operation */
+typedef enum H5VL_attr_specific_t {
+    H5VL_ATTR_DELETE,        /* H5Adelete(_by_name)  */
+    H5VL_ATTR_DELETE_BY_IDX, /* H5Adelete_by_idx     */
+    H5VL_ATTR_EXISTS,        /* H5Aexists(_by_name)  */
+    H5VL_ATTR_ITER,          /* H5Aiterate(_by_name) */
+    H5VL_ATTR_RENAME         /* H5Arename(_by_name)  */
+} H5VL_attr_specific_t;
 
-\begin{itemize}
-\item \texttt{H5VL\_ATTR\_DELETE}, to delete an attribute on an object:
-  \begin{enumerate}
-  \item \texttt{char *attr\_name} (IN): the name of the attribute to delete.
-  \end{enumerate}
+/* Parameters for attribute 'iterate' operation */
+typedef struct H5VL_attr_iterate_args_t {
+    H5_index_t      idx_type; /* Type of index to iterate over */
+    H5_iter_order_t order;    /* Order of index iteration */
+    hsize_t *       idx;      /* Start/stop iteration index (IN/OUT) */
+    H5A_operator2_t op;       /* Iteration callback function */
+    void *          op_data;  /* Iteration callback context */
+} H5VL_attr_iterate_args_t;
 
-\item \texttt{H5VL\_ATTR\_EXISTS}, to check if an attribute exists on a
-  particular object specified in \texttt{obj}:
-  \begin{enumerate}
-  \item \texttt{char *attr\_name} (IN): the attribute name to check.
-  \item \texttt{htri\_t *ret} (OUT): existence result, 0 if false, 1 if true.
-  \end{enumerate}
+/* Parameters for attribute 'delete_by_idx' operation */
+typedef struct H5VL_attr_delete_by_idx_args_t {
+    H5_index_t      idx_type; /* Type of index to iterate over */
+    H5_iter_order_t order;    /* Order of index iteration */
+    hsize_t         n;        /* Iteration index */
+} H5VL_attr_delete_by_idx_args_t;
 
-\item \texttt{H5VL\_ATTR\_ITER}, to iterate over all attributes of an object and call a user-specified callback on each one:
-  \begin{enumerate}
-  \item \texttt{H5\_index\_t idx\_type} (IN): Type of index.\\
-  \item \texttt{H5\_iter\_order\_t order} (IN): Order in which to iterate over index.\\
-  \item \texttt{hsize\_t *idx} (IN/OUT): Initial and return offset within index.\\
-  \item \texttt{H5A\_operator2\_t op} (IN): User-defined function to pass each attribute to. \\
-  \item \texttt{void *op\_data} (IN/OUT): User data to pass through to and to be returned by iterator operator function. \\
-  \end{enumerate}
+/* Parameters for attribute 'specific' operations */
+typedef struct H5VL_attr_specific_args_t {
+    H5VL_attr_specific_t op_type; /* Operation to perform */
 
-\item \texttt{H5VL\_ATTR\_RENAME}, to rename an attribute on an object:
-  \begin{enumerate}
-  \item \texttt{char *old\_name} (IN): the original name of the attribute.
-  \item \texttt{char *new\_name} (IN): the new name to assign for the attribute.
-  \end{enumerate}
+    /* Parameters for each operation */
+    union {
+        /* H5VL_ATTR_DELETE */
+        struct {
+            const char *name; /* Name of attribute to delete */
+        } del;
 
-\end{itemize}
+        /* H5VL_ATTR_DELETE_BY_IDX */
+        H5VL_attr_delete_by_idx_args_t delete_by_idx;
+
+        /* H5VL_ATTR_EXISTS */
+        struct {
+            const char *name;   /* Name of attribute to check */
+            hbool_t *   exists; /* Whether attribute exists (OUT) */
+        } exists;
+
+        /* H5VL_ATTR_ITER */
+        H5VL_attr_iterate_args_t iterate;
+
+        /* H5VL_ATTR_RENAME */
+        struct {
+            const char *old_name; /* Name of attribute to rename */
+            const char *new_name; /* New attribute name */
+        } rename;
+    } args;
+} H5VL_attr_specific_args_t;
+\end{lstlisting}
 
 \subsubsection{attr: optional}
 The \texttt{optional} callback in the attribute class implements connector specific operations on an HDF5 attribute. It returns an \texttt{herr\_t} indicating success or failure. \bigskip
@@ -661,20 +687,23 @@ The \texttt{optional} callback in the attribute class implements connector speci
 \begin{mdframed}[style=bgbox]
 \textbf{Signature:}
 \begin{lstlisting}
-    herr_t (*optional)(void *obj, H5VL_attr_optional_t opt_type, hid_t dxpl_id, void **req, va_list arguments);
+    herr_t (*optional)(void *obj, H5VL_optional_args_t *args, hid_t dxpl_id, void **req);
 \end{lstlisting}
 
 \textbf{Arguments:}\\
 \begin{tabular}{l p{13.5cm}}
   \texttt{obj} & (IN): The container or object where the operation needs to happen.\\
-  \texttt{opt\_type} & (IN): The type of operation.\\
+  \texttt{args} & (IN/OUT): A pointer to the arguments struct.\\
   \texttt{dxpl\_id} & (IN): The data transfer property list.\\
   \texttt{req} & (IN/OUT): A pointer to the asynchronous request of the operation created by the connector.\\
-  \texttt{arguments} & (IN/OUT): argument list containing parameters and output pointers for the get operation. \\
 \end{tabular}
 \end{mdframed}
 
-Each connector that requires connector-specific operations should be able to use the \texttt{opt\_type} parameter (a connector-specific enum/integer) to determine the type of the operation and parse the \texttt{va\_list arguments} appropriately.
+Each connector that requires connector-specific operations should compare the
+value of the {\tt op\_type} field of the {\tt H5VL\_optional\_args\_t} struct
+with the values returned from calling {\tt H5VLregister\_opt\_operation} to
+determine how to handle the optional call and interpret the arguments passed
+in the struct.
 
 \subsubsection{attr: close}
 The \texttt{close} callback in the attribute class terminates
@@ -712,9 +741,9 @@ typedef struct H5VL_dataset_class_t {
     void *(*open)(void *obj, const H5VL_loc_params_t *loc_params, const char *name, hid_t dapl_id, hid_t dxpl_id, void **req);
     herr_t (*read)(void *dset, hid_t mem_type_id, hid_t mem_space_id, hid_t file_space_id, hid_t dxpl_id, void * buf, void **req);
     herr_t (*write)(void *dset, hid_t mem_type_id, hid_t mem_space_id, hid_t file_space_id, hid_t dxpl_id, const void * buf, void **req);
-    herr_t (*get)(void *obj, H5VL_dataset_get_t get_type, hid_t dxpl_id, void **req, va_list arguments);
-    herr_t (*specific)(void *obj, H5VL_dataset_specific_t specific_type, hid_t dxpl_id, void **req, va_list arguments);
-    herr_t (*optional)(void *obj, H5VL_dataset_optional_t opt_type, hid_t dxpl_id, void **req, va_list arguments);
+    herr_t (*get)(void *obj, H5VL_dataset_get_args_t *args, hid_t dxpl_id, void **req);
+    herr_t (*specific)(void *obj, H5VL_dataset_specific_args_t *args, hid_t dxpl_id, void **req);
+    herr_t (*optional)(void *obj, H5VL_optional_args_t *args, hid_t dxpl_id, void **req);
     herr_t (*close) (void *dset, hid_t dxpl_id, void **req);
 } H5VL_dataset_class_t; 
 \end{lstlisting}
@@ -835,90 +864,71 @@ parameter.It returns an \texttt{herr\_t} indicating success or failure.
 \begin{mdframed}[style=bgbox]
 \textbf{Signature:}
 \begin{lstlisting}
-    herr_t (*get)(void *dset, H5VL_dataset_get_t get_type, 
-        hid_t dxpl_id, void **req, va_list arguments);
-\end{lstlisting}
-
-The \texttt{get\_type} argument is an \texttt{enum}:
-\begin{lstlisting}
-/* types for dataset GET callback */
-typedef enum H5VL_dataset_get_t {                                                
-    H5VL_DATASET_GET_DAPL,                  /* access property list                */
-    H5VL_DATASET_GET_DCPL,                  /* creation property list              */
-    H5VL_DATASET_GET_SPACE,                 /* dataspace                           */
-    H5VL_DATASET_GET_SPACE_STATUS,          /* space  status                       */
-    H5VL_DATASET_GET_STORAGE_SIZE,          /* storage size                        */
-    H5VL_DATASET_GET_TYPE                   /* datatype                            */
-} H5VL_dataset_get_t; 
+    herr_t (*get)(void *dset, H5VL_dataset_get_args_t *args, 
+        hid_t dxpl_id, void **req);
 \end{lstlisting}
 
 \textbf{Arguments:}\\
 \begin{tabular}{l p{13.5cm}}
   \texttt{dset} & (IN): The dataset object where information needs to be
   retrieved from.\\
-  \texttt{get\_type} & (IN): The type of the information to retrieve.\\
+  \texttt{args} & (IN/OUT): A pointer to the arguments struct.\\
   \texttt{dxpl\_id} & (IN): The data transfer property list.\\
   \texttt{req} & (IN/OUT): A pointer to the asynchronous request of the
   operation created by the connector.\\
-  \texttt{arguments} & (IN/OUT): argument list containing parameters and
-  output pointers for the get operation. \\
 \end{tabular}
 \end{mdframed}
 
-The \texttt{arguments} argument contains a variable list of arguments
-depending on the \texttt{get\_type} parameter. The following list shows
-the argument list, in order, for each type:
+\begin{lstlisting}
+/* Values for dataset 'get' operation */
+typedef enum H5VL_dataset_get_t {
+    H5VL_DATASET_GET_DAPL,         /* access property list                */
+    H5VL_DATASET_GET_DCPL,         /* creation property list              */
+    H5VL_DATASET_GET_SPACE,        /* dataspace                           */
+    H5VL_DATASET_GET_SPACE_STATUS, /* space status                        */
+    H5VL_DATASET_GET_STORAGE_SIZE, /* storage size                        */
+    H5VL_DATASET_GET_TYPE          /* datatype                            */
+} H5VL_dataset_get_t;
 
-\begin{itemize}
-\item \texttt{H5VL\_DATASET\_GET\_DAPL}, to retrieve the dataset access
-  property list of the dataset specified in \texttt{obj}:
-  \begin{enumerate}
-  \item \texttt{hid\_t *ret\_id} (OUT): buffer for the identifier of the
-    dataset access property list.
-  \end{enumerate}
+/* Parameters for dataset 'get' operations */
+typedef struct H5VL_dataset_get_args_t {
+    H5VL_dataset_get_t op_type; /* Operation to perform */
 
-\item \texttt{H5VL\_DATASET\_GET\_DCPL}, to retrieve the dataset creation
-  property list of the dataset specified in \texttt{obj}:
-  \begin{enumerate}
-  \item \texttt{hid\_t *ret\_id} (OUT): buffer for the identifier of the
-    dataset creation property list.
-  \end{enumerate}
+    /* Parameters for each operation */
+    union {
+        /* H5VL_DATASET_GET_DAPL */
+        struct {
+            hid_t dapl_id; /* Dataset access property list ID (OUT) */
+        } get_dapl;
 
-\item \texttt{H5VL\_DATASET\_GET\_OFFSET}, to retrieve the offset of the
-  dataset specified in \texttt{obj} in the container:
-  \begin{enumerate}
-  \item \texttt{haddr\_t *ret} (OUT): buffer for the offset of the
-    dataset in the container.
-  \end{enumerate}
+        /* H5VL_DATASET_GET_DCPL */
+        struct {
+            hid_t dcpl_id; /* Dataset creation property list ID (OUT) */
+        } get_dcpl;
 
-\item \texttt{H5VL\_DATASET\_GET\_SPACE}, to retrieve the dataspace of the
-  dataset specified in \texttt{obj}:
-  \begin{enumerate}
-  \item \texttt{hid\_t *ret\_id} (OUT): buffer for the identifier of the
-    dataset dataspace.
-  \end{enumerate}
+        /* H5VL_DATASET_GET_SPACE */
+        struct {
+            hid_t space_id; /* Dataspace ID (OUT) */
+        } get_space;
 
-\item \texttt{H5VL\_DATASET\_GET\_SPACE\_STATUS}, to retrieve the
-  information whether space has been allocated for the dataset:
-  \begin{enumerate}
-  \item \texttt{H5D\_space\_status\_t *allocation} (OUT): buffer for the
-    space status.
-  \end{enumerate}
+        /* H5VL_DATASET_GET_SPACE_STATUS */
+        struct {
+            H5D_space_status_t *status; /* Storage space allocation status (OUT) */
+        } get_space_status;
 
-\item \texttt{H5VL\_DATASET\_GET\_STORAGE\_SIZE}, to retrieve the storage
-  size of the dataset specified in \texttt{obj}:
-  \begin{enumerate}
-  \item \texttt{hsize\_t *ret} (OUT): buffer for the storage size of
-    the dataset in the container.
-  \end{enumerate}
+        /* H5VL_DATASET_GET_STORAGE_SIZE */
+        struct {
+            hsize_t *storage_size; /* Size of dataset's storage (OUT) */
+        } get_storage_size;
 
-\item \texttt{H5VL\_DATASET\_GET\_TYPE}, to retrieve the datatype of the
-  dataset specified in \texttt{obj}:
-  \begin{enumerate}
-  \item \texttt{hid\_t *ret\_id} (OUT): buffer for the identifier of the
-    dataset datatype.
-  \end{enumerate}
-\end{itemize}
+        /* H5VL_DATASET_GET_TYPE */
+        struct {
+            hid_t type_id; /* Datatype ID (OUT) */
+        } get_type;
+    } args;
+} H5VL_dataset_get_args_t;
+\end{lstlisting}
+
 
 \subsubsection{dataset: specific}
 The \texttt{specific} callback in the dataset class implements specific operations on HDF5 datasets as specified in the \texttt{specific\_type} parameter. It returns an \texttt{herr\_t} indicating success or failure.\bigskip
@@ -926,50 +936,51 @@ The \texttt{specific} callback in the dataset class implements specific operatio
 \begin{mdframed}[style=bgbox]
 \textbf{Signature:}
 \begin{lstlisting}
-    herr_t (*specific)(void *obj, H5VL_file_specific_t specific_type, hid_t dxpl_id, void **req, va_list arguments);
-\end{lstlisting}
-
-The \texttt{specific\_type} argument is an \texttt{enum}:
-\begin{lstlisting}
-/* types for dataset SPECFIC callback */
-typedef enum H5VL_dataset_specific_t {                                           
-    H5VL_DATASET_SET_EXTENT,                /* H5Dset_extent                       */
-    H5VL_DATASET_FLUSH,                     /* H5Dflush                            */
-    H5VL_DATASET_REFRESH                    /* H5Drefresh                          */
-} H5VL_dataset_specific_t;
+    herr_t (*specific)(void *obj, H5VL_file_specific_args_t *args, hid_t dxpl_id, void **req);
 \end{lstlisting}
 
 \textbf{Arguments:}\\
 \begin{tabular}{l p{13.5cm}}
   \texttt{obj} & (IN): The dset  where the operation needs
   to happen.\\
-  \texttt{specific\_type} & (IN): The type of the operation.\\
+  \texttt{args} & (IN/OUT): A pointer to the arguments struct.\\
   \texttt{dxpl\_id} & (IN): The data transfer property list.\\
   \texttt{req} & (IN/OUT): A pointer to the asynchronous request of the
   operation created by the connector.\\
-  \texttt{arguments} & (IN/OUT): argument list containing parameters and
-  output pointers for the get operation. \\
 \end{tabular}
 \end{mdframed}
 
-The \texttt{arguments} argument contains a variable list of arguments
-depending on the \texttt{specific\_type} parameter. The following list shows
-the argument list, in order, for each type:
+\begin{lstlisting}
+/* Values for dataset 'specific' operation */
+typedef enum H5VL_dataset_specific_t {
+    H5VL_DATASET_SET_EXTENT, /* H5Dset_extent                       */
+    H5VL_DATASET_FLUSH,      /* H5Dflush                            */
+    H5VL_DATASET_REFRESH     /* H5Drefresh                          */
+} H5VL_dataset_specific_t;
 
-\begin{itemize}
-\item \texttt{H5VL\_DATASET\_SET\_EXTENT}, changes the extent of the dataset dimensions:
-  \begin{enumerate}
-  \item \texttt{hsize\_t size} (IN): Array containing the new magnitude of each dimension of the dataset. 
-  \end{enumerate}
-\item \texttt{H5VL\_DATASET\_FLUSH}, flushes a dataset:
-  \begin{enumerate}
-  \item \texttt{hid\_t dset\_id} (IN): The dataset ID. Needed so that the refreshed data can be associated with the old ID. 
-  \end{enumerate}
-\item \texttt{H5VL\_DATASET\_REFRESH}, clears a dataset's buffers and reloads from disk:
-  \begin{enumerate}
-  \item \texttt{hid\_t dset\_id} (IN): The dataset ID. Needed so that the refreshed data can be associated with the old ID. 
-  \end{enumerate}
-\end{itemize}
+/* Parameters for dataset 'specific' operations */
+typedef struct H5VL_dataset_specific_args_t {
+    H5VL_dataset_specific_t op_type; /* Operation to perform */
+
+    /* Parameters for each operation */
+    union {
+        /* H5VL_DATASET_SET_EXTENT */
+        struct {
+            const hsize_t *size; /* New dataspace extent */
+        } set_extent;
+
+        /* H5VL_DATASET_FLUSH */
+        struct {
+            hid_t dset_id; /* Dataset ID (IN) */
+        } flush;
+
+        /* H5VL_DATASET_REFRESH */
+        struct {
+            hid_t dset_id; /* Dataset ID (IN) */
+        } refresh;
+    } args;
+} H5VL_dataset_specific_args_t;
+\end{lstlisting}
 
 \subsubsection{dataset: optional}
 The \texttt{optional} callback in the dataset class implements connector specific operations on an HDF5 dataset. It returns an \texttt{herr\_t} indicating success or failure. \bigskip
@@ -977,20 +988,23 @@ The \texttt{optional} callback in the dataset class implements connector specifi
 \begin{mdframed}[style=bgbox]
 \textbf{Signature:}
 \begin{lstlisting}
-    herr_t (*optional)(void *obj, H5VL_dataset_optional_t opt_type, hid_t dxpl_id, void **req, va_list arguments);
+    herr_t (*optional)(void *obj, H5VL_optional_args_t *args, hid_t dxpl_id, void **req);
 \end{lstlisting}
 
 \textbf{Arguments:}\\
 \begin{tabular}{l p{13.5cm}}
   \texttt{obj} & (IN): The container or object where the operation needs to happen.\\
-  \texttt{opt\_type} & (IN): The type of operation.\\
+  \texttt{args} & (IN/OUT): A pointer to the arguments struct.\\
   \texttt{dxpl\_id} & (IN): The data transfer property list.\\
   \texttt{req} & (IN/OUT): A pointer to the asynchronous request of the operation created by the connector.\\
-  \texttt{arguments} & (IN/OUT): argument list containing parameters and output pointers for the get operation. \\
 \end{tabular}
 \end{mdframed}
 
-Each connector that requires connector-specific operations should be able to use the \texttt{opt\_type} parameter (a connector-specific enum/integer) to determine the type of the operation and parse the \texttt{va\_list arguments} appropriately.
+Each connector that requires connector-specific operations should compare the
+value of the {\tt op\_type} field of the {\tt H5VL\_optional\_args\_t} struct
+with the values returned from calling {\tt H5VLregister\_opt\_operation} to
+determine how to handle the optional call and interpret the arguments passed
+in the struct.
 
 \subsubsection{dataset: close}
 The \texttt{close} callback in the dataset class terminates access
@@ -1036,9 +1050,9 @@ implement.
 typedef struct H5VL_datatype_class_t {                                           
     void *(*commit)(void *obj, const H5VL_loc_params_t *loc_params, const char *name, hid_t type_id, hid_t lcpl_id, hid_t tcpl_id, hid_t tapl_id, hid_t dxpl_id, void **req);
     void *(*open)(void *obj, const H5VL_loc_params_t *loc_params, const char * name, hid_t tapl_id, hid_t dxpl_id, void **req);
-    herr_t (*get)   (void *obj, H5VL_datatype_get_t get_type, hid_t dxpl_id, void **req, va_list arguments);
-    herr_t (*specific)(void *obj, H5VL_datatype_specific_t specific_type, hid_t dxpl_id, void **req, va_list arguments);            
-    herr_t (*optional)(void *obj, H5VL_datatype_optional_t opt_type, hid_t dxpl_id, void **req, va_list arguments); 
+    herr_t (*get)   (void *obj, H5VL_datatype_get_args_t *args, hid_t dxpl_id, void **req);
+    herr_t (*specific)(void *obj, H5VL_datatype_specific_args_t *args, hid_t dxpl_id, void **req);            
+    herr_t (*optional)(void *obj, H5VL_optional_args_t *args, hid_t dxpl_id, void **req); 
     herr_t (*close) (void *dt, hid_t dxpl_id, void **req);                       
 } H5VL_datatype_class_t; 
 \end{lstlisting}
@@ -1110,52 +1124,51 @@ parameter.It returns an \texttt{herr\_t} indicating success or failure.\bigskip
 \begin{mdframed}[style=bgbox]
 \textbf{Signature:}
 \begin{lstlisting}
-    herr_t (*get) (void *obj, H5VL_datatype_get_t get_type, 
-        hid_t dxpl_id, void **req, va_list arguments);
-\end{lstlisting}
-
-The \texttt{get\_type} argument is an \texttt{enum}:
-\begin{lstlisting}
-/* types for datatype GET callback */
-typedef enum H5VL_datatype_get_t {                                               
-    H5VL_DATATYPE_GET_BINARY,               /* get serialized form of transient type    */
-    H5VL_DATATYPE_GET_TCPL                  /* datatype creation property list          */
-} H5VL_datatype_get_t; 
+    herr_t (*get) (void *obj, H5VL_datatype_get_args_t *args, hid_t dxpl_id, void **req);
 \end{lstlisting}
 
 \textbf{Arguments:}\\
 \begin{tabular}{l p{13.5cm}}
   \texttt{obj} & (IN): The named datatype to retrieve information from.\\
-  \texttt{get\_type} & (IN): The type of the information to retrieve.\\
+  \texttt{args} & (IN/OUT): A pointer to the arguments struct.\\
   \texttt{dxpl\_id} & (IN): The data transfer property list.\\
   \texttt{req} & (IN/OUT): A pointer to the asynchronous request of the
   operation created by the connector.\\
-  \texttt{arguments} & (IN/OUT): argument list containing parameters and
-  output pointers for the get operation. \\
 \end{tabular}
 \end{mdframed}
 
-The \texttt{arguments} argument contains a variable list of arguments
-depending on the \texttt{get\_type} parameter. The following list shows
-the argument list, in order, for each type:
+\begin{lstlisting}
+/* Values for datatype 'get' operation */
+typedef enum H5VL_datatype_get_t {
+    H5VL_DATATYPE_GET_BINARY_SIZE, /* Get size of serialized form of transient type */
+    H5VL_DATATYPE_GET_BINARY,      /* Get serialized form of transient type         */
+    H5VL_DATATYPE_GET_TCPL         /* Datatype creation property list               */
+} H5VL_datatype_get_t;
 
-\begin{itemize}
-\item \texttt{H5VL\_DATATYPE\_GET\_BINARY}, to retrieve the serialized original transient HDF5 datatype that was committed, or
-return the size that is required for it be serialized if the passed in buffer is \texttt{NULL}. The HDF5 library provides two functions to
-encode and decode datatypes in their transient form, \texttt{H5Tencode()} and \texttt{H5Tdecode()}. When a datatype is committed, the connector is required to keep the serialized form of the transient datatype stored somewhere in the container (which is usually the case anyway when committing a named datatype), so it can be retrieved with this call. This is needed to generate the higher level HDF5 datatype identifier that allows all the H5T ``transient'' routines to work properly on the named datatype.
-  \begin{enumerate}
-  \item \texttt{ssize\_t *nalloc} (OUT): buffer to store the total size of the serialized datatype.
-  \item \texttt{void *buf} (OUT): buffer to store the serialized datatype.
-  \item \texttt{size\_t size} (IN): size of the passed in buffer.
-  \end{enumerate}
-  
-\item \texttt{H5VL\_DATATYPE\_GET\_TCPL}, to retrieve the datatype
-  creation property list:
-  \begin{enumerate}
-  \item \texttt{hid\_t *ret\_id} (OUT): buffer for the identifier of the
-    type creation property list.
-  \end{enumerate}
-\end{itemize}
+/* Parameters for datatype 'get' operations */
+typedef struct H5VL_datatype_get_args_t {
+    H5VL_datatype_get_t op_type; /* Operation to perform */
+
+    /* Parameters for each operation */
+    union {
+        /* H5VL_DATATYPE_GET_BINARY_SIZE */
+        struct {
+            size_t *size; /* Size of serialized form of datatype (OUT) */
+        } get_binary_size;
+
+        /* H5VL_DATATYPE_GET_BINARY */
+        struct {
+            void * buf;      /* Buffer to store serialized form of datatype (OUT) */
+            size_t buf_size; /* Size of serialized datatype buffer */
+        } get_binary;
+
+        /* H5VL_DATATYPE_GET_TCPL */
+        struct {
+            hid_t tcpl_id; /* Named datatype creation property list ID (OUT) */
+        } get_tcpl;
+    } args;
+} H5VL_datatype_get_args_t;
+\end{lstlisting}
 
 \subsubsection{datatype: specific}
 The \texttt{specific} callback in the datatype class implements specific operations on HDF5 named datatypes as specified in the \texttt{specific\_type} parameter. It returns an \texttt{herr\_t} indicating success or failure.\bigskip
@@ -1163,45 +1176,45 @@ The \texttt{specific} callback in the datatype class implements specific operati
 \begin{mdframed}[style=bgbox]
 \textbf{Signature:}
 \begin{lstlisting}
-	herr_t (*specific)(void *obj, H5VL_loc_params_t *loc_params, H5VL_object_specific_t specific_type, hid_t dxpl_id, void **req, va_list arguments);
-\end{lstlisting}
-
-The \texttt{specific\_type} argument is an \texttt{enum}:
-\begin{lstlisting}
-/* types for datatype SPECFIC callback */                                        
-typedef enum H5VL_datatype_specific_t {                                          
-    H5VL_DATATYPE_FLUSH,                                                         
-    H5VL_DATATYPE_REFRESH                                                        
-} H5VL_datatype_specific_t;  
+	herr_t (*specific)(void *obj, H5VL_loc_params_t *loc_params, H5VL_object_specific_args_t *args, hid_t dxpl_id, void **req);
 \end{lstlisting}
 
 \textbf{Arguments:}\\
 \begin{tabular}{l p{13.5cm}}
   \texttt{obj} & (IN): The container or object where the operation needs to happen.\\
   \texttt{loc\_params} & (IN): Pointer to location parameters as explained in Section~\ref{sec:map}.\\
-  \texttt{specific\_type} & (IN): The type of the operation.\\
+  \texttt{args} & (IN/OUT): A pointer to the arguments struct.\\
   \texttt{dxpl\_id} & (IN): The data transfer property list.\\
   \texttt{req} & (IN/OUT): A pointer to the asynchronous request of the
   operation created by the connector.\\
-  \texttt{arguments} & (IN/OUT): argument list containing parameters and
-  output pointers for the get operation. \\
 \end{tabular}
 \end{mdframed}
 
-The \texttt{arguments} argument contains a variable list of arguments
-depending on the \texttt{specific\_type} parameter. The following list shows
-the argument list, in order, for each type:
+\begin{lstlisting}
+/* Values for datatype 'specific' operation */
+typedef enum H5VL_datatype_specific_t {
+    H5VL_DATATYPE_FLUSH,  /* H5Tflush */
+    H5VL_DATATYPE_REFRESH /* H5Trefresh */
+} H5VL_datatype_specific_t;
 
-\begin{itemize}
-\item \texttt{H5VL\_DATATYPE\_FLUSH}, flushes a datatype:
-  \begin{enumerate}
-  \item \texttt{hid\_t type\_id} (IN): The datatype ID. Needed so that the refreshed data can be associated with the old ID. 
-  \end{enumerate}
-\item \texttt{H5VL\_DATATYPE\_REFRESH}, clears a datatype's buffers and reloads from disk:
-  \begin{enumerate}
-  \item \texttt{hid\_t type\_id} (IN): The datatype ID. Needed so that the refreshed data can be associated with the old ID. 
-  \end{enumerate}
-\end{itemize}
+/* Parameters for datatype 'specific' operations */
+typedef struct H5VL_datatype_specific_args_t {
+    H5VL_datatype_specific_t op_type; /* Operation to perform */
+
+    /* Parameters for each operation */
+    union {
+        /* H5VL_DATATYPE_FLUSH */
+        struct {
+            hid_t type_id; /* Named datatype ID (IN) */
+        } flush;
+
+        /* H5VL_DATATYPE_REFRESH */
+        struct {
+            hid_t type_id; /* Named datatype ID (IN) */
+        } refresh;
+    } args;
+} H5VL_datatype_specific_args_t;
+\end{lstlisting}
 
 \subsubsection{datatype: optional}
 The \texttt{optional} callback in the datatype class implements connector specific operations on an HDF5 datatype. It returns an \texttt{herr\_t} indicating success or failure.\bigskip 
@@ -1209,20 +1222,23 @@ The \texttt{optional} callback in the datatype class implements connector specif
 \begin{mdframed}[style=bgbox]
 \textbf{Signature:}
 \begin{lstlisting}
-    herr_t (*optional)(void *obj, H5VL_datatype_optional_t opt_type, hid_t dxpl_id, void **req, va_list arguments);
+    herr_t (*optional)(void *obj, H5VL_optional_args_t *args, hid_t dxpl_id, void **req);
 \end{lstlisting}
 
 \textbf{Arguments:}\\
 \begin{tabular}{l p{13.5cm}}
   \texttt{obj} & (IN): The container or object where the operation needs to happen.\\
-  \texttt{opt\_type} & (IN): The type of operation.\\
+  \texttt{args} & (IN/OUT): A pointer to the arguments struct.\\
   \texttt{dxpl\_id} & (IN): The data transfer property list.\\
   \texttt{req} & (IN/OUT): A pointer to the asynchronous request of the operation created by the connector.\\
-  \texttt{arguments} & (IN/OUT): argument list containing parameters and output pointers for the get operation. \\
 \end{tabular}
 \end{mdframed}
 
-Each connector that requires connector-specific operations should be able to use the \texttt{opt\_type} parameter (a connector-specific enum/integer) to determine the type of the operation and parse the \texttt{va\_list arguments} appropriately.
+Each connector that requires connector-specific operations should compare the
+value of the {\tt op\_type} field of the {\tt H5VL\_optional\_args\_t} struct
+with the values returned from calling {\tt H5VLregister\_opt\_operation} to
+determine how to handle the optional call and interpret the arguments passed
+in the struct.
 
 \subsubsection{datatype: close}
 The \texttt{close} callback in the named datatype class terminates
@@ -1259,9 +1275,9 @@ needs to implement.
 typedef struct H5VL_file_class_t {                                               
     void *(*create)(const char *name, unsigned flags, hid_t fcpl_id, hid_t fapl_id, hid_t dxpl_id, void **req);                   
     void *(*open)(const char *name, unsigned flags, hid_t fapl_id, hid_t dxpl_id, void **req);
-    herr_t (*get)(void *obj, H5VL_file_get_t get_type, hid_t dxpl_id, void **req, va_list arguments);
-    herr_t (*specific)(void *obj, H5VL_file_specific_t specific_type, hid_t dxpl_id, void **req, va_list arguments);            
-    herr_t (*optional)(void *obj, H5VL_file_optional_t opt_type, hid_t dxpl_id, void **req, va_list arguments);
+    herr_t (*get)(void *obj, H5VL_file_get_args_t *args, hid_t dxpl_id, void **req);
+    herr_t (*specific)(void *obj, H5VL_file_specific_args_t *args, hid_t dxpl_id, void **req);            
+    herr_t (*optional)(void *obj, H5VL_optional_args_t *args, hid_t dxpl_id, void **req);
     herr_t (*close) (void *file, hid_t dxpl_id, void **req);
 } H5VL_file_class_t; 
 \end{lstlisting}
@@ -1322,103 +1338,104 @@ parameter. It returns an \texttt{herr\_t} indicating success or failure.\bigskip
 \begin{mdframed}[style=bgbox] 
 \textbf{Signature:}
 \begin{lstlisting}
-    herr_t (*get)(void *obj, H5VL_file_get_t get_type, hid_t dxpl_id, 
-        void **req, va_list arguments);
-\end{lstlisting}
-
-The \texttt{get\_type} argument is an \texttt{enum}:
-\begin{lstlisting}
-/* types for all file get API routines */
-typedef enum H5VL_file_get_t {                                                   
-    H5VL_FILE_GET_CONT_INFO,                /* file get container info              */
-    H5VL_FILE_GET_FAPL,                     /* file access property list            */
-    H5VL_FILE_GET_FCPL,                     /* file creation property list          */
-    H5VL_FILE_GET_FILENO,                   /* file number                          */
-    H5VL_FILE_GET_INTENT,                   /* file intent                          */
-    H5VL_FILE_GET_NAME,                     /* file name                            */
-    H5VL_FILE_GET_OBJ_COUNT,                /* object count in file                 */
-    H5VL_FILE_GET_OBJ_IDS                   /* object ids in file                   */
-} H5VL_file_get_t; 
+    herr_t (*get)(void *obj, H5VL_file_get_args_t *args, hid_t dxpl_id, void **req);
 \end{lstlisting}
 
 \textbf{Arguments:}\\
 \begin{tabular}{l p{13.5cm}}
   \texttt{obj} & (IN): The container or object where information needs to be
   retrieved from.\\
-  \texttt{get\_type} & (IN): The type of the information to retrieve.\\
+  \texttt{args} & (IN/OUT): A pointer to the arguments struct.\\
   \texttt{dxpl\_id} & (IN): The data transfer property list.\\
   \texttt{req} & (IN/OUT): A pointer to the asynchronous request of the
   operation created by the connector.\\
-  \texttt{arguments} & (IN/OUT): argument list containing parameters and
-  output pointers for the get operation. \\
 \end{tabular}
-
-The \texttt{arguments} argument contains a variable list of arguments
-depending on the \texttt{get\_type} parameter. The following list shows
-the argument list, in order, for each type:
-
-\begin{itemize}
-\item \texttt{H5VL\_OBJECT\_GET\_CONT\_INFO}, get information about the container
-    that the object belongs to:
-  \begin{enumerate}
-  \item \texttt{H5VL\_file\_cont\_info\_t *info} (OUT): pointer to the file
-    container info structure returned.
-  \end{enumerate}
-
-\item \texttt{H5VL\_FILE\_GET\_FAPL}, to retrieve the file access
-  property list:
-  \begin{enumerate}
-  \item \texttt{hid\_t *ret\_id} (OUT): buffer for the identifier of the
-    file access property list.
-  \end{enumerate}
-
-\item \texttt{H5VL\_FILE\_GET\_FCPL}, to retrieve the file creation
-  property list:
-  \begin{enumerate}
-  \item \texttt{hid\_t *ret\_id} (OUT): buffer for the identifier of the
-    file creation property list.
-  \end{enumerate}
-
-\item \texttt{H5VL\_FILE\_GET\_FILENO}, to retrieve the file's file number:
-  \begin{enumerate}
-  \item \texttt{unsigned long *fileno} (OUT): buffer for the file number.
-  \end{enumerate}
-
-\item \texttt{H5VL\_FILE\_GET\_INTENT}, get access intent of the
-  container:
-  \begin{enumerate}
-  \item \texttt{unsigned *intent\_flags} (OUT): buffer for the intent flags value.
-  \end{enumerate}
-
-\item \texttt{H5VL\_FILE\_GET\_NAME}, get container name an object
-  belongs to:
-  \begin{enumerate}
-  \item \texttt{H5I\_type\_t type} (IN): the object type in \texttt{obj}.
-  \item \texttt{size\_t size} (IN): size of the buffer for the file name.
-  \item \texttt{char *name} (OUT): buffer for the file name.
-  \item \texttt{ssize\_t *ret} (OUT): buffer for the entire size of the
-    file name.
-  \end{enumerate}
-
-\item \texttt{H5VL\_FILE\_GET\_OBJ\_COUNT:}, to retrieve the object count
-  in the container:
-  \begin{enumerate}
-  \item \texttt{unsigned types} (IN): type of objects to look for.
-  \item \texttt{ssize\_t *ret} (OUT): buffer for the object count.
-  \end{enumerate}
-
-\item \texttt{H5VL\_FILE\_GET\_OBJ\_IDS:}, to retrieve object identifiers
-  in the container:
-  \begin{enumerate}
-  \item \texttt{unsigned types} (IN): type of objects to look for.
-  \item \texttt{size\_t max\_objs} (IN): maximum number of objects to
-    open.
-  \item \texttt{hid\_t *oid\_list} (OUT): buffer for the object identifiers.
-  \item \texttt{ssize\_t *ret} (OUT): buffer for the object count.
-  \end{enumerate}
-
-\end{itemize}
 \end{mdframed}
+
+\begin{lstlisting}
+/* Info for H5VL_FILE_GET_CONT_INFO */
+typedef struct H5VL_file_cont_info_t {
+    unsigned version;       /* version information (keep first) */
+    uint64_t feature_flags; /* Container feature flags          */
+                            /* (none currently defined)         */
+    size_t token_size;      /* Size of tokens                   */
+    size_t blob_id_size;    /* Size of blob IDs                 */
+} H5VL_file_cont_info_t;
+
+/* Values for file 'get' operation */
+typedef enum H5VL_file_get_t {
+    H5VL_FILE_GET_CONT_INFO, /* file get container info              */
+    H5VL_FILE_GET_FAPL,      /* file access property list            */
+    H5VL_FILE_GET_FCPL,      /* file creation property list          */
+    H5VL_FILE_GET_FILENO,    /* file number                          */
+    H5VL_FILE_GET_INTENT,    /* file intent                          */
+    H5VL_FILE_GET_NAME,      /* file name                            */
+    H5VL_FILE_GET_OBJ_COUNT, /* object count in file                 */
+    H5VL_FILE_GET_OBJ_IDS    /* object ids in file                   */
+} H5VL_file_get_t;
+
+/* Parameters for file 'get_name' operation */
+typedef struct H5VL_file_get_name_args_t {
+    H5I_type_t type;          /* ID type of object pointer */
+    size_t     buf_size;      /* Size of file name buffer (IN) */
+    char *     buf;           /* Buffer for file name (OUT) */
+    size_t *   file_name_len; /* Actual length of file name (OUT) */
+} H5VL_file_get_name_args_t;
+
+/* Parameters for file 'get_obj_ids' operation */
+typedef struct H5VL_file_get_obj_ids_args_t {
+    unsigned types;    /* Type of objects to count */
+    size_t   max_objs; /* Size of array of object IDs */
+    hid_t *  oid_list; /* Array of object IDs (OUT) */
+    size_t * count;    /* # of objects (OUT) */
+} H5VL_file_get_obj_ids_args_t;
+
+/* Parameters for file 'get' operations */
+typedef struct H5VL_file_get_args_t {
+    H5VL_file_get_t op_type; /* Operation to perform */
+
+    /* Parameters for each operation */
+    union {
+        /* H5VL_FILE_GET_CONT_INFO */
+        struct {
+            H5VL_file_cont_info_t *info; /* Container info (OUT) */
+        } get_cont_info;
+
+        /* H5VL_FILE_GET_FAPL */
+        struct {
+            hid_t fapl_id; /* File access property list (OUT) */
+        } get_fapl;
+
+        /* H5VL_FILE_GET_FCPL */
+        struct {
+            hid_t fcpl_id; /* File creation property list (OUT) */
+        } get_fcpl;
+
+        /* H5VL_FILE_GET_FILENO */
+        struct {
+            unsigned long *fileno; /* File "number" (OUT) */
+        } get_fileno;
+
+        /* H5VL_FILE_GET_INTENT */
+        struct {
+            unsigned *flags; /* File open/create intent flags (OUT) */
+        } get_intent;
+
+        /* H5VL_FILE_GET_NAME */
+        H5VL_file_get_name_args_t get_name;
+
+        /* H5VL_FILE_GET_OBJ_COUNT */
+        struct {
+            unsigned types; /* Type of objects to count */
+            size_t * count; /* # of objects (OUT) */
+        } get_obj_count;
+
+        /* H5VL_FILE_GET_OBJ_IDS */
+        H5VL_file_get_obj_ids_args_t get_obj_ids;
+    } args;
+} H5VL_file_get_args_t;
+
+\end{lstlisting}
 
 \subsubsection{file: specific}
 The \texttt{specific} callback in the file class implements specific operations on HDF5 files as specified in the \texttt{specific\_type} parameter. It returns an \texttt{herr\_t} indicating success or failure.\bigskip
@@ -1426,93 +1443,68 @@ The \texttt{specific} callback in the file class implements specific operations 
 \begin{mdframed}[style=bgbox] 
 \textbf{Signature:}
 \begin{lstlisting}
-    herr_t (*specific)(void *obj, H5VL_file_specific_t specific_type, hid_t dxpl_id, void **req, va_list arguments);
-\end{lstlisting}
-
-The \texttt{specific\_type} argument is an \texttt{enum}:
-\begin{lstlisting}
-/* types for file SPECIFIC callback */
-typedef enum H5VL_file_specific_t {                                              
-    H5VL_FILE_FLUSH,                        /* Flush file                       */
-    H5VL_FILE_REOPEN,                       /* Reopen the file                  */
-    H5VL_FILE_MOUNT,                        /* Mount a file                     */
-    H5VL_FILE_UNMOUNT,                      /* Unmount a file                   */
-    H5VL_FILE_IS_ACCESSIBLE,                /* Check if a file is accessible    */
-    H5VL_FILE_DELETE,                       /* Delete a file                    */
-    H5VL_FILE_IS_EQUAL                      /* Check if two files are the same  */
-} H5VL_file_specific_t;
+    herr_t (*specific)(void *obj, H5VL_file_specific_args_t *args, hid_t dxpl_id, void **req);
 \end{lstlisting}
 
 \textbf{Arguments:}\\
 \begin{tabular}{l p{13.5cm}}
   \texttt{obj} & (IN): The container or object where the operation needs
   to happen.\\
-  \texttt{specific\_type} & (IN): The type of the operation.\\
+  \texttt{args} & (IN/OUT): A pointer to the arguments struct.\\
   \texttt{dxpl\_id} & (IN): The data transfer property list.\\
   \texttt{req} & (IN/OUT): A pointer to the asynchronous request of the
   operation created by the connector.\\
-  \texttt{arguments} & (IN/OUT): argument list containing parameters and
-  output pointers for the get operation. \\
 \end{tabular}
-
-The \texttt{arguments} argument contains a variable list of arguments
-depending on the \texttt{specific\_type} parameter. The following list shows
-the argument list, in order, for each type:
-
-\begin{itemize}
-\item \texttt{H5VL\_FILE\_POST\_OPEN}, adjust a file after opening it:
-        
-\item \texttt{H5VL\_FILE\_FLUSH}, flushes all buffers associated with the container to disk:
-  \begin{enumerate}
-  \item \texttt{H5I\_type\_t obj\_type} (IN): The object type of \texttt{obj} on which the flush operation was called.
-  \item \texttt{H5F\_scope\_t scope} (IN): The scope of the flushing action.
-  \end{enumerate}
-  
-\item \texttt{H5VL\_FILE\_REOPEN}, reopens a file:
-  \begin{enumerate}
-      \item \texttt{void *file} (IN): pointer to the reopened file (same type
-          of pointer as is returned from the connector's create/open callbacks).
-  \end{enumerate}
-  
-\item \texttt{H5VL\_FILE\_MOUNT}, Mounts a file on the location object:
-  \begin{enumerate}
-  \item \texttt{H5I\_type\_t type} (IN): the object type in \texttt{obj}.
-  \item \texttt{char *name} (IN): name of the group onto which the file
-    specified by \texttt{file} is to be mounted.
-  \item \texttt{void *child} (IN): child file to be mounted (same type
-          of pointer as is returned from the connector's create/open callbacks).
-  \item \texttt{hid\_t *fmpl\_id} (IN): file mount property list.
-  \end{enumerate}
-
-\item \texttt{H5VL\_FILE\_UNMOUNT}, un-mounts a file from the location object:
-  \begin{enumerate}
-  \item \texttt{H5I\_type\_t type} (IN): the object type in \texttt{obj}.
-  \item \texttt{char *name} (IN): name of the mount point.
-  \end{enumerate}
-
-\item \texttt{H5VL\_FILE\_IS\_ACCESSIBLE}, checks if a container is
-  accessible using a specific file access property list:
-  \begin{enumerate}
-  \item \texttt{hid\_t *fapl\_id} (IN): file access property list.
-  \item \texttt{char *name} (IN): name of the container to check.
-  \item \texttt{htri\_t *result} (OUT): buffer for the result; 0 if no, 1
-    if yes.
-  \end{enumerate}
-
-\item \texttt{H5VL\_FILE\_DELETE}, deletes a file:
-  \begin{enumerate}
-  \item \texttt{H5I\_type\_t obj\_type} (IN): The object type of \texttt{obj} on which the flush operation was called.
-  \item \texttt{H5F\_scope\_t scope} (IN): The scope of the flushing action.
-  \end{enumerate}
-
-\item \texttt{H5VL\_FILE\_IS\_EQUAL}, check if one file is equal to another:
-  \begin{enumerate}
-  \item \texttt{H5I\_type\_t obj\_type} (IN): The object type of \texttt{obj} on which the flush operation was called.
-  \item \texttt{H5F\_scope\_t scope} (IN): The scope of the flushing action.
-  \end{enumerate}
-
- \end{itemize}
 \end{mdframed}
+
+\begin{lstlisting}
+/* Values for file 'specific' operation */
+typedef enum H5VL_file_specific_t {
+    H5VL_FILE_FLUSH,         /* Flush file                       */
+    H5VL_FILE_REOPEN,        /* Reopen the file                  */
+    H5VL_FILE_IS_ACCESSIBLE, /* Check if a file is accessible    */
+    H5VL_FILE_DELETE,        /* Delete a file                    */
+    H5VL_FILE_IS_EQUAL       /* Check if two files are the same  */
+} H5VL_file_specific_t;
+
+/* Parameters for file 'specific' operations */
+typedef struct H5VL_file_specific_args_t {
+    H5VL_file_specific_t op_type; /* Operation to perform */
+
+    /* Parameters for each operation */
+    union {
+        /* H5VL_FILE_FLUSH */
+        struct {
+            H5I_type_t  obj_type; /* Type of object to use */
+            H5F_scope_t scope;    /* Scope of flush operation */
+        } flush;
+
+        /* H5VL_FILE_REOPEN */
+        struct {
+            void **file; /* File object for new file (OUT) */
+        } reopen;
+
+        /* H5VL_FILE_IS_ACCESSIBLE */
+        struct {
+            const char *filename;   /* Name of file to check */
+            hid_t       fapl_id;    /* File access property list to use */
+            hbool_t *   accessible; /* Whether file is accessible with FAPL settings (OUT) */
+        } is_accessible;
+
+        /* H5VL_FILE_DELETE */
+        struct {
+            const char *filename; /* Name of file to delete */
+            hid_t       fapl_id;  /* File access property list to use */
+        } del;
+
+        /* H5VL_FILE_IS_EQUAL */
+        struct {
+            void *   obj2;      /* Second file object to compare against */
+            hbool_t *same_file; /* Whether files are the same (OUT) */
+        } is_equal;
+    } args;
+} H5VL_file_specific_args_t;
+\end{lstlisting}
 
 \subsubsection{file: optional}
 The \texttt{optional} callback in the file class implements connector specific operations on an HDF5 container. It returns an 
@@ -1520,20 +1512,23 @@ The \texttt{optional} callback in the file class implements connector specific o
 \begin{mdframed}[style=bgbox] 
 \textbf{Signature:}
 \begin{lstlisting}
-    herr_t (*optional)(void *obj, H5VL_file_optional_t opt_type, hid_t dxpl_id, void **req, va_list arguments);
+    herr_t (*optional)(void *obj, H5VL_optional_args_t *args, hid_t dxpl_id, void **req);
 \end{lstlisting}
 
 \textbf{Arguments:}\\
 \begin{tabular}{l p{13.5cm}}
   \texttt{obj} & (IN): The container or object where the operation needs to happen.\\
-  \texttt{opt\_type} & (IN): The type of operation.\\
+  \texttt{args} & (IN/OUT): A pointer to the arguments struct.\\
   \texttt{dxpl\_id} & (IN): The data transfer property list.\\
   \texttt{req} & (IN/OUT): A pointer to the asynchronous request of the operation created by the connector.\\
-  \texttt{arguments} & (IN/OUT): argument list containing parameters and output pointers for the get operation. \\
 \end{tabular}
 \end{mdframed}
 
-Each connector that requires connector-specific operations should be able to use the \texttt{opt\_type} parameter (a connector-specific enum/integer) to determine the type of the operation and parse the \texttt{va\_list arguments} appropriately.
+Each connector that requires connector-specific operations should compare the
+value of the {\tt op\_type} field of the {\tt H5VL\_optional\_args\_t} struct
+with the values returned from calling {\tt H5VLregister\_opt\_operation} to
+determine how to handle the optional call and interpret the arguments passed
+in the struct.
 
 \subsubsection{file: close}
 The \texttt{close} callback in the file class should terminate access to
@@ -1569,9 +1564,9 @@ connector needs to implement.
 typedef struct H5VL_group_class_t {                                              
     void *(*create)(void *obj, const H5VL_loc_params_t *loc_params, const char *name, hid_t lcpl_id, hid_t gcpl_id, hid_t gapl_id, hid_t dxpl_id, void **req);
     void *(*open)(void *obj, const H5VL_loc_params_t *loc_params, const char *name, hid_t gapl_id, hid_t dxpl_id, void **req);
-    herr_t (*get)(void *obj, H5VL_group_get_t get_type, hid_t dxpl_id, void **req, va_list arguments);
-    herr_t (*specific)(void *obj, H5VL_group_specific_t specific_type, hid_t dxpl_id, void **req, va_list arguments);
-    herr_t (*optional)(void *obj, H5VL_group_optional_t opt_type, hid_t dxpl_id, void **req, va_list arguments);
+    herr_t (*get)(void *obj, H5VL_group_get_args_t *args, hid_t dxpl_id, void **req);
+    herr_t (*specific)(void *obj, H5VL_group_specific_args_t *args, hid_t dxpl_id, void **req);
+    herr_t (*optional)(void *obj, H5VL_optional_args_t *args, hid_t dxpl_id, void **req);
     herr_t (*close) (void *grp, hid_t dxpl_id, void **req);
 } H5VL_group_class_t; 
 \end{lstlisting}
@@ -1642,51 +1637,50 @@ returns an \texttt{herr\_t} indicating success or failure.\bigskip
 \begin{mdframed}[style=bgbox]
 \textbf{Signature:}
 \begin{lstlisting}
-    herr_t (*get)(void *obj, H5VL_group_get_t get_type, hid_t dxpl_id, void **req, va_list arguments);
-\end{lstlisting}
-
-The \texttt{get\_type} argument is an \texttt{enum}:
-\begin{lstlisting}
-/* types for all group get API routines */
-typedef enum H5VL_group_get_t {                                                  
-    H5VL_GROUP_GET_GCPL,                    /* group creation property list     */
-    H5VL_GROUP_GET_INFO                     /* group info                       */
-} H5VL_group_get_t; 
+    herr_t (*get)(void *obj, H5VL_group_get_args_t *args, hid_t dxpl_id, void **req);
 \end{lstlisting}
 
 \textbf{Arguments:}\\
 \begin{tabular}{l p{13.5cm}}
   \texttt{obj} & (IN): The group object where information needs to be
   retrieved from.\\
-  \texttt{get\_type} & (IN): The type of the information to retrieve.\\
+  \texttt{args} & (IN/OUT): A pointer to the arguments struct.\\
   \texttt{dxpl\_id} & (IN): The data transfer property list.\\
   \texttt{req} & (IN/OUT): A pointer to the asynchronous request of the
   operation created by the connector.\\
-  \texttt{arguments} & (IN/OUT): argument list containing parameters and
-  output pointers for the get operation. \\
 \end{tabular}
 \end{mdframed}
 
-The \texttt{arguments} argument contains a variable list of arguments
-depending on the \texttt{get\_type} parameter. The following list shows
-the argument list, in order, for each type:
+\begin{lstlisting}
+/* Values for group 'get' operation */
+typedef enum H5VL_group_get_t {
+    H5VL_GROUP_GET_GCPL, /* group creation property list     */
+    H5VL_GROUP_GET_INFO  /* group info                       */
+} H5VL_group_get_t;
 
-\begin{itemize}
-\item \texttt{H5VL\_GROUP\_GET\_GCPL}, to retrieve the group creation
-  property list of the group specified in \texttt{obj}:
-  \begin{enumerate}
-  \item \texttt{hid\_t *ret\_id} (OUT): buffer for the identifier of the
-    group creation property list.
-  \end{enumerate}
+/* Parameters for group 'get_info' operation */
+typedef struct H5VL_group_get_info_args_t {
+    H5VL_loc_params_t loc_params; /* Location parameters for object access */
+    H5G_info_t *      ginfo;      /* Group info (OUT) */
+} H5VL_group_get_info_args_t;
 
-\item \texttt{H5VL\_GROUP\_GET\_INFO}, to retrieve the attribute info:
-  \begin{enumerate}
-  \item \texttt{H5VL\_loc\_params\_t *loc\_params} (IN): Pointer to the location
-      parameters explained in Section~\ref{sec:map}. 
-  \item \texttt{H5G\_info\_t *group\_info} (OUT): info structure to fill the
-    group info in.
-  \end{enumerate}
-\end{itemize}
+/* Parameters for group 'get' operations */
+typedef struct H5VL_group_get_args_t {
+    H5VL_group_get_t op_type; /* Operation to perform */
+
+    /* Parameters for each operation */
+    union {
+        /* H5VL_GROUP_GET_GCPL */
+        struct {
+            hid_t gcpl_id; /* Group creation property list (OUT) */
+        } get_gcpl;
+
+        /* H5VL_GROUP_GET_INFO */
+        H5VL_group_get_info_args_t get_info; /* Group info */
+    } args;
+} H5VL_group_get_args_t;
+
+\end{lstlisting}
 
 \subsubsection{group: specific}
 The \texttt{specific} callback in the group class implements specific operations on HDF5 groups as specified in the \texttt{specific\_type} parameter. It returns an \texttt{herr\_t} indicating success or failure.\bigskip
@@ -1694,45 +1688,63 @@ The \texttt{specific} callback in the group class implements specific operations
 \begin{mdframed}[style=bgbox]
 \textbf{Signature:}
 \begin{lstlisting}
-	herr_t (*specific)(void *obj, H5VL_loc_params_t *loc_params, H5VL_object_specific_t specific_type, hid_t dxpl_id, void **req, va_list arguments);
-\end{lstlisting}
-
-The \texttt{specific\_type} argument is an \texttt{enum}:
-\begin{lstlisting}
-/* types for group SPECFIC callback */                                           
-typedef enum H5VL_group_specific_t {                                             
-    H5VL_GROUP_FLUSH,                                                            
-    H5VL_GROUP_REFRESH                                                           
-} H5VL_group_specific_t;
+	herr_t (*specific)(void *obj, H5VL_loc_params_t *loc_params, H5VL_object_specific_args_t *args, hid_t dxpl_id, void **req);
 \end{lstlisting}
 
 \textbf{Arguments:}\\
 \begin{tabular}{l p{13.5cm}}
   \texttt{obj} & (IN): The container or object where the operation needs to happen.\\
   \texttt{loc\_params} & (IN): Pointer to the location parameters as explained in Section~\ref{sec:map}.\\
-  \texttt{specific\_type} & (IN): The type of the operation.\\
+  \texttt{args} & (IN/OUT): A pointer to the arguments struct.\\
   \texttt{dxpl\_id} & (IN): The data transfer property list.\\
   \texttt{req} & (IN/OUT): A pointer to the asynchronous request of the
   operation created by the connector.\\
-  \texttt{arguments} & (IN/OUT): argument list containing parameters and
-  output pointers for the get operation. \\
 \end{tabular}
 \end{mdframed}
 
-The \texttt{arguments} argument contains a variable list of arguments
-depending on the \texttt{specific\_type} parameter. The following list shows
-the argument list, in order, for each type:
+\begin{lstlisting}
+/* Values for group 'specific' operation */
+typedef enum H5VL_group_specific_t {
+    H5VL_GROUP_MOUNT,   /* Mount a file on a group          */
+    H5VL_GROUP_UNMOUNT, /* Unmount a file on a group        */
+    H5VL_GROUP_FLUSH,   /* H5Gflush                         */
+    H5VL_GROUP_REFRESH  /* H5Grefresh                       */
+} H5VL_group_specific_t;
 
-\begin{itemize}
-\item \texttt{H5VL\_GROUP\_FLUSH}, flushes a group:
-  \begin{enumerate}
-  \item \texttt{hid\_t grp\_id} (IN): The group ID. Needed so that the refreshed data can be associated with the old ID. 
-  \end{enumerate}
-\item \texttt{H5VL\_GROUP\_REFRESH}, clears a group's buffers and reloads from disk:
-  \begin{enumerate}
-  \item \texttt{hid\_t grp\_id} (IN): The group ID. Needed so that the refreshed data can be associated with the old ID. 
-  \end{enumerate}
-\end{itemize}
+/* Parameters for group 'mount' operation */
+typedef struct H5VL_group_spec_mount_args_t {
+    const char *name;       /* Name of location to mount child file */
+    void *      child_file; /* Pointer to child file object */
+    hid_t       fmpl_id;    /* File mount property list to use */
+} H5VL_group_spec_mount_args_t;
+
+/* Parameters for group 'specific' operations */
+typedef struct H5VL_group_specific_args_t {
+    H5VL_group_specific_t op_type; /* Operation to perform */
+
+    /* Parameters for each operation */
+    union {
+        /* H5VL_GROUP_MOUNT */
+        H5VL_group_spec_mount_args_t mount;
+
+        /* H5VL_GROUP_UNMOUNT */
+        struct {
+            const char *name; /* Name of location to unmount child file */
+        } unmount;
+
+        /* H5VL_GROUP_FLUSH */
+        struct {
+            hid_t grp_id; /* Group ID (IN) */
+        } flush;
+
+        /* H5VL_GROUP_REFRESH */
+        struct {
+            hid_t grp_id; /* Group ID (IN) */
+        } refresh;
+    } args;
+} H5VL_group_specific_args_t;
+
+\end{lstlisting}
 
 \subsubsection{group: optional}
 The \texttt{optional} callback in the group class implements connector specific operations on an HDF5 group. It returns an \texttt{herr\_t} indicating success or failure. \bigskip
@@ -1740,20 +1752,23 @@ The \texttt{optional} callback in the group class implements connector specific 
 \begin{mdframed}[style=bgbox]
 \textbf{Signature:}
 \begin{lstlisting}
-    herr_t (*optional)(void *obj, H5VL_group_optional_t opt_type, hid_t dxpl_id, void **req, va_list arguments);
+    herr_t (*optional)(void *obj, H5VL_optional_args_t *args, hid_t dxpl_id, void **req);
 \end{lstlisting}
 
 \textbf{Arguments:}\\
 \begin{tabular}{l p{13.5cm}}
   \texttt{obj} & (IN): The container or object where the operation needs to happen.\\
-  \texttt{opt\_type} & (IN): The type of operation.\\
+  \texttt{args} & (IN/OUT): A pointer to the arguments struct.\\
   \texttt{dxpl\_id} & (IN): The data transfer property list.\\
   \texttt{req} & (IN/OUT): A pointer to the asynchronous request of the operation created by the connector.\\
-  \texttt{arguments} & (IN/OUT): argument list containing parameters and output pointers for the get operation. \\
 \end{tabular}
 \end{mdframed}
 
-Each connector that requires connector-specific operations should be able to use the \texttt{opt\_type} parameter (a connector-specific enum/integer) to determine the type of the operation and parse the \texttt{va\_list arguments} appropriately.
+Each connector that requires connector-specific operations should compare the
+value of the {\tt op\_type} field of the {\tt H5VL\_optional\_args\_t} struct
+with the values returned from calling {\tt H5VLregister\_opt\_operation} to
+determine how to handle the optional call and interpret the arguments passed
+in the struct.
 
 \subsubsection{group: close}
 The \texttt{close} callback in the group class terminates access to
@@ -1787,12 +1802,12 @@ connector needs to implement.
 
 \begin{lstlisting}[caption={Structure for link callback routines, H5VLconnector.h}, captionpos=b, label={lst:H5Lclass}]
 typedef struct H5VL_link_class_t {                                               
-    herr_t (*create)(H5VL_link_create_type_t create_type, void *obj, const H5VL_loc_params_t *loc_params, hid_t lcpl_id, hid_t lapl_id, hid_t dxpl_id, void **req, va_list arguments);
+    herr_t (*create)(H5VL_link_create_args_t *args, void *obj, const H5VL_loc_params_t *loc_params, hid_t lcpl_id, hid_t lapl_id, hid_t dxpl_id, void **req);
     herr_t (*copy)(void *src_obj, const H5VL_loc_params_t *loc_params1, void *dst_obj, const H5VL_loc_params_t *loc_params2, hid_t lcpl_id, hid_t lapl_id, hid_t dxpl_id, void **req);           
     herr_t (*move)(void *src_obj, const H5VL_loc_params_t *loc_params1, void *dst_obj, const H5VL_loc_params_t *loc_params2, hid_t lcpl_id, hid_t lapl_id, hid_t dxpl_id, void **req);           
-    herr_t (*get)(void *obj, const H5VL_loc_params_t *loc_params, H5VL_link_get_t get_type, hid_t dxpl_id, void **req, va_list arguments);                 
-    herr_t (*specific)(void *obj, const H5VL_loc_params_t *loc_params, H5VL_link_specific_t specific_type, hid_t dxpl_id, void **req, va_list arguments);            
-    herr_t (*optional)(void *obj, H5VL_link_optional_t opt_type, hid_t dxpl_id, void **req, va_list arguments); 
+    herr_t (*get)(void *obj, const H5VL_loc_params_t *loc_params, H5VL_link_get_args_t *args, hid_t dxpl_id, void **req);                 
+    herr_t (*specific)(void *obj, const H5VL_loc_params_t *loc_params, H5VL_link_specific_args_t *args, hid_t dxpl_id, void **req);            
+    herr_t (*optional)(void *obj, const H5VL_loc_params_t *loc_params, H5VL_optional_args_t *args, hid_t dxpl_id, void **req); 
 } H5VL_link_class_t;   
 \end{lstlisting}
 
@@ -1805,24 +1820,14 @@ soft, external, or user-defined link in the container. It returns an
 \begin{mdframed}[style=bgbox]
 \textbf{Signature:}
 \begin{lstlisting}
-    herr_t (*create)(H5VL_link_create_type_t create_type, void *obj,
+    herr_t (*create)(H5VL_link_create_args_t *args, void *obj,
         H5VL_loc_params_t *loc_params, hid_t lcpl_id, 
         hid_t lapl_id, hid_t dxpl_id, void **req);
 \end{lstlisting}
 
-The \texttt{create\_type} argument is an \texttt{enum}:
-\begin{lstlisting}
-/* link create types for VOL */
-typedef enum H5VL_link_create_type_t {
-    H5VL_LINK_CREATE_HARD,  /* Hard Link          */
-    H5VL_LINK_CREATE_SOFT,  /* Soft Link          */
-    H5VL_LINK_CREATE_UD      /* External / UD Link */
-} H5VL_link_create_type_t;
-\end{lstlisting}
-
 \textbf{Arguments:}\\
 \begin{tabular}{l p{13.5cm}}
-  \texttt{create\_type} & (IN): type of the link to be created.\\
+  \texttt{args} & (IN/OUT): A pointer to the arguments struct.\\
   \texttt{obj} & (IN): Pointer to an object where the link needs to be
   created from.\\
   \texttt{loc\_params} & (IN): Pointer to the location parameters as explained in
@@ -1837,36 +1842,41 @@ typedef enum H5VL_link_create_type_t {
 \end{tabular}
 \end{mdframed}
 
-As mentioned in the argument list, the \texttt{lcpl\_id} contains the
-parameters for the link creation operation depending on the creation
-type:
-\begin{itemize}
-\item \texttt{H5VL\_LINK\_CREATE\_HARD} contains two properties:
-  \begin{enumerate}
-  \item \texttt{H5VL\_LINK\_TARGET} (with type \texttt{void*}): The target
-    object where the hard link needs to be created to.
-  \item \texttt{H5VL\_LINK\_TARGET\_LOC\_PARAMS} (with type \texttt{H5VL\_loc\_params\_t}): The location parameters as explained in
-    Section~\ref{sec:map} for the target object.
-  \end{enumerate}
+\begin{lstlisting}
+/* Link create types for VOL */
+typedef enum H5VL_link_create_t {
+    H5VL_LINK_CREATE_HARD,
+    H5VL_LINK_CREATE_SOFT,
+    H5VL_LINK_CREATE_UD
+} H5VL_link_create_t;
 
-\item \texttt{H5VL\_LINK\_CREATE\_SOFT} contains one property:
-  \begin{enumerate}
-  \item \texttt{H5VL\_LINK\_TARGET\_NAME} (with type \texttt{char*}): The target
-    link where the soft link should point to.
-  \end{enumerate}
+/* Parameters for link 'create' operations */
+typedef struct H5VL_link_create_args_t {
+    H5VL_link_create_t op_type; /* Operation to perform */
 
-\item \texttt{H5VL\_LINK\_CREATE\_UD} contains two properties:
-  \begin{enumerate}
-  \item \texttt{H5VL\_LINK\_TYPE} (with type \texttt{H5L\_type\_t}): The
-    user defined link class. \texttt{H5L\_TYPE\_EXTERNAL} suggests an
-    external link is to be created.
-  \item \texttt{H5VL\_LINK\_UDATA} (with type \texttt{void*}): User supplied
-    link information (contains the external link buffer for external
-    links). 
-  \item \texttt{H5VL\_LINK\_UDATA\_SIZE} (with type \texttt{size\_t}): size
-    of the \texttt{udata} buffer. 
-  \end{enumerate}
-\end{itemize}
+    /* Parameters for each operation */
+    union {
+        /* H5VL_LINK_CREATE_HARD */
+        struct {
+            void *            curr_obj;        /* Current object */
+            H5VL_loc_params_t curr_loc_params; /* Location parameters for current object */
+        } hard;
+
+        /* H5VL_LINK_CREATE_SOFT */
+        struct {
+            const char *target; /* Target of soft link */
+        } soft;
+
+        /* H5VL_LINK_CREATE_UD */
+        struct {
+            H5L_type_t  type;     /* Type of link to create */
+            const void *buf;      /* Buffer that contains link info */
+            size_t      buf_size; /* Size of link info buffer */
+        } ud;
+    } args;
+} H5VL_link_create_args_t;
+
+\end{lstlisting}
 
 \subsubsection{link: copy}
 The \texttt{copy} callback in the link class copies a link within the HDF5 container. It returns an \texttt{herr\_t} indicating success or failure.\bigskip
@@ -1927,18 +1937,7 @@ returns an \texttt{herr\_t} indicating success or failure.\bigskip
 \textbf{Signature:}
 \begin{lstlisting}
     herr_t (*get)(void *obj, H5VL_loc_params_t *loc_params, 
-        H5VL_link_get_t get_type, hid_t dxpl_id, void **req, 
-        va_list arguments);
-\end{lstlisting}
-
-The \texttt{get\_type} argument is an \texttt{enum}:
-\begin{lstlisting}
-/* types for all link get API routines */
-typedef enum H5VL_link_get_t {                                                   
-    H5VL_LINK_GET_INFO,        /* link info                         */           
-    H5VL_LINK_GET_NAME,        /* link name                         */           
-    H5VL_LINK_GET_VAL          /* link value                        */           
-} H5VL_link_get_t; 
+        H5VL_link_get_args_t *args, hid_t dxpl_id, void **req);
 \end{lstlisting}
 
 \textbf{Arguments:}\\
@@ -1948,45 +1947,47 @@ typedef enum H5VL_link_get_t {
   \texttt{loc\_params} & (IN): Pointer to the location parameters for the source
   object as explained in Section~\ref{sec:map}. The type can be only \texttt{H5VL\_OBJECT\_BY\_NAME} or \texttt{H5VL\_OBJECT\_BY\_IDX} in this
   callback.\\ 
-  \texttt{get\_type} & (IN): The type of the information to retrieve.\\
+  \texttt{args} & (IN/OUT): A pointer to the arguments struct.\\
   \texttt{dxpl\_id} & (IN): The data transfer property list.\\
   \texttt{req} & (IN/OUT): A pointer to the asynchronous request of the
   operation created by the connector.\\
-  \texttt{arguments} & (IN/OUT): argument list containing parameters and
-  output pointers for the get operation. \\
 \end{tabular}
 \end{mdframed}
 
-The \texttt{arguments} argument contains a variable list of arguments
-depending on the \texttt{get\_type} parameter. The following list shows
-the argument list, in order, for each type:
+\begin{lstlisting}
+/* Values for link 'get' operation */
+typedef enum H5VL_link_get_t {
+    H5VL_LINK_GET_INFO, /* link info                         */
+    H5VL_LINK_GET_NAME, /* link name                         */
+    H5VL_LINK_GET_VAL   /* link value                        */
+} H5VL_link_get_t;
 
-\begin{itemize}
-\item \texttt{H5VL\_LINK\_GET\_INFO}, to retrieve the link info from the
-  link specified in the \texttt{loc\_params}:
-  \begin{enumerate}
-  \item \texttt{H5L\_info\_t *linfo} (OUT): pointer to info structure to
-    fill.
-  \end{enumerate}
+/* Parameters for link 'get' operations */
+typedef struct H5VL_link_get_args_t {
+    H5VL_link_get_t op_type; /* Operation to perform */
 
-\item \texttt{H5VL\_LINK\_GET\_NAME}, to retrieve the name of the link
-  specified by the index information in \texttt{loc\_params} (\texttt{loc\_params} is of type \texttt{H5VL\_OBJECT\_BY\_IDX} only with this
-  type):
-  \begin{enumerate}
-  \item \texttt{char* name} (OUT): buffer to copy the name into.
-  \item \texttt{size\_t size} (IN): size of the buffer name, if 0, return
-    only the buffer size needed.
-  \item \texttt{ssize\_t *ret} (OUT): buffer to return the length of the
-    link name.
-  \end{enumerate}
+    /* Parameters for each operation */
+    union {
+        /* H5VL_LINK_GET_INFO */
+        struct {
+            H5L_info2_t *linfo; /* Pointer to link's info (OUT) */
+        } get_info;
 
-\item \texttt{H5VL\_LINK\_GET\_VAL}, to retrieve the link value from the
-  link specified in the \texttt{loc\_params}:
-  \begin{enumerate}
-  \item \texttt{void *buf} (OUT): buffer to put the value into.
-  \item \texttt{size\_t size} (IN): size of the passed in buffer.
-  \end{enumerate}
-\end{itemize}
+        /* H5VL_LINK_GET_NAME */
+        struct {
+            size_t  name_size; /* Size of link name buffer (IN) */
+            char *  name;      /* Buffer for link name (OUT) */
+            size_t *name_len;  /* Actual length of link name (OUT) */
+        } get_name;
+
+        /* H5VL_LINK_GET_VAL */
+        struct {
+            size_t buf_size; /* Size of link value buffer (IN) */
+            void * buf;      /* Buffer for link value (OUT) */
+        } get_val;
+    } args;
+} H5VL_link_get_args_t;
+\end{lstlisting}
 
 \subsubsection{link: specific}
 The \texttt{specific} callback in the link class implements specific operations on HDF5 links as specified in the \texttt{specific\_type} parameter. It returns an \texttt{herr\_t} indicating success or failure.\bigskip
@@ -1994,56 +1995,58 @@ The \texttt{specific} callback in the link class implements specific operations 
 \begin{mdframed}[style=bgbox]
 \textbf{Signature:}
 \begin{lstlisting}
-	herr_t (*specific)(void *obj, H5VL_loc_params_t *loc_params, H5VL_link_specific_t specific_type, hid_t dxpl_id, void **req, va_list arguments);
-\end{lstlisting}
-
-The \texttt{specific\_type} argument is an \texttt{enum}:
-\begin{lstlisting}
-/* types for link SPECIFIC callback */
-typedef enum H5VL_link_specific_t {                                              
-    H5VL_LINK_DELETE,          /* H5Ldelete(_by_idx)                */           
-    H5VL_LINK_EXISTS,          /* link existence                    */           
-    H5VL_LINK_ITER             /* H5Literate/visit(_by_name)              */     
-} H5VL_link_specific_t; 
+	herr_t (*specific)(void *obj, H5VL_loc_params_t *loc_params, H5VL_link_specific_args_t *args, hid_t dxpl_id, void **req);
 \end{lstlisting}
 
 \textbf{Arguments:}\\
 \begin{tabular}{l p{13.5cm}}
   \texttt{obj} & (IN): The location object  where the operation needs to happen.\\
   \texttt{loc\_params} & (IN): Pointer to the location parameters as explained in Section~\ref{sec:map}.\\
-  \texttt{specific\_type} & (IN): The type of the operation.\\
+  \texttt{args} & (IN/OUT): A pointer to the arguments struct.\\
   \texttt{dxpl\_id} & (IN): The data transfer property list.\\
   \texttt{req} & (IN/OUT): A pointer to the asynchronous request of the
   operation created by the connector.\\
-  \texttt{arguments} & (IN/OUT): argument list containing parameters and
-  output pointers for the get operation. \\
 \end{tabular}
 \end{mdframed}
 
-The \texttt{arguments} argument contains a variable list of arguments
-depending on the \texttt{specific\_type} parameter. The following list shows
-the argument list, in order, for each type:
+\begin{lstlisting}
+/* Values for link 'specific' operation */
+typedef enum H5VL_link_specific_t {
+    H5VL_LINK_DELETE, /* H5Ldelete(_by_idx)                */
+    H5VL_LINK_EXISTS, /* link existence                    */
+    H5VL_LINK_ITER    /* H5Literate/visit(_by_name)              */
+} H5VL_link_specific_t;
 
-\begin{itemize}
-\item \texttt{H5VL\_LINK\_DELETE}, to remove a link specified in the location parameter from an HDF5 container.
+/* Parameters for link 'iterate' operation */
+typedef struct H5VL_link_iterate_args_t {
+    hbool_t         recursive; /* Whether iteration is recursive */
+    H5_index_t      idx_type;  /* Type of index to iterate over */
+    H5_iter_order_t order;     /* Order of index iteration */
+    hsize_t *       idx_p;     /* Start/stop iteration index (OUT) */
+    H5L_iterate2_t  op;        /* Iteration callback function */
+    void *          op_data;   /* Iteration callback context */
+} H5VL_link_iterate_args_t;
 
-\item \texttt{H5VL\_LINK\_EXISTS}, to determine whether the link specified
-  in the \texttt{loc\_params} exits (\texttt{loc\_params} is of type \texttt{H5VL\_OBJECT\_BY\_NAME} only with this type):
-  \begin{enumerate}
-  \item \texttt{htri\_t *ret} (OUT): buffer for the existence of the link
-    (0 for no, 1 for yes).
-  \end{enumerate}
+/* Parameters for link 'specific' operations */
+typedef struct H5VL_link_specific_args_t {
+    H5VL_link_specific_t op_type; /* Operation to perform */
 
-\item \texttt{H5VL\_LINK\_ITER}, to iterate over all links starting at the location provided and call a user-specified callback on each one:
-  \begin{enumerate}
-  \item \texttt{hbool\_t recursive} (IN): whether to recursively follow links into subgroups of the specified group.\\
-  \item \texttt{H5\_index\_t idx\_type} (IN): Type of index.\\
-  \item \texttt{H5\_iter\_order\_t order} (IN): Order in which to iterate over index.\\
-  \item \texttt{hsize\_t *idx\_p} (IN/OUT):  iteration position where to start and return position where an interrupted iteration may restart.\\
-  \item \texttt{H5L\_iterate\_t op} (IN): User-defined function to pass each link to. \\
-  \item \texttt{void *op\_data} (IN/OUT): User data to pass through to and to be returned by iterator operator function. \\
-  \end{enumerate}
-\end{itemize}
+    /* Parameters for each operation */
+    union {
+        /* H5VL_LINK_DELETE */
+        /* No args */
+
+        /* H5VL_LINK_EXISTS */
+        struct {
+            hbool_t *exists; /* Whether link exists (OUT) */
+        } exists;
+
+        /* H5VL_LINK_ITER */
+        H5VL_link_iterate_args_t iterate;
+    } args;
+} H5VL_link_specific_args_t;
+
+\end{lstlisting}
 
 \subsubsection{link: optional}
 The \texttt{optional} callback in the link class implements connector specific operations on an HDF5 link. It returns an \texttt{herr\_t} indicating success or failure.\bigskip 
@@ -2051,20 +2054,24 @@ The \texttt{optional} callback in the link class implements connector specific o
 \begin{mdframed}[style=bgbox]
 \textbf{Signature:}
 \begin{lstlisting}
-    herr_t (*optional)(void *obj, H5VL_link_optional_t opt_type, hid_t dxpl_id, void **req, va_list arguments);
+    herr_t (*optional)(void *obj, const H5VL_loc_params_t *loc_params, H5VL_optional_args_t *args, hid_t dxpl_id, void **req);
 \end{lstlisting}
 
 \textbf{Arguments:}\\
 \begin{tabular}{l p{13.5cm}}
   \texttt{obj} & (IN): The container or object where the operation needs to happen.\\
-  \texttt{opt\_type} & (IN): The type of operation.\\
+  \texttt{args} & (IN/OUT): A pointer to the arguments struct.\\
   \texttt{dxpl\_id} & (IN): The data transfer property list.\\
   \texttt{req} & (IN/OUT): A pointer to the asynchronous request of the operation created by the connector.\\
-  \texttt{arguments} & (IN/OUT): argument list containing parameters and output pointers for the get operation. \\
 \end{tabular}
 \end{mdframed}
 
-Each connector that requires connector-specific operations should be able to use the \texttt{opt\_type} parameter (a connector-specific enum/integer) to determine the type of the operation and parse the \texttt{va\_list arguments} appropriately.
+Each connector that requires connector-specific operations should compare the
+value of the {\tt op\_type} field of the {\tt H5VL\_optional\_args\_t} struct
+with the values returned from calling {\tt H5VLregister\_opt\_operation} to
+determine how to handle the optional call and interpret the arguments passed
+in the struct.
+
 
 %%%%%%%%%%%%%%%%%%%%
 % OBJECT CALLBACKS %
@@ -2080,9 +2087,9 @@ in this class that the connector needs to implement.
 typedef struct H5VL_object_class_t {                                             
     void *(*open)(void *obj, const H5VL_loc_params_t *loc_params, H5I_type_t *opened_type, hid_t dxpl_id, void **req);                                    
     herr_t (*copy)(void *src_obj, const H5VL_loc_params_t *loc_params1, const char *src_name, void *dst_obj, const H5VL_loc_params_t *loc_params2, const char *dst_name, hid_t ocpypl_id, hid_t lcpl_id, hid_t dxpl_id, void **req);   
-    herr_t (*get)(void *obj, const H5VL_loc_params_t *loc_params, H5VL_object_get_t get_type, hid_t dxpl_id, void **req, va_list arguments);                 
-    herr_t (*specific)(void *obj, const H5VL_loc_params_t *loc_params, H5VL_object_specific_t specific_type, hid_t dxpl_id, void **req, va_list arguments);            
-    herr_t (*optional)(void *obj, hid_t dxpl_id, void **req, va_list arguments); 
+    herr_t (*get)(void *obj, const H5VL_loc_params_t *loc_params, H5VL_object_get_args_t *args, hid_t dxpl_id, void **req);                 
+    herr_t (*specific)(void *obj, const H5VL_loc_params_t *loc_params, H5VL_object_specific_args_t *args, hid_t dxpl_id, void **req);            
+    herr_t (*optional)(void *obj, const H5VL_loc_params_t *loc_params, H5VL_optional_args_t *args, hid_t dxpl_id, void **req); 
 } H5VL_object_class_t; 
 \end{lstlisting}
 
@@ -2157,19 +2164,8 @@ returns an \texttt{herr\_t} indicating success or failure.\bigskip
 \textbf{Signature:}
 \begin{lstlisting}
     herr_t (*get)(void *obj, H5VL_loc_params_t *loc_params, 
-        H5VL_object_get_t get_type, hid_t dxpl_id, 
-        void **req, va_list arguments);
-\end{lstlisting}
-
-The \texttt{get\_type} argument is an \texttt{enum}:
-\begin{lstlisting}
-/* type for object GET callback */
-typedef enum H5VL_object_get_t {                                                 
-    H5VL_OBJECT_GET_FILE,              /* object's file                     */  
-    H5VL_OBJECT_GET_NAME,              /* object name                       */  
-    H5VL_OBJECT_GET_TYPE               /* object type                       */  
-    H5VL_OBJECT_GET_INFO               /* H5Oget_info(_by_idx|name)         */
-} H5VL_object_get_t; 
+        H5VL_object_get_args_t *args, hid_t dxpl_id, 
+        void **req);
 \end{lstlisting}
 
 \textbf{Arguments:}\\
@@ -2178,40 +2174,53 @@ typedef enum H5VL_object_get_t {
   retrieved from.\\
   \texttt{loc\_params} & (IN): Pointer to location parameters as
   explained in Section~\ref{sec:map}.\\
-  \texttt{get\_type} & (IN): The type of the information to retrieve.\\
+  \texttt{args} & (IN/OUT): A pointer to the arguments struct.\\
   \texttt{dxpl\_id} & (IN): The data transfer property list.\\
   \texttt{req} & (IN/OUT): A pointer to the asynchronous request of the
   operation created by the connector.\\
-  \texttt{arguments} & (IN/OUT): argument list containing parameters and
-  output pointers for the get operation. \\
 \end{tabular}
 \end{mdframed}
 
-The \texttt{arguments} argument contains a variable list of arguments
-depending on the \texttt{get\_type} parameter. The following list shows
-the argument list, in order, for each type:
+\begin{lstlisting}
+/* Values for object 'get' operation */
+typedef enum H5VL_object_get_t {
+    H5VL_OBJECT_GET_FILE, /* object file                       */
+    H5VL_OBJECT_GET_NAME, /* object name                       */
+    H5VL_OBJECT_GET_TYPE, /* object type                       */
+    H5VL_OBJECT_GET_INFO  /* H5Oget_info(_by_idx|name)         */
+} H5VL_object_get_t;
 
-\begin{itemize}
-\item \texttt{H5VL\_OBJECT\_GET\_FILE}, to retrieve a file for a referenced object:
-  \begin{enumerate}
-  \item \texttt{void **ret} (OUT): pointer to buffer to return the file.
-  \end{enumerate}
+/* Parameters for object 'get' operations */
+typedef struct H5VL_object_get_args_t {
+    H5VL_object_get_t op_type; /* Operation to perform */
 
- \item \texttt{H5VL\_OBJECT\_GET\_NAME}, to retrieve a name for a referenced object:
-  \begin{enumerate}
-  \item \texttt{ssize\_t *ret} (OUT): buffer to return the length of the
-    name.
-  \item \texttt{char* name} (OUT): buffer to copy the name into.
-  \item \texttt{size\_t size} (IN): size of the buffer name, if 0, return
-    only the buffer size needed.
-  \end{enumerate}
-  
-\item \texttt{H5VL\_OBJECT\_GET\_TYPE}, to retrieve object type a reference
-  points to:
-  \begin{enumerate}
-  \item \texttt{H5O\_type\_t *type} (OUT): buffer to return the object type.
-  \end{enumerate}
-\end{itemize}
+    /* Parameters for each operation */
+    union {
+        /* H5VL_OBJECT_GET_FILE */
+        struct {
+            void **file; /* File object (OUT) */
+        } get_file;
+
+        /* H5VL_OBJECT_GET_NAME */
+        struct {
+            size_t  buf_size; /* Size of name buffer (IN) */
+            char *  buf;      /* Buffer for name (OUT) */
+            size_t *name_len; /* Actual length of name (OUT) */
+        } get_name;
+
+        /* H5VL_OBJECT_GET_TYPE */
+        struct {
+            H5O_type_t *obj_type; /* Type of object (OUT) */
+        } get_type;
+
+        /* H5VL_OBJECT_GET_INFO */
+        struct {
+            unsigned     fields; /* Flags for fields to retrieve */
+            H5O_info2_t *oinfo;  /* Pointer to object info (OUT) */
+        } get_info;
+    } args;
+} H5VL_object_get_args_t;
+\end{lstlisting}
 
 \subsubsection{object: specific}
 The \texttt{specific} callback in the object class implements specific operations on HDF5 objects as specified in the \texttt{specific\_type} parameter. It returns an \texttt{herr\_t} indicating success or failure.\bigskip
@@ -2219,77 +2228,76 @@ The \texttt{specific} callback in the object class implements specific operation
 \begin{mdframed}[style=bgbox]
 \textbf{Signature:}
 \begin{lstlisting}
-	herr_t (*specific)(void *obj, H5VL_loc_params_t *loc_params, H5VL_object_specific_t specific_type, hid_t dxpl_id, void **req, va_list arguments);
-\end{lstlisting}
-
-The \texttt{specific\_type} argument is an \texttt{enum}:
-\begin{lstlisting}
-/* types for object SPECIFIC callback */
-typedef enum H5VL_object_specific_t {                                            
-    H5VL_OBJECT_CHANGE_REF_COUNT,       /* H5Oincr/decr_refcount             */  
-    H5VL_OBJECT_EXISTS,                 /* H5Oexists_by_name                 */  
-    H5VL_OBJECT_LOOKUP,                 /* Lookup object                     */  
-    H5VL_OBJECT_VISIT,                  /* H5Ovisit(_by_name)                */  
-    H5VL_OBJECT_FLUSH,                  /* H5{D|G|O|T}flush                  */  
-    H5VL_OBJECT_REFRESH                 /* H5{D|G|O|T}refresh                */  
-} H5VL_object_specific_t; 
+	herr_t (*specific)(void *obj, H5VL_loc_params_t *loc_params, H5VL_object_specific_args_t *args, hid_t dxpl_id, void **req);
 \end{lstlisting}
 
 \textbf{Arguments:}\\
 \begin{tabular}{l p{13.5cm}}
   \texttt{obj} & (IN): The location object  where the operation needs to happen.\\
   \texttt{loc\_params} & (IN): Pointer to location parameters as explained in Section~\ref{sec:map}.\\
-  \texttt{specific\_type} & (IN): The type of the operation.\\
+  \texttt{args} & (IN/OUT): A pointer to the arguments struct.\\
   \texttt{dxpl\_id} & (IN): The data transfer property list.\\
   \texttt{req} & (IN/OUT): A pointer to the asynchronous request of the
   operation created by the connector.\\
-  \texttt{arguments} & (IN/OUT): argument list containing parameters and
-  output pointers for the get operation. \\
 \end{tabular}
 \end{mdframed}
 
-The \texttt{arguments} argument contains a variable list of arguments
-depending on the \texttt{specific\_type} parameter. The following list shows
-the argument list, in order, for each type:
+\begin{lstlisting}
+/* Values for object 'specific' operation */
+typedef enum H5VL_object_specific_t {
+    H5VL_OBJECT_CHANGE_REF_COUNT, /* H5Oincr/decr_refcount             */
+    H5VL_OBJECT_EXISTS,           /* H5Oexists_by_name                 */
+    H5VL_OBJECT_LOOKUP,           /* Lookup object                     */
+    H5VL_OBJECT_VISIT,            /* H5Ovisit(_by_name)                */
+    H5VL_OBJECT_FLUSH,            /* H5{D|G|O|T}flush                  */
+    H5VL_OBJECT_REFRESH           /* H5{D|G|O|T}refresh                */
+} H5VL_object_specific_t;
 
-\begin{itemize}
-\item \texttt{H5VL\_OBJECT\_CHANGE\_REF\_COUNT}, to update the reference
-  count for the object in \texttt{obj}:
-  \begin{enumerate}
-  \item \texttt{int ref\_count} (IN): reference count to set on the object.
-  \end{enumerate}
+/* Parameters for object 'visit' operation */
+typedef struct H5VL_object_visit_args_t {
+    H5_index_t      idx_type; /* Type of index to iterate over */
+    H5_iter_order_t order;    /* Order of index iteration */
+    unsigned        fields;   /* Flags for fields to provide in 'info' object for 'op' callback */
+    H5O_iterate2_t  op;       /* Iteration callback function */
+    void *          op_data;  /* Iteration callback context */
+} H5VL_object_visit_args_t;
 
-\item \texttt{H5VL\_OBJECT\_EXISTS}, to check if an object with name
-  specified in \texttt{loc\_params} (type \texttt{H5VL\_OBJECT\_BY\_NAME})
-  exists:
-  \begin{enumerate}
-  \item \texttt{htri\_t *ret} (OUT): existence result, 0 if false, 1 if true.
-  \end{enumerate}
+/* Parameters for object 'specific' operations */
+typedef struct H5VL_object_specific_args_t {
+    H5VL_object_specific_t op_type; /* Operation to perform */
 
-\item \texttt{H5VL\_OBJECT\_LOOKUP}, Look up an object:
-  \begin{enumerate}
-  \item \texttt{void *token} (IN): The object's token.\\
-  \end{enumerate}
+    /* Parameters for each operation */
+    union {
+        /* H5VL_OBJECT_CHANGE_REF_COUNT */
+        struct {
+            int delta; /* Amount to modify object's refcount */
+        } change_rc;
 
-\item \texttt{H5VL\_OBJECT\_VISIT}, to iterate over all objects starting at the location provided and call a user-specified callback on each one:
-  \begin{enumerate}
-  \item \texttt{H5\_index\_t idx\_type} (IN): Type of index.\\
-  \item \texttt{H5\_iter\_order\_t order} (IN): Order in which to iterate over index.\\
-  \item \texttt{H5O\_iterate\_t op} (IN): User-defined function to pass each object to. \\
-  \item \texttt{void *op\_data} (IN/OUT): User data to pass through to and to be returned by iterator operator function. \\
-  \item \texttt{unsigned fields} (IN): Fields in H5O\_info\_t struct to return. \\
-  \end{enumerate}
-  
-\item \texttt{H5VL\_OBJECT\_FLUSH}, flushes a object:
-  \begin{enumerate}
-  \item \texttt{hid\_t obj\_id} (IN): The object ID. Needed so that the refreshed data can be associated with the old ID. 
-  \end{enumerate}
+        /* H5VL_OBJECT_EXISTS */
+        struct {
+            hbool_t *exists; /* Whether object exists (OUT) */
+        } exists;
 
-\item \texttt{H5VL\_OBJECT\_REFRESH}, clears an object's buffers and reloads from disk:
-  \begin{enumerate}
-  \item \texttt{hid\_t obj\_id} (IN): The object ID. Needed so that the refreshed data can be associated with the old ID. 
-  \end{enumerate}
-\end{itemize}
+        /* H5VL_OBJECT_LOOKUP */
+        struct {
+            H5O_token_t *token_ptr; /* Pointer to token for lookup (OUT) */
+        } lookup;
+
+        /* H5VL_OBJECT_VISIT */
+        H5VL_object_visit_args_t visit;
+
+        /* H5VL_OBJECT_FLUSH */
+        struct {
+            hid_t obj_id; /* Object ID (IN) */
+        } flush;
+
+        /* H5VL_OBJECT_REFRESH */
+        struct {
+            hid_t obj_id; /* Object ID (IN) */
+        } refresh;
+    } args;
+} H5VL_object_specific_args_t;
+\end{lstlisting}
 
 \subsubsection{object: optional}
 The \texttt{optional} callback in the object class implements connector specific operations on an HDF5 object. It returns an \texttt{herr\_t} indicating success or failure. \bigskip
@@ -2297,20 +2305,24 @@ The \texttt{optional} callback in the object class implements connector specific
 \begin{mdframed}[style=bgbox]
 \textbf{Signature:}
 \begin{lstlisting}
-    herr_t (*optional)(void *obj, H5VL_object_optional_t opt_type, hid_t dxpl_id, void **req, va_list arguments);
+    herr_t (*optional)(void *obj, const H5VL_loc_params_t *loc_params, H5VL_optional_args_t *args, hid_t dxpl_id, void **req);
 \end{lstlisting}
 
 \textbf{Arguments:}\\
 \begin{tabular}{l p{13.5cm}}
   \texttt{obj} & (IN): The container or object where the operation needs to happen.\\
-  \texttt{opt\_type} & (IN): The type of operation.\\
+  \texttt{loc\_params} & (IN): Pointer to location parameters as explained in Section~\ref{sec:map}.\\
+  \texttt{args} & (IN/OUT): A pointer to the arguments struct.\\
   \texttt{dxpl\_id} & (IN): The data transfer property list.\\
   \texttt{req} & (IN/OUT): A pointer to the asynchronous request of the operation created by the connector.\\
-  \texttt{arguments} & (IN/OUT): argument list containing parameters and output pointers for the get operation. \\
 \end{tabular}
 \end{mdframed}
 
-Each connector that requires connector-specific operations should be able to use the \texttt{opt\_type} parameter (a connector-specific enum/integer) to determine the type of the operation and parse the \texttt{va\_list arguments} appropriately.
+Each connector that requires connector-specific operations should compare the
+value of the {\tt op\_type} field of the {\tt H5VL\_optional\_args\_t} struct
+with the values returned from calling {\tt H5VLregister\_opt\_operation} to
+determine how to handle the optional call and interpret the arguments passed
+in the struct.
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -2322,6 +2334,7 @@ Each connector that requires connector-specific operations should be able to use
 \begin{lstlisting}[caption={Structure for VOL connector introspection callback routines, H5VLconnector.h}, captionpos=b, label={lst:Introspectclass}]
 typedef struct H5VL_introspect_class_t {                                            
     herr_t (*get_conn_cls)(void *obj, H5VL_get_conn_lvl_t lvl, const struct H5VL_class_t **conn_cls);
+    herr_t (*get_cap_flags)(const void *info, unsigned *cap_flags);
     herr_t (*opt_query)(void *obj, H5VL_subclass_t cls, int opt_type, hbool_t *supported);
 } H5VL_introspect_class_t;
 \end{lstlisting}
@@ -2353,6 +2366,23 @@ typedef enum H5VL_get_conn_lvl_t {
   \texttt{cls} & (OUT): A const pointer to the connector.\\
 \end{tabular}
 \end{mdframed}
+
+\subsubsection{introspect: get\_cap\_flags}
+Get a connector's capability flags.
+
+\begin{mdframed}[style=bgbox]
+\textbf{Signature:}
+\begin{lstlisting}
+    herr_t (*get_cap_flags)(const void *info, unsigned *cap_flags);
+\end{lstlisting}
+
+\textbf{Arguments:}\\
+\begin{tabular}{l p{13.5cm}}
+  \texttt{info} & (IN): A const pointer to pertinent VOL info.\\
+  \texttt{cap\_flags} & (OUT): A pointer to capability flags.\\
+\end{tabular}
+\end{mdframed}
+
 
 \subsubsection{introspect: opt\_query}
 Query a class for a capability or functionality.
@@ -2402,11 +2432,11 @@ typedef enum H5VL_subclass_t {
 
 \begin{lstlisting}[caption={Structure for async request callback routines, H5VLconnector.h}, captionpos=b, label={lst:Requestclass}]
 typedef struct H5VL_request_class_t {
-    herr_t (*wait)(void *req, uint64_t timeout, H5ES_status_t *status);
+    herr_t (*wait)(void *req, uint64_t timeout, H5VL_request_status_t *status);
     herr_t (*notify)(void *req, H5VL_request_notify_t cb, void *ctx);
-    herr_t (*cancel)(void *req);
-    herr_t (*specific)(void *req, H5VL_request_specific_t specific_type, va_list arguments);
-    herr_t (*optional)(void *req, H5VL_request_optional_t opt_type, va_list arguments);
+    herr_t (*cancel)(void *req, H5VL_request_status_t *status);
+    herr_t (*specific)(void *req, H5VL_request_specific_args_t *args);
+    herr_t (*optional)(void *req, H5VL_optional_args_t *args);
     herr_t (*free)(void *req);
 } H5VL_request_class_t;
 \end{lstlisting}
@@ -2482,26 +2512,43 @@ Perform a specific operation on an asynchronous request.
 \begin{mdframed}[style=bgbox]
 \textbf{Signature:}
 \begin{lstlisting}
-    herr_t (*specific)(void *req, H5VL_request_specific_t specific_type, va_list arguments);
-\end{lstlisting}
-
-The \texttt{specific\_type} argument is an \texttt{enum}:
-\begin{lstlisting}
-/* types for async request SPECIFIC callback */
-typedef enum H5VL_request_specific_t {
-    H5VL_REQUEST_WAITANY,               /* Wait until any request completes */   
-    H5VL_REQUEST_WAITSOME,              /* Wait until at least one requesst completes */
-    H5VL_REQUEST_WAITALL                /* Wait until all requests complete */   
-} H5VL_request_specific_t; 
+    herr_t (*specific)(void *req, H5VL_request_specific_args_t *args);
 \end{lstlisting}
 
 \textbf{Arguments:}\\
 \begin{tabular}{l p{13.5cm}}
   \texttt{req} & (IN): The async request on which to perform the operation.\\
-  \texttt{specific\_type} & (IN): The specific operation to perform.\\
-  \texttt{arguments} & (IN/OUT): argument list containing parameters and output pointers for the operation. \\
+  \texttt{args} & (IN/OUT): A pointer to the arguments struct.\\
 \end{tabular}
 \end{mdframed}
+
+\begin{lstlisting}
+/* Values for async request 'specific' operation */
+typedef enum H5VL_request_specific_t {
+    H5VL_REQUEST_GET_ERR_STACK, /* Retrieve error stack for failed operation */
+    H5VL_REQUEST_GET_EXEC_TIME  /* Retrieve execution time for operation */
+} H5VL_request_specific_t;
+
+/* Parameters for request 'specific' operations */
+typedef struct H5VL_request_specific_args_t {
+    H5VL_request_specific_t op_type; /* Operation to perform */
+
+    /* Parameters for each operation */
+    union {
+        /* H5VL_REQUEST_GET_ERR_STACK */
+        struct {
+            hid_t err_stack_id; /* Error stack ID for operation (OUT) */
+        } get_err_stack;
+
+        /* H5VL_REQUEST_GET_EXEC_TIME */
+        struct {
+            uint64_t *exec_ts;   /* Timestamp for start of task execution (OUT) */
+            uint64_t *exec_time; /* Duration of task execution (in ns) (OUT) */
+        } get_exec_time;
+    } args;
+} H5VL_request_specific_args_t;
+
+\end{lstlisting}
 
 \subsubsection{request: optional}
 Perform a connector-specific operation for a request.
@@ -2509,18 +2556,22 @@ Perform a connector-specific operation for a request.
 \begin{mdframed}[style=bgbox]
 \textbf{Signature:}
 \begin{lstlisting}
-    herr_t (*optional)(void *req, H5VL_request_optional_t opt_type, va_list arguments);                            
+    herr_t (*optional)(void *req, H5VL_optional_args_t *args);                            
 \end{lstlisting}
 
 \textbf{Arguments:}\\
 \begin{tabular}{l p{13.5cm}}
   \texttt{req} & (IN): The async request on which to perform the operation.\\
-  \texttt{opt\_type} & (IN): The type of operation.\\
-  \texttt{arguments} & (IN/OUT): argument list containing parameters and output pointers for the operation. \\
+  \texttt{args} & (IN/OUT): A pointer to the arguments struct.\\
 \end{tabular}
 \end{mdframed}
 
-Each connector that requires connector-specific operations should be able to use the \texttt{opt\_type} parameter (a connector-specific enum/integer) to determine the type of the operation and parse the \texttt{va\_list arguments} appropriately.
+Each connector that requires connector-specific operations should compare the
+value of the {\tt op\_type} field of the {\tt H5VL\_optional\_args\_t} struct
+with the values returned from calling {\tt H5VLregister\_opt\_operation} to
+determine how to handle the optional call and interpret the arguments passed
+in the struct.
+
 
 \subsubsection{request: free}
 Frees an asynchronous request.
@@ -2547,8 +2598,8 @@ Frees an asynchronous request.
 typedef struct H5VL_blob_class_t {                                               
     herr_t (*put)(void *obj, const void *buf, size_t size, void *blob_id, void *ctx);
     herr_t (*get)(void *obj, const void *blob_id, void *buf, size_t size, void *ctx);
-    herr_t (*specific)(void *obj, void *blob_id, H5VL_blob_specific_t specific_type, va_list arguments);
-    herr_t (*optional)(void *obj, void *blob_id, H5VL_blob_optional_t opt_type, va_list arguments);             
+    herr_t (*specific)(void *obj, void *blob_id, H5VL_blob_specific_args_t *args);
+    herr_t (*optional)(void *obj, void *blob_id, H5VL_optional_args_t *args);
 } H5VL_blob_class_t; 
 \end{lstlisting}
 
@@ -2596,27 +2647,44 @@ Perform a defined operation on a blob via the VOL.
 \begin{mdframed}[style=bgbox]
 \textbf{Signature:}
 \begin{lstlisting}
-    herr_t (*specific)(void *obj, void *blob_id, H5VL_blob_specific_t specific_type, va_list arguments);
-\end{lstlisting}
-
-The \texttt{specific\_type} argument is an \texttt{enum}:
-\begin{lstlisting}
-typedef enum H5VL_blob_specific_t {
-    H5VL_BLOB_DELETE,                   /* Delete a blob (by ID) */
-    H5VL_BLOB_GETSIZE,                  /* Get size of blob */
-    H5VL_BLOB_ISNULL,                   /* Check if a blob ID is "null" */ 
-    H5VL_BLOB_SETNULL                   /* Set a blob ID to the connector's "null" blob ID value */
-} H5VL_blob_specific_t;
+    herr_t (*specific)(void *obj, void *blob_id, H5VL_blob_specific_args_t *args);
 \end{lstlisting}
 
 \textbf{Arguments:}\\
 \begin{tabular}{l p{13.5cm}}
   \texttt{obj} & (IN): Pointer to the blob container.\\
   \texttt{blob\_id} & (IN): Pointer to the blob's connector-specific ID.\\
-  \texttt{specific\_type} & (IN): The operation to perform.\\
-  \texttt{arguments} & (IN/OUT): argument list containing parameters and output pointers for the operation. \\
+  \texttt{args} & (IN/OUT): A pointer to the arguments struct.\\
 \end{tabular}
 \end{mdframed}
+
+\begin{lstlisting}
+/* Values for 'blob' 'specific' operation */
+typedef enum H5VL_blob_specific_t {
+    H5VL_BLOB_DELETE, /* Delete a blob (by ID) */
+    H5VL_BLOB_ISNULL, /* Check if a blob ID is "null" */
+    H5VL_BLOB_SETNULL /* Set a blob ID to the connector's "null" blob ID value */
+} H5VL_blob_specific_t;
+
+/* Parameters for blob 'specific' operations */
+typedef struct H5VL_blob_specific_args_t {
+    H5VL_blob_specific_t op_type; /* Operation to perform */
+
+    /* Parameters for each operation */
+    union {
+        /* H5VL_BLOB_DELETE */
+        /* No args */
+
+        /* H5VL_BLOB_ISNULL */
+        struct {
+            hbool_t *isnull; /* Whether blob ID is "null" (OUT) */
+        } is_null;
+
+        /* H5VL_BLOB_SETNULL */
+        /* No args */
+    } args;
+} H5VL_blob_specific_args_t;
+\end{lstlisting}
 
 \subsubsection{blob: optional}
 Perform a connector-specific operation on a blob via the VOL.
@@ -2624,19 +2692,22 @@ Perform a connector-specific operation on a blob via the VOL.
 \begin{mdframed}[style=bgbox]
 \textbf{Signature:}
 \begin{lstlisting}
-    herr_t (*optional)(void *obj, void *blob_id, H5VL_blob_optional_t opt_type, va_list arguments);             
+    herr_t (*optional)(void *obj, void *blob_id, H5VL_optional_args_t *args);             
 \end{lstlisting}
 
 \textbf{Arguments:}\\
 \begin{tabular}{l p{13.5cm}}
   \texttt{obj} & (IN): Pointer to the blob container.\\
   \texttt{blob\_id} & (IN): Pointer to the blob's connector-specific ID.\\
-  \texttt{opt\_type} & (IN): The type of operation.\\
-  \texttt{arguments} & (IN/OUT): argument list containing parameters and output pointers for the operation. \\
+  \texttt{args} & (IN/OUT): A pointer to the arguments struct.\\
 \end{tabular}
 \end{mdframed}
 
-Each connector that requires connector-specific operations should be able to use the \texttt{opt\_type} parameter (a connector-specific enum/integer) to determine the type of the operation and parse the \texttt{va\_list arguments} appropriately.
+Each connector that requires connector-specific operations should compare the
+value of the {\tt op\_type} field of the {\tt H5VL\_optional\_args\_t} struct
+with the values returned from calling {\tt H5VLregister\_opt\_operation} to
+determine how to handle the optional call and interpret the arguments passed
+in the struct.
 
 
 %%%%%%%%%%%%%%%%%%%
@@ -2783,16 +2854,15 @@ The \texttt{optional} callback has the following definition. It returns an \text
 \begin{mdframed}[style=bgbox]
 \textbf{Signature:}
 \begin{lstlisting}
-    herr_t (*optional)(void *obj, int opt_type, hid_t dxpl_id, void **req, va_list arguments);
+    herr_t (*optional)(void *obj, H5VL_optional_args_t *args, hid_t dxpl_id, void **req);
 \end{lstlisting}
 
 \textbf{Arguments:}\\
 \begin{tabular}{l p{13.5cm}}
   \texttt{obj} & (IN): The container or object where the operation needs to happen.\\
-  \texttt{opt\_type} & (IN): The type of operation.\\
+  \texttt{args} & (IN/OUT): A pointer to the arguments struct.\\
   \texttt{dxpl\_id} & (IN): The data transfer property list.\\
   \texttt{req} & (IN/OUT): A pointer to the asynchronous request of the operation created by the connector.\\
-  \texttt{arguments} & (IN/OUT): argument list containing parameters and output pointers for the operation. \\
 \end{tabular}
 \end{mdframed}
 
