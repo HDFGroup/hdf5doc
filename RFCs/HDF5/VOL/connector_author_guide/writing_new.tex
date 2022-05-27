@@ -34,6 +34,22 @@ C programming language. It is often possible to write connectors in other progra
 (e.g.; Python) via the language's C interop facilities, but that topic is out of
 scope for this document.
 
+\subsection{The HDF5 1.12.x VOL Interface Is DEPRECATED}
+
+Important changes were made to the VOL interface for HDF5 1.13.0 and, due to
+binary compatibility issues, these cannot be merged to HDF5 1.12.x. For this
+reason, VOL connector development should be shifted to target 1.13.0 as no
+further development of the VOL interface will take place on the 1.12.x branch.
+Unlike the other development branches of the library, there is no
+{\tt hdf5\_1\_13} branch - all HDF5 1.13.0 development is taking place in
+the {\tt develop} branch of the HDF5 repository and 1.13.x branches will split
+off from that.
+
+Note also that HDF5 1.13.0 is considered an unstable branch, and the API and
+file format are subject to change ("unstable" means "not yet finalized", not "buggy").
+The VOL feature is under active development and, although it is nearing its final form,
+may change further before the stable HDF5 1.14.0 release targeted for 2022.
+
 \subsection{VOL-Related HDF5 Header Files}
 
 Use of the VOL, including topics such as registration and loading VOL plugins, is
@@ -49,11 +65,11 @@ Public header files you will need to be familiar with include:
   \texttt{H5PLextern.h} & Needed if your connector will be built as a plugin.\\
 \end{tabularx}
 
-Many VOL connectors can be found on The HDF Group's Bitbucket server, located at
-\url{https://bitbucket.hdfgroup.org/projects/HDF5VOL}. Not all of these VOL
-connectors are supported by THe HDF Group and the level of completeness varies,
-but the connectors found there can serve as examples of working implementations.
-
+Many VOL connectors are listed on The HDF Group's VOL plugin registration page,
+located at \url{https://portal.hdfgroup.org/display/support/Registered+VOL+Connectors}.
+Not all of these VOL connectors are supported by The HDF Group and the level
+of completeness varies, but the connectors found there can serve as examples
+of working implementations.
 
 \subsection{Library vs Plugin vs Internal}
 
@@ -82,14 +98,6 @@ calls, both of which are trivial to code up. It also often requires your
 connector to be built with certain compile/link options. The VOL connector
 template does all of these things.
 
-To show how easy this is to accomplish, here is the complete implementation
-of those functions in the template VOL connector:
-
-\begin{lstlisting}
-H5PL_type_t H5PLget_plugin_type(void) {return H5PL_TYPE_VOL;}
-const void *H5PLget_plugin_info(void) {return &template_class_g;}
-\end{lstlisting}
-
 The HDF5 library's plugin loading code will call {\tt H5PLget\_plugin\_type()}
 to determine the type of plugin (e.g.; filter, VOL) and {\tt H5PLget\_plugin\_info()}
 to get the class struct, which allows the library to query the plugin for its
@@ -101,19 +109,30 @@ For the HDF5 library to be able to load an external plugin dynamically, the plug
 H5PL_type_t H5PLget_plugin_type(void)
 const void *H5PLget_plugin_info(void)
 \end{lstlisting}
-{\tt H5PLget\_plugin\_type} should return the library type which should always be {\tt H5PL\_TYPE\_VOL}. {\tt H5PLget\_plugin\_info} should return a pointer to the plugin structure defining the VOL plugin with all the callbacks. For example, consider an external plugin defined as:
+
+To show how easy this is to accomplish, here is the complete implementation
+of those functions in the template VOL connector:
+
 \begin{lstlisting}
-static const H5VL_class_t H5VL_log_g = {
-    1,	/* version */
-    502,	/* value */
-    "log",	/* name */
+H5PL_type_t H5PLget_plugin_type(void) {return H5PL_TYPE_VOL;}
+const void *H5PLget_plugin_info(void) {return &template_class_g;}
+\end{lstlisting}
+
+{\tt H5PLget\_plugin\_type} should return the library type which should always be {\tt H5PL\_TYPE\_VOL}. {\tt H5PLget\_plugin\_info} should return a pointer to the plugin structure defining the VOL plugin with all the callbacks. For example, consider an external plugin defined as:
+
+\begin{lstlisting}
+static const H5VL_class_t H5VL_foo_g = {
+    2,      /* version */
+    12345,  /* value */
+    "foo",  /* name */
     ...
 }
 \end{lstlisting}
+
 The plugin would implement the two routines as:
 \begin{lstlisting}
 H5PL_type_t H5PLget_plugin_type(void) {return H5PL_TYPE_VOL;}
-const void *H5PLget_plugin_info(void) {return &H5VL_log_g;}
+const void *H5PLget_plugin_info(void) {return &H5VL_foo_g;}
 \end{lstlisting}
 
 \subsubsection*{Internal}
@@ -128,24 +147,29 @@ recommended.
 
 \subsection{Build Files / VOL Template}
 
-We have created a template VOL connector that includes both Autotools and CMake
+We have created a template terminal VOL connector that includes both Autotools and CMake
 build files. The constructed VOL connector includes no real functionality, but 
 can be registered and loaded as a plugin.
 
 The VOL template  can be found here:
 
-\quad \quad \url{https://bitbucket.hdfgroup.org/projects/HDF5VOL/repos/template}
+\quad \quad \url{https://github.com/HDFGroup/vol-template}
 
 The purpose of this template is to quickly get you to the point where you can
 begin filling in the callback functions and writing tests. You can copy this
 code to your own repository to serve as the basis for your new connector.
 
+A template passthrough VOL is also available. This will be discussed in the
+section on passthrough connectors.
 
 \subsection{{\tt H5VL\_class\_t} Boilerplate}
 
 Several fields in the {\tt H5VL\_class\_t} struct will need to be filled in.
 
-In HDF5 1.12.0, {\tt version} will be 1, indicating version 1 of the {\tt H5VL\_class\_t} struct.
+In HDF5 1.13.0, the {\tt version} field will be 2, indicating the connector
+targets version 2 of the {\tt H5VL\_class\_t} struct. Version 1 of the struct
+was never formally released and only available in the {\tt develop} branch of
+the HDF5 git repository. Version 0 is used in the deprecated HDF5 1.12.x branch.
 
 Every connector needs a {\tt name} and {\tt value}. The library will use these when
 loading and registering the connector (as described in the VOL User Guide), so
@@ -153,27 +177,57 @@ they should be unique in your ecosystem.
 
 VOL connector values are integers, with a maximum value of 65535. Values from
 0 to 255 are reserved for internal use by The HDF Group. The native VOL connector
-has a value of 0.
+has a value of 0. Values of 256 to 511 are for connector testing and should
+not be found in the wild. Values of 512 to 65535 are for external connectors.
 
-As is the case with HDF5 filters, The HDF Group can register the value you've
-chosen for your VOL connector so that others don't use it. Please contact
+As is the case with HDF5 filters, The HDF Group can assign you an official
+VOL connector value. Please contact
 \href{mailto:help@hdfgroup.org}{help@hdfgroup.org} for help with this. We currently
-do not register connector names.
+do not register connector names, though the name you've chosen will appear on
+the registered VOL connectors page.
 
-The {\tt cap\_flags} field is currently not fully utilized. In the future, this
-will be most likely be used to indicate which callbacks and capabilities are
-supported by the VOL connector, but for now this struct field contains few flags, 
-a list of which can be found in {\tt H5VLconnector.h}.
+As noted above, registered VOL connectors will be listed at:
+
+\url{https://portal.hdfgroup.org/display/support/Registered+VOL+Connectors}
+
+A new {\tt conn\_version} field has been added to the class struct for 1.13.
+This field is currently not used by the library so its use is determined by
+the connector author. Best practices for this field will be determined in
+the near future and this part of the guide will be updated.
+
+The {\tt cap\_flags} field is used to determine the capabilities of the VOL
+connector. At this time, the use of this field is limited to indicating
+thread-safety, asynchronous capabilities, and ability to produce native
+HDF5 files. Supported flags can be found in {\tt H5VLconnector.h}.
+
+\begin{lstlisting}
+/* Capability flags for connector */
+#define H5VL_CAP_FLAG_NONE         0    /* No special connector capabilities */
+#define H5VL_CAP_FLAG_THREADSAFE   0x01 /* Connector is threadsafe */
+#define H5VL_CAP_FLAG_ASYNC        0x02 /* Connector performs operations asynchronously*/
+#define H5VL_CAP_FLAG_NATIVE_FILES 0x04 /* Connector produces native file format */
+\end{lstlisting}
 
 \subsection{Initialization and Shutdown}
 
 You'll need to decide how to perform any initialization and shutdown tasks that
 are required by your connector. There are initialize and terminate callbacks
 in the {\tt H5VL\_class\_t} struct to handle this. They are invoked when
-the connector is registered and unregistered, respectively. If this is
-unsuitable, you may have to create custom connector-specific API calls to handle
+the connector is registered and unregistered, respectively. The inialize
+callback can take a VOL initialization property list, so any properties you
+need for initialization can be applied to it. The HDF5 library currently makes
+no use of the vipl so there are no default vipl properties.
+
+If this is unsuitable, you may have to create custom connector-specific API calls to handle
 initialization and termination. It may also be useful to perform operations in
 a custom API call used to set the VOL connector in the fapl.
+
+The initialization and terminate callbacks:
+\begin{lstlisting}
+herr_t (*initialize)(hid_t vipl_id); /**< Connector initialization callback */
+
+herr_t (*terminate)(void);           /**< Connector termination callback */
+\end{lstlisting}
 
 \subsection{Map Storage to HDF5 File Objects}
 
@@ -197,14 +251,67 @@ returned to the HDF5 library from the create/open/etc. callbacks such as
 
 Once you have your data structures, you'll need to create your own
 implementations of the callback functions and map them via your
-{\tt H5VL\_class\_t} struct. 
+{\tt H5VL\_class\_t} struct.
+
+\subsection{Handling Optional Operations}
+
+Handling optional operations has changed significantly in HDF5 1.13.0. In the
+past, optional operations were specified using an integer {\tt opt\_type}
+parameter. This proved to be a problem with pass-through connectors, though,
+as it was possible to have {\tt opt\_type} clash if two connectors used
+the same {\tt opt\_type} values.
+
+The new scheme allows a connector to register an optional operation with
+the library and receive a dynamically-allocated {\tt opt\_type} value
+for the operation.
+
+The following API calls can be used to manage the optional operations:
+\begin{lstlisting}
+herr_t H5VLregister_opt_operation(H5VL_subclass_t subcls, const char *op_name, int *op_val);
+herr_t H5VLfind_opt_operation(H5VL_subclass_t subcls, const char *op_name, int *op_val);
+herr_t H5VLunregister_opt_operation(H5VL_subclass_t subcls, const char *op_name);
+\end{lstlisting}
+
+The {\tt register} call is used to register an operation for a subclass (file, etc.)
+and the {\tt opt\_type} parameter that the library assigned to the operation will be
+returned via the {\tt opt\_val} parameter. This value can then be passed to one
+of the subclass-specific API calls (listed below). If you need to find an existing
+optional call's assigned {\tt opt\_type} value by name, you can use the {\tt find}
+call.
+
+One recommended way to handle optional calls is to register all the optional calls
+at startup, saving the values in connector state, then use these cached values
+in your optional calls. The assigned values should be unregistered using the
+{\tt unregister} call when the connector shuts down.
+
+Subclass-specific optional calls:
+\begin{lstlisting}
+herr_t H5VLattr_optional_op(const char *app_file, const char *app_func, unsigned app_line,
+                            hid_t attr_id, H5VL_optional_args_t *args, hid_t dxpl_id, hid_t es_id);
+herr_t H5VLdataset_optional_op(const char *app_file, const char *app_func, unsigned app_line,
+                               hid_t dset_id, H5VL_optional_args_t *args, hid_t dxpl_id, hid_t es_id);
+herr_t H5VLdatatype_optional_op(const char *app_file, const char *app_func, unsigned app_line,
+                                hid_t type_id, H5VL_optional_args_t *args, hid_t dxpl_id, hid_t es_id);
+herr_t H5VLfile_optional_op(const char *app_file, const char *app_func, unsigned app_line,
+                            hid_t file_id, H5VL_optional_args_t *args, hid_t dxpl_id, hid_t es_id);
+herr_t H5VLgroup_optional_op(const char *app_file, const char *app_func, unsigned app_line,
+                             hid_t group_id, H5VL_optional_args_t *args, hid_t dxpl_id, hid_t es_id);
+herr_t H5VLlink_optional_op(const char *app_file, const char *app_func, unsigned app_line,
+                            hid_t loc_id, const char *name, hid_t lapl_id, H5VL_optional_args_t *args,
+                            hid_t dxpl_id, hid_t es_id);
+herr_t H5VLobject_optional_op(const char *app_file, const char *app_func, unsigned app_line,
+                              hid_t loc_id, const char *name, hid_t lapl_id,
+                              H5VL_optional_args_t *args, hid_t dxpl_id, hid_t es_id);
+herr_t H5VLrequest_optional_op(void *req, hid_t connector_id, H5VL_optional_args_t *args);
+\end{lstlisting}
+
 \subsection{Testing Your Connector}
 
 At the time of writing, some of the HDF5 library tests have been abstracted
 out of the library with their native-file-format-only sections removed and
 added to a VOL test suite available here:
 
-\quad \quad \url{https://bitbucket.hdfgroup.org/projects/HDF5VOL/repos/vol-tests}
+\quad \quad \url{https://github.com/HDFGroup/vol-tests}
 
 This is an evolving set of tests, so see the documentation in that repository
 for instructions as to its use. You may want to clone and modify and/or
@@ -216,6 +323,10 @@ tests that a particular connector supports. As this is a large task, it may be
 some time before that work is complete.
 
 \subsection{Passthrough Connectors}
+
+Coming Soon
+
+\subsection{Asynchronous Operations}
 
 Coming Soon
 
