@@ -1,0 +1,39 @@
+\documentclass[../main.tex]{subfiles}
+ 
+\begin{document}
+
+\newpage
+
+\section{Tips and best practices}
+
+\begin{itemize}
+\item While the default configuration for the Subfiling VFD has been found
+to be generally performant across different machines, it is still a good
+idea to initially test a range of Subfiling configurations to see if there
+is a particular one that generally performs best on the machine of interest.
+
+\item When using a parallel file system that stripes data across different
+storage targets (e.g., Lustre, GPFS, etc.), it is generally a good idea to
+choose a Subfiling stripe size that is a multiple of the size of the data
+stripes. For the best performance, it is also generally recommended that
+the HDF5 application use the \texttt{H5Pset\_alignment} API routine to set
+the alignment of objects in the file to match the Subfiling stripe size or
+to at least be a multiple of the size of the file system's data stripes.
+However, setting the alignment of objects in the file can potentially waste
+space and vastly increase the size of the resulting file, so caution may be
+needed when trying to find a good balance with this suggestion.
+
+\item While not always leading to an improvement in performance, it can
+sometimes be useful to enable collective metadata writes and, if the application's
+access pattern allows for it, collective metadata reads in a parallel HDF5
+application through use of the \texttt{H5Pset\_coll\_metadata\_write} and
+\texttt{H5Pset\_all\_coll\_metadata\_ops} API routines.
+
+\item When measuring the performance of the Subfiling feature, be aware that
+results may sometimes be artificially high due to file system caching.
+Since all I/O to a particular subfile is directed to a single I/O Concentrator
+on a machine node, there are many opportunities for data from subfiles to
+be served from or written to file system caching layers.
+\end{itemize}
+
+\end{document}
