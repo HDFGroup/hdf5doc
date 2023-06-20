@@ -5,6 +5,7 @@
 \newpage
 
 \section{Tips and best practices}
+\label{sec:tips}
 
 \begin{itemize}
 \item While the default configuration for the Subfiling VFD has been found
@@ -22,6 +23,26 @@ to at least be a multiple of the size of the file system's data stripes.
 However, setting the alignment of objects in the file can potentially waste
 space and vastly increase the size of the resulting file, so caution may be
 needed when trying to find a good balance with this suggestion.
+
+\item If using the Subfiling VFD with a parallel HDF5 application that
+pre-creates an HDF5 file on a single MPI rank or some other subset of
+\texttt{MPI\_COMM\_WORLD}, it is necessary to adjust the "stripe count" (or
+number of subfiles) value that the Subfiling VFD uses internally in order to
+ensure that the proper number of subfiles gets generated when the logical HDF5
+file is created. Without setting this value, the VFD will default to creating
+one subfile per machine node, which will cause it to create only one subfile
+in the case of pre-creating an HDF5 file on a single MPI rank. Note that as
+pre-creating an HDF5 file on a subset of \texttt{MPI\_COMM\_WORLD} is expected
+to be a less common operation when using the Subfiling VFD, an environment
+variable for modifying this value has not been provided at this time and the
+VFD will need to be configured on a File Access Property List for this use case.
+Using the example in section \ref{ex:ex2} as a guide, one can configure the
+stripe count value by setting the \texttt{stripe\_count} field in the
+\texttt{H5FD\_subfiling\_params\_t} structure, which is part of the
+\texttt{H5FD\_subfiling\_config\_t} structure that is passed to 
+\texttt{H5Pset\_fapl\_subfiling}. For that particular example, one would
+set the \texttt{subf\_config.shared\_cfg.stripe\_count} field to the desired
+total number of subfiles.
 
 \item While not always leading to an improvement in performance, it can
 sometimes be useful to enable collective metadata writes and, if the application's
