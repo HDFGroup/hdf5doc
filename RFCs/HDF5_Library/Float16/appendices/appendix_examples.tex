@@ -1,0 +1,225 @@
+\documentclass[../HDF5_RFC.tex]{subfiles}
+ 
+\begin{document}
+
+% Start each appendix on a new page
+\newpage
+
+\section{Appendix: Examples}
+\label{apdx:examples}
+
+The following are examples of what using these new datatypes should look like once
+support has been implemented in HDF5. Note that these examples are subject to change,
+depending on the final decisions made when implementing support for these new datatypes.
+Once support is implemented, relevant examples will be added to HDF5 to serve as a
+better guide.
+
+\textbf{Create a dataset with a binary16 little-endian 16-bit floating-point datatype}
+
+\begin{minted}[custom lexer]{hdf5-c-lexer.py:HDF5CLexer}
+#include "hdf5.h"
+
+int
+main(int argc, char **argv)
+{
+    hsize_t dims[2] = { 10, 10 };
+    hid_t file_id   = H5I_INVALID_HID;
+    hid_t dset_id   = H5I_INVALID_HID;
+    hid_t space_id  = H5I_INVALID_HID;
+
+    file_id = H5Fcreate("file.h5", H5F_ACC_TRUNC,
+                        H5P_DEFAULT, H5P_DEFAULT);
+
+    space_id = H5Screate_simple(2, dims, NULL);
+
+    dset_id = H5Dcreate2(file_id, "dset", H5T_IEEE_F16LE,
+                         space_id, H5P_DEFAULT,
+                         H5P_DEFAULT, H5P_DEFAULT);
+
+    ...
+
+    H5Sclose(space_id);
+    H5Dclose(dset_id);
+    H5Fclose(file_id);
+
+    return 0;
+}
+\end{minted}
+
+\newpage
+
+\textbf{Write to a binary16 little-endian 16-bit floating-point dataset using native \texttt{\_Float16} type}
+
+\begin{minted}[custom lexer]{hdf5-c-lexer.py:HDF5CLexer}
+#include "hdf5.h"
+
+int
+main(int argc, char **argv)
+{
+    _Float16 data[100];
+    hsize_t dims[2] = { 10, 10 };
+    hid_t file_id   = H5I_INVALID_HID;
+    hid_t dset_id   = H5I_INVALID_HID;
+    hid_t space_id  = H5I_INVALID_HID;
+
+    file_id = H5Fcreate("file.h5", H5F_ACC_TRUNC,
+                        H5P_DEFAULT, H5P_DEFAULT);
+
+    space_id = H5Screate_simple(2, dims, NULL);
+
+    dset_id = H5Dcreate2(file_id, "dset", H5T_IEEE_F16LE,
+                         space_id, H5P_DEFAULT,
+                         H5P_DEFAULT, H5P_DEFAULT);
+
+    for (size_t i = 0; i < 100; i++)
+        data[i] = 1.1f16;
+
+    H5Dwrite(dset_id, H5T_NATIVE_FLOAT16, H5S_ALL,
+             H5S_ALL, H5P_DEFAULT, data);
+
+    H5Sclose(space_id);
+    H5Dclose(dset_id);
+    H5Fclose(file_id);
+
+    return 0;
+}
+\end{minted}
+
+\newpage
+
+\textbf{Write to and read from a binary16 little-endian 16-bit floating-point dataset using native \texttt{\_Float16} type}
+
+\begin{minted}[custom lexer]{hdf5-c-lexer.py:HDF5CLexer}
+#include "hdf5.h"
+
+int
+main(int argc, char **argv)
+{
+    _Float16 data[100];
+    _Float16 read_buf[100];
+    hsize_t dims[2] = { 10, 10 };
+    hid_t file_id   = H5I_INVALID_HID;
+    hid_t dset_id   = H5I_INVALID_HID;
+    hid_t space_id  = H5I_INVALID_HID;
+
+    file_id = H5Fcreate("file.h5", H5F_ACC_TRUNC,
+                        H5P_DEFAULT, H5P_DEFAULT);
+
+    space_id = H5Screate_simple(2, dims, NULL);
+
+    dset_id = H5Dcreate2(file_id, "dset", H5T_IEEE_F16LE,
+                         space_id, H5P_DEFAULT,
+                         H5P_DEFAULT, H5P_DEFAULT);
+
+    for (size_t i = 0; i < 100; i++)
+        data[i] = 1.1f16;
+
+    H5Dwrite(dset_id, H5T_NATIVE_FLOAT16, H5S_ALL,
+             H5S_ALL, H5P_DEFAULT, data);
+
+    H5Dread(dset_id, H5T_NATIVE_FLOAT16, H5S_ALL,
+            H5S_ALL, H5P_DEFAULT, read_buf);
+
+    for (size_t i = 0; i < 100; i++)
+        printf("%f\n", (double)read_buf[i]);
+
+    H5Sclose(space_id);
+    H5Dclose(dset_id);
+    H5Fclose(file_id);
+
+    return 0;
+}
+\end{minted}
+
+\newpage
+
+\textbf{Write to and read from a little-endian 128-bit (2 64-bit doubles) complex number dataset using native \texttt{double \_Complex} type}
+
+\begin{minted}[custom lexer]{hdf5-c-lexer.py:HDF5CLexer}
+#include <complex.h>
+
+#include "hdf5.h"
+
+int
+main(int argc, char **argv)
+{
+    double _Complex data[100];
+    double _Complex read_buf[100];
+    hsize_t dims[2] = { 10, 10 };
+    hid_t file_id   = H5I_INVALID_HID;
+    hid_t dset_id   = H5I_INVALID_HID;
+    hid_t space_id  = H5I_INVALID_HID;
+
+    file_id = H5Fcreate("file.h5", H5F_ACC_TRUNC,
+                        H5P_DEFAULT, H5P_DEFAULT);
+
+    space_id = H5Screate_simple(2, dims, NULL);
+
+    dset_id = H5Dcreate2(file_id, "dset", H5T_STD_DOUBLE_COMPLEX_LE,
+                         space_id, H5P_DEFAULT,
+                         H5P_DEFAULT, H5P_DEFAULT);
+
+    for (size_t i = 0; i < 100; i++)
+        data[i] = 1.0 + 2.0*I;
+
+    H5Dwrite(dset_id, H5T_NATIVE_DOUBLE_COMPLEX,
+             H5S_ALL, H5S_ALL, H5P_DEFAULT, data);
+
+    H5Dread(dset_id, H5T_NATIVE_DOUBLE_COMPLEX,
+            H5S_ALL, H5S_ALL, H5P_DEFAULT, read_buf);
+
+    for (size_t i = 0; i < 100; i++)
+        printf("%f%+fi\n", creal(read_buf[i]), cimag(read_buf[i]));
+
+    H5Sclose(space_id);
+    H5Dclose(dset_id);
+    H5Fclose(file_id);
+
+    return 0;
+}
+\end{minted}
+
+\newpage
+
+\textbf{Write to a little-endian 128-bit (2 64-bit doubles) complex number dataset when platform doesn't support \texttt{double \_Complex} type}
+
+\begin{minted}[custom lexer]{hdf5-c-lexer.py:HDF5CLexer}
+#include "hdf5.h"
+
+int
+main(int argc, char **argv)
+{
+    /* Note that data has twice the number of elements as the dataset */
+    double data[200];
+    hsize_t dims[2] = { 10, 10 };
+    hid_t file_id   = H5I_INVALID_HID;
+    hid_t dset_id   = H5I_INVALID_HID;
+    hid_t space_id  = H5I_INVALID_HID;
+
+    file_id = H5Fcreate("file.h5", H5F_ACC_TRUNC,
+                        H5P_DEFAULT, H5P_DEFAULT);
+
+    space_id = H5Screate_simple(2, dims, NULL);
+
+    dset_id = H5Dcreate2(file_id, "dset", H5T_STD_DOUBLE_COMPLEX_LE,
+                         space_id, H5P_DEFAULT,
+                         H5P_DEFAULT, H5P_DEFAULT);
+
+    for (size_t i = 0; i < 200; ) {
+        data[i]     = 1.0; /* real part */
+        data[i + 1] = 2.0; /* imaginary part */
+        i += 2;
+    }
+
+    H5Dwrite(dset_id, H5T_STD_DOUBLE_COMPLEX_LE,
+             H5S_ALL, H5S_ALL, H5P_DEFAULT, data);
+
+    H5Sclose(space_id);
+    H5Dclose(dset_id);
+    H5Fclose(file_id);
+
+    return 0;
+}
+\end{minted}
+
+\end{document}

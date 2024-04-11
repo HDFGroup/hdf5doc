@@ -1,0 +1,194 @@
+\documentclass[../HDF5_RFC.tex]{subfiles}
+ 
+\begin{document}
+
+\section{Approach}
+\label{approach}
+
+\subsection{Configure time checks}
+
+For each new datatype added, configure-time checks will be added to both CMake and the Autotools to
+detect the size of the native form of each datatype. New macros in the form of \texttt{H5\_SIZEOF\_type}
+will be added to the files that generate the \texttt{H5pubconf.h} header file. If a compiler doesn't
+support a particular type, the macro for that type will have a value of $0$.
+
+\subsection{New datatype IDs and macros}
+
+For each new datatype added, variables will be added to \texttt{H5T.c} for the IDs of library-internal
+datatypes which will represent the platform-native form of each datatype, as well as the "standard" file
+format storage form of each datatype. Then, the following new macros will be added for the new datatypes:
+
+\subsubsection{\_Float16}
+
+\texttt{H5T\_NATIVE\_FLOAT16}
+
+Maps to the ID of the library-internal datatype representing the platform's native representation
+of an IEEE binary16-format 16-bit floating point number.
+
+\textbf{NOTE: If the platform doesn't support the \texttt{\_Float16} type, this macro will map to
+\texttt{H5I\_INVALID\_HID} and will cause an "invalid datatype" error if used for any HDF5 operation
+which is passed a datatype identifier. In this case, one should use the \texttt{H5T\_IEEE\_F16LE} or
+\texttt{H5T\_IEEE\_F16BE} macro when writing from or reading into buffers of binary16-format data.}
+
+\texttt{H5T\_IEEE\_F16LE}
+
+Maps to the ID of the library-internal datatype representing a binary16-format 16-bit
+little-endian IEEE floating-point number.
+
+\texttt{H5T\_IEEE\_F16BE}
+
+Maps to the ID of the library-internal datatype representing a binary16-format 16-bit
+big-endian IEEE floating-point number.
+
+\subsubsection{\_\_bf16}
+
+\texttt{H5T\_NATIVE\_BFLOAT16}
+
+Maps to the ID of the library-internal datatype representing the platform's native representation
+of a bfloat16-format 16-bit floating point number.
+
+\textbf{NOTE: If the platform doesn't support the \texttt{\_\_bf16} type, this macro will map to
+\texttt{H5I\_INVALID\_HID} and will cause an "invalid datatype" error if used for any HDF5 operation
+which is passed a datatype identifier. In this case, one should use the \texttt{H5T\_BRAIN\_F16LE} or
+\texttt{H5T\_BRAIN\_F16BE} macro when writing from or reading into buffers of bfloat16-format data.}
+
+\texttt{H5T\_BRAIN\_F16LE}
+
+Maps to the ID of the library-internal datatype representing a bfloat16-format 16-bit
+little-endian floating-point number.
+
+\texttt{H5T\_BRAIN\_F16BE}
+
+Maps to the ID of the library-internal datatype representing a bfloat16-format 16-bit
+big-endian floating-point number.
+
+\subsubsection{\texttt{\_Bool}}
+
+\texttt{H5T\_NATIVE\_BOOL}
+
+Maps to the ID of the library-internal datatype representing the platform's native representation
+of a \texttt{\_Bool} boolean type.
+
+\texttt{H5T\_STD\_BOOL}
+
+Maps to the ID of the library-internal datatype representing a 1-bit boolean value.
+
+\subsubsection{\texttt{float \_Complex}, \texttt{double \_Complex}, \texttt{long double \_Complex}}
+
+\texttt{H5T\_NATIVE\_FLOAT\_COMPLEX}
+
+Maps to the ID of the library-internal datatype representing the platform's native representation
+of a complex number consisting of \texttt{float} values.
+
+\textbf{NOTE: If the platform doesn't support the \texttt{float \_Complex} type, this macro will map to
+\texttt{H5I\_INVALID\_HID} and will cause an "invalid datatype" error if used for any HDF5 operation
+which is passed a datatype identifier. In this case, one should use the \texttt{H5T\_STD\_FLOAT\_COMPLEX\_LE}
+or \texttt{H5T\_STD\_FLOAT\_COMPLEX\_BE} macro when writing from or reading into buffers of complex numbers
+consisting of 32-bit-precision floating-point values.}
+
+\texttt{H5T\_STD\_FLOAT\_COMPLEX\_LE}
+
+Maps to the ID of the library-internal datatype representing a complex number consisting of 2
+32-bit-precision little-endian floating-point values.
+
+\texttt{H5T\_STD\_FLOAT\_COMPLEX\_BE}
+
+Maps to the ID of the library-internal datatype representing a complex number consisting of 2
+32-bit-precision big-endian floating-point values.
+
+\texttt{H5T\_NATIVE\_DOUBLE\_COMPLEX}
+
+Maps to the ID of the library-internal datatype representing the platform's native representation
+of a complex number consisting of \texttt{double} values.
+
+\textbf{NOTE: If the platform doesn't support the \texttt{double \_Complex} type, this macro will map to
+\texttt{H5I\_INVALID\_HID} and will cause an "invalid datatype" error if used for any HDF5 operation
+which is passed a datatype identifier. In this case, one should use the \texttt{H5T\_STD\_DOUBLE\_COMPLEX\_LE}
+or \texttt{H5T\_STD\_DOUBLE\_COMPLEX\_BE} macro when writing from or reading into buffers of complex numbers
+consisting of 64-bit-precision floating-point values.}
+
+\texttt{H5T\_STD\_DOUBLE\_COMPLEX\_LE}
+
+Maps to the ID of the library-internal datatype representing a complex number consisting of 2
+64-bit-precision little-endian floating-point values.
+
+\texttt{H5T\_STD\_DOUBLE\_COMPLEX\_BE}
+
+Maps to the ID of the library-internal datatype representing a complex number consisting of 2
+64-bit-precision big-endian floating-point values.
+
+\texttt{H5T\_NATIVE\_LDOUBLE\_COMPLEX}
+
+Maps to the ID of the library-internal datatype representing the platform's native representation
+of a complex number consisting of \texttt{long double} values.
+
+\textbf{NOTE: If the platform doesn't support the \texttt{long double \_Complex} type, this macro will
+map to \texttt{H5I\_INVALID\_HID} and will cause an "invalid datatype" error if used for any HDF5
+operation which is passed a datatype identifier. In this case, one should use the \texttt{H5T\_STD\_LDOUBLE\_COMPLEX\_LE}
+or \texttt{H5T\_STD\_LDOUBLE\_COMPLEX\_BE} macro when writing from or reading into buffers of complex numbers
+consisting of 128-bit-precision floating-point values.}
+
+\texttt{H5T\_STD\_LDOUBLE\_COMPLEX\_LE}
+
+Maps to the ID of the library-internal datatype representing a complex number consisting of 2
+128-bit-precision little-endian floating-point values.
+
+\texttt{H5T\_STD\_LDOUBLE\_COMPLEX\_BE}
+
+Maps to the ID of the library-internal datatype representing a complex number consisting of 2
+128-bit-precision big-endian floating-point values.
+
+\subsection{On-disk format for new datatypes}
+
+\subsubsection{\texttt{\_Float16}}
+
+Data of this type will be stored as 16-bit values on disk, according to the endian-ness of the specified
+datatype (e.g. \texttt{H5T\_IEEE\_F16LE} vs. \texttt{H5T\_IEEE\_F16BE}), in a similar format to how other
+floating-point values are stored in HDF5.
+
+\subsubsection{\texttt{\_\_bf16}}
+
+Data of this type will be stored as 16-bit values on disk, according to the endian-ness of the specified
+datatype (e.g. \texttt{H5T\_BRAIN\_F16LE} vs. \texttt{H5T\_BRAIN\_F16BE}), in a similar format to how other
+floating-point values are stored in HDF5.
+
+\subsubsection{\texttt{\_Bool}}
+
+Data of this type will be stored as a 1-bit value on disk.
+
+\subsubsection{\texttt{float \_Complex}, \texttt{double \_Complex}, \texttt{long double \_Complex}}
+
+Data of these types will be stored as atomic 64-bit, 128-bit, or 256-bit values on disk, respectively,
+according to the endian-ness of the specified datatype. The benefit to choosing this format is that
+these values should be able to be converted directly from disk format to a platform's in-memory
+representation with zero or near-zero overhead during conversion (depending on the endian-ness of the disk
+format and the in-memory representation). However, this means that there will likely be some overhead during
+conversion from disk format to in-memory representation for applications that use their own convention, such
+as a compound datatype with two members, for representing complex numbers.
+
+\textbf{NOTE: These on-disk formats have been chosen as they map to common sizes (multiplied by 2) of \texttt{float},
+\texttt{double} and \texttt{long double} across platforms. Care should be taken when interacting with these
+datatypes on a platform where the size of the C types don't match these sizes.}
+
+\subsection{Conversions}
+
+For each new datatype added, hard and soft conversion routines will be added to \texttt{H5Tconv.c} to
+convert between the new type and each existing native integer and floating-point type. In particular,
+the conversions for complex number types will follow the rules laid out in
+\href{https://github.com/HDFGroup/hdf5doc/blob/master/RFCs/HDF5_Library/New_Datatypes/new_datatypes.pdf}{RFC: New Datatypes}.
+Additionally, some conversions between complex number types and existing user-defined representations
+(e.g., a compound type with two members, an array type with two elements, etc.) will be added to help
+maintain compatibility with those representations.
+
+\subsection{\texttt{H5trace}}
+
+For each new datatype added, a printout for the new datatype will be added to the \texttt{H5\_trace\_args}
+function in \texttt{H5trace.c}.
+
+\subsection{Testing}
+
+For each new datatype added, tests will be added to the library to exercise both using the new datatype
+to create objects, as well as converting between the new datatype and existing HDF5 datatypes
+(see \texttt{test/dt\_arith.c}).
+
+\end{document}

@@ -1,0 +1,42 @@
+\documentclass[../HDF5_RFC.tex]{subfiles}
+ 
+\begin{document}
+
+\section{Introduction}
+\label{intro}
+
+HDF5 has a rich set of predefined datatypes to cover some of the most common use cases when
+storing data in HDF5 files. However, there are several types of data in wide use today that
+HDF5 does not handle in a convenient or efficient manner, causing users to have to workaround
+this lack of support in ways that are often cumbersome.
+
+One of the goals that this RFC intends to accomplish is enabling convenient and efficient
+storage and retrieval of half-precision floating-point data in HDF5 files. An HDF5 user can
+store their data in a dataset using one of the existing (at least 32-bit) floating-point
+types and later convert the data to half-precision floating-point in memory for calculations,
+but as the reduced storage requirements for 16-bit floating-point values is one of the main
+benefits of the datatype, this isn't an ideal scenario. While one can already create an HDF5
+datatype that will allow storing of floating-point data as 16-bit values on disk, the process
+of doing so with HDF5's \texttt{H5T} API routines may not be obvious to users, meaning that
+applications could potentially benefit from having a convenient predefined datatype to use.
+Further, datatype conversions on datatypes like this which HDF5 doesn't have native support
+for can have very poor performance, as demonstrated in issue \href{https://github.com/HDFGroup/hdf5/issues/2154}{\#2154}
+in HDF5's GitHub repository. This is due to HDF5 performing conversions on these datatypes
+in software rather than allowing the compiler to potentially perform these conversions in
+hardware through dedicated instructions. Once again, an HDF5 user could work around this issue
+by defining their own datatype conversion routine, but it would be better and more convenient
+for HDF5 to be able to perform fast conversions by default where possible.
+
+Another problematic topic in the world of HDF5 data involves the storage of complex numbers.
+Complex numbers are used throughout the scientific and other communities, but HDF5 does not
+currently have native support for them. This has led HDF5 users to invent their own conventions
+for storing this type of data, which can be inconvenient and can result in HDF5 files that have
+poor interoperability. A \href{https://github.com/HDFGroup/hdf5/discussions/3339}{feature request}
+for native complex number support in HDF5 was made fairly recently and contains a good discussion
+on the issues surrounding this problem.
+
+To address these issues and work toward more portable HDF5 files, this RFC proposes adding native
+support in HDF5 for several datatypes that have been requested in the past, as well as datatypes
+that will be useful in future workflows which use HDF5.
+
+\end{document}

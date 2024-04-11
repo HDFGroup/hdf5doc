@@ -1,0 +1,149 @@
+\documentclass[../HDF5_RFC.tex]{subfiles}
+ 
+\begin{document}
+
+% Start each appendix on a new page
+\newpage
+
+\section{Appendix: Portability}
+\label{apdx:portability}
+
+The following items must be taken into account for supporting these new datatypes across different
+platforms and compilers.
+
+\subsection{\texttt{\_Float16}}
+
+\subsubsection{GCC}
+
+This type is supported by GCC on:
+
+\begin{itemize}
+    \item x86 systems where SSE2 support is available
+    \item ARM systems when the \texttt{-mfp16-format=ieee} flag is used to specify that the IEEE
+          half-precision floating-point format should be used
+    \item AArch64 systems by default
+\end{itemize}
+
+\subsubsection{Clang}
+
+Based on \href{https://clang.llvm.org/docs/LanguageExtensions.html#half-precision-floating-point}{Clang Language Extensions},
+this type is supported by Clang on:
+
+\begin{itemize}
+    \item x86 systems (natively if AVX512-FP16 is available; emulated otherwise)
+    \item 32-bit ARM systems (emulated on some architectures; natively on some architectures)
+    \item AArch64 systems (natively on ARMv8.2a and later)
+    \item AMDGPU (natively)
+    \item RISC-V (natively if Zfh or Zhinx support is available)
+\end{itemize}
+
+where "natively" means the processor can directly perform arithmetic on the type using
+dedicated instructions and "emulated" means the compiler will promote to \texttt{float}
+before performing arithmetic.
+
+\subsubsection{MSVC}
+
+As of the time of writing, Visual Studio 2022 does not appear to have support for any half-precision floating-point types.
+
+\subsubsection{NVHPC}
+
+NVHPC appears to support this type when compiling code used for CUDA compute (e.g., with \texttt{nvcc}), but
+does not appear to support this type when compiling regular C code with \texttt{nvc}.
+
+\subsubsection{OneAPI}
+
+Based on \href{https://www.intel.com/content/www/us/en/docs/dpcpp-cpp-compiler/developer-guide-reference/2024-0/math-function-list.html}{Intel oneAPI Math Function List}, this type appears to be supported as of oneAPI version 2021.4 or higher with a "next-generation Intel® Xeon® Scalable processor".
+The \href{https://www.intel.com/content/www/us/en/developer/tools/oneapi/onednn.html#gs.3ikawv}{Intel oneAPI Deep Neural Network Library} also appears
+to have support for a 16-bit floating-point type through the \href{https://www.intel.com/content/www/us/en/docs/onednn/developer-guide-reference/2024-0/data-types-001.html}{f16} type specifier, but it's not clear whether that type is more or less appropriate as an interchange format.
+
+\subsection{\texttt{\_\_bf16}}
+
+\subsubsection{GCC}
+
+This type is supported as of GCC 13 on:
+
+\begin{itemize}
+    \item x86 systems where SSE2 support is available
+\end{itemize}
+
+\subsubsection{Clang}
+
+Based on \href{https://clang.llvm.org/docs/LanguageExtensions.html#half-precision-floating-point}{Clang Language Extensions},
+this type is supported by Clang on:
+
+\begin{itemize}
+    \item x86 systems where SSE2 support is available
+    \item 32-bit ARM systems
+    \item AArch64 systems
+    \item RISC-V systems
+\end{itemize}
+
+Note that support for the \texttt{\_\_bf16} type is currently always emulated and not
+supported natively on any of the platforms above.
+
+\subsubsection{MSVC}
+
+As of the time of writing, Visual Studio 2022 does not appear to have support for any half-precision floating-point types.
+
+\subsubsection{NVHPC}
+
+This type appears to be supported by NVHPC as of version 23.9.
+
+\subsubsection{OneAPI}
+
+The \href{https://www.intel.com/content/www/us/en/developer/tools/oneapi/onednn.html#gs.3ikawv}{Intel oneAPI Deep Neural Network Library}
+(oneDNN) appears to have support for this type through the \texttt{bf16} type specifier. A whitepaper on the topic can be found at
+\href{https://www.intel.com/content/dam/develop/external/us/en/documents/bf16-hardware-numerics-definition-white-paper.pdf}{here}.
+
+\subsection{\texttt{\_Bool}}
+
+This type is supported on any C99-compliant compiler, which includes all the compilers mentioned for other types here.
+
+\subsection{\texttt{float \_Complex}, \texttt{double \_Complex}, \texttt{long double \_Complex}}
+
+These types will generally be supported on any platform and compiler combination that
+implements the ISO C99 standard. However, it should be noted that support for complex
+numbers became optional in the C11 standard, meaning that C99 compliance is not enough
+of an indicator of support for these types. As of the C11 standard, there is a feature
+test macro, \texttt{\_\_STDC\_NO\_COMPLEX\_\_}, to determine this support, but as it only
+exists in the C11 standard and HDF5 only requires C99 compliance, additional configure
+time checks will likely be needed to check for complex number support. As of the C99
+standard, there is also the feature test macro, \texttt{\_\_STDC\_IEC\_559\_COMPLEX\_\_},
+which determines whether the available complex number support conforms to IEC 60559.
+Notably, this involves supporting some additional macros and types for imaginary numbers.
+While in theory this macro could be used to check for complex number support, it is only
+a recommendation in the C99 standard that a compiler which defines this macro should support
+imaginary numbers. As of the C11 standard, it became mandatory for a compiler to support
+imaginary numbers if it defines this macro, but as of the C23 standard this macro has
+changed to \texttt{\_\_STDC\_IEC\_60559\_COMPLEX\_\_}. Therefore, a configure time check
+for complex number support should likely rely on trying to compile a program that uses
+the complex number types rather than relying on these macros (though \texttt{\_\_STDC\_NO\_COMPLEX\_\_}
+can be checked if C11 support or later is available).
+
+\subsubsection{GCC}
+
+These types are fully supported, as long as the value of \texttt{\_\_STDC\_NO\_COMPLEX\_\_},
+if available, is not $1$.
+
+\subsubsection{Clang}
+
+These types are fully supported, as long as the value of \texttt{\_\_STDC\_NO\_COMPLEX\_\_},
+if available, is not $1$.
+
+\subsubsection{MSVC}
+
+\href{https://learn.microsoft.com/en-us/cpp/c-runtime-library/complex-math-support?view=msvc-170}{Support for complex numbers is available},
+but MSVC does not expose the \texttt{float \_Complex}, \texttt{double \_Complex}, \texttt{long double \_Complex} types and instead uses
+the \texttt{\_Fcomplex}, \texttt{\_Dcomplex}, \texttt{\_Lcomplex} types, respectively.
+
+\subsubsection{NVHPC}
+
+These types are fully supported, as long as the value of \texttt{\_\_STDC\_NO\_COMPLEX\_\_},
+if available, is not $1$.
+
+\subsubsection{OneAPI}
+
+As oneAPI is C99 compliant, these types should be fully supported, as long as the value of
+\texttt{\_\_STDC\_NO\_COMPLEX\_\_}, if available, is not $1$.
+
+\end{document}
