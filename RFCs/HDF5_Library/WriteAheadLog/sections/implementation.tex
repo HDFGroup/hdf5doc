@@ -1,0 +1,59 @@
+\section{Implementation}
+\label{sec:implementation}
+
+\subsection{Changes above the Metadata Cache}
+
+While most of the changes to the library to support the WAL will be in the metadata cache and the new WAL package, some supporting code must be added to the upper layers. Here are some of the changes that will need to be implemented:
+
+\begin{itemize}
+    \item The superblock code needs to handle the additional WAL filepath field that indicates if the file was closed normally.
+    \item Properties will need to be set up and passed down as appropriate.
+    \item The file code will need to handle opening and closing the WAL file itself, checking for incorrect shutdown, and initiating a recovery if appropriate.
+    \item The file code will also need to pass down explicit log flush requests, and will need to make sure to issue VFD layer \texttt{flush} operations after log checkpoint operations.
+\end{itemize}
+
+\subsection{Changes to the Metadata Cache}
+
+\subsubsection{Stub Entries}
+
+There are a few different ways to implement the metadata stub entries that instruct the metadata cache to look at the WAL to find the actual metadata. Since the entry is stored in serialized, on disk format, it behaves differently from other cached metadata entries. We can either add the stub entries in the same tables as the standard entries, or we can create an entirely separate table of stub entries, which use an entirely different structure. Using the same table prevents the need for multiple table lookups when loading an entry. However, in the case where an entry is flushed to the WAL but not evicted until a later operation, while still clean, the MDC needs to know the address in the WAL that the new stub entry should point to. While this could be handled by adding a WAL address field to the normal entry struct, using a separate table may be simpler and clearer. In general, attempting to use the same cache entry struct for two very different things can cause maintainability issues. It may be possible to use an intermediate struct or "common prefix" style nested struct to eliminate the extra lookup while keeping the structs for normal entries and WAL stubs mostly separate.
+
+\subsubsection{Entry Flushes}
+
+When the WAL is enabled, all flushes of entries from the metadata cache will by default go to the WAL. This operation will be similar to the existing code for flushing a single entry, except it will forward the write call to the WAL module, and create a stub entry which stores the address returned from the WAL module (and the length already known to the MDC).
+
+On a log flush operation, the MDC will iterate over all dirty entries in the cache (these must all be non-stub entries because stub entries cannot be dirty), flushing each to the WAL (and logging the address or creating a stub entry as discussed above). After finishing this, the MDC writes a log flush marker to the WAL, then initiates a VFD layer \texttt{flush} operation on the WAL, then returns.
+
+On a log checkpoint operation, the MDC will first perform a log flush, including the VFD \texttt{flush} operation. This ensures that the file will be recoverable if the program stops before the log checkpoint completes. Next, the MDC will iterate over all entries in the cache, flushing all entries with an associated stub entry to the HDF5 file, and deleting the associated stub entries. It will then iterate over all remaining stub entries, reading each corresponding entry from the WAL file and writing them to the appropriate place in the HDF5 file. The order does not matter, since the MDC only keeps (or keeps a stub entry to) the most recent version of each piece of metadata. Next, the MDC initiates a VFD \texttt{flush} on the HDF5 file, writes a log checkpoint marker to the WAL (or trims the WAL), then initiates a VFD \texttt{flush} on the WAL, and returns. This way we ensure that the WAL recovery start point is only advanced once we're sure the HDF5 file has all metadata written to it.
+
+The Metadata cache will also be responsible for determining when to perform scheduled log flushes and checkpoints, whether based on time or data written.
+
+% \subsection{Changes below the Metadata Cache}
+
+\subsection{The WAL Module}
+
+The operations that the WAL must expose are as follows:
+
+\begin{itemize}
+    \item Create a WAL entry for a metadata write, and append it to the end of the WAL file. 
+    
+    \item Read the superblock of a WAL file to retrieve information about its version and parent HDF5 file.
+
+    \item Read a single WAL entry from a specific address in the WAL file.
+
+    \item Trim all WAL entries, removing everything from the WAL file except its superblock. Care should be taken that only log checkpointed entries are trimmed in order to avoid file corruption via loss of metadata writes.
+
+    \item Create a log flush or log checkpoint marker, and append it to the end of the WAL file. A log flush marker that indicates which entries are safe to replay in the event of a crash. A log checkpoint marker indicates which entries have been written to the file and may be safely trimmed.
+
+    \item Read all entries from the latest log checkpoint marker until the latest log flush marker, to implement recovery. This can be implemented using an iterator, returning the addresses of the first and last entries to read, or returning all the entries in a single call.
+
+\end{itemize}
+
+In addition, to improve performance of log flushes and checkpoints, we may wish to add:
+
+\begin{itemize}
+    \item Create a series of WAL entries for a metadata write, and append them to the end of the WAL file, optionally adding a log flush or checkpoint marker after the entries.
+
+    \item Read a series WAL entries from a list of specific addresses in the WAL file.
+
+\end{itemize}

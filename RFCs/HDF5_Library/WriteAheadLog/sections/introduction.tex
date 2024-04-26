@@ -1,0 +1,16 @@
+\documentclass[../HDF5_RFC.tex]{subfiles}
+ 
+\begin{document}
+
+\section*{Introduction}
+\label{sec:intro}
+
+At present, the burden for crash prevention and recovery when using HDF5 lies entirely on application developers. The library itself has no provisions for crash recovery or backup creation. Considering the potential scale of data loss, the materials or machinery that may be required to replicate physical experiments, and the cost of compute time, the development of a native mechanism for crash recovery would be highly valuable. To limit complexity of design and I/O overhead, and because the semantics of when raw data is written to the file are already well defined, this proposal's goal is limited to restoring metadata and preventing overall file corruption. 
+
+The WAL enables crash recovery through a page-oriented replay log. This log will store enough information about metadata operations that, in the event of a crash, these operations may be replayed to restore the file's metadata to a confirmed self-consistent state. The log is page-oriented in the sense that it describes the metadata operations in terms of blocks of metadata at offsets within the file, rather than in terms of HDF5 file objects. During operation, the library will set markers in the WAL to indicate points at which the file is known to have self-consistent metadata. The WAL is an external file that may be trimmed at regular intervals to keep its size reasonable.
+
+Previous efforts to address metadata crash-recovery through Metadata Journaling ~\cite{rfc20070801} had significant performance issues, leading to the decision to discontinue pursuit of that approach. There have also been efforts to implement full SWMR (Single Writer/Multiple Reader) support which could be extended to support crashproofing, but we feel that users that do not need SWMR access will appreciate a more lightweight and maintainable solution.
+
+\vspace{-10pt}
+
+\end{document}
